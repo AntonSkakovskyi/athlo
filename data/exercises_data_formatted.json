@@ -1,0 +1,4000 @@
+[
+    {
+        "name": "21s Bicep Curl",
+        "equipment": "BARBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Ab Scissors",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/28931101-Scissors-(advanced)-(female)_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Ab_Scissors.jpg"
+    },
+    {
+        "name": "Ab Wheel",
+        "equipment": "OTHER",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08571201-Wheel-Rollout_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Ab_Wheel.mp4"
+    },
+    {
+        "name": "Aerobics",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Air Bike",
+        "equipment": "MACHINE",
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/38931101-Assault-Bike-Run_Cardio_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Air_Bike.jpg"
+    },
+    {
+        "name": "Arnold Press (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02871201-Dumbbell-Arnold-Press-II_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Arnold_Press_(Dumbbell).mp4"
+    },
+    {
+        "name": "Around The World",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "UPPER BACK",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02881201-Dumbbell-Around-Pullover_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Around_The_World.mp4"
+    },
+    {
+        "name": "Assisted Pistol Squats",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/17621101-Single-Leg-Squat-with-Support-(pistol)_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Assisted_Pistol_Squats.jpg"
+    },
+    {
+        "name": "Back Extension (Hyperextension)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LOWER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/18601201-Hyperextension-(VERSION-2)_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Back_Extension_(Hyperextension).mp4"
+    },
+    {
+        "name": "Back Extension (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LOWER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05731201-Lever-Back-Extension_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Back_Extension_(Machine).mp4"
+    },
+    {
+        "name": "Back Extension (Weighted Hyperextension)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LOWER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12341101-Plate-Hyperextension_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Back_Extension_(Weighted_Hyperextension).jpg"
+    },
+    {
+        "name": "Ball Slams",
+        "equipment": "OTHER",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/13541101-Medicine-Ball-Overhead-Slam_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Ball_Slams.jpg"
+    },
+    {
+        "name": "Band Pullaparts",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15031101-Band-Pull-Apart_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Band_Pullaparts.jpg"
+    },
+    {
+        "name": "Battle Ropes",
+        "equipment": "MACHINE",
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01281201-Battling-Ropes.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Battle_Ropes.mp4"
+    },
+    {
+        "name": "Behind the Back Bicep Wrist Curl (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "FOREARMS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01041101-Barbell-Standing-Back-Wrist-Curl_Forearms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Behind_the_Back_Bicep_Wrist_Curl_(Barbell).jpg"
+    },
+    {
+        "name": "Bench Dip",
+        "equipment": "OTHER",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/13991201-Bench-dip-on-floor_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bench_Dip.mp4"
+    },
+    {
+        "name": "Bench Press (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00251201-Barbell-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bench_Press_(Barbell).mp4"
+    },
+    {
+        "name": "Bench Press (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01511201-Cable-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bench_Press_(Cable).mp4"
+    },
+    {
+        "name": "Bench Press (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02891201-Dumbbell-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bench_Press_(Dumbbell).mp4"
+    },
+    {
+        "name": "Bench Press (Smith Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07481201-Smith-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bench_Press_(Smith_Machine).mp4"
+    },
+    {
+        "name": "Bench Press - Close Grip (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00301201-Barbell-Close-Grip-Bench-Press_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bench_Press_-_Close_Grip_(Barbell).mp4"
+    },
+    {
+        "name": "Bench Press - Wide Grip (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01221201-Barbell-Wide-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bench_Press_-_Wide_Grip_(Barbell).mp4"
+    },
+    {
+        "name": "Bent Over Row (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08921101-Band-bent_Back-over-row_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Bent_Over_Row_(Band).jpg"
+    },
+    {
+        "name": "Bent Over Row (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00271201-Barbell-Bent-Over-Row_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bent_Over_Row_(Barbell).mp4"
+    },
+    {
+        "name": "Bent Over Row (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02931201-Dumbbell-Bent-Over-Row_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bent_Over_Row_(Dumbbell).mp4"
+    },
+    {
+        "name": "Bicep Curl (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00311201-Barbell-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bicep_Curl_(Barbell).mp4"
+    },
+    {
+        "name": "Bicep Curl (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01561201-Cable-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bicep_Curl_(Cable).mp4"
+    },
+    {
+        "name": "Bicep Curl (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02941201-Dumbbell-Biceps-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bicep_Curl_(Dumbbell).mp4"
+    },
+    {
+        "name": "Bicep Curl (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10321101-Lever-Alternate-Biceps-Curl_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Bicep_Curl_(Machine).jpg"
+    },
+    {
+        "name": "Bicep Curl (Suspension)",
+        "equipment": "SUSPENSION",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10701101-Suspender-Arm-Curl_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Bicep_Curl_(Suspension).jpg"
+    },
+    {
+        "name": "Bicycle Crunch",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00031201-air-bike-m_waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bicycle_Crunch.mp4"
+    },
+    {
+        "name": "Bicycle Crunch Raised Legs",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01471201-Bycicle-Twisting-Crunch_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Bicycle_Crunch_Raised_Legs.mp4"
+    },
+    {
+        "name": "Bird Dog",
+        "equipment": null,
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12411101-Bird-Dog-male_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Bird_Dog.jpg"
+    },
+    {
+        "name": "Box Jump",
+        "equipment": "OTHER",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES",
+            "CALVES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05091101-Jump-Box_Plyometrics_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Box_Jump.jpg"
+    },
+    {
+        "name": "Box Squat (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00261101-Barbell-Bench-Squat_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Box_Squat_(Barbell).jpg"
+    },
+    {
+        "name": "Boxing",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/22731101-Boxing-Right-Cross_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Boxing.jpg"
+    },
+    {
+        "name": "Bulgarian Split Squat",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "GLUTES",
+            "HAMSTRINGS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/22901101-Dumbbell-Bulgarian-Split-Squat-(female)_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Bulgarian_Split_Squat.jpg"
+    },
+    {
+        "name": "Burpee",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11601201-Burpee_Cardio.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Burpee.mp4"
+    },
+    {
+        "name": "Burpee Over the Bar",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Butterfly (Pec Deck)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10301201-Lever-Pec-Deck-Fly_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Butterfly_(Pec_Deck).mp4"
+    },
+    {
+        "name": "Cable Core Palloff Press",
+        "equipment": "MACHINE",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12021201-Cable-horizontal-Pallof-Press_waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Cable_Core_Palloff_Press.mp4"
+    },
+    {
+        "name": "Cable Crunch",
+        "equipment": "MACHINE",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01751201-Cable-Kneeling-Crunch_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Cable_Crunch.mp4"
+    },
+    {
+        "name": "Cable Fly Crossovers",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12691201-Cable-Standing-Up-Straight-Crossovers_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Cable_Fly_Crossovers.mp4"
+    },
+    {
+        "name": "Cable Pull Through",
+        "equipment": "MACHINE",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12061201-Cable-pull-through_hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Cable_Pull_Through.mp4"
+    },
+    {
+        "name": "Cable Twist (Down to up)",
+        "equipment": "MACHINE",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12071201-Cable-twist-(down-up)_waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Cable_Twist_(Down_to_up).mp4"
+    },
+    {
+        "name": "Cable Twist (Up to down)",
+        "equipment": "MACHINE",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08621201-Cable-twist-(up-down)_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Cable_Twist_(Up_to_down).mp4"
+    },
+    {
+        "name": "Calf Extension (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/23151201-Lever-Rotary-Calf_Calves.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Calf_Extension_(Machine).mp4"
+    },
+    {
+        "name": "Calf Press (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07381201-Sled-45-Calf-Press_Calves.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Calf_Press_(Machine).mp4"
+    },
+    {
+        "name": "Chest Dip",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02511201-Chest-Dip_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Chest_Dip.mp4"
+    },
+    {
+        "name": "Chest Dip (Assisted)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00091201-Assisted-Chest-Dip-(kneeling)_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Chest_Dip_(Assisted).mp4"
+    },
+    {
+        "name": "Chest Dip (Weighted)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Chest Fly (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/09131101-Band-middle-fly_Chest_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Chest_Fly_(Band).jpg"
+    },
+    {
+        "name": "Chest Fly (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03081201-Dumbbell-Fly_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Chest_Fly_(Dumbbell).mp4"
+    },
+    {
+        "name": "Chest Fly (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05961201-Lever-Seated-Fly_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Chest_Fly_(Machine).mp4"
+    },
+    {
+        "name": "Chest Fly (Suspension)",
+        "equipment": "SUSPENSION",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10741101-Suspender-Fly_Chest_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Chest_Fly_(Suspension).jpg"
+    },
+    {
+        "name": "Chest Press (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/09201101-Band-standing-chest-press_Chest_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Chest_Press_(Band).jpg"
+    },
+    {
+        "name": "Chest Press (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05771201-Lever-Chest-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Chest_Press_(Machine).mp4"
+    },
+    {
+        "name": "Chest Supported Incline Row (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03271201-Dumbbell-Incline-Row_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Chest_Supported_Incline_Row_(Dumbbell).mp4"
+    },
+    {
+        "name": "Chest Supported Reverse Fly (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": [
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03831201-Dumbbell-Reverse-Fly_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Chest_Supported_Reverse_Fly_(Dumbbell).mp4"
+    },
+    {
+        "name": "Chest Supported Y Raise (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/35411201-Dumbbell-Incline-Y-Raise_Shoulders_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Chest_Supported_Y_Raise_(Dumbbell).mp4"
+    },
+    {
+        "name": "Chin Up",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": [
+            "UPPER BACK",
+            "BICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/13261201-Chin-Up_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Chin_Up.mp4"
+    },
+    {
+        "name": "Chin Up (Assisted)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": [
+            "UPPER BACK",
+            "BICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05721301-assisted-chin-up_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Chin_Up_(Assisted).jpg"
+    },
+    {
+        "name": "Chin Up (Weighted)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": [
+            "UPPER BACK",
+            "BICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/29871101-Weighted-Close-Grip-Chin-up-on-Dip-Cage_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Chin_Up_(Weighted).jpg"
+    },
+    {
+        "name": "Clamshell",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/21501101-Resistance-Band-Clam_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Clamshell.jpg"
+    },
+    {
+        "name": "Clap Push Ups",
+        "equipment": null,
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12731101-Clap-Push-Up_Plyometrics_Chest_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Clap_Push_Ups.jpg"
+    },
+    {
+        "name": "Clean",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15211101-Barbell-Hang-Clean-Below-the-Knees_Weightlifts_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Clean.jpg"
+    },
+    {
+        "name": "Clean and Jerk",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00281201-Barbell-Clean-and-Press_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Clean_and_Jerk.mp4"
+    },
+    {
+        "name": "Clean and Press",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00281201-Barbell-Clean-and-Press_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Clean_and_Press.mp4"
+    },
+    {
+        "name": "Clean Pull",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15171101-Barbell-Clean-Pull_Weightlifts_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Clean_Pull.jpg"
+    },
+    {
+        "name": "Climbing",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Concentration Curl",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02971201-Dumbbell-Concentration-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Concentration_Curl.mp4"
+    },
+    {
+        "name": "Cross Body Hammer Curl",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02981101-Dumbbell-Cross-Body-Hammer-Curl_Forearms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Cross_Body_Hammer_Curl.jpg"
+    },
+    {
+        "name": "Crunch",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02741201-Crunch-Floor-m_waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Crunch.mp4"
+    },
+    {
+        "name": "Crunch (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05951201-Lever-Seated-Crunch-(chest-pad).mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Crunch_(Machine).mp4"
+    },
+    {
+        "name": "Crunch (Weighted)",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08321101-Weighted-Crunch_waist_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Crunch_(Weighted).jpg"
+    },
+    {
+        "name": "Curtsy Lunge (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08811101-Dumbbell-Curtsey-lunge_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Curtsy_Lunge_(Dumbbell).jpg"
+    },
+    {
+        "name": "Cycling",
+        "equipment": "MACHINE",
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Dead Bug",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02761101-Dead-Bug_waist_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Dead_Bug.jpg"
+    },
+    {
+        "name": "Dead Hang",
+        "equipment": null,
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/50551101-Dead-Hang-Stretch_Stretching_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Dead_Hang.jpg"
+    },
+    {
+        "name": "Deadlift (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "QUADRICEPS",
+            "LOWER BACK",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08951101-Band-deadlift_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Deadlift_(Band).jpg"
+    },
+    {
+        "name": "Deadlift (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "QUADRICEPS",
+            "LOWER BACK",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00321201-Barbell-Deadlift_Hips-FIX.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Deadlift_(Barbell).mp4"
+    },
+    {
+        "name": "Deadlift (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "QUADRICEPS",
+            "LOWER BACK",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04321201-Dumbbell-Stiff-Leg-Deadlift_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Deadlift_(Dumbbell).mp4"
+    },
+    {
+        "name": "Deadlift (Smith Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "QUADRICEPS",
+            "LOWER BACK",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07521201-Smith-Deadlift_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Deadlift_(Smith_Machine).mp4"
+    },
+    {
+        "name": "Deadlift (Trap bar)",
+        "equipment": "BARBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "QUADRICEPS",
+            "LOWER BACK",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08111201-Trap-Bar-Deadlift_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Deadlift_(Trap_bar).mp4"
+    },
+    {
+        "name": "Deadlift High Pull",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11991201-Sumo-Deadlift-High-Pull_Thighs_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Deadlift_High_Pull.mp4"
+    },
+    {
+        "name": "Decline Bench Press (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00331201-Barbell-Decline-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Decline_Bench_Press_(Barbell).mp4"
+    },
+    {
+        "name": "Decline Bench Press (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03011201-Dumbbell-Decline-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Decline_Bench_Press_(Dumbbell).mp4"
+    },
+    {
+        "name": "Decline Bench Press (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/13001201-Lever-Decline-Chest-Press_Chest-FIX_.mp4",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Decline_Bench_Press_(Machine).mp4"
+    },
+    {
+        "name": "Decline Bench Press (Smith Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07531201-Smith-Decline-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Decline_Bench_Press_(Smith_Machine).mp4"
+    },
+    {
+        "name": "Decline Chest Fly (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03021201-Dumbbell-Decline-Fly_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Decline_Chest_Fly_(Dumbbell).mp4"
+    },
+    {
+        "name": "Decline Crunch",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02771201-Decline-Crunch_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Decline_Crunch.mp4"
+    },
+    {
+        "name": "Decline Crunch (Weighted)",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/21301201-Weighted-decline-crunch_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Decline_Crunch_(Weighted).mp4"
+    },
+    {
+        "name": "Decline Push Up",
+        "equipment": "OTHER",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "SHOULDERS",
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02791201-Decline-Push-Up_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Decline_Push_Up.mp4"
+    },
+    {
+        "name": "Diamond Push Up",
+        "equipment": null,
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": [
+            "CHEST"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02831101-Diamond-Push-up_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Diamond_Push_Up.jpg"
+    },
+    {
+        "name": "Downward Dog",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/09491101-Downward-Facing-Dog-Adho-Mukha-Svanasana_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Downward_Dog.jpg"
+    },
+    {
+        "name": "Drag Curl",
+        "equipment": "BARBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00381201-Barbell-Drag-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Drag_Curl.mp4"
+    },
+    {
+        "name": "Dragon Flag",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Dragonfly",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Dumbbell Row",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02921201-Dumbbell-Bent-over-Row_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Dumbbell_Row.mp4"
+    },
+    {
+        "name": "Dumbbell Snatch",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/38881101-Dumbbell-One-Arm-Snatch_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Dumbbell_Snatch.jpg"
+    },
+    {
+        "name": "Dumbbell Squeeze Press",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Dumbbell Step Up",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04311101-Dumbbell-Step-up_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Dumbbell_Step_Up.jpg"
+    },
+    {
+        "name": "Elbow to Knee",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/23121201-Lying-Elbow-to-Knee_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Elbow_to_Knee.mp4"
+    },
+    {
+        "name": "Elliptical Trainer",
+        "equipment": "MACHINE",
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/21921201-Elliptical-Machine-Walk_Cardio.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Elliptical_Trainer.mp4"
+    },
+    {
+        "name": "EZ Bar Biceps Curl",
+        "equipment": "BARBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04471201-EZ-Barbell-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\EZ_Bar_Biceps_Curl.mp4"
+    },
+    {
+        "name": "Face Pull",
+        "equipment": "MACHINE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08961101-Band-face-pull_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Face_Pull.jpg"
+    },
+    {
+        "name": "Farmers Walk",
+        "equipment": "OTHER",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/21331201-Farmers-walk_Cardio.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Farmers_Walk.mp4"
+    },
+    {
+        "name": "Fire Hydrants",
+        "equipment": null,
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Floor Press (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Floor Press (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/36681101-Dumbbell-Lying-on-Floor-Chest-Press_Chest_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Floor_Press_(Dumbbell).jpg"
+    },
+    {
+        "name": "Floor Triceps Dip",
+        "equipment": null,
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08151201-Triceps-Dips-Floor_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Floor_Triceps_Dip.mp4"
+    },
+    {
+        "name": "Flutter Kicks",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12441201-Flutter-Kicks-(version-3)_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Flutter_Kicks.mp4"
+    },
+    {
+        "name": "Frog Jumps",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/30881101-Frog-Hops-(male)_Plyometrics_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Frog_Jumps.jpg"
+    },
+    {
+        "name": "Frog Pumps (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/31821101-Weighted-Frog-Pump_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Frog_Pumps_(Dumbbell).jpg"
+    },
+    {
+        "name": "Front Lever Hold",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/32961101-Front-Lever_Waist_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Front_Lever_Hold.jpg"
+    },
+    {
+        "name": "Front Lever Raise",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/32961101-Front-Lever_Waist_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Front_Lever_Raise.jpg"
+    },
+    {
+        "name": "Front Raise (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/09781101-Band-front-raise_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Front_Raise_(Band).jpg"
+    },
+    {
+        "name": "Front Raise (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00411101-Barbell-Front-Raise_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Front_Raise_(Barbell).mp4"
+    },
+    {
+        "name": "Front Raise (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01621201-Cable-Front-Raise_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Front_Raise_(Cable).mp4"
+    },
+    {
+        "name": "Front Raise (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03101201-Dumbbell-Front-Raise_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Front_Raise_(Dumbbell).mp4"
+    },
+    {
+        "name": "Front Raise (Suspension)",
+        "equipment": "SUSPENSION",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10751101-Suspender-Front-Raise_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Front_Raise_(Suspension).jpg"
+    },
+    {
+        "name": "Front Squat",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00421201-Barbell-Front-Squat_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Front_Squat.mp4"
+    },
+    {
+        "name": "Full Squat",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00431201-Barbell-Full-Squat_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Full_Squat.mp4"
+    },
+    {
+        "name": "Glute Bridge",
+        "equipment": null,
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06681101-Rear-Decline-Bridge_Waist_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Glute_Bridge.jpg"
+    },
+    {
+        "name": "Glute Ham Raise",
+        "equipment": "MACHINE",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/31931101-Glute-Ham-Raise_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Glute_Ham_Raise.jpg"
+    },
+    {
+        "name": "Glute Kickback (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10371201-Lever-Standing-Rear-Kick_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Glute_Kickback_(Machine).mp4"
+    },
+    {
+        "name": "Glute Kickback on Floor",
+        "equipment": null,
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14741201-Bent-Leg-Kickback-(kneeling)_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Glute_Kickback_on_Floor.mp4"
+    },
+    {
+        "name": "Goblet Squat",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/22811201-Dumbbell-Goblet-Squat-(female)_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Goblet_Squat.mp4"
+    },
+    {
+        "name": "Good Morning (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "LOWER BACK",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00441201-Barbell-Good-Morning_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Good_Morning_(Barbell).mp4"
+    },
+    {
+        "name": "Gorilla Row (Kettlebell)",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/72301201-Kettlebell-Gorilla-Row-(male)_Back_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Gorilla_Row_(Kettlebell).mp4"
+    },
+    {
+        "name": "Hack Squat",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00461201-Barbell-Hack-Squat_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Hack_Squat.mp4"
+    },
+    {
+        "name": "Hack Squat (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07431201-Sled-Hack-Squat_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Hack_Squat_(Machine).mp4"
+    },
+    {
+        "name": "Hammer Curl (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08971101-Band-hammer-curl_Forearms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Hammer_Curl_(Band).jpg"
+    },
+    {
+        "name": "Hammer Curl (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01661201-Cable-Hammer-Curl_Forearm.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Hammer_Curl_(Cable).mp4"
+    },
+    {
+        "name": "Hammer Curl (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03121201-Dumbbell-Hammer-Curl-(version-2)_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Hammer_Curl_(Dumbbell).mp4"
+    },
+    {
+        "name": "Handstand Hold",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/33021101-Handstand_Upper-arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Handstand_Hold.jpg"
+    },
+    {
+        "name": "Handstand Push Up",
+        "equipment": null,
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04711101-Handstand-Push-Up_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Handstand_Push_Up.jpg"
+    },
+    {
+        "name": "Hang Clean",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15201101-Barbell-Hang-Clean_Weightlifts_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Hang_Clean.jpg"
+    },
+    {
+        "name": "Hang Snatch",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15221101-Barbell-Hang-Snatch_Weightlifts_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Hang_Snatch.jpg"
+    },
+    {
+        "name": "Hanging Knee Raise",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04721101-Hanging-Leg-Raise_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Hanging_Knee_Raise.jpg"
+    },
+    {
+        "name": "Hanging Leg Raise",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/17641201-Hanging-Leg-Hip-Raise_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Hanging_Leg_Raise.mp4"
+    },
+    {
+        "name": "Heel Taps",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00061101-Alternate-Heel-Touchers_waist-FIX_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Heel_Taps.jpg"
+    },
+    {
+        "name": "Hex Press (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/36811201-Dumbbell-Squeeze-Bench-Press_Chest-FIX_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Hex_Press_(Dumbbell).mp4"
+    },
+    {
+        "name": "High Knee Skips",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04771101-High-Knee-Skips_Cardio_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\High_Knee_Skips.jpg"
+    },
+    {
+        "name": "High Knees",
+        "equipment": null,
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08291101-Walk-(high-knees)_Cardio_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\High_Knees.jpg"
+    },
+    {
+        "name": "HIIT",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Hiking",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Hip Abduction (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "ABDUCTORS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05971201-Lever-Seated-Hip-Abduction_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Hip_Abduction_(Machine).mp4"
+    },
+    {
+        "name": "Hip Adduction (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "ADDUCTORS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05981201-Lever-Seated-Hip-Adduction_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Hip_Adduction_(Machine).mp4"
+    },
+    {
+        "name": "Hip Thrust",
+        "equipment": null,
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/20721101-Hip-Thrusts_Hips-FIX_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Hip_Thrust.jpg"
+    },
+    {
+        "name": "Hip Thrust (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10601101-Barbell-Hip-Thrust_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Hip_Thrust_(Barbell).jpg"
+    },
+    {
+        "name": "Hip Thrust (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/21461201-Lever-Hip-Thrust_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Hip_Thrust_(Machine).mp4"
+    },
+    {
+        "name": "Hollow Rock",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12461101-Hollow-Hold_Waist_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Hollow_Rock.jpg"
+    },
+    {
+        "name": "Incline Bench Press (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00471201-Barbell-Incline-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Incline_Bench_Press_(Barbell).mp4"
+    },
+    {
+        "name": "Incline Bench Press (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03141201-Dumbbell-Incline-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Incline_Bench_Press_(Dumbbell).mp4"
+    },
+    {
+        "name": "Incline Bench Press (Smith Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07571201-Smith-Incline-Bench-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Incline_Bench_Press_(Smith_Machine).mp4"
+    },
+    {
+        "name": "Incline Chest Fly (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03191201-Dumbbell-Incline-Fly_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Incline_Chest_Fly_(Dumbbell).mp4"
+    },
+    {
+        "name": "Incline Chest Press (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14791201-Lever-Incline-Chest-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Incline_Chest_Press_(Machine).mp4"
+    },
+    {
+        "name": "Incline Push Ups",
+        "equipment": null,
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/37851201-Incline-Push-Up-(on-box).mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Incline_Push_Ups.mp4"
+    },
+    {
+        "name": "Inverted Row",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04991201-Inverted-Row_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Inverted_Row.mp4"
+    },
+    {
+        "name": "Iso-Lateral Chest Press (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05761201-Lever-Chest-Press-(plate-loaded)_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Iso-Lateral_Chest_Press_(Machine).mp4"
+    },
+    {
+        "name": "Iso-Lateral High Row (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05811101-Lever-High-Row-(plate-loaded)_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Iso-Lateral_High_Row_(Machine).jpg"
+    },
+    {
+        "name": "Iso-Lateral Low Row",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": [
+            "UPPER BACK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/42141201-Lever-Low-Row-(plate-loaded)_Back_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Iso-Lateral_Low_Row.mp4"
+    },
+    {
+        "name": "Iso-Lateral Row (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05881101-Lever-Narrow-Grip-Seated-Row-(plate-loaded)_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Iso-Lateral_Row_(Machine).jpg"
+    },
+    {
+        "name": "Jack Knife (Suspension)",
+        "equipment": "SUSPENSION",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10821101-Suspender-Jack-knife_Waist_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Jack_Knife_(Suspension).jpg"
+    },
+    {
+        "name": "Jackknife Sit Up",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05071301-jackknife-sit-up_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Jackknife_Sit_Up.jpg"
+    },
+    {
+        "name": "JM Press (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00521201-Barbell-JM-Bench-Press_Upper-Arms-FIX_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\JM_Press_(Barbell).mp4"
+    },
+    {
+        "name": "Jump Rope",
+        "equipment": "OTHER",
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05111101-Jump-Rope_Cardio_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Jump_Rope.jpg"
+    },
+    {
+        "name": "Jump Shrug",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Jump Squat",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05141201-Jump-Squat_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Jump_Squat.mp4"
+    },
+    {
+        "name": "Jumping Jack",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05161101-Jumping-Jack_Cardio_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Jumping_Jack.jpg"
+    },
+    {
+        "name": "Jumping Lunge",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11661201-Jump-Split-m_Plyometrics.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Jumping_Lunge.mp4"
+    },
+    {
+        "name": "Kettlebell Clean",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/45431101-Kettlebell-One-Arm-Clean_Weightlifting_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Kettlebell_Clean.jpg"
+    },
+    {
+        "name": "Kettlebell Curl",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Kettlebell Goblet Squat",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05341101-Kettlebell-Goblet-Squat_thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Kettlebell_Goblet_Squat.jpg"
+    },
+    {
+        "name": "Kettlebell High Pull",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": [
+            "TRAPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05481101-Kettlebell-Sumo-High-Pull_back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Kettlebell_High_Pull.jpg"
+    },
+    {
+        "name": "Kettlebell Shoulder Press",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/35721101-Kettlebell-Strict-Press_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Kettlebell_Shoulder_Press.jpg"
+    },
+    {
+        "name": "Kettlebell Snatch",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05421101-Kettlebell-One-Arm-Snatch_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Kettlebell_Snatch.jpg"
+    },
+    {
+        "name": "Kettlebell Swing",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05491101-Kettlebell-Swing_Kettlebell_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Kettlebell_Swing.jpg"
+    },
+    {
+        "name": "Kettlebell Turkish Get Up",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05511101-Kettlebell-Turkish-Get-Up-(Squat-style)_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Kettlebell_Turkish_Get_Up.jpg"
+    },
+    {
+        "name": "Kipping Pull Up",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": [
+            "UPPER BACK"
+        ],
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Knee Raise Parallel Bars",
+        "equipment": "MACHINE",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/21261201-Captains-chair-leg-raise_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Knee_Raise_Parallel_Bars.mp4"
+    },
+    {
+        "name": "Kneeling Pulldown (band)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/09051101-Band-kneeling-pulldown_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Kneeling_Pulldown_(band).jpg"
+    },
+    {
+        "name": "Kneeling Push Up",
+        "equipment": null,
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/32111101-Kneeling-Push-up-(male)_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Kneeling_Push_Up.jpg"
+    },
+    {
+        "name": "L-Sit Hold",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14021201-L-sit_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\L-Sit_Hold.mp4"
+    },
+    {
+        "name": "Landmine 180",
+        "equipment": "BARBELL",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05621201-Landmine-180_waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Landmine_180.mp4"
+    },
+    {
+        "name": "Landmine Row",
+        "equipment": "BARBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": [
+            "LATS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/32001201-Lever-Bent-over-Row-with-V-bar-(plate-loaded)_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Landmine_Row.mp4"
+    },
+    {
+        "name": "Landmine Squat and Press",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/29761301-Landmine-Squat-and-Press_360.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Landmine_Squat_and_Press.jpg"
+    },
+    {
+        "name": "Lat Pulldown (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/09741101-Band-close-grip-pulldown_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Lat_Pulldown_(Band).jpg"
+    },
+    {
+        "name": "Lat Pulldown (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01501201-Cable-Bar-Lateral-Pulldown_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lat_Pulldown_(Cable).mp4"
+    },
+    {
+        "name": "Lat Pulldown (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05791201-Lever-Front-Pulldown_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lat_Pulldown_(Machine).mp4"
+    },
+    {
+        "name": "Lat Pulldown - Close Grip (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/26161101-Cable-Lateral-Pulldown-with-V-bar_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Lat_Pulldown_-_Close_Grip_(Cable).jpg"
+    },
+    {
+        "name": "Lateral Band Walks",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/24601101-Resistance-Band-Lateral-Walk_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Lateral_Band_Walks.jpg"
+    },
+    {
+        "name": "Lateral Box Jump",
+        "equipment": "OTHER",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05641101-Lateral-Box-Jump_Plyometrics_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Lateral_Box_Jump.jpg"
+    },
+    {
+        "name": "Lateral Leg Raises",
+        "equipment": null,
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Lateral Lunge",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/29721101-Side-Lunge_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Lateral_Lunge.jpg"
+    },
+    {
+        "name": "Lateral Raise (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/09071101-Band-lateral-raise_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Lateral_Raise_(Band).jpg"
+    },
+    {
+        "name": "Lateral Raise (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01781201-Cable-Lateral-Raise_shoulder.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lateral_Raise_(Cable).mp4"
+    },
+    {
+        "name": "Lateral Raise (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03341201-Dumbbell-Lateral-Raise_shoulder.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lateral_Raise_(Dumbbell).mp4"
+    },
+    {
+        "name": "Lateral Raise (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05841201-Lever-Lateral-Raise_shoulder.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lateral_Raise_(Machine).mp4"
+    },
+    {
+        "name": "Lateral Squat",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Leg Extension (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05851201-Lever-Leg-Extension_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Leg_Extension_(Machine).mp4"
+    },
+    {
+        "name": "Leg Press (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07391201-Sled-45-Leg-Press_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Leg_Press_(Machine).mp4"
+    },
+    {
+        "name": "Leg Press Horizontal (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/22671201-Lever-Seated-Leg-Press_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Leg_Press_Horizontal_(Machine).mp4"
+    },
+    {
+        "name": "Leg Raise Parallel Bars",
+        "equipment": "MACHINE",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/29631101-Captains-Chair-Straight-Leg-Raise_Waist_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Leg_Raise_Parallel_Bars.jpg"
+    },
+    {
+        "name": "Low Cable Fly Crossovers",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01791201-Cable-Low-Fly_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Low_Cable_Fly_Crossovers.mp4"
+    },
+    {
+        "name": "Low Row (Suspension)",
+        "equipment": "SUSPENSION",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10921101-Suspender-Row_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Low_Row_(Suspension).jpg"
+    },
+    {
+        "name": "Lunge",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14601201-Walking-Lunge-Male_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lunge.mp4"
+    },
+    {
+        "name": "Lunge (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00541201-Barbell-Lunge_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lunge_(Barbell).mp4"
+    },
+    {
+        "name": "Lunge (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03361201-Dumbbell-Lunge_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lunge_(Dumbbell).mp4"
+    },
+    {
+        "name": "Lying Knee Raise",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06171101-Lying-Hip-Leg-Raise-(on-floor)_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Lying_Knee_Raise.jpg"
+    },
+    {
+        "name": "Lying Leg Curl (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05861201-Lever-Lying-Leg-Curl_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lying_Leg_Curl_(Machine).mp4"
+    },
+    {
+        "name": "Lying Leg Raise",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11631201-Lying-Leg-Raise_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lying_Leg_Raise.mp4"
+    },
+    {
+        "name": "Lying Neck Curls",
+        "equipment": null,
+        "primary_muscle": "NECK",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Lying Neck Curls (Weighted)",
+        "equipment": "PLATE",
+        "primary_muscle": "NECK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10431201-Weighted-Lying-Neck-Flexion_neck.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Lying_Neck_Curls_(Weighted).mp4"
+    },
+    {
+        "name": "Lying Neck Extension",
+        "equipment": null,
+        "primary_muscle": "NECK",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Lying Neck Extension (Weighted)",
+        "equipment": "PLATE",
+        "primary_muscle": "NECK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10421101-Weighted-Lying-Neck-Extension_neck_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Lying_Neck_Extension_(Weighted).jpg"
+    },
+    {
+        "name": "Meadows Rows (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Mountain Climber",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06301101-Mountain-Climber_Cardio_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Mountain_Climber.jpg"
+    },
+    {
+        "name": "Muscle Up",
+        "equipment": "MACHINE",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14011101-Muscle-up-(on-vertical-bar)_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Muscle_Up.jpg"
+    },
+    {
+        "name": "Negative Pull Up",
+        "equipment": null,
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/47741201-Pull-up-(negative)-(female)_Back_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Negative_Pull_Up.mp4"
+    },
+    {
+        "name": "Nordic Hamstrings Curls",
+        "equipment": null,
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/42041101-Resistance-Band-Assisted-Nordic-Hamstring-Curl_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Nordic_Hamstrings_Curls.jpg"
+    },
+    {
+        "name": "Oblique Crunch",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06351201-Oblique-Crunches-Floor_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Oblique_Crunch.mp4"
+    },
+    {
+        "name": "One Arm Push Up",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07251201-Single-Arm-Push-up_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\One_Arm_Push_Up.mp4"
+    },
+    {
+        "name": "Overhead Curl (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/16361101-Cable-Overhead-Curl_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Overhead_Curl_(Cable).jpg"
+    },
+    {
+        "name": "Overhead Dumbbell Lunge",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Overhead Press (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11651201-Barbell-Standing-Military-Press-(without-rack)_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Overhead_Press_(Barbell).mp4"
+    },
+    {
+        "name": "Overhead Press (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04261201-Dumbbell-Standing-Overhead-Press_shoulder.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Overhead_Press_(Dumbbell).mp4"
+    },
+    {
+        "name": "Overhead Press (Smith Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12241201-Smith-Standing-Shoulder-Press_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Overhead_Press_(Smith_Machine).mp4"
+    },
+    {
+        "name": "Overhead Squat",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00691101-Barbell-Overhead-Squat_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Overhead_Squat.jpg"
+    },
+    {
+        "name": "Pause Squat (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/50161201-Barbell-Pause-Full-Squat_Thighs_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Pause_Squat_(Barbell).mp4"
+    },
+    {
+        "name": "Pendlay Row (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Pendulum Squat (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "GLUTES",
+            "CALVES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/49511201-Lever-Pendulum-Squat-(plate-loaded)_Thighs_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Pendulum_Squat_(Machine).mp4"
+    },
+    {
+        "name": "Pike Pushup",
+        "equipment": null,
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": [
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/29211101-Pike-Push-up_Chest_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Pike_Pushup.jpg"
+    },
+    {
+        "name": "Pilates",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Pinwheel Curl (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Pistol Squat",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES",
+            "CALVES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/17591101-Single-Leg-Squat-(pistol)-male_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Pistol_Squat.jpg"
+    },
+    {
+        "name": "Plank",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04631201-Front-Plank-m_waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Plank.mp4"
+    },
+    {
+        "name": "Plank Pushup",
+        "equipment": null,
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "ABDOMINALS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/28901101-Front-Plank-to-Push-up-(female)_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Plank_Pushup.jpg"
+    },
+    {
+        "name": "Plate Curl",
+        "equipment": "PLATE",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08531101-Weighted-Standing-Curl_Forearms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Plate_Curl.jpg"
+    },
+    {
+        "name": "Plate Front Raise",
+        "equipment": "PLATE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08341201-Weighted-Front-Raise_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Plate_Front_Raise.mp4"
+    },
+    {
+        "name": "Plate Press",
+        "equipment": "PLATE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12251101-Standing-Plate-Presses_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Plate_Press.jpg"
+    },
+    {
+        "name": "Plate Squeeze (Svend Press)",
+        "equipment": "PLATE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08561201-Weighted-Svend-Press_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Plate_Squeeze_(Svend_Press).mp4"
+    },
+    {
+        "name": "Power Clean",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06481201-Power-Clean_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Power_Clean.mp4"
+    },
+    {
+        "name": "Power Snatch",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15301101-Barbell-Power-Snatch_Weightlifts_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Power_Snatch.jpg"
+    },
+    {
+        "name": "Preacher Curl (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00701201-Barbell-Preacher-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Preacher_Curl_(Barbell).mp4"
+    },
+    {
+        "name": "Preacher Curl (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04021201-Dumbbell-Seated-Preacher-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Preacher_Curl_(Dumbbell).mp4"
+    },
+    {
+        "name": "Preacher Curl (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05921201-Lever-Preacher-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Preacher_Curl_(Machine).mp4"
+    },
+    {
+        "name": "Press Under",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Pull Up",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": [
+            "UPPER BACK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06521201-Pull-up_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Pull_Up.mp4"
+    },
+    {
+        "name": "Pull Up (Assisted)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": [
+            "UPPER BACK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00171201-Assisted-Pull-up_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Pull_Up_(Assisted).mp4"
+    },
+    {
+        "name": "Pull Up (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "LATS",
+        "secondary_muscle": [
+            "UPPER BACK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/09701301-Band-assisted-pullup_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Pull_Up_(Band).jpg"
+    },
+    {
+        "name": "Pull Up (Weighted)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": [
+            "UPPER BACK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08411101-Weighted-Pull-Up_back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Pull_Up_(Weighted).jpg"
+    },
+    {
+        "name": "Pullover (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03751201-Dumbbell-Pullover_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Pullover_(Dumbbell).mp4"
+    },
+    {
+        "name": "Pullover (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "LATS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/22851201-Lever-Pullover-(plate-loaded)_Back_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Pullover_(Machine).mp4"
+    },
+    {
+        "name": "Push Press",
+        "equipment": "BARBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12001201-Push-Press_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Push_Press.mp4"
+    },
+    {
+        "name": "Push Up",
+        "equipment": null,
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06621201-Push-up-m_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Push_Up.mp4"
+    },
+    {
+        "name": "Push Up (Weighted)",
+        "equipment": null,
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11721201-Assisted-Weighted-Push-up_Chest.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Push_Up_(Weighted).mp4"
+    },
+    {
+        "name": "Push Up - Close Grip",
+        "equipment": null,
+        "primary_muscle": "CHEST",
+        "secondary_muscle": [
+            "TRICEPS",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02591201-Close-Grip-Push-up_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Push_Up_-_Close_Grip.mp4"
+    },
+    {
+        "name": "Rack Pull",
+        "equipment": "BARBELL",
+        "primary_muscle": "LOWER BACK",
+        "secondary_muscle": [
+            "GLUTES",
+            "QUADRICEPS",
+            "HAMSTRINGS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00741101-Barbell-Rack-Pull_Hips-FIX_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Rack_Pull.jpg"
+    },
+    {
+        "name": "Rear Delt Reverse Fly (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": [
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02251101-Cable-Standing-Cross-over-High-Reverse-Fly_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Rear_Delt_Reverse_Fly_(Cable).jpg"
+    },
+    {
+        "name": "Rear Delt Reverse Fly (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": [
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/24871101-Dumbbell-Rear-Delt-Fly-(female)_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Rear_Delt_Reverse_Fly_(Dumbbell).jpg"
+    },
+    {
+        "name": "Rear Delt Reverse Fly (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": [
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06021201-Lever-Seated-Reverse-Fly_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Rear_Delt_Reverse_Fly_(Machine).mp4"
+    },
+    {
+        "name": "Renegade Row (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05211101-Kettlebell-Alternating-Renegade-Row_back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Renegade_Row_(Dumbbell).jpg"
+    },
+    {
+        "name": "Reverse Crunch",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08721201-Reverse-Crunch-m_waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Reverse_Crunch.mp4"
+    },
+    {
+        "name": "Reverse Curl (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": [
+            "FOREARMS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00801201-Barbell-Reverse-Curl_Forearm.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Reverse_Curl_(Barbell).mp4"
+    },
+    {
+        "name": "Reverse Curl (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02061201-Cable-Reverse-Curl_Forearm.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Reverse_Curl_(Cable).mp4"
+    },
+    {
+        "name": "Reverse Curl (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": [
+            "FOREARMS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03821201-Dumbbell-Revers-grip-Biceps-Curl_Forearms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Reverse_Curl_(Dumbbell).mp4"
+    },
+    {
+        "name": "Reverse Fly Single Arm (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": [
+            "SHOULDERS"
+        ],
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Reverse Grip Concentration Curl",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04031101-Dumbbell-Seated-Revers-grip-Concentration-Curl_Forearms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Reverse_Grip_Concentration_Curl.jpg"
+    },
+    {
+        "name": "Reverse Grip Lat Pulldown (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02081201-Cable-Reverse-grip-Straight-Back-Seated-High-Row_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Reverse_Grip_Lat_Pulldown_(Cable).mp4"
+    },
+    {
+        "name": "Reverse Hyperextension",
+        "equipment": "MACHINE",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": [
+            "HAMSTRINGS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05931201-Lever-Reverse-Hyperextension-(plate-loaded)_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Reverse_Hyperextension.mp4"
+    },
+    {
+        "name": "Reverse Lunge",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15811101-Bodyweight-Rear-Lunge_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Reverse_Lunge.jpg"
+    },
+    {
+        "name": "Reverse Lunge (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00781101-Barbell-Rear-Lunge_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Reverse_Lunge_(Barbell).jpg"
+    },
+    {
+        "name": "Reverse Lunge (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03811201-Dumbbell-Rear-Lunge_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Reverse_Lunge_(Dumbbell).mp4"
+    },
+    {
+        "name": "Reverse Plank",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08671201-Reverse-plank_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Reverse_Plank.mp4"
+    },
+    {
+        "name": "Ring Dips",
+        "equipment": null,
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06771101-Ring-Dips_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Ring_Dips.jpg"
+    },
+    {
+        "name": "Romanian Deadlift (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/22131201-Barbell-Romanian-Deadlift-(female)_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Romanian_Deadlift_(Barbell).mp4"
+    },
+    {
+        "name": "Romanian Deadlift (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14591201-Dumbbell-Romanian-Deadlift_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Romanian_Deadlift_(Dumbbell).mp4"
+    },
+    {
+        "name": "Rope Cable Curl",
+        "equipment": "MACHINE",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01651101-Cable-Hammer-Curl-(with-rope)-m_Forearms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Rope_Cable_Curl.jpg"
+    },
+    {
+        "name": "Rope Straight Arm Pulldown",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02371201-Cable-Straight-Arm-Pulldown-(with-rope)_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Rope_Straight_Arm_Pulldown.mp4"
+    },
+    {
+        "name": "Rowing Machine",
+        "equipment": "MACHINE",
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/22701201-Rowing-Straight-Back-(with-rowing-machine)-(female)_Cardio.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Rowing_Machine.mp4"
+    },
+    {
+        "name": "Running",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/21961201-Run-(female)_Cardio.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Running.mp4"
+    },
+    {
+        "name": "Russian Twist (Bodyweight)",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06871201-Russian-Twist_waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Russian_Twist_(Bodyweight).mp4"
+    },
+    {
+        "name": "Russian Twist (Weighted)",
+        "equipment": "PLATE",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/23711201-Weighted-Russian-Twist_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Russian_Twist_(Weighted).mp4"
+    },
+    {
+        "name": "Scapular Pull Ups",
+        "equipment": null,
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06881101-Scapular-Pull-Up_back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Scapular_Pull_Ups.jpg"
+    },
+    {
+        "name": "Seated Cable Row - Bar Grip",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01801201-Cable-Low-Seated-Row_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Cable_Row_-_Bar_Grip.mp4"
+    },
+    {
+        "name": "Seated Cable Row - Bar Wide Grip",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02181201-Cable-Seated-Wide-grip-Row_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Cable_Row_-_Bar_Wide_Grip.mp4"
+    },
+    {
+        "name": "Seated Cable Row - V Grip (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/26611201-Cable-Seated-Row-with-V-bar_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Cable_Row_-_V_Grip_(Cable).mp4"
+    },
+    {
+        "name": "Seated Calf Raise",
+        "equipment": "MACHINE",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05941201-Lever-Seated-Calf-Raise-(plate-loaded).mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Calf_Raise.mp4"
+    },
+    {
+        "name": "Seated Chest Flys (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/38691101-Cable-Seated-Chest-Fly_Chest_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Seated_Chest_Flys_(Cable).jpg"
+    },
+    {
+        "name": "Seated Dip Machine",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14511201-Lever-Seated-Dip_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Dip_Machine.mp4"
+    },
+    {
+        "name": "Seated Incline Curl (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03151201-Dumbbell-Incline-Biceps-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Incline_Curl_(Dumbbell).mp4"
+    },
+    {
+        "name": "Seated Lateral Raise (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03961201-Dumbbell-Seated-Lateral-Raise_shoulder.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Lateral_Raise_(Dumbbell).mp4"
+    },
+    {
+        "name": "Seated Leg Curl (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05991201-Lever-Seated-Leg-Curl_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Leg_Curl_(Machine).mp4"
+    },
+    {
+        "name": "Seated Overhead Press (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00911101-Barbell-Seated-Overhead-Press_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Seated_Overhead_Press_(Barbell).jpg"
+    },
+    {
+        "name": "Seated Overhead Press (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02901201-Dumbbell-Bench-Seated-Press_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Overhead_Press_(Dumbbell).mp4"
+    },
+    {
+        "name": "Seated Palms Up Wrist Curl",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "FOREARMS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/0401-seated-palms-up-wrist-curl.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Seated_Palms_Up_Wrist_Curl.jpg"
+    },
+    {
+        "name": "Seated Row (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/22651201-Lever-Seated-Row-(version-2)_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Row_(Machine).mp4"
+    },
+    {
+        "name": "Seated Shoulder Press (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": [
+            "TRICEPS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14541201-Lever-Seated-Shoulder-Press_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Shoulder_Press_(Machine).mp4"
+    },
+    {
+        "name": "Seated Triceps Press",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Seated Wrist Extension (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "FOREARMS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00791201-Barbell-Revers-Wrist-Curl-II_Forearms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Seated_Wrist_Extension_(Barbell).mp4"
+    },
+    {
+        "name": "Shoulder Press (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04051201-Dumbbell-Seated-Shoulder-Press_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Shoulder_Press_(Dumbbell).mp4"
+    },
+    {
+        "name": "Shoulder Press (Machine Plates)",
+        "equipment": "MACHINE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05871201-Lever-Military-Press-(plate-loaded)_shoulder.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Shoulder_Press_(Machine_Plates).mp4"
+    },
+    {
+        "name": "Shoulder Taps",
+        "equipment": null,
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": [
+            "ABDOMINALS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06991201-Shoulder-Tap-Push-up_Plyometrics.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Shoulder_Taps.mp4"
+    },
+    {
+        "name": "Shrug (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "TRAPS",
+        "secondary_muscle": [
+            "NECK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00951201-Barbell-Shrug_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Shrug_(Barbell).mp4"
+    },
+    {
+        "name": "Shrug (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRAPS",
+        "secondary_muscle": [
+            "NECK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02201201-Cable-Shrug_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Shrug_(Cable).mp4"
+    },
+    {
+        "name": "Shrug (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "TRAPS",
+        "secondary_muscle": [
+            "NECK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04061201-Dumbbell-Shrug_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Shrug_(Dumbbell).mp4"
+    },
+    {
+        "name": "Shrug (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRAPS",
+        "secondary_muscle": [
+            "NECK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06041201-Lever-Shrug-(plate-loaded)_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Shrug_(Machine).mp4"
+    },
+    {
+        "name": "Shrug (Smith Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRAPS",
+        "secondary_muscle": [
+            "NECK"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07461201-Smith-Back-Shrug_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Shrug_(Smith_Machine).mp4"
+    },
+    {
+        "name": "Side Bend",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00021201-45-Side-Bend_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Side_Bend.mp4"
+    },
+    {
+        "name": "Side Bend (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04071201-Dumbbell-Side-Bend_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Side_Bend_(Dumbbell).mp4"
+    },
+    {
+        "name": "Side Plank",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07151201-Side-Plank-m_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Side_Plank.mp4"
+    },
+    {
+        "name": "Single Arm Cable Crossover",
+        "equipment": "MACHINE",
+        "primary_muscle": "CHEST",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Single Arm Cable Row",
+        "equipment": "MACHINE",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Single Arm Curl (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01901101-Cable-One-Arm-Curl_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Single_Arm_Curl_(Cable).jpg"
+    },
+    {
+        "name": "Single Arm Landmine Press (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Single Arm Lat Pulldown",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/12041101-Cable-one-arm-lat-pulldown_back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Single_Arm_Lat_Pulldown.jpg"
+    },
+    {
+        "name": "Single Arm Lateral Raise (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01921201-Cable-One-Arm-Lateral-Raise_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Single_Arm_Lateral_Raise_(Cable).mp4"
+    },
+    {
+        "name": "Single Arm Tricep Extension (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03621201-Dumbbell-One-Arm-Triceps-Extension-(on-bench)_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Single_Arm_Tricep_Extension_(Dumbbell).mp4"
+    },
+    {
+        "name": "Single Arm Triceps Pushdown (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/50331201-Cable-Single-Arm-Triceps-Pushdown-(rope-attachment.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Single_Arm_Triceps_Pushdown_(Cable).mp4"
+    },
+    {
+        "name": "Single Leg Extensions",
+        "equipment": "MACHINE",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Single Leg Glute Bridge",
+        "equipment": null,
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Single Leg Hip Thrust",
+        "equipment": null,
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/20711101-Single-Leg_Hip-Thrusts_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Single_Leg_Hip_Thrust.jpg"
+    },
+    {
+        "name": "Single Leg Hip Thrust (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/47551101-Dumbbell-Single-Leg-Hip-Thrust_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Single_Leg_Hip_Thrust_(Dumbbell).jpg"
+    },
+    {
+        "name": "Single Leg Press (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08831201-Lever-Horizontal-One-leg-Press_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Single_Leg_Press_(Machine).mp4"
+    },
+    {
+        "name": "Single Leg Romanian Deadlift (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "GLUTES"
+        ],
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Single Leg Romanian Deadlift (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "GLUTES"
+        ],
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Single Leg Standing Calf Raise",
+        "equipment": null,
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/13731101-Bodyweight-Standing-Calf-Raise_Calves_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Single_Leg_Standing_Calf_Raise.jpg"
+    },
+    {
+        "name": "Single Leg Standing Calf Raise (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01081101-Barbell-Standing-Leg-Calf-Raise_Calf_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Single_Leg_Standing_Calf_Raise_(Barbell).jpg"
+    },
+    {
+        "name": "Single Leg Standing Calf Raise (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04171201-Dumbbell-Standing-Calf-Raise_Calves.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Single_Leg_Standing_Calf_Raise_(Dumbbell).mp4"
+    },
+    {
+        "name": "Single Leg Standing Calf Raise (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06051201-Lever-Standing-Calf-Raise_Calves.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Single_Leg_Standing_Calf_Raise_(Machine).mp4"
+    },
+    {
+        "name": "Sissy Squat (Weighted)",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08511201-Weighted-Sissy-Squat_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Sissy_Squat_(Weighted).mp4"
+    },
+    {
+        "name": "Sit Up",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00011201-3-4-Sit-up_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Sit_Up.mp4"
+    },
+    {
+        "name": "Sit Up (Weighted)",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Skating",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Skiing",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Skullcrusher (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00351101-Barbell-Decline-Close-Grip-To-Skull-Press_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Skullcrusher_(Barbell).jpg"
+    },
+    {
+        "name": "Skullcrusher (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03511101-Dumbbell-Lying-Triceps-Extension_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Skullcrusher_(Dumbbell).jpg"
+    },
+    {
+        "name": "Sled Push",
+        "equipment": "OTHER",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/25241201-Power-Sled-Push-(female)_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Sled_Push.mp4"
+    },
+    {
+        "name": "Snatch",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15331101-Barbell-Snatch_Weightlifts_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Snatch.jpg"
+    },
+    {
+        "name": "Snowboarding",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Spider Curl (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00721201-Barbell-Prone-Incline-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Spider_Curl_(Barbell).mp4"
+    },
+    {
+        "name": "Spider Curl (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03741201-Dumbbell-Prone-Incline-Curl_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Spider_Curl_(Dumbbell).mp4"
+    },
+    {
+        "name": "Spiderman",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Spinning",
+        "equipment": "MACHINE",
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/22791201-Stationary-Bike-Run-(version-4)_Cardio.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Spinning.mp4"
+    },
+    {
+        "name": "Split Jerk",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15381101-Barbell-Split-Jerk_Weightlifts_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Split_Jerk.jpg"
+    },
+    {
+        "name": "Split Squat (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/29601201-Dumbbell-Split-Squat_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Split_Squat_(Dumbbell).mp4"
+    },
+    {
+        "name": "Sprints",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Squat (Band)",
+        "equipment": "RESISTANCE BAND",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10041101-Band-squat_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Squat_(Band).jpg"
+    },
+    {
+        "name": "Squat (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00431201-Barbell-Full-Squat_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Squat_(Barbell).mp4"
+    },
+    {
+        "name": "Squat (Bodyweight)",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11971201-Squat-m_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Squat_(Bodyweight).mp4"
+    },
+    {
+        "name": "Squat (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15551101-Dumbbell-Squat_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Squat_(Dumbbell).jpg"
+    },
+    {
+        "name": "Squat (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10391101-Lever-Full-Squat_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Squat_(Machine).jpg"
+    },
+    {
+        "name": "Squat (Smith Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07501201-Smith-Chair-Squat_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Squat_(Smith_Machine).mp4"
+    },
+    {
+        "name": "Squat (Suspension)",
+        "equipment": "SUSPENSION",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11431101-Suspender-Squat_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Squat_(Suspension).jpg"
+    },
+    {
+        "name": "Squat Row",
+        "equipment": "MACHINE",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/25501101-Cable-Squat-Row-(with-rope-attachment)-(female)_Back_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Squat_Row.jpg"
+    },
+    {
+        "name": "Stair Machine",
+        "equipment": "MACHINE",
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/23111201-Walking-on-Stepmill_Cardio.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Stair_Machine.mp4"
+    },
+    {
+        "name": "Standing Cable Glute Kickbacks",
+        "equipment": "MACHINE",
+        "primary_muscle": "GLUTES",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Standing Calf Raise",
+        "equipment": null,
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/13731101-Bodyweight-Standing-Calf-Raise_Calves_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Standing_Calf_Raise.jpg"
+    },
+    {
+        "name": "Standing Calf Raise (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01081101-Barbell-Standing-Leg-Calf-Raise_Calf_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Standing_Calf_Raise_(Barbell).jpg"
+    },
+    {
+        "name": "Standing Calf Raise (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04171201-Dumbbell-Standing-Calf-Raise_Calves.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Standing_Calf_Raise_(Dumbbell).mp4"
+    },
+    {
+        "name": "Standing Calf Raise (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06051201-Lever-Standing-Calf-Raise_Calves.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Standing_Calf_Raise_(Machine).mp4"
+    },
+    {
+        "name": "Standing Calf Raise (Smith)",
+        "equipment": "MACHINE",
+        "primary_muscle": "CALVES",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11641201-Smith-Calf-Raise-(version-2)_Calves.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Standing_Calf_Raise_(Smith).mp4"
+    },
+    {
+        "name": "Standing Leg Curls",
+        "equipment": "MACHINE",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Standing Military Press (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11651201-Barbell-Standing-Military-Press-(without-rack)_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Standing_Military_Press_(Barbell).mp4"
+    },
+    {
+        "name": "Step Up",
+        "equipment": "OTHER",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08011101-Step-up_Hips_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Step_Up.jpg"
+    },
+    {
+        "name": "Sternum Pull up (Gironda)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04661101-Gironda-Sternum-Chin_Back_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Sternum_Pull_up_(Gironda).jpg"
+    },
+    {
+        "name": "Straight Arm Lat Pulldown (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02381201-Cable-Straight-Arm-Pulldown_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Straight_Arm_Lat_Pulldown_(Cable).mp4"
+    },
+    {
+        "name": "Straight Leg Deadlift",
+        "equipment": "BARBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01161201-Barbell-Straight-Leg-Deadlift_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Straight_Leg_Deadlift.mp4"
+    },
+    {
+        "name": "Stretching",
+        "equipment": null,
+        "primary_muscle": "OTHER",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Sumo Deadlift",
+        "equipment": "BARBELL",
+        "primary_muscle": "HAMSTRINGS",
+        "secondary_muscle": [
+            "QUADRICEPS",
+            "LOWER BACK",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01171201-Barbell-Sumo-Deadlift_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Sumo_Deadlift.mp4"
+    },
+    {
+        "name": "Sumo Squat",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10641201-Sumo-Squat-(male)_Thighs-FIX_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Sumo_Squat.mp4"
+    },
+    {
+        "name": "Sumo Squat (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10631201-Barbell-sumo-squat_Thighs.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Sumo_Squat_(Barbell).mp4"
+    },
+    {
+        "name": "Sumo Squat (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/23221201-Dumbbell-Sumo-Squat-(female)_Thighs_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Sumo_Squat_(Dumbbell).mp4"
+    },
+    {
+        "name": "Sumo Squat (Kettlebell)",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/40891201-Kettlebell-Sumo-Squat-(male)_Hips_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Sumo_Squat_(Kettlebell).mp4"
+    },
+    {
+        "name": "Superman",
+        "equipment": null,
+        "primary_muscle": "LOWER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08041101-Superman_Waist_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Superman.jpg"
+    },
+    {
+        "name": "Swimming",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "T Bar Row",
+        "equipment": "BARBELL",
+        "primary_muscle": "UPPER BACK",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/06061201-Lever-T-bar-Row-(plate-loaded)_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\T_Bar_Row.mp4"
+    },
+    {
+        "name": "Thruster (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Thruster (Kettlebell)",
+        "equipment": "KETTLEBELL",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/05501101-Kettlebell-Thruster_Shoulders_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Thruster_(Kettlebell).jpg"
+    },
+    {
+        "name": "Toe Touch",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Toes to Bar",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04741201-Hanging-Straight-Leg-Hip-Raise_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Toes_to_Bar.mp4"
+    },
+    {
+        "name": "Torso Rotation",
+        "equipment": "MACHINE",
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Treadmill",
+        "equipment": "MACHINE",
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/21971201-Run-on-Treadmill-(female)_Cardio.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Treadmill.mp4"
+    },
+    {
+        "name": "Triceps Dip",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08141201-Triceps-Dip_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Triceps_Dip.mp4"
+    },
+    {
+        "name": "Triceps Dip (Assisted)",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00191201-Assisted-Triceps-Dip-(kneeling)_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Triceps_Dip_(Assisted).mp4"
+    },
+    {
+        "name": "Triceps Dip (Weighted)",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/17551101-Weighted-Tricep-Dips_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Triceps_Dip_(Weighted).jpg"
+    },
+    {
+        "name": "Triceps Extension (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/00921201-Barbell-Seated-Overhead-Triceps-Extension_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Triceps_Extension_(Barbell).mp4"
+    },
+    {
+        "name": "Triceps Extension (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01491101-Cable-Alternate-Triceps-Extension_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Triceps_Extension_(Cable).jpg"
+    },
+    {
+        "name": "Triceps Extension (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04301201-Dumbbell-Standing-Triceps-Extension_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Triceps_Extension_(Dumbbell).mp4"
+    },
+    {
+        "name": "Triceps Extension (Machine)",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/10331201-Lever-Triceps-Extension_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Triceps_Extension_(Machine).mp4"
+    },
+    {
+        "name": "Triceps Extension (Suspension)",
+        "equipment": "SUSPENSION",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/11041101-Suspender-Triceps-Extension_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Triceps_Extension_(Suspension).jpg"
+    },
+    {
+        "name": "Triceps Kickback (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/45661101-Cable-Neutral-Grip-Kickback_Upper-arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Triceps_Kickback_(Cable).jpg"
+    },
+    {
+        "name": "Triceps Kickback (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/03331201-Dumbbell-Kickback_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Triceps_Kickback_(Dumbbell).mp4"
+    },
+    {
+        "name": "Triceps Pressdown",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Triceps Pushdown",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02011201-Cable-Pushdown_Upper-Arms.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Triceps_Pushdown.mp4"
+    },
+    {
+        "name": "Triceps Rope Pushdown",
+        "equipment": "MACHINE",
+        "primary_muscle": "TRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02001101-Cable-Pushdown-(with-rope-attachment)_Upper-Arms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Triceps_Rope_Pushdown.jpg"
+    },
+    {
+        "name": "Upright Row (Barbell)",
+        "equipment": "BARBELL",
+        "primary_muscle": "TRAPS",
+        "secondary_muscle": [
+            "UPPER BACK",
+            "SHOULDERS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/01211201-Barbell-Upright-Row_Shoulders.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Upright_Row_(Barbell).mp4"
+    },
+    {
+        "name": "Upright Row (Cable)",
+        "equipment": "MACHINE",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/02461201-Cable-Upright-Row_shoulder.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Upright_Row_(Cable).mp4"
+    },
+    {
+        "name": "Upright Row (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "SHOULDERS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04371201-Dumbbell-Upright-Row_shoulder.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Upright_Row_(Dumbbell).mp4"
+    },
+    {
+        "name": "V Up",
+        "equipment": null,
+        "primary_muscle": "ABDOMINALS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08251201-V-up_Waist.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\V_Up.mp4"
+    },
+    {
+        "name": "Walking",
+        "equipment": null,
+        "primary_muscle": "CARDIO",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Walking Lunge",
+        "equipment": null,
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "GLUTES",
+            "HAMSTRINGS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14601201-Walking-Lunge-Male_Hips.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Walking_Lunge.mp4"
+    },
+    {
+        "name": "Walking Lunge (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "GLUTES",
+            "HAMSTRINGS"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15571201-Dumbbell-Walking-Lunges_Thighs_.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Walking_Lunge_(Dumbbell).mp4"
+    },
+    {
+        "name": "Wall Ball",
+        "equipment": "OTHER",
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/24581101-Wall-Ball_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Wall_Ball.jpg"
+    },
+    {
+        "name": "Wall Sit",
+        "equipment": "OTHER",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/07341101-Sit-(wall)_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Wall_Sit.jpg"
+    },
+    {
+        "name": "Warm Up",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Wide Pull Up",
+        "equipment": "MACHINE",
+        "primary_muscle": "LATS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/14291201-Wide-Grip-Pull-Up_Back.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Wide_Pull_Up.mp4"
+    },
+    {
+        "name": "Wrist Roller",
+        "equipment": "MACHINE",
+        "primary_muscle": "FOREARMS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/08591101-Wrist-Roller_Forearms_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Wrist_Roller.jpg"
+    },
+    {
+        "name": "Yoga",
+        "equipment": null,
+        "primary_muscle": "FULL BODY",
+        "secondary_muscle": null,
+        "source": null,
+        "sourceType": null,
+        "Local_File_Path": null
+    },
+    {
+        "name": "Zercher Squat",
+        "equipment": "BARBELL",
+        "primary_muscle": "QUADRICEPS",
+        "secondary_muscle": [
+            "HAMSTRINGS",
+            "GLUTES"
+        ],
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/15451101-Barbell-full-Zercher-Squat_Thighs_small.jpg",
+        "sourceType": "image",
+        "Local_File_Path": "downloaded_media\\Zercher_Squat.jpg"
+    },
+    {
+        "name": "Zottman Curl (Dumbbell)",
+        "equipment": "DUMBBELL",
+        "primary_muscle": "BICEPS",
+        "secondary_muscle": null,
+        "source": "https://pump-app.s3.eu-west-2.amazonaws.com/exercise-assets/04391201-Dumbbell-Zottman-Curl_Upper-Arms-FIX.mp4",
+        "sourceType": "video",
+        "Local_File_Path": "downloaded_media\\Zottman_Curl_(Dumbbell).mp4"
+    }
+]
