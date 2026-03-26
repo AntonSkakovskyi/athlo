@@ -1,7 +1,20 @@
 import Constants from 'expo-constants';
 
-const localhost = Constants.expoConfig?.hostUri?.split(':').shift();
+const PRODUCTION_API_URL = 'https://athlo-api.onrender.com';
 
-export const API_URL = __DEV__
-  ? `http://${localhost}:3000`
-  : 'https://your-app-api.railway.app';
+const getBaseUrl = () => {
+    if (!__DEV__) {
+        return PRODUCTION_API_URL;
+    }
+
+    const debuggerHost = Constants.expoConfig?.hostUri;
+    const localhost = debuggerHost?.split(':')[0];
+
+    if (!localhost) {
+        return 'http://localhost:4000';
+    }
+
+    return `http://${localhost}:4000`;
+};
+
+export const API_URL = getBaseUrl();
