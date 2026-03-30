@@ -48,13 +48,13 @@
 - [x] Nutrition logging: додавання прийомів їжі, контроль води.
 - [x] Daily summary: розрахунок калорій, білків, жирів, вуглеводів.
 
-### [ ] Phase 7: Соціальні фічі (Залежить від Phase 1)
-- [ ] Управління друзями (add, accept, remove).
-- [ ] Застосування Visibility filtering на workouts/templates/plans для друзів.
+### [x] Phase 7: Соціальні фічі (Залежить від Phase 1)
+- [x] Управління друзями (add, accept, remove).
+- [x] Застосування Visibility filtering на workouts/templates/plans для друзів.
 
 ### [ ] Phase 8: Організаційні задачі та DevOps
 - [ ] **CI/CD**: GitHub Actions (lint + typecheck + test on PR). Auto-deploy API на Render. EAS Build preview на PR.
-- [ ] **Swagger**: Автогенерована API документація на `/api/docs`.
+- [x] **Swagger**: Автогенерована API документація на `/api/docs`.
 - [ ] **Тестування**: Unit tests (services), E2E (supertest), Mobile (jest-expo + testing-library).
 - [ ] **Документація**: ER-діаграма, архітектурна діаграма, README.
 - [ ] **Дипломна робота**: Аналіз аналогів, UML діаграми (use-case, sequence, activity), скріншоти, висновки.
