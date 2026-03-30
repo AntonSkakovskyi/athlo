@@ -3,6 +3,6 @@ export interface ILogExercise {
   workoutId: number;
   exerciseId: number;
   order: number;
-  notes: string;
-  restTime: number;
+  notes?: string | null;
+  restTime?: number;
 }

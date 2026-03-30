@@ -6,8 +6,12 @@ export interface IWorkout {
   visibilityTypeId: number;
   name: string;
   status: WorkoutStatus;
-  started_at: string;
-  ended_at: string;
-  description: string;
-  feelingScore: number;
+  started_at: Date | string;
+  ended_at?: Date | string | null;
+  description?: string | null;
+  calories?: number | null;
+  avgHeartRate?: number | null;
+  maxHeartRate?: number | null;
+  rpe?: number | null;
+  feelingScore?: number | null;
 }

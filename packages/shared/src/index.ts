@@ -5,7 +5,10 @@ export type {
 	IEquipment,
 	ILogExercise,
 	ILogSet,
-  IUser
+	IUser,
+	ITrackingType,
+	IVisibilityType,
+	IExerciseMuscle,
 } from './interfaces';
 
 export { TrackingType, WorkoutStatus, VisibilityType } from './enums';
