@@ -5,6 +5,7 @@ import { getTypeOrmConfig } from './config/typeorm.config';
 import { WorkoutsServiceModule } from './workouts-service/workouts-service.module';
 import { UserServiceModule } from './user-service/user-service.module';
 import { ExerciseCatalogModule } from './exercise-catalog/exercise-catalog.module';
+import { NutritionServiceModule } from './nutrition-service/nutrition-service.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ExerciseCatalogModule } from './exercise-catalog/exercise-catalog.modul
     WorkoutsServiceModule,
     UserServiceModule,
     ExerciseCatalogModule,
+    NutritionServiceModule,
   ],
   controllers: [],
   providers: [],
