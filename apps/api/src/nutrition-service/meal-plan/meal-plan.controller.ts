@@ -7,7 +7,10 @@ import { UpdateMealPlanDto } from '../dto/meal-plan/update-meal-plan.dto';
 import { CreatePlanDayDto } from '../dto/meal-plan/create-plan-day.dto';
 import { CreatePlanMealDto } from '../dto/meal-plan/create-plan-meal.dto';
 import { CreatePlanMealItemDto } from '../dto/meal-plan/create-plan-meal-item.dto';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Meal Plans')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('meal-plans')
 export class MealPlanController {
@@ -16,26 +19,37 @@ export class MealPlanController {
   // ─── Meal Plans ───────────────────────────────────
 
   @Post()
+  @ApiOperation({ summary: 'Create a meal plan' })
+  @ApiResponse({ status: 201, description: 'Meal plan created' })
   create(@CurrentUser('id') userId: number, @Body() dto: CreateMealPlanDto) {
     return this.mealPlanService.create(userId, dto);
   }
 
   @Get()
+  @ApiOperation({ summary: 'Get my meal plans' })
+  @ApiResponse({ status: 200, description: 'List of meal plans' })
   findMyPlans(@CurrentUser('id') userId: number) {
     return this.mealPlanService.findMyPlans(userId);
   }
 
   @Get('active')
+  @ApiOperation({ summary: 'Get currently active meal plan' })
+  @ApiResponse({ status: 200, description: 'Active meal plan' })
   getActivePlan(@CurrentUser('id') userId: number) {
     return this.mealPlanService.getActivePlan(userId);
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Get a meal plan by ID with days, meals, and items' })
+  @ApiResponse({ status: 200, description: 'Meal plan data' })
+  @ApiResponse({ status: 404, description: 'Meal plan not found' })
   findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
     return this.mealPlanService.findOne(id, userId);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a meal plan' })
+  @ApiResponse({ status: 200, description: 'Meal plan updated' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser('id') userId: number,
@@ -45,6 +59,8 @@ export class MealPlanController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a meal plan' })
+  @ApiResponse({ status: 200, description: 'Meal plan deleted' })
   remove(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
     return this.mealPlanService.remove(id, userId);
   }
@@ -52,6 +68,8 @@ export class MealPlanController {
   // ─── Plan Days ────────────────────────────────────
 
   @Post(':id/days')
+  @ApiOperation({ summary: 'Add a day to a meal plan' })
+  @ApiResponse({ status: 201, description: 'Day added' })
   addDay(
     @Param('id', ParseIntPipe) planId: number,
     @CurrentUser('id') userId: number,
@@ -61,6 +79,8 @@ export class MealPlanController {
   }
 
   @Delete(':id/days/:dayId')
+  @ApiOperation({ summary: 'Remove a day from a meal plan' })
+  @ApiResponse({ status: 200, description: 'Day removed' })
   removeDay(
     @Param('id', ParseIntPipe) planId: number,
     @Param('dayId', ParseIntPipe) dayId: number,
@@ -72,6 +92,8 @@ export class MealPlanController {
   // ─── Plan Meals ───────────────────────────────────
 
   @Post(':id/days/:dayId/meals')
+  @ApiOperation({ summary: 'Add a meal to a plan day' })
+  @ApiResponse({ status: 201, description: 'Meal added' })
   addMeal(
     @Param('id', ParseIntPipe) planId: number,
     @Param('dayId', ParseIntPipe) dayId: number,
@@ -82,6 +104,8 @@ export class MealPlanController {
   }
 
   @Delete(':id/meals/:mealId')
+  @ApiOperation({ summary: 'Remove a meal from a plan' })
+  @ApiResponse({ status: 200, description: 'Meal removed' })
   removeMeal(
     @Param('id', ParseIntPipe) planId: number,
     @Param('mealId', ParseIntPipe) mealId: number,
@@ -93,6 +117,8 @@ export class MealPlanController {
   // ─── Plan Meal Items ──────────────────────────────
 
   @Post(':id/meals/:mealId/items')
+  @ApiOperation({ summary: 'Add a food item to a meal' })
+  @ApiResponse({ status: 201, description: 'Meal item added' })
   addMealItem(
     @Param('id', ParseIntPipe) planId: number,
     @Param('mealId', ParseIntPipe) mealId: number,
@@ -103,6 +129,8 @@ export class MealPlanController {
   }
 
   @Delete(':id/items/:itemId')
+  @ApiOperation({ summary: 'Remove a food item from a meal' })
+  @ApiResponse({ status: 200, description: 'Meal item removed' })
   removeMealItem(
     @Param('id', ParseIntPipe) planId: number,
     @Param('itemId', ParseIntPipe) itemId: number,
@@ -114,11 +142,15 @@ export class MealPlanController {
   // ─── Activation ───────────────────────────────────
 
   @Post(':id/activate')
+  @ApiOperation({ summary: 'Activate a meal plan' })
+  @ApiResponse({ status: 201, description: 'Meal plan activated' })
   activatePlan(@Param('id', ParseIntPipe) planId: number, @CurrentUser('id') userId: number) {
     return this.mealPlanService.activatePlan(userId, planId);
   }
 
   @Post('deactivate')
+  @ApiOperation({ summary: 'Deactivate current meal plan' })
+  @ApiResponse({ status: 201, description: 'Meal plan deactivated' })
   deactivatePlan(@CurrentUser('id') userId: number) {
     return this.mealPlanService.deactivatePlan(userId);
   }

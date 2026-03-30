@@ -4,13 +4,18 @@ import { JwtAuthGuard } from 'src/user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from 'src/user-service/auth/decorators/current-user.decorator';
 import { CreateLogSetDto } from '../dto/log-set/create-log-set.dto';
 import { UpdateLogSetDto } from '../dto/log-set/update-log-set.dto';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Workout Sets')
+@ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('workouts/:workoutId/exercises/:logExerciseId/sets')
 export class LogSetController {
   constructor(private readonly logSetService: LogSetService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Add a set to a workout exercise' })
+  @ApiResponse({ status: 201, description: 'Set added' })
   create(
     @Param('workoutId', ParseIntPipe) workoutId: number,
     @Param('logExerciseId', ParseIntPipe) logExerciseId: number,
@@ -21,6 +26,8 @@ export class LogSetController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a workout set' })
+  @ApiResponse({ status: 200, description: 'Set updated' })
   update(
     @Param('workoutId', ParseIntPipe) workoutId: number,
     @Param('logExerciseId', ParseIntPipe) logExerciseId: number,
@@ -32,6 +39,8 @@ export class LogSetController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Remove a set from a workout exercise' })
+  @ApiResponse({ status: 200, description: 'Set removed' })
   remove(
     @Param('workoutId', ParseIntPipe) workoutId: number,
     @Param('logExerciseId', ParseIntPipe) logExerciseId: number,
