@@ -26,6 +26,7 @@ export type {
 	ILogMeal,
 	ILogMealItem,
 	IWaterLog,
+	IFriendship,
 } from './interfaces';
 
 export { TrackingType, WorkoutStatus, VisibilityType } from './enums';

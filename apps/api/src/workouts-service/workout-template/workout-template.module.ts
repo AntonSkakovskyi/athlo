@@ -13,6 +13,7 @@ import { TemplateSetService } from './template-set.service';
 import { WorkoutTemplateController } from './workout-template.controller';
 import { TemplateExerciseController } from './template-exercise.controller';
 import { TemplateSetController } from './template-set.controller';
+import { UserServiceModule } from 'src/user-service/user-service.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { TemplateSetController } from './template-set.controller';
       LogExerciseEntity,
       LogSetEntity,
     ]),
+    UserServiceModule,
   ],
   controllers: [WorkoutTemplateController, TemplateExerciseController, TemplateSetController],
   providers: [WorkoutTemplateService, TemplateExerciseService, TemplateSetService],

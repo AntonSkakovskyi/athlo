@@ -11,6 +11,7 @@ import { UpdateMealPlanDto } from '../dto/meal-plan/update-meal-plan.dto';
 import { CreatePlanDayDto } from '../dto/meal-plan/create-plan-day.dto';
 import { CreatePlanMealDto } from '../dto/meal-plan/create-plan-meal.dto';
 import { CreatePlanMealItemDto } from '../dto/meal-plan/create-plan-meal-item.dto';
+import { FriendService } from 'src/user-service/friends/friend.service';
 
 @Injectable()
 export class MealPlanService {
@@ -25,6 +26,7 @@ export class MealPlanService {
     private readonly planMealItemRepository: Repository<PlanMealItemEntity>,
     @InjectRepository(UserMealPlanEntity)
     private readonly userMealPlanRepository: Repository<UserMealPlanEntity>,
+    private readonly friendService: FriendService,
   ) {}
 
   // ─── Meal Plans ───────────────────────────────────
@@ -73,8 +75,17 @@ export class MealPlanService {
       throw new NotFoundException(`Meal plan with ID ${id} not found`);
     }
 
-    if (plan.creatorId !== userId && plan.visibilityTypeId !== 1) {
-      throw new ForbiddenException('You do not have access to this meal plan');
+    if (plan.creatorId !== userId) {
+      // visibilityTypeId: 1 = PRIVATE, 2 = PUBLIC, 3 = FRIENDS_ONLY
+      if (plan.visibilityTypeId === 1) {
+        throw new ForbiddenException('You do not have access to this meal plan');
+      }
+      if (plan.visibilityTypeId === 3) {
+        const isFriend = await this.friendService.isFriend(userId, plan.creatorId);
+        if (!isFriend) {
+          throw new ForbiddenException('You do not have access to this meal plan');
+        }
+      }
     }
 
     return plan;

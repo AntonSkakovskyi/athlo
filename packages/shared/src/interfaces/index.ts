@@ -27,4 +27,5 @@ export type { IUserMealPlan } from './user-meal-plan.interface';
 export type { ILogMeal } from './log-meal.interface';
 export type { ILogMealItem } from './log-meal-item.interface';
 export type { IWaterLog } from './water-log.interface';
+export type { IFriendship } from './friendship.interface';
 

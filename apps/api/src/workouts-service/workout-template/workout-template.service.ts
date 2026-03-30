@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { WorkoutTemplateEntity } from '../entities/workout-template.entity';
 import { UserWorkoutTemplateEntity } from '../entities/saved-template.entity';
 import { WorkoutEntity } from '../entities/workout.entity';
@@ -9,6 +9,7 @@ import { LogSetEntity } from '../entities/log-set.entity';
 import { CreateWorkoutTemplateDto } from '../dto/workout-template/create-workout-template.dto';
 import { UpdateWorkoutTemplateDto } from '../dto/workout-template/update-workout-template.dto';
 import { VisibilityType, WorkoutStatus } from '@athlo/shared';
+import { FriendService } from 'src/user-service/friends/friend.service';
 
 @Injectable()
 export class WorkoutTemplateService {
@@ -23,6 +24,7 @@ export class WorkoutTemplateService {
     private readonly logExerciseRepository: Repository<LogExerciseEntity>,
     @InjectRepository(LogSetEntity)
     private readonly logSetRepository: Repository<LogSetEntity>,
+    private readonly friendService: FriendService,
   ) {}
 
   async create(creatorId: number, dto: CreateWorkoutTemplateDto) {
@@ -47,24 +49,35 @@ export class WorkoutTemplateService {
 
   async findPublicTemplates(userId: number) {
     const publicVisibilityId = this.getVisibilityId(VisibilityType.PUBLIC);
+    const friendsOnlyVisibilityId = this.getVisibilityId(VisibilityType.FRIENDS_ONLY);
+    const friendIds = await this.friendService.getFriendIds(userId);
 
-    return this.templateRepository
+    const qb = this.templateRepository
       .createQueryBuilder('template')
       .leftJoinAndSelect('template.templateExercises', 'te')
       .leftJoinAndSelect('te.exercise', 'exercise')
       .leftJoinAndSelect('te.templateSets', 'ts')
       .leftJoinAndSelect('template.creator', 'creator')
-      .where('template.visibility_type_id = :visId', { visId: publicVisibilityId })
-      .andWhere('template.creator_id != :userId', { userId })
+      .where('template.creator_id != :userId', { userId })
+      .andWhere(
+        '(template.visibility_type_id = :publicId' +
+          (friendIds.length > 0
+            ? ' OR (template.visibility_type_id = :friendsId AND template.creator_id IN (:...friendIds)))'
+            : ')'),
+        {
+          publicId: publicVisibilityId,
+          ...(friendIds.length > 0 ? { friendsId: friendsOnlyVisibilityId, friendIds } : {}),
+        },
+      )
       .addOrderBy('te.order', 'ASC')
-      .addOrderBy('ts.order', 'ASC')
-      .getMany()
-      .then((templates) =>
-        templates.map((t) => {
-          const { creator, ...rest } = t;
-          return { ...rest, creatorNickname: creator?.nickname };
-        }),
-      );
+      .addOrderBy('ts.order', 'ASC');
+
+    return qb.getMany().then((templates) =>
+      templates.map((t) => {
+        const { creator, ...rest } = t;
+        return { ...rest, creatorNickname: creator?.nickname };
+      }),
+    );
   }
 
   async findOne(id: number, userId: number) {
@@ -81,7 +94,14 @@ export class WorkoutTemplateService {
     const isOwner = template.creatorId === userId;
     if (!isOwner) {
       const publicVisibilityId = this.getVisibilityId(VisibilityType.PUBLIC);
-      if (template.visibilityTypeId !== publicVisibilityId) {
+      const friendsOnlyVisibilityId = this.getVisibilityId(VisibilityType.FRIENDS_ONLY);
+
+      if (template.visibilityTypeId === friendsOnlyVisibilityId) {
+        const isFriend = await this.friendService.isFriend(userId, template.creatorId);
+        if (!isFriend) {
+          throw new ForbiddenException('You do not have access to this template');
+        }
+      } else if (template.visibilityTypeId !== publicVisibilityId) {
         throw new ForbiddenException('You do not have access to this template');
       }
     }
