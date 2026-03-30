@@ -6,7 +6,7 @@ export async function getTypeOrmConfig(configService: ConfigService): Promise<Ty
         type:'postgres',
         url: configService.getOrThrow<string>('DATABASE_URL'),
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: false,
         ssl: {
             rejectUnauthorized: false,
         },
