@@ -18,8 +18,8 @@ apiClient.interceptors.response.use(
   }
 )
 
-apiClient.interceptors.request.use(request => {
-  const token = AuthService.getToken();
+apiClient.interceptors.request.use(async request => {
+  const token = await AuthService.getToken();
   if (token) {
     request.headers.Authorization = `Bearer ${token}`;
   }
