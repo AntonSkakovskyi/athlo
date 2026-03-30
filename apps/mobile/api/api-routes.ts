@@ -37,4 +37,42 @@ export const apiRoutes = {
     set: (templateId: string, exerciseId: string, id: string) =>
       `templates/${templateId}/exercises/${exerciseId}/sets/${id}`,
   },
+  profile: {
+    get: 'profile',
+    update: 'profile',
+  },
+  bodyMetrics: {
+    getAll: 'body-metrics',
+    getById: (id: string) => `body-metrics/${id}`,
+    metricTypes: 'body-metrics/metric-types',
+  },
+  foods: {
+    getAll: 'foods',
+    getById: (id: string) => `foods/${id}`,
+  },
+  mealTypes: {
+    getAll: 'meal-types',
+  },
+  mealPlans: {
+    getAll: 'meal-plans',
+    getById: (id: string) => `meal-plans/${id}`,
+    active: 'meal-plans/active',
+    activate: (id: string) => `meal-plans/${id}/activate`,
+    deactivate: 'meal-plans/deactivate',
+    days: (planId: string) => `meal-plans/${planId}/days`,
+    day: (planId: string, dayId: string) => `meal-plans/${planId}/days/${dayId}`,
+    meals: (planId: string, dayId: string) => `meal-plans/${planId}/days/${dayId}/meals`,
+    meal: (planId: string, mealId: string) => `meal-plans/${planId}/meals/${mealId}`,
+    mealItems: (planId: string, mealId: string) => `meal-plans/${planId}/meals/${mealId}/items`,
+    mealItem: (planId: string, itemId: string) => `meal-plans/${planId}/items/${itemId}`,
+  },
+  nutritionLog: {
+    summary: 'nutrition-log/summary',
+    meals: 'nutrition-log/meals',
+    mealById: (id: string) => `nutrition-log/meals/${id}`,
+    mealItems: (mealId: string) => `nutrition-log/meals/${mealId}/items`,
+    mealItem: (itemId: string) => `nutrition-log/meal-items/${itemId}`,
+    water: 'nutrition-log/water',
+    waterById: (id: string) => `nutrition-log/water/${id}`,
+  },
 };
