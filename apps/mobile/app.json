@@ -2,6 +2,7 @@
   "expo": {
     "name": "mobile",
     "slug": "mobile",
+    "scheme": "athlo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -31,6 +32,9 @@
       "eas": {
         "projectId": "d9e2fdef-c9a0-4617-b15c-b74e19a198a1"
       }
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }

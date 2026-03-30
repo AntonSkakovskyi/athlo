@@ -1,10 +1,14 @@
 export const apiRoutes = {
+  auth: {
+    register: 'auth/register',
+    login: 'auth/login',
+  },
   exercises: {
-    getAll: '/exercises',
-    getById: '/exercises/:id'
+    getAll: `exercises`,
+    getById: (id: string) => `exercises/${id}`,
   },
   workouts: {
-    getAll: '/workouts',
-    byId: (id: string) => `workouts/${id}`
-  }
-}
+    getAll: `workouts`,
+    getById: (id: string) => `workouts/${id}`,
+  },
+};
