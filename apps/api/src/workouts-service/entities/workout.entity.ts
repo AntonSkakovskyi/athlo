@@ -1,7 +1,8 @@
 import { WorkoutStatus } from '@athlo/shared';
 import type { IWorkout } from '@athlo/shared';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from 'src/user-service/user/entities/user.entity';
+import { LogExerciseEntity } from './log-exercise.entity';
 
 @Entity({ name: 'workouts' })
 export class WorkoutEntity implements IWorkout {
@@ -15,28 +16,43 @@ export class WorkoutEntity implements IWorkout {
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @Column({ name: 'visibility_type_id' })
+  @OneToMany(() => LogExerciseEntity, (logExercise) => logExercise.workout, { cascade: true })
+  logExercises: LogExerciseEntity[];
+
+  @Column({ name: 'visibility_type_id', default: 1 })
   visibilityTypeId: number;
 
   @Column({ name: 'name' })
   name: string;
 
   @Column({ 
-    type: 'enum',
-    enum: WorkoutStatus,
+    type: 'varchar',
+    length: 50,
     default: WorkoutStatus.IN_PROGRESS
   })
   status: WorkoutStatus;
 
-  @Column({ name: 'started_at' })
-  started_at: string;
+  @CreateDateColumn({ name: 'started_at', type: 'timestamptz' })
+  started_at: Date;
 
-  @Column({ name: 'ended_at' })
-  ended_at: string;
+  @Column({ name: 'ended_at', type: 'timestamptz', nullable: true })
+  ended_at: Date | null;
 
-  @Column({ name: 'description' })
-  description: string;
+  @Column({ name: 'description', type: 'text', nullable: true })
+  description: string | null;
 
-  @Column({ name: 'feeling_score' })
-  feelingScore: number;
+  @Column({ name: 'calories', type: 'decimal', precision: 10, scale: 2, nullable: true, default: 0 })
+  calories: number | null;
+
+  @Column({ name: 'avg_heart_rate', nullable: true })
+  avgHeartRate: number | null;
+
+  @Column({ name: 'max_heart_rate', nullable: true })
+  maxHeartRate: number | null;
+
+  @Column({ name: 'rpe', nullable: true })
+  rpe: number | null;
+
+  @Column({ name: 'feeling_score', nullable: true })
+  feelingScore: number | null;
 }
