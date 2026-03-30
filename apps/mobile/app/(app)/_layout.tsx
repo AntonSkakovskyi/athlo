@@ -1,4 +1,4 @@
-import { Redirect, Stack } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
@@ -18,7 +18,11 @@ export default function AppLayout() {
   }
 
   return (
-    <Stack />
+    <Tabs screenOptions={{ headerShown: true }}>
+      <Tabs.Screen name="home" options={{ title: 'Home' }} />
+      <Tabs.Screen name="templates" options={{ title: 'Templates' }} />
+      <Tabs.Screen name="template/[id]" options={{ href: null }} />
+    </Tabs>
   );
 }
 
