@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { getTypeOrmConfig } from './config/typeorm.config';
 import { WorkoutsServiceModule } from './workouts-service/workouts-service.module';
 import { UserServiceModule } from './user-service/user-service.module';
+import { ExerciseCatalogModule } from './exercise-catalog/exercise-catalog.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UserServiceModule } from './user-service/user-service.module';
     }),
     WorkoutsServiceModule,
     UserServiceModule,
+    ExerciseCatalogModule,
   ],
   controllers: [],
   providers: [],
