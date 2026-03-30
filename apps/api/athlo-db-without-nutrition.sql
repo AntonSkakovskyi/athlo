@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS "workouts" (
     "user_id" INTEGER NOT NULL,
     "visibility_type_id" INTEGER NOT NULL DEFAULT 1,
     "name" VARCHAR(255) NOT NULL,
-    "status" VARCHAR(50) NOT NULL DEFAULT 'planned', -- 'planned', 'in_progress', 'completed'
+    "status" VARCHAR(50) NOT NULL DEFAULT 'IN_PROGRESS',
     "started_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
     "ended_at" TIMESTAMPTZ,
     "description" TEXT,
