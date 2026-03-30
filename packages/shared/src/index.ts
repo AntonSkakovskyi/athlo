@@ -13,6 +13,19 @@ export type {
 	ITemplateExercise,
 	ITemplateSet,
 	IUserWorkoutTemplate,
+	IUnit,
+	IMetricType,
+	IBodyMetric,
+	IFood,
+	IMealType,
+	IMealPlan,
+	IPlanDay,
+	IPlanMeal,
+	IPlanMealItem,
+	IUserMealPlan,
+	ILogMeal,
+	ILogMealItem,
+	IWaterLog,
 } from './interfaces';
 
 export { TrackingType, WorkoutStatus, VisibilityType } from './enums';
