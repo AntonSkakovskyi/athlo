@@ -8,4 +8,8 @@ export type { IUser } from './user.interface';
 export type { ITrackingType } from './tracking-type.interface';
 export type { IVisibilityType } from './visibility-type.interface';
 export type { IExerciseMuscle } from './exercise-muscle.interface';
+export type { IWorkoutTemplate } from './workout-template.interface';
+export type { ITemplateExercise } from './template-exercise.interface';
+export type { ITemplateSet } from './template-set.interface';
+export type { IUserWorkoutTemplate } from './saved-template.interface';
 
