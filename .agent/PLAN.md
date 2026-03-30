@@ -31,11 +31,11 @@
 - [ ] Компоненти: `SetRow`, `ExerciseCard`, `Timer`, RPE/feeling selector.
 - [ ] Впровадження Optimistic updates через React Query.
 
-### [ ] Phase 4: Шаблони тренувань (Залежить від Phase 3)
-- [ ] CRUD для templates (edit доступний лише творцю).
-- [ ] Логіка "Start from template" (створення workout на основі шаблону).
-- [ ] Збереження чужих публічних шаблонів.
-- [ ] Visibility filtering (Public, Private, Friends Only).
+### [x] Phase 4: Шаблони тренувань (Залежить від Phase 3)
+- [x] CRUD для templates (edit доступний лише творцю).
+- [x] Логіка "Start from template" (створення workout на основі шаблону).
+- [x] Збереження чужих публічних шаблонів.
+- [x] Visibility filtering (Public, Private, Friends Only).
 
 ### [ ] Phase 5: Профіль та метрики тіла (Паралельно з Phase 4)
 - [ ] CRUD для Body metrics (вага, обхвати).
