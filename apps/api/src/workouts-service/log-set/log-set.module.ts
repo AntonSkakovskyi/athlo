@@ -5,9 +5,10 @@ import { LogExerciseEntity } from '../entities/log-exercise.entity';
 import { WorkoutEntity } from '../entities/workout.entity';
 import { LogSetService } from './log-set.service';
 import { LogSetController } from './log-set.controller';
+import { AchievementModule } from '../achievement/achievement.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([LogSetEntity, LogExerciseEntity, WorkoutEntity])],
+  imports: [TypeOrmModule.forFeature([LogSetEntity, LogExerciseEntity, WorkoutEntity]), AchievementModule],
   controllers: [LogSetController],
   providers: [LogSetService],
   exports: [LogSetService],

@@ -6,6 +6,7 @@ import { LogExerciseEntity } from '../entities/log-exercise.entity';
 import { WorkoutEntity } from '../entities/workout.entity';
 import { CreateLogSetDto } from '../dto/log-set/create-log-set.dto';
 import { UpdateLogSetDto } from '../dto/log-set/update-log-set.dto';
+import { AchievementService } from '../achievement/achievement.service';
 
 @Injectable()
 export class LogSetService {
@@ -16,6 +17,7 @@ export class LogSetService {
     private readonly logExerciseRepository: Repository<LogExerciseEntity>,
     @InjectRepository(WorkoutEntity)
     private readonly workoutRepository: Repository<WorkoutEntity>,
+    private readonly achievementService: AchievementService,
   ) {}
 
   private async validateOwnership(workoutId: number, logExerciseId: number, userId: number) {
@@ -45,7 +47,9 @@ export class LogSetService {
       ...dto,
     });
 
-    return this.logSetRepository.save(set);
+    const saved = await this.logSetRepository.save(set);
+    await this.achievementService.checkAndUpdateRecords(userId, logExerciseId);
+    return saved;
   }
 
   async update(id: number, workoutId: number, logExerciseId: number, userId: number, dto: UpdateLogSetDto) {
@@ -60,7 +64,9 @@ export class LogSetService {
     }
 
     Object.assign(set, dto);
-    return this.logSetRepository.save(set);
+    const saved = await this.logSetRepository.save(set);
+    await this.achievementService.checkAndUpdateRecords(userId, logExerciseId);
+    return saved;
   }
 
   async remove(id: number, workoutId: number, logExerciseId: number, userId: number) {

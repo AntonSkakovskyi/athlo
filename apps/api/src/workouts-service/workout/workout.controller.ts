@@ -1,10 +1,11 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { WorkoutService } from './workout.service';
-import { JwtAuthGuard } from 'src/user-service/auth/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/user-service/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateWorkoutDto } from '../dto/workout/create-workout.dto';
 import { UpdateWorkoutDto } from '../dto/workout/update-workout.dto';
 import { CompleteWorkoutDto } from '../dto/workout/complete-workout.dto';
+import { BatchLastPerformanceDto } from '../dto/workout/batch-last-performance.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Workouts')
@@ -58,6 +59,26 @@ export class WorkoutController {
     @Body() dto: CompleteWorkoutDto,
   ) {
     return this.workoutService.complete(id, userId, dto);
+  }
+
+  @Get('exercises/:exerciseId/last-performance')
+  @ApiOperation({ summary: 'Get last performance data for an exercise' })
+  @ApiResponse({ status: 200, description: 'Last performance data or null' })
+  getLastPerformance(
+    @CurrentUser('id') userId: number,
+    @Param('exerciseId', ParseIntPipe) exerciseId: number,
+  ) {
+    return this.workoutService.getLastPerformance(userId, exerciseId);
+  }
+
+  @Post('last-performance')
+  @ApiOperation({ summary: 'Get last performance data for multiple exercises' })
+  @ApiResponse({ status: 200, description: 'Map of exerciseId to last performance data' })
+  getBatchLastPerformance(
+    @CurrentUser('id') userId: number,
+    @Body() dto: BatchLastPerformanceDto,
+  ) {
+    return this.workoutService.getBatchLastPerformance(userId, dto.exerciseIds);
   }
 
   @Delete(':id')
