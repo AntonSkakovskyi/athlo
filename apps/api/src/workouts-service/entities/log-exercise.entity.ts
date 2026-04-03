@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
 import type { ILogExercise } from '@athlo/shared';
 import { WorkoutEntity } from './workout.entity';
-import { ExerciseEntity } from 'src/exercise-catalog/entities/exercise.entity';
+import { ExerciseEntity } from '../../exercise-catalog/entities/exercise.entity';
 import { LogSetEntity } from './log-set.entity';
 
 @Entity({ name: 'log_exercises' })

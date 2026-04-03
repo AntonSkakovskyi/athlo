@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { BodyMetricService } from './body-metric.service';
-import { JwtAuthGuard } from 'src/user-service/auth/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/user-service/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreateBodyMetricDto } from './dto/create-body-metric.dto';
 import { UpdateBodyMetricDto } from './dto/update-body-metric.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';

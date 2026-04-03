@@ -1,7 +1,7 @@
 import type { ITemplateExercise } from '@athlo/shared';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { WorkoutTemplateEntity } from './workout-template.entity';
-import { ExerciseEntity } from 'src/exercise-catalog/entities/exercise.entity';
+import { ExerciseEntity } from '../../exercise-catalog/entities/exercise.entity';
 import { TemplateSetEntity } from './template-set.entity';
 
 @Entity({ name: 'template_exercises' })

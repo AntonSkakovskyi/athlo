@@ -9,7 +9,7 @@ import { LogSetEntity } from '../entities/log-set.entity';
 import { CreateWorkoutTemplateDto } from '../dto/workout-template/create-workout-template.dto';
 import { UpdateWorkoutTemplateDto } from '../dto/workout-template/update-workout-template.dto';
 import { VisibilityType, WorkoutStatus } from '@athlo/shared';
-import { FriendService } from 'src/user-service/friends/friend.service';
+import { FriendService } from '../../user-service/friends/friend.service';
 
 @Injectable()
 export class WorkoutTemplateService {

@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { NutritionLogService } from './nutrition-log.service';
-import { JwtAuthGuard } from 'src/user-service/auth/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/user-service/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateLogMealDto } from '../dto/nutrition-log/create-log-meal.dto';
 import { CreateLogMealItemDto } from '../dto/nutrition-log/create-log-meal-item.dto';
 import { CreateWaterLogDto } from '../dto/nutrition-log/create-water-log.dto';

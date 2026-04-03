@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { WorkoutTemplateService } from './workout-template.service';
-import { JwtAuthGuard } from 'src/user-service/auth/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/user-service/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateWorkoutTemplateDto } from '../dto/workout-template/create-workout-template.dto';
 import { UpdateWorkoutTemplateDto } from '../dto/workout-template/update-workout-template.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';

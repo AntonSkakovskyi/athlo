@@ -9,6 +9,6 @@ export class MuscleEntity implements IMuscle {
   @Column()
   name: string;
 
-  @Column({ name: 'image_url', nullable: true })
+  @Column({ name: 'image_url', type: 'varchar', nullable: true })
   imageUrl: string | null;
 }

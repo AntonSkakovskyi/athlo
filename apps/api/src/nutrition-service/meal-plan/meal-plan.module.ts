@@ -7,7 +7,7 @@ import { PlanDayEntity } from '../entities/plan-day.entity';
 import { PlanMealEntity } from '../entities/plan-meal.entity';
 import { PlanMealItemEntity } from '../entities/plan-meal-item.entity';
 import { UserMealPlanEntity } from '../entities/user-meal-plan.entity';
-import { UserServiceModule } from 'src/user-service/user-service.module';
+import { UserServiceModule } from '../../user-service/user-service.module';
 
 @Module({
   imports: [

@@ -1,6 +1,6 @@
 import type { IWorkoutTemplate } from '@athlo/shared';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UserEntity } from 'src/user-service/user/entities/user.entity';
+import { UserEntity } from '../../user-service/user/entities/user.entity';
 import { TemplateExerciseEntity } from './template-exercise.entity';
 
 @Entity({ name: 'workout_templates' })

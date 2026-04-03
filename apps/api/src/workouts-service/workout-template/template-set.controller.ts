@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { TemplateSetService } from './template-set.service';
-import { JwtAuthGuard } from 'src/user-service/auth/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/user-service/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateTemplateSetDto } from '../dto/template-set/create-template-set.dto';
 import { UpdateTemplateSetDto } from '../dto/template-set/update-template-set.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';

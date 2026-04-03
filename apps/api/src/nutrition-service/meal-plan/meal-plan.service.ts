@@ -11,7 +11,7 @@ import { UpdateMealPlanDto } from '../dto/meal-plan/update-meal-plan.dto';
 import { CreatePlanDayDto } from '../dto/meal-plan/create-plan-day.dto';
 import { CreatePlanMealDto } from '../dto/meal-plan/create-plan-meal.dto';
 import { CreatePlanMealItemDto } from '../dto/meal-plan/create-plan-meal-item.dto';
-import { FriendService } from 'src/user-service/friends/friend.service';
+import { FriendService } from '../../user-service/friends/friend.service';
 
 @Injectable()
 export class MealPlanService {

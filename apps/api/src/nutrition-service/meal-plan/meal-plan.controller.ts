@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { MealPlanService } from './meal-plan.service';
-import { JwtAuthGuard } from 'src/user-service/auth/guards/jwt-auth.guard';
-import { CurrentUser } from 'src/user-service/auth/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateMealPlanDto } from '../dto/meal-plan/create-meal-plan.dto';
 import { UpdateMealPlanDto } from '../dto/meal-plan/update-meal-plan.dto';
 import { CreatePlanDayDto } from '../dto/meal-plan/create-plan-day.dto';

@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import type { IWaterLog } from '@athlo/shared';
-import { UserEntity } from 'src/user-service/user/entities/user.entity';
+import { UserEntity } from '../../user-service/user/entities/user.entity';
 
 @Entity({ name: 'water_logs' })
 export class WaterLogEntity implements IWaterLog {

@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 't
 import type { ILogMealItem } from '@athlo/shared';
 import { LogMealEntity } from './log-meal.entity';
 import { FoodEntity } from './food.entity';
-import { UnitEntity } from 'src/user-service/body-metrics/entities/unit.entity';
+import { UnitEntity } from '../../user-service/body-metrics/entities/unit.entity';
 
 @Entity({ name: 'log_meal_items' })
 export class LogMealItemEntity implements ILogMealItem {

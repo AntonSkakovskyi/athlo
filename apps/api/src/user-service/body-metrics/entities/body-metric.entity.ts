@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import type { IBodyMetric } from '@athlo/shared';
-import { UserEntity } from 'src/user-service/user/entities/user.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 import { MetricTypeEntity } from './metric-type.entity';
 
 @Entity({ name: 'body_metrics' })

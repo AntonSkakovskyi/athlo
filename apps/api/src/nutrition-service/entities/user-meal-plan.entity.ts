@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import type { IUserMealPlan } from '@athlo/shared';
-import { UserEntity } from 'src/user-service/user/entities/user.entity';
+import { UserEntity } from '../../user-service/user/entities/user.entity';
 import { MealPlanEntity } from './meal-plan.entity';
 
 @Entity({ name: 'user_meal_plans' })

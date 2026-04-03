@@ -1,5 +1,5 @@
 import { IUser } from "@athlo/shared";
-import { WorkoutEntity } from "src/workouts-service/entities/workout.entity";
+import { WorkoutEntity } from "../../../workouts-service/entities/workout.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity({ name: 'users' })

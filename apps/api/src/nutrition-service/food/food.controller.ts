@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { FoodService } from './food.service';
-import { JwtAuthGuard } from 'src/user-service/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CreateFoodDto } from '../dto/food/create-food.dto';
 import { UpdateFoodDto } from '../dto/food/update-food.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';

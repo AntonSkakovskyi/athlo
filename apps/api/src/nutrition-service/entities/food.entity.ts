@@ -9,7 +9,7 @@ export class FoodEntity implements IFood {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   brand: string | null;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })

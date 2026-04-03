@@ -1,7 +1,7 @@
 import { WorkoutStatus } from '@athlo/shared';
 import type { IWorkout } from '@athlo/shared';
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { UserEntity } from 'src/user-service/user/entities/user.entity';
+import { UserEntity } from '../../user-service/user/entities/user.entity';
 import { LogExerciseEntity } from './log-exercise.entity';
 
 @Entity({ name: 'workouts' })
@@ -44,15 +44,15 @@ export class WorkoutEntity implements IWorkout {
   @Column({ name: 'calories', type: 'decimal', precision: 10, scale: 2, nullable: true, default: 0 })
   calories: number | null;
 
-  @Column({ name: 'avg_heart_rate', nullable: true })
+  @Column({ name: 'avg_heart_rate', type: 'int', nullable: true })
   avgHeartRate: number | null;
 
-  @Column({ name: 'max_heart_rate', nullable: true })
+  @Column({ name: 'max_heart_rate', type: 'int', nullable: true })
   maxHeartRate: number | null;
 
-  @Column({ name: 'rpe', nullable: true })
+  @Column({ name: 'rpe', type: 'int', nullable: true })
   rpe: number | null;
 
-  @Column({ name: 'feeling_score', nullable: true })
+  @Column({ name: 'feeling_score', type: 'int', nullable: true })
   feelingScore: number | null;
 }
