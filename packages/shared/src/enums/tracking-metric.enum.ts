@@ -1,0 +1,7 @@
+export enum TrackingMetric {
+  WEIGHT = 'WEIGHT',
+  REPS = 'REPS',
+  DURATION = 'DURATION',
+  DISTANCE = 'DISTANCE',
+  ESTIMATED_1RM = 'ESTIMATED_1RM',
+}

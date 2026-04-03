@@ -27,6 +27,17 @@ export type {
 	ILogMealItem,
 	IWaterLog,
 	IFriendship,
-} from './interfaces';
+	IWorkoutStatistics,
+	IMonthlyWorkoutCount,
+	IExerciseProgress,
+	IExerciseProgressRecord,
+	IBodyMetricProgress,
+	IBodyMetricHistoryRecord,
+	IStatisticsSummary,
+	ILastPerformance,
+	IAchievement,
+	IUserAchievement,
+	IUserExerciseRecord,
+} from './interfaces/index.js';
 
-export { TrackingType, WorkoutStatus, VisibilityType } from './enums';
+export { TrackingType, WorkoutStatus, VisibilityType, FriendRequestStatus, AchievementType, TrackingMetric } from './enums/index.js';

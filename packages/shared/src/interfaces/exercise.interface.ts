@@ -4,4 +4,6 @@ export interface IExercise {
   description?: string | null;
   equipmentId?: number | null;
   trackingTypeId?: number | null;
+  userId?: number | null;
+  visibilityTypeId?: number;
 }
