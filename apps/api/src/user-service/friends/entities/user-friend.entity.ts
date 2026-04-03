@@ -1,5 +1,5 @@
-import type { IFriendship } from '@athlo/shared';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import { type IFriendship, FriendRequestStatus } from '@athlo/shared';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique, CreateDateColumn, Index } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 
 @Entity({ name: 'user_friends' })
@@ -13,6 +13,12 @@ export class UserFriendEntity implements IFriendship {
 
   @Column({ name: 'friend_id' })
   friendId: number;
+
+  @Column({ name: 'status', type: 'varchar', default: FriendRequestStatus.PENDING })
+  status: FriendRequestStatus;
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
+  createdAt: Date;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
