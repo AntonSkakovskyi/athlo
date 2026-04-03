@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ExerciseEntity } from '../entities/exercise.entity';
 import { ExerciseMuscleEntity } from '../entities/exercise-muscle.entity';
+import { TrackingTypeEntity } from '../entities/tracking-type.entity';
 import { ExerciseService } from './exercise.service';
 import { ExerciseController } from './exercise.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ExerciseEntity, ExerciseMuscleEntity])],
+  imports: [TypeOrmModule.forFeature([ExerciseEntity, ExerciseMuscleEntity, TrackingTypeEntity])],
   controllers: [ExerciseController],
   providers: [ExerciseService],
   exports: [ExerciseService],
