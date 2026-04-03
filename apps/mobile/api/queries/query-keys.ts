@@ -1,6 +1,7 @@
 export const exerciseKeys = {
   all: ['exercises'] as const,
   list: (filters: Record<string, unknown>) => [...exerciseKeys.all, filters] as const,
+  byId: (id: string) => [...exerciseKeys.all, id] as const,
 };
 
 export const muscleKeys = {
@@ -54,5 +55,32 @@ export const nutritionLogKeys = {
   meals: (date: string) => ['nutrition-log', 'meals', date] as const,
   mealById: (id: string) => ['nutrition-log', 'meals', id] as const,
   water: (date: string) => ['nutrition-log', 'water', date] as const,
+};
+
+export const statisticsKeys = {
+  workouts: (from?: string, to?: string) => ['statistics', 'workouts', { from, to }] as const,
+  exerciseProgress: (exerciseId: string, from?: string, to?: string) =>
+    ['statistics', 'exercises', exerciseId, { from, to }] as const,
+  bodyMetricProgress: (metricTypeId: string, from?: string, to?: string) =>
+    ['statistics', 'body-metrics', metricTypeId, { from, to }] as const,
+  summary: ['statistics', 'summary'] as const,
+};
+
+export const lastPerformanceKeys = {
+  byExercise: (exerciseId: string) => ['last-performance', exerciseId] as const,
+  batch: (exerciseIds: number[]) => ['last-performance', 'batch', ...exerciseIds] as const,
+};
+
+export const friendKeys = {
+  all: ['friends'] as const,
+  incomingRequests: ['friends', 'requests', 'incoming'] as const,
+  outgoingRequests: ['friends', 'requests', 'outgoing'] as const,
+};
+
+export const achievementKeys = {
+  all: ['achievements'] as const,
+  user: ['achievements', 'user'] as const,
+  records: ['achievements', 'records'] as const,
+  recordByExercise: (exerciseId: string) => ['achievements', 'records', exerciseId] as const,
 };
 

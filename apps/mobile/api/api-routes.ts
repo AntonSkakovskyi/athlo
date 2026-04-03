@@ -5,12 +5,19 @@ export const apiRoutes = {
   },
   exercises: {
     getAll: 'exercises',
+    getById: (id: string) => `exercises/${id}`,
+    create: 'exercises',
+    update: (id: string) => `exercises/${id}`,
+    delete: (id: string) => `exercises/${id}`,
   },
   muscles: {
     getAll: 'muscles',
   },
   equipments: {
     getAll: 'equipments',
+    create: 'equipments',
+    update: (id: string) => `equipments/${id}`,
+    delete: (id: string) => `equipments/${id}`,
   },
   workouts: {
     getAll: 'workouts',
@@ -74,5 +81,31 @@ export const apiRoutes = {
     mealItem: (itemId: string) => `nutrition-log/meal-items/${itemId}`,
     water: 'nutrition-log/water',
     waterById: (id: string) => `nutrition-log/water/${id}`,
+  },
+  statistics: {
+    workouts: 'statistics/workouts',
+    exerciseProgress: (exerciseId: string) => `statistics/exercises/${exerciseId}`,
+    bodyMetricProgress: (metricTypeId: string) => `statistics/body-metrics/${metricTypeId}`,
+    summary: 'statistics/summary',
+  },
+  lastPerformance: {
+    byExercise: (exerciseId: string) => `workouts/exercises/${exerciseId}/last-performance`,
+    batch: 'workouts/last-performance',
+  },
+  friends: {
+    getAll: 'friends',
+    sendRequest: 'friends/request',
+    incomingRequests: 'friends/requests/incoming',
+    outgoingRequests: 'friends/requests/outgoing',
+    acceptRequest: (id: string) => `friends/requests/${id}/accept`,
+    rejectRequest: (id: string) => `friends/requests/${id}/reject`,
+    cancelRequest: (id: string) => `friends/requests/${id}`,
+    remove: (friendId: string) => `friends/${friendId}`,
+  },
+  achievements: {
+    getAll: 'achievements',
+    user: 'achievements/user',
+    records: 'achievements/records',
+    recordByExercise: (exerciseId: string) => `achievements/records/${exerciseId}`,
   },
 };

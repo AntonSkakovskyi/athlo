@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { IWorkout } from '@athlo/shared';
+import type { IWorkout, ILastPerformance } from '@athlo/shared';
 import apiClient from '../../api/api-client';
 import { apiRoutes } from '../../api/api-routes';
-import { workoutKeys } from '../../api/queries/query-keys';
+import { workoutKeys, lastPerformanceKeys } from '../../api/queries/query-keys';
 
 // ─── Queries ────────────────────────────────────────
 
@@ -104,5 +104,34 @@ export const useDeleteWorkout = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workoutKeys.all });
     },
+  });
+};
+
+// ─── Last Performance ───────────────────────────────
+
+export const useGetLastPerformance = (exerciseId: string) => {
+  return useQuery({
+    queryKey: lastPerformanceKeys.byExercise(exerciseId),
+    queryFn: async () => {
+      const response = await apiClient.get<ILastPerformance | null>(
+        apiRoutes.lastPerformance.byExercise(exerciseId),
+      );
+      return response.data;
+    },
+    enabled: !!exerciseId,
+  });
+};
+
+export const useGetBatchLastPerformance = (exerciseIds: number[]) => {
+  return useQuery({
+    queryKey: lastPerformanceKeys.batch(exerciseIds),
+    queryFn: async () => {
+      const response = await apiClient.post<Record<number, ILastPerformance>>(
+        apiRoutes.lastPerformance.batch,
+        { exerciseIds },
+      );
+      return response.data;
+    },
+    enabled: exerciseIds.length > 0,
   });
 };
