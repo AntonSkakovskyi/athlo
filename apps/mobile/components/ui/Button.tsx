@@ -1,19 +1,22 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
+import { colors } from '../../constants/theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
 interface ButtonProps extends Omit<PressableProps, 'style'> {
   title: string;
   variant?: ButtonVariant;
   isLoading?: boolean;
   style?: StyleProp<ViewStyle>;
+  icon?: React.ReactNode;
 }
 
-const VARIANT_COLORS: Record<ButtonVariant, { bg: string; text: string }> = {
-  primary: { bg: '#007AFF', text: '#fff' },
-  secondary: { bg: '#E5E5EA', text: '#007AFF' },
-  danger: { bg: '#FF3B30', text: '#fff' },
+const VARIANT_COLORS: Record<ButtonVariant, { bg: string; text: string; border?: string }> = {
+  primary: { bg: colors.primary, text: '#000' },
+  secondary: { bg: colors.surfaceLight, text: colors.text },
+  danger: { bg: colors.dangerLight, text: colors.danger },
+  ghost: { bg: 'transparent', text: colors.textSecondary, border: colors.border },
 };
 
 export function Button({
@@ -22,16 +25,18 @@ export function Button({
   isLoading = false,
   disabled,
   style,
+  icon,
   ...rest
 }: ButtonProps) {
-  const colors = VARIANT_COLORS[variant];
+  const variantColors = VARIANT_COLORS[variant];
   const isDisabled = disabled || isLoading;
 
   return (
     <Pressable
       style={[
         styles.button,
-        { backgroundColor: colors.bg },
+        { backgroundColor: variantColors.bg },
+        variantColors.border ? { borderWidth: 1, borderColor: variantColors.border } : undefined,
         isDisabled && styles.disabled,
         style,
       ]}
@@ -39,9 +44,12 @@ export function Button({
       {...rest}
     >
       {isLoading ? (
-        <ActivityIndicator color={colors.text} />
+        <ActivityIndicator color={variantColors.text} />
       ) : (
-        <Text style={[styles.text, { color: colors.text }]}>{title}</Text>
+        <>
+          {icon}
+          <Text style={[styles.text, { color: variantColors.text }, icon ? { marginLeft: 6 } : undefined]}>{title}</Text>
+        </>
       )}
     </Pressable>
   );
@@ -50,15 +58,16 @@ export function Button({
 const styles = StyleSheet.create({
   button: {
     padding: 14,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
   },
   text: {
-    fontWeight: 'bold',
-    fontSize: 16,
+    fontWeight: '600',
+    fontSize: 15,
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
 });

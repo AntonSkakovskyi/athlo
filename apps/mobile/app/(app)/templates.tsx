@@ -1,9 +1,23 @@
-import { useState } from 'react';
-import { View, Text, FlatList, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { useState, useMemo, useCallback } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  Pressable,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import type { IWorkoutTemplate } from '@athlo/shared';
+import type { IWorkoutTemplate, IUserWorkoutTemplate } from '@athlo/shared';
+import { colors, borderRadius, spacing } from '../../constants/theme';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { SegmentControl } from '../../components/ui/Chip';
+import { TemplateCard } from '../../components/workout/TemplateCard';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { useActiveWorkout } from '../../contexts/ActiveWorkoutContext';
 import {
   useGetMyTemplates,
   useGetPublicTemplates,
@@ -15,13 +29,18 @@ import {
   useStartFromTemplate,
 } from '../../hooks/api/useTemplateHooks';
 
-type Tab = 'my' | 'public' | 'saved';
+const TABS = ['My', 'Public', 'Saved'];
 
 export default function TemplatesScreen() {
-  const [activeTab, setActiveTab] = useState<Tab>('my');
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDescription, setNewDescription] = useState('');
+  const [search, setSearch] = useState('');
+
+  const { startWorkout, isActive } = useActiveWorkout();
 
   const myTemplates = useGetMyTemplates();
   const publicTemplates = useGetPublicTemplates();
@@ -33,140 +52,228 @@ export default function TemplatesScreen() {
   const unsaveTemplate = useUnsaveTemplate();
   const startFromTemplate = useStartFromTemplate();
 
-  const router = useRouter();
-
-  const handleCreate = () => {
+  const handleCreate = useCallback(() => {
     if (!newName.trim()) return;
     createTemplate.mutate(
       { name: newName.trim(), description: newDescription.trim() || undefined },
       {
-        onSuccess: () => {
+        onSuccess: (template) => {
           setNewName('');
           setNewDescription('');
           setShowCreate(false);
+          router.push(`/(app)/template/${template.id}`);
         },
       },
     );
-  };
+  }, [newName, newDescription, createTemplate, router]);
 
-  const handleDelete = (id: number) => {
-    Alert.alert('Delete Template', 'Are you sure you want to delete this template?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteTemplate.mutate(String(id)) },
-    ]);
-  };
-
-  const handleStart = (id: number) => {
-    startFromTemplate.mutate(String(id), {
-      onSuccess: (workout) => {
-        if (workout?.id) {
-          Alert.alert('Success', 'Workout started from template!');
-        }
-      },
-    });
-  };
-
-  const renderMyTemplate = ({ item }: { item: IWorkoutTemplate }) => (
-    <View style={styles.card}>
-      <Pressable style={styles.cardContent} onPress={() => router.push(`/(app)/template/${item.id}`)}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        {item.description ? <Text style={styles.cardDescription}>{item.description}</Text> : null}
-      </Pressable>
-      <View style={styles.cardActions}>
-        <Button title="Start" variant="primary" onPress={() => handleStart(item.id)} style={styles.actionButton} />
-        <Button title="Delete" variant="danger" onPress={() => handleDelete(item.id)} style={styles.actionButton} />
-      </View>
-    </View>
+  const handleDelete = useCallback(
+    (id: number) => {
+      Alert.alert('Delete Template', 'Are you sure you want to delete this template?', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteTemplate.mutate(String(id)),
+        },
+      ]);
+    },
+    [deleteTemplate],
   );
 
-  const renderPublicTemplate = ({ item }: { item: IWorkoutTemplate & { creatorNickname?: string } }) => (
-    <View style={styles.card}>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.name}</Text>
-        {item.description ? <Text style={styles.cardDescription}>{item.description}</Text> : null}
-        {item.creatorNickname ? <Text style={styles.creator}>by @{item.creatorNickname}</Text> : null}
-      </View>
-      <View style={styles.cardActions}>
-        <Button title="Save" variant="secondary" onPress={() => saveTemplate.mutate(String(item.id))} style={styles.actionButton} />
-        <Button title="Start" variant="primary" onPress={() => handleStart(item.id)} style={styles.actionButton} />
-      </View>
-    </View>
+  const handleStart = useCallback(
+    (id: number) => {
+      if (isActive) {
+        Alert.alert('Active Workout', 'You already have an active workout. Finish it first.');
+        return;
+      }
+      startFromTemplate.mutate(String(id), {
+        onSuccess: (workout) => {
+          if (workout) {
+            startWorkout(workout, []);
+            router.push('/(app)/active-workout');
+          }
+        },
+      });
+    },
+    [isActive, startFromTemplate, startWorkout, router],
   );
 
-  const renderSavedTemplate = ({ item }: { item: { id: number; workoutTemplateId: number; workoutTemplate: IWorkoutTemplate & { creatorNickname?: string } } }) => (
-    <View style={styles.card}>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>{item.workoutTemplate.name}</Text>
-        {item.workoutTemplate.description ? <Text style={styles.cardDescription}>{item.workoutTemplate.description}</Text> : null}
-        {item.workoutTemplate.creatorNickname ? <Text style={styles.creator}>by @{item.workoutTemplate.creatorNickname}</Text> : null}
-      </View>
-      <View style={styles.cardActions}>
-        <Button title="Unsave" variant="danger" onPress={() => unsaveTemplate.mutate(String(item.workoutTemplateId))} style={styles.actionButton} />
-        <Button title="Start" variant="primary" onPress={() => handleStart(item.workoutTemplateId)} style={styles.actionButton} />
-      </View>
-    </View>
+  const filterBySearch = useCallback(
+    <T extends { name: string }>(items: T[]) => {
+      if (!search.trim()) return items;
+      const q = search.toLowerCase();
+      return items.filter((t) => t.name.toLowerCase().includes(q));
+    },
+    [search],
   );
 
-  const getActiveData = () => {
+  const filteredMy = useMemo(
+    () => filterBySearch(myTemplates.data ?? []),
+    [myTemplates.data, filterBySearch],
+  );
+
+  const filteredPublic = useMemo(
+    () => filterBySearch((publicTemplates.data ?? []) as (IWorkoutTemplate & { creatorNickname?: string })[]),
+    [publicTemplates.data, filterBySearch],
+  );
+
+  const filteredSaved = useMemo(() => {
+    const items = savedTemplates.data ?? [];
+    if (!search.trim()) return items;
+    const q = search.toLowerCase();
+    return items.filter(
+      (s) =>
+        (s as IUserWorkoutTemplate & { workoutTemplate?: IWorkoutTemplate }).workoutTemplate?.name
+          ?.toLowerCase()
+          .includes(q) ?? false,
+    );
+  }, [savedTemplates.data, search]);
+
+  const activeQuery = useMemo(() => {
     switch (activeTab) {
-      case 'my': return myTemplates;
-      case 'public': return publicTemplates;
-      case 'saved': return savedTemplates;
+      case 0:
+        return myTemplates;
+      case 1:
+        return publicTemplates;
+      case 2:
+        return savedTemplates;
+      default:
+        return myTemplates;
     }
-  };
+  }, [activeTab, myTemplates, publicTemplates, savedTemplates]);
 
-  const activeQuery = getActiveData();
+  const renderMyItem = ({ item }: { item: IWorkoutTemplate }) => (
+    <TemplateCard
+      name={item.name}
+      description={item.description}
+      variant="my"
+      onPress={() => router.push(`/(app)/template/${item.id}`)}
+      onStart={() => handleStart(item.id)}
+      onDelete={() => handleDelete(item.id)}
+    />
+  );
+
+  const renderPublicItem = ({ item }: { item: IWorkoutTemplate & { creatorNickname?: string } }) => (
+    <TemplateCard
+      name={item.name}
+      description={item.description}
+      author={item.creatorNickname}
+      variant="public"
+      onStart={() => handleStart(item.id)}
+      onSave={() => saveTemplate.mutate(String(item.id))}
+    />
+  );
+
+  const renderSavedItem = ({ item }: { item: IUserWorkoutTemplate & { workoutTemplate?: IWorkoutTemplate & { creatorNickname?: string } } }) => (
+    <TemplateCard
+      name={item.workoutTemplate?.name ?? 'Template'}
+      description={item.workoutTemplate?.description}
+      author={item.workoutTemplate?.creatorNickname}
+      variant="saved"
+      onStart={() => handleStart(item.workoutTemplateId)}
+      onUnsave={() => unsaveTemplate.mutate(String(item.workoutTemplateId))}
+    />
+  );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.tabs}>
-        {(['my', 'public', 'saved'] as Tab[]).map((tab) => (
-          <Pressable
-            key={tab}
-            style={[styles.tab, activeTab === tab && styles.activeTab]}
-            onPress={() => setActiveTab(tab)}
-          >
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-              {tab === 'my' ? 'My Templates' : tab === 'public' ? 'Public' : 'Saved'}
-            </Text>
-          </Pressable>
-        ))}
+    <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Pressable onPress={() => router.back()}>
+          <Text style={styles.backBtn}>← Back</Text>
+        </Pressable>
+        <Text style={styles.screenTitle}>Templates</Text>
+        <Pressable onPress={() => setShowCreate(true)}>
+          <Text style={styles.createBtn}>+ Create</Text>
+        </Pressable>
       </View>
 
-      {activeTab === 'my' && (
-        <View style={styles.createSection}>
-          {showCreate ? (
-            <View style={styles.createForm}>
-              <Input label="Name" value={newName} onChangeText={setNewName} placeholder="Template name" />
-              <Input label="Description" value={newDescription} onChangeText={setNewDescription} placeholder="Optional description" />
-              <View style={styles.createButtons}>
-                <Button title="Cancel" variant="secondary" onPress={() => setShowCreate(false)} style={styles.formButton} />
-                <Button title="Create" variant="primary" onPress={handleCreate} isLoading={createTemplate.isPending} style={styles.formButton} />
-              </View>
-            </View>
-          ) : (
-            <Button title="+ New Template" variant="primary" onPress={() => setShowCreate(true)} />
-          )}
+      {/* Segment Control */}
+      <View style={styles.segmentWrap}>
+        <SegmentControl segments={TABS} activeIndex={activeTab} onSelect={setActiveTab} />
+      </View>
+
+      {/* Search */}
+      <View style={styles.searchWrap}>
+        <Input
+          placeholder="Search templates..."
+          value={search}
+          onChangeText={setSearch}
+          style={styles.searchInput}
+        />
+      </View>
+
+      {/* Create Form */}
+      {showCreate && (
+        <View style={styles.createForm}>
+          <Input label="Name" value={newName} onChangeText={setNewName} placeholder="Template name" />
+          <Input
+            label="Description"
+            value={newDescription}
+            onChangeText={setNewDescription}
+            placeholder="Optional description"
+          />
+          <View style={styles.createButtons}>
+            <Button
+              title="Cancel"
+              variant="ghost"
+              onPress={() => setShowCreate(false)}
+              style={styles.formButton}
+            />
+            <Button
+              title="Create"
+              variant="primary"
+              onPress={handleCreate}
+              isLoading={createTemplate.isPending}
+              style={styles.formButton}
+            />
+          </View>
         </View>
       )}
 
+      {/* Template List */}
       {activeQuery.isLoading ? (
-        <ActivityIndicator size="large" style={styles.loader} />
+        <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
       ) : activeQuery.error ? (
         <Text style={styles.errorText}>Failed to load templates</Text>
       ) : (
         <FlatList
-          data={activeQuery.data as IWorkoutTemplate[]}
+          data={
+            activeTab === 0
+              ? filteredMy
+              : activeTab === 1
+                ? (filteredPublic as IWorkoutTemplate[])
+                : (filteredSaved as IUserWorkoutTemplate[])
+          }
           renderItem={
-            activeTab === 'my'
-              ? renderMyTemplate
-              : activeTab === 'public'
-                ? renderPublicTemplate
-                : (renderSavedTemplate as never)
+            activeTab === 0
+              ? renderMyItem
+              : activeTab === 1
+                ? (renderPublicItem as never)
+                : (renderSavedItem as never)
           }
           keyExtractor={(item) => String((item as { id: number }).id)}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.emptyText}>No templates found</Text>}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <EmptyState
+              title={
+                activeTab === 0
+                  ? 'Create your first template'
+                  : activeTab === 1
+                    ? 'No public templates found'
+                    : 'No saved templates'
+              }
+              description={
+                activeTab === 0
+                  ? 'Templates make it easy to repeat workouts'
+                  : activeTab === 1
+                    ? 'Try adjusting your search'
+                    : 'Save templates from the public library'
+              }
+            />
+          }
         />
       )}
     </View>
@@ -174,25 +281,67 @@ export default function TemplatesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  tabs: { flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e0e0e0' },
-  tab: { flex: 1, paddingVertical: 14, alignItems: 'center' },
-  activeTab: { borderBottomWidth: 2, borderBottomColor: '#007AFF' },
-  tabText: { fontSize: 14, color: '#666' },
-  activeTabText: { color: '#007AFF', fontWeight: '600' },
-  createSection: { padding: 16 },
-  createForm: { backgroundColor: '#fff', padding: 16, borderRadius: 12 },
-  createButtons: { flexDirection: 'row', gap: 8, marginTop: 8 },
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    marginBottom: 16,
+  },
+  backBtn: {
+    fontSize: 15,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  screenTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  createBtn: {
+    fontSize: 15,
+    color: colors.primary,
+    fontWeight: '600',
+  },
+  segmentWrap: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: 12,
+  },
+  searchWrap: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: 8,
+  },
+  searchInput: {
+    marginBottom: 0,
+  },
+  createForm: {
+    marginHorizontal: spacing.lg,
+    backgroundColor: colors.surface,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  createButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 4,
+  },
   formButton: { flex: 1 },
-  list: { padding: 16, gap: 12 },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  cardContent: { marginBottom: 12 },
-  cardTitle: { fontSize: 18, fontWeight: '600', color: '#333' },
-  cardDescription: { fontSize: 14, color: '#666', marginTop: 4 },
-  creator: { fontSize: 12, color: '#999', marginTop: 4 },
-  cardActions: { flexDirection: 'row', gap: 8 },
-  actionButton: { flex: 1 },
+  list: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: 100,
+  },
   loader: { marginTop: 40 },
-  errorText: { textAlign: 'center', color: '#FF3B30', marginTop: 40, fontSize: 16 },
-  emptyText: { textAlign: 'center', color: '#999', marginTop: 40, fontSize: 16 },
+  errorText: {
+    textAlign: 'center',
+    color: colors.danger,
+    marginTop: 40,
+    fontSize: 16,
+  },
 });

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLogin } from '../../hooks/api/useAuthMutations';
 import { AxiosError } from 'axios';
@@ -10,6 +10,7 @@ import { Button } from '../../components/ui/Button';
 export default function LoginScreen() {
   const { setSession } = useAuth();
   const loginMutation = useLogin();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -17,6 +18,7 @@ export default function LoginScreen() {
     try {
       const { user, token } = await loginMutation.mutateAsync({ email, password });
       await setSession(user, token);
+      router.replace('/(app)/home');
     } catch (error) {
       const message = error instanceof AxiosError
         ? error.response?.data?.message ?? 'Login failed'

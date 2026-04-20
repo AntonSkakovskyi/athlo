@@ -1,5 +1,6 @@
 import { TextInput as RNTextInput, StyleSheet, Text, View } from 'react-native';
 import type { TextInputProps as RNTextInputProps } from 'react-native';
+import { colors, borderRadius } from '../../constants/theme';
 
 interface InputProps extends RNTextInputProps {
   label?: string;
@@ -12,7 +13,8 @@ export function Input({ label, error, style, ...rest }: InputProps) {
       {label && <Text style={styles.label}>{label}</Text>}
       <RNTextInput
         style={[styles.input, error && styles.inputError, style]}
-        placeholderTextColor="#999"
+        placeholderTextColor={colors.textMuted}
+        selectionColor={colors.primary}
         {...rest}
       />
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -28,22 +30,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginBottom: 4,
-    color: '#333',
+    color: colors.textSecondary,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
     padding: 12,
     fontSize: 16,
-    color: '#000',
+    color: colors.text,
+    backgroundColor: colors.surface,
   },
   inputError: {
-    borderColor: '#FF3B30',
+    borderColor: colors.danger,
   },
   errorText: {
     fontSize: 12,
-    color: '#FF3B30',
+    color: colors.danger,
     marginTop: 4,
   },
 });
