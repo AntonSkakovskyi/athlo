@@ -1,11 +1,21 @@
 import { useState } from 'react';
-import { View, Text, Alert, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Link } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRegister } from '../../hooks/api/useAuthMutations';
 import { AxiosError } from 'axios';
 import { Input } from '../../components/ui/Input';
 import { Button } from '../../components/ui/Button';
+import { colors } from '../../constants/theme';
+
+function extractErrorMessages(error: unknown): string[] {
+  if (error instanceof AxiosError) {
+    const msg = error.response?.data?.message;
+    if (Array.isArray(msg)) return msg as string[];
+    if (typeof msg === 'string') return [msg];
+  }
+  return ['Registration failed'];
+}
 
 export default function RegisterScreen() {
   const { setSession } = useAuth();
@@ -14,27 +24,43 @@ export default function RegisterScreen() {
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<string[]>([]);
 
   const handleRegister = async () => {
+    setErrors([]);
     try {
       const { user, token } = await registerMutation.mutateAsync({ email, password, fullName, nickname });
       await setSession(user, token);
     } catch (error) {
-      const message = error instanceof AxiosError
-        ? error.response?.data?.message ?? 'Registration failed'
-        : 'Registration failed';
-      Alert.alert('Error', message);
+      setErrors(extractErrorMessages(error));
     }
   };
+
+  const emailError = errors.find((e) => e.toLowerCase().includes('email'));
+  const passwordError = errors.find((e) => e.toLowerCase().includes('password'));
+  const nicknameError = errors.find((e) => e.toLowerCase().includes('nickname'));
+  const nameError = errors.find((e) => e.toLowerCase().includes('name') && !e.toLowerCase().includes('nickname'));
+  const generalErrors = errors.filter(
+    (e) =>
+      !e.toLowerCase().includes('email') &&
+      !e.toLowerCase().includes('password') &&
+      !e.toLowerCase().includes('nickname') &&
+      !(e.toLowerCase().includes('name') && !e.toLowerCase().includes('nickname')),
+  );
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Register</Text>
 
+      {generalErrors.length > 0 && (
+        <Text style={styles.generalError}>{generalErrors.join('. ')}</Text>
+      )}
+
       <Input
         placeholder="Full Name"
         value={fullName}
         onChangeText={setFullName}
+        error={nameError}
       />
 
       <Input
@@ -42,6 +68,7 @@ export default function RegisterScreen() {
         value={nickname}
         onChangeText={setNickname}
         autoCapitalize="none"
+        error={nicknameError}
       />
 
       <Input
@@ -50,6 +77,7 @@ export default function RegisterScreen() {
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        error={emailError}
       />
 
       <Input
@@ -57,6 +85,7 @@ export default function RegisterScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        error={passwordError}
       />
 
       <Button
@@ -76,4 +105,5 @@ const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 20 },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   link: { marginTop: 16, textAlign: 'center', color: '#007AFF' },
+  generalError: { fontSize: 13, color: colors.danger, marginBottom: 12, textAlign: 'center' },
 });

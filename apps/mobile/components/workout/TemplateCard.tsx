@@ -30,28 +30,30 @@ export function TemplateCard({
 }: TemplateCardProps) {
   return (
     <Pressable style={styles.card} onPress={onPress}>
-      <View style={styles.header}>
-        <Text style={styles.name} numberOfLines={1}>{name}</Text>
-        {exerciseCount !== undefined && (
-          <Text style={styles.count}>{exerciseCount} exercises</Text>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Text style={styles.name} numberOfLines={1}>{name}</Text>
+          {exerciseCount !== undefined && (
+            <Text style={styles.count}>{exerciseCount} exercises</Text>
+          )}
+        </View>
+
+        {description ? (
+          <Text style={styles.description} numberOfLines={2}>{description}</Text>
+        ) : null}
+
+        {author ? <Text style={styles.author}>@{author}</Text> : null}
+
+        {muscles && muscles.length > 0 && (
+          <View style={styles.muscleRow}>
+            {muscles.slice(0, 4).map((m) => (
+              <View key={m} style={styles.muscleChip}>
+                <Text style={styles.muscleText}>{m}</Text>
+              </View>
+            ))}
+          </View>
         )}
       </View>
-
-      {description ? (
-        <Text style={styles.description} numberOfLines={2}>{description}</Text>
-      ) : null}
-
-      {author ? <Text style={styles.author}>@{author}</Text> : null}
-
-      {muscles && muscles.length > 0 && (
-        <View style={styles.muscleRow}>
-          {muscles.slice(0, 4).map((m) => (
-            <View key={m} style={styles.muscleChip}>
-              <Text style={styles.muscleText}>{m}</Text>
-            </View>
-          ))}
-        </View>
-      )}
 
       <View style={styles.actions}>
         {onStart && (
@@ -81,12 +83,17 @@ export function TemplateCard({
 
 const styles = StyleSheet.create({
   card: {
+    height: 150,
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border,
+    justifyContent: 'space-between',
+  },
+  content: {
+    flex: 1,
   },
   header: {
     flexDirection: 'row',
@@ -133,7 +140,6 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    marginTop: 14,
     gap: 8,
   },
   actionPrimary: {

@@ -14,6 +14,7 @@ export const equipmentKeys = {
 
 export const workoutKeys = {
   all: ['workouts'] as const,
+  infinite: ['workouts', 'infinite'] as const,
   byId: (id: string) => [...workoutKeys.all, id] as const,
 };
 
@@ -21,6 +22,7 @@ export const templateKeys = {
   all: ['templates'] as const,
   byId: (id: string) => [...templateKeys.all, id] as const,
   public: [...['templates'], 'public'] as const,
+  publicInfinite: [...['templates'], 'public', 'infinite'] as const,
   saved: [...['templates'], 'saved'] as const,
 };
 
@@ -52,6 +54,7 @@ export const mealPlanKeys = {
 
 export const nutritionLogKeys = {
   summary: (date: string) => ['nutrition-log', 'summary', date] as const,
+  history: (from: string, to: string) => ['nutrition-log', 'history', { from, to }] as const,
   meals: (date: string) => ['nutrition-log', 'meals', date] as const,
   mealById: (id: string) => ['nutrition-log', 'meals', id] as const,
   water: (date: string) => ['nutrition-log', 'water', date] as const,
@@ -59,6 +62,8 @@ export const nutritionLogKeys = {
 
 export const statisticsKeys = {
   workouts: (from?: string, to?: string) => ['statistics', 'workouts', { from, to }] as const,
+  frequentExercises: (search?: string, page?: number) =>
+    ['statistics', 'exercises', 'frequent', { search, page }] as const,
   exerciseProgress: (exerciseId: string, from?: string, to?: string) =>
     ['statistics', 'exercises', exerciseId, { from, to }] as const,
   bodyMetricProgress: (metricTypeId: string, from?: string, to?: string) =>

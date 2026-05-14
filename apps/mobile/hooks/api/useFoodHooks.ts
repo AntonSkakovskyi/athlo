@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { IFood } from '@athlo/shared';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { IFood, IPaginatedResponse } from '@athlo/shared';
 import apiClient from '../../api/api-client';
 import { apiRoutes } from '../../api/api-routes';
 import { foodKeys } from '../../api/queries/query-keys';
@@ -10,9 +10,27 @@ export const useSearchFoods = (search?: string) => {
   return useQuery({
     queryKey: foodKeys.search(search ?? ''),
     queryFn: async () => {
-      const params = search ? `?search=${encodeURIComponent(search)}` : '';
-      const response = await apiClient.get<IFood[]>(`${apiRoutes.foods.getAll}${params}`);
+      const params: Record<string, string | number> = { page: 1, limit: 1000 };
+      if (search) params.search = search;
+      const response = await apiClient.get<IPaginatedResponse<IFood>>(apiRoutes.foods.getAll, { params });
+      return response.data.data;
+    },
+  });
+};
+
+export const useInfiniteSearchFoods = (search?: string) => {
+  return useInfiniteQuery({
+    queryKey: [...foodKeys.search(search ?? ''), 'infinite'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const params: Record<string, string | number> = { page: pageParam, limit: 20 };
+      if (search) params.search = search;
+      const response = await apiClient.get<IPaginatedResponse<IFood>>(apiRoutes.foods.getAll, { params });
       return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, limit, total } = lastPage.meta;
+      return page * limit < total ? page + 1 : undefined;
     },
   });
 };

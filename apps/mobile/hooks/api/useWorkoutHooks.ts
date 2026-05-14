@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { IWorkout, ILastPerformance } from '@athlo/shared';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { IWorkout, ILastPerformance, IPaginatedResponse } from '@athlo/shared';
 import apiClient from '../../api/api-client';
 import { apiRoutes } from '../../api/api-routes';
 import { workoutKeys, lastPerformanceKeys } from '../../api/queries/query-keys';
@@ -10,8 +10,27 @@ export const useGetWorkouts = () => {
   return useQuery({
     queryKey: workoutKeys.all,
     queryFn: async () => {
-      const response = await apiClient.get<IWorkout[]>(apiRoutes.workouts.getAll);
+      const response = await apiClient.get<IPaginatedResponse<IWorkout>>(apiRoutes.workouts.getAll, {
+        params: { page: 1, limit: 1000 },
+      });
+      return response.data.data;
+    },
+  });
+};
+
+export const useInfiniteWorkouts = () => {
+  return useInfiniteQuery({
+    queryKey: workoutKeys.infinite,
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await apiClient.get<IPaginatedResponse<IWorkout>>(apiRoutes.workouts.getAll, {
+        params: { page: pageParam, limit: 10 },
+      });
       return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, limit, total } = lastPage.meta;
+      return page * limit < total ? page + 1 : undefined;
     },
   });
 };

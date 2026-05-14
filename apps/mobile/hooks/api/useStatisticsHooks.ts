@@ -1,9 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import type {
   IWorkoutStatistics,
   IExerciseProgress,
   IBodyMetricProgress,
   IStatisticsSummary,
+  IFrequentExercise,
 } from '@athlo/shared';
 import apiClient from '../../api/api-client';
 import { apiRoutes } from '../../api/api-routes';
@@ -23,6 +24,26 @@ export const useWorkoutStatistics = (from?: string, to?: string) => {
         { params },
       );
       return response.data;
+    },
+  });
+};
+
+export const useFrequentExercises = (search?: string) => {
+  return useInfiniteQuery({
+    queryKey: statisticsKeys.frequentExercises(search),
+    queryFn: async ({ pageParam = 1 }) => {
+      const params: Record<string, string | number> = { page: pageParam, limit: 20 };
+      if (search) params.search = search;
+      const response = await apiClient.get<{
+        data: IFrequentExercise[];
+        meta: { page: number; limit: number; total: number };
+      }>(apiRoutes.statistics.frequentExercises, { params });
+      return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, limit, total } = lastPage.meta;
+      return page * limit < total ? page + 1 : undefined;
     },
   });
 };

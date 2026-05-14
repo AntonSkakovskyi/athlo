@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { IUser } from '@athlo/shared';
 import { AuthService } from '../services/auth';
+import apiClient, { setUnauthorizedHandler } from '../api/api-client';
+import { apiRoutes } from '../api/api-routes';
 
 interface AuthState {
   user: IUser | null;
@@ -26,12 +28,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadStoredToken();
   }, []);
 
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      setState({ user: null, token: null, isLoading: false });
+    });
+  }, []);
+
   const loadStoredToken = async () => {
-    const token = await AuthService.getToken();
-    if (token) {
-      setState(prev => ({ ...prev, token, isLoading: false }));
-    } else {
-      setState(prev => ({ ...prev, isLoading: false }));
+    try {
+      const token = await AuthService.getToken();
+      if (!token) {
+        setState(prev => ({ ...prev, isLoading: false }));
+        return;
+      }
+      const response = await apiClient.get(apiRoutes.profile.get, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setState({ user: response.data, token, isLoading: false });
+    } catch {
+      await AuthService.deleteToken();
+      setState({ user: null, token: null, isLoading: false });
     }
   };
 

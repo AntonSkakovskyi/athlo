@@ -31,6 +31,30 @@ export const useGetDailySummary = (date: string) => {
   });
 };
 
+// ─── Nutrition History ──────────────────────────────
+
+export interface NutritionHistoryDay {
+  date: string;
+  calories: number;
+  proteins: number;
+  fats: number;
+  carbs: number;
+  waterMl: number;
+}
+
+export const useGetNutritionHistory = (from: string, to: string) => {
+  return useQuery({
+    queryKey: nutritionLogKeys.history(from, to),
+    queryFn: async () => {
+      const response = await apiClient.get<NutritionHistoryDay[]>(
+        `${apiRoutes.nutritionLog.history}?from=${from}&to=${to}`,
+      );
+      return response.data;
+    },
+    enabled: !!from && !!to,
+  });
+};
+
 // ─── Log Meals ──────────────────────────────────────
 
 export const useGetLogMealsByDate = (date: string) => {

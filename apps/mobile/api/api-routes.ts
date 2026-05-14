@@ -75,6 +75,7 @@ export const apiRoutes = {
   },
   nutritionLog: {
     summary: 'nutrition-log/summary',
+    history: 'nutrition-log/history',
     meals: 'nutrition-log/meals',
     mealById: (id: string) => `nutrition-log/meals/${id}`,
     mealItems: (mealId: string) => `nutrition-log/meals/${mealId}/items`,
@@ -84,6 +85,7 @@ export const apiRoutes = {
   },
   statistics: {
     workouts: 'statistics/workouts',
+    frequentExercises: 'statistics/exercises/frequent',
     exerciseProgress: (exerciseId: string) => `statistics/exercises/${exerciseId}`,
     bodyMetricProgress: (metricTypeId: string) => `statistics/body-metrics/${metricTypeId}`,
     summary: 'statistics/summary',

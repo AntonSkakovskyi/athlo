@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { IExercise } from '@athlo/shared';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { IExercise, IPaginatedResponse } from '@athlo/shared';
 import apiClient from '../../api/api-client';
 import { apiRoutes } from '../../api/api-routes';
 import { exerciseKeys } from '../../api/queries/query-keys';
@@ -19,10 +19,29 @@ export const useGetExercises = (filters: ExerciseFilters = {}) => {
   return useQuery({
     queryKey: exerciseKeys.list(filters),
     queryFn: async () => {
-      const response = await apiClient.get<IExercise[]>(apiRoutes.exercises.getAll, {
-        params: filters,
+      const response = await apiClient.get<IPaginatedResponse<IExercise>>(apiRoutes.exercises.getAll, {
+        params: { ...filters, page: 1, limit: 1000 },
+      });
+      return response.data.data;
+    },
+  });
+};
+
+type InfiniteExerciseFilters = Omit<ExerciseFilters, 'page' | 'limit'>;
+
+export const useInfiniteExercises = (filters: InfiniteExerciseFilters = {}) => {
+  return useInfiniteQuery({
+    queryKey: [...exerciseKeys.list(filters), 'infinite'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await apiClient.get<IPaginatedResponse<IExercise>>(apiRoutes.exercises.getAll, {
+        params: { ...filters, page: pageParam, limit: 20 },
       });
       return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, limit, total } = lastPage.meta;
+      return page * limit < total ? page + 1 : undefined;
     },
   });
 };

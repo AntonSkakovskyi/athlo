@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { IWorkoutTemplate, IWorkout, IUserWorkoutTemplate } from '@athlo/shared';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { IWorkoutTemplate, IWorkout, IUserWorkoutTemplate, IPaginatedResponse } from '@athlo/shared';
 import apiClient from '../../api/api-client';
 import { apiRoutes } from '../../api/api-routes';
 import { templateKeys, workoutKeys } from '../../api/queries/query-keys';
@@ -31,8 +31,30 @@ export const useGetPublicTemplates = () => {
   return useQuery({
     queryKey: templateKeys.public,
     queryFn: async () => {
-      const response = await apiClient.get<IWorkoutTemplate[]>(apiRoutes.templates.getPublic);
+      const response = await apiClient.get<IPaginatedResponse<IWorkoutTemplate>>(apiRoutes.templates.getPublic, {
+        params: { page: 1, limit: 1000 },
+      });
+      return response.data.data;
+    },
+  });
+};
+
+export const useInfinitePublicTemplates = (search?: string) => {
+  return useInfiniteQuery({
+    queryKey: [...templateKeys.publicInfinite, { search }],
+    queryFn: async ({ pageParam = 1 }) => {
+      const params: Record<string, string | number> = { page: pageParam, limit: 10 };
+      if (search) params.search = search;
+      const response = await apiClient.get<IPaginatedResponse<IWorkoutTemplate & { creatorNickname?: string }>>(
+        apiRoutes.templates.getPublic,
+        { params },
+      );
       return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, limit, total } = lastPage.meta;
+      return page * limit < total ? page + 1 : undefined;
     },
   });
 };

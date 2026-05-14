@@ -1,5 +1,33 @@
 import { TrackingType } from '@athlo/shared';
 
+interface SetData {
+  weight?: number;
+  reps?: number;
+  isCompleted?: boolean;
+}
+
+interface WorkoutWithSets {
+  logExercises?: Array<{
+    sets?: SetData[];
+    logSets?: SetData[];
+  }>;
+}
+
+export function computeVolume(workout: WorkoutWithSets): number {
+  return (
+    workout.logExercises?.reduce(
+      (acc, ex) => {
+        const setsArr = ex.sets ?? ex.logSets ?? [];
+        return acc + setsArr.reduce(
+          (sum, s) => (s.isCompleted ? sum + (s.weight ?? 0) * (s.reps ?? 0) : sum),
+          0,
+        );
+      },
+      0,
+    ) ?? 0
+  );
+}
+
 export function getTrackingType(trackingTypeId?: number | null): TrackingType {
   switch (trackingTypeId) {
     case 1:

@@ -1,41 +1,86 @@
-import { Redirect, Tabs, useRouter } from 'expo-router';
+import { useState, useEffect } from 'react';
+import { Redirect, Tabs, useRouter, usePathname } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useActiveWorkout } from '../../contexts/ActiveWorkoutContext';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../constants/theme';
+import { useDeleteWorkout } from '../../hooks/api/useWorkoutHooks';
 
 function FloatingWorkoutMini() {
-  const { workout, isActive, exercises, completedSets, totalSets } = useActiveWorkout();
+  const { workout, isActive, exercises, completedSets, totalSets, endWorkout } = useActiveWorkout();
   const router = useRouter();
+  const pathname = usePathname();
+  const deleteWorkout = useDeleteWorkout();
+  const [elapsed, setElapsed] = useState('');
 
-  if (!isActive || !workout) return null;
+  useEffect(() => {
+    if (!isActive || !workout) return;
+    const start = new Date(workout.started_at).getTime();
+    const tick = () => {
+      const diff = Date.now() - start;
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setElapsed(h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`);
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [isActive, workout]);
 
-  const currentExercise = exercises.find((e) =>
-    e.sets.some((s) => !s.isCompleted),
-  );
+  const isHomeTab = pathname === '/(app)/(workout)' || pathname.endsWith('/(workout)');
+  if (!isActive || !workout || !isHomeTab) return null;
+
+  const currentExercise = exercises.find((e) => e.sets.some((s) => !s.isCompleted));
   const currentSetIndex = currentExercise
     ? currentExercise.sets.findIndex((s) => !s.isCompleted) + 1
     : 0;
 
+  const handleDelete = () => {
+    Alert.alert(
+      'Discard Workout',
+      'All progress will be lost.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            deleteWorkout.mutate(String(workout.id), {
+              onSuccess: () => endWorkout(),
+            });
+          },
+        },
+      ],
+    );
+  };
+
   return (
-    <Pressable
-      style={styles.miniPlayer}
-      onPress={() => router.push('/(app)/active-workout')}
-    >
-      <View style={styles.miniLeft}>
+    <View style={styles.miniPlayer}>
+      <Pressable
+        style={styles.miniCircleBtn}
+        onPress={() => router.push('/(app)/(workout)/active-workout')}
+      >
+        <Text style={styles.miniCircleIcon}>↑</Text>
+      </Pressable>
+
+      <View>
         <Text style={styles.miniTitle} numberOfLines={1}>
-          🏋️ {workout.name}
+          Active workout · {elapsed}
         </Text>
-        {currentExercise && (
+        {currentExercise ? (
           <Text style={styles.miniSubtitle} numberOfLines={1}>
-            ↳ {currentExercise.exerciseName} — Set {currentSetIndex}/{currentExercise.sets.length}
+            {currentExercise.exerciseName} · Set {currentSetIndex}/{currentExercise.sets.length}
           </Text>
+        ) : (
+          <Text style={styles.miniSubtitle}>{completedSets}/{totalSets} sets done</Text>
         )}
       </View>
-      <Text style={styles.miniSets}>
-        {completedSets}/{totalSets}
-      </Text>
-    </Pressable>
+
+      <Pressable style={[styles.miniCircleBtn, styles.miniCircleBtnDanger]} onPress={handleDelete}>
+        <Text style={styles.miniCircleIcon}>🗑</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -67,21 +112,17 @@ export default function AppLayout() {
         }}
       >
         <Tabs.Screen
-          name="home"
-          options={{
-            title: 'Workouts',
-            tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🏋️</Text>,
-          }}
-        />
-        <Tabs.Screen name="templates" options={{ href: null }} />
-        <Tabs.Screen name="template/[id]" options={{ href: null }} />
-        <Tabs.Screen name="active-workout" options={{ href: null }} />
-        <Tabs.Screen name="exercise-picker" options={{ href: null }} />
-        <Tabs.Screen
           name="(nutrition)"
           options={{
             title: 'Nutrition',
             tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🍎</Text>,
+          }}
+        />
+        <Tabs.Screen
+          name="(workout)"
+          options={{
+            title: 'Workouts',
+            tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>🏋️</Text>,
           }}
         />
         <Tabs.Screen
@@ -109,38 +150,43 @@ const styles = StyleSheet.create({
   },
   miniPlayer: {
     position: 'absolute',
-    bottom: 62,
+    bottom: 80,
     left: 16,
     right: 16,
     backgroundColor: colors.surfaceElevated,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    borderRadius: 20,
+    padding: 10,
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 20,
     borderWidth: 1,
     borderColor: colors.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
   },
-  miniLeft: { flex: 1 },
+  miniCircleBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  miniCircleBtnDanger: {
+    backgroundColor: colors.dangerLight,
+  },
+  miniCircleIcon: {
+    fontSize: 18,
+    color: '#000',
+  },
+
   miniTitle: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
     color: colors.text,
   },
   miniSubtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textSecondary,
     marginTop: 2,
-  },
-  miniSets: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.primary,
-    marginLeft: 12,
   },
 });
