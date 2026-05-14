@@ -29,6 +29,7 @@ export type {
 	IFriendship,
 	IWorkoutStatistics,
 	IMonthlyWorkoutCount,
+	IWorkoutChartPoint,
 	IExerciseProgress,
 	IExerciseProgressRecord,
 	IBodyMetricProgress,
@@ -38,6 +39,8 @@ export type {
 	IAchievement,
 	IUserAchievement,
 	IUserExerciseRecord,
+	IFrequentExercise,
+	IPaginatedResponse,
 } from './interfaces/index.js';
 
 export { TrackingType, WorkoutStatus, VisibilityType, FriendRequestStatus, AchievementType, TrackingMetric } from './enums/index.js';

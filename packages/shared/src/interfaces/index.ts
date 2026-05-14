@@ -29,7 +29,7 @@ export type { ILogMealItem } from './log-meal-item.interface.js';
 export type { IWaterLog } from './water-log.interface.js';
 export type { IFriendship } from './friendship.interface.js';
 
-export type { IWorkoutStatistics, IMonthlyWorkoutCount } from './workout-statistics.interface.js';
+export type { IWorkoutStatistics, IMonthlyWorkoutCount, IWorkoutChartPoint } from './workout-statistics.interface.js';
 export type { IExerciseProgress, IExerciseProgressRecord } from './exercise-progress.interface.js';
 export type { IBodyMetricProgress, IBodyMetricHistoryRecord } from './body-metric-progress.interface.js';
 export type { IStatisticsSummary } from './statistics-summary.interface.js';
@@ -37,4 +37,6 @@ export type { ILastPerformance } from './last-performance.interface.js';
 export type { IAchievement } from './achievement.interface.js';
 export type { IUserAchievement } from './user-achievement.interface.js';
 export type { IUserExerciseRecord } from './user-exercise-record.interface.js';
+export type { IFrequentExercise } from './frequent-exercise.interface.js';
+export type { IPaginatedResponse } from './paginated-response.interface.js';
 
