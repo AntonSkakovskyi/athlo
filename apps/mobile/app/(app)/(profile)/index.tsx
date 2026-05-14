@@ -1,178 +1,207 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, Alert } from 'react-native';
-import { useGetProfile, useUpdateProfile } from '../../../hooks/api/useProfileHooks';
-import { useGetBodyMetrics, useGetMetricTypes, useCreateBodyMetric, useDeleteBodyMetric } from '../../../hooks/api/useBodyMetricHooks';
-import { Button } from '../../../components/ui/Button';
-import type { IBodyMetric } from '@athlo/shared';
+import React, { useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { WorkoutStatus } from '@athlo/shared';
+import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { useGetProfile } from '../../../hooks/api/useProfileHooks';
+import { useStatisticsSummary } from '../../../hooks/api/useStatisticsHooks';
+import { useGetFriends } from '../../../hooks/api/useFriendHooks';
+import { useInfiniteWorkouts } from '../../../hooks/api/useWorkoutHooks';
+import { NavCard } from '../../../components/ui/NavCard';
+import { Avatar } from '../../../components/ui/Avatar';
+import { SectionHeader } from '../../../components/ui/SectionHeader';
+import { LoadingScreen } from '../../../components/ui/LoadingScreen';
+import { WorkoutHistoryList } from '../../../components/workout/WorkoutHistoryList';
+import type { WorkoutWithRelations } from '../../../components/workout/WorkoutHistoryList';
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { data: profile, isLoading: profileLoading } = useGetProfile();
-  const { data: metricTypes } = useGetMetricTypes();
-  const { data: bodyMetrics } = useGetBodyMetrics();
-  const updateProfile = useUpdateProfile();
-  const createMetric = useCreateBodyMetric();
-  const deleteMetric = useDeleteBodyMetric();
+  const { data: summary } = useStatisticsSummary();
+  const { data: friends } = useGetFriends();
+  const workoutsQuery = useInfiniteWorkouts();
 
-  const [editMode, setEditMode] = useState(false);
-  const [fullName, setFullName] = useState('');
-  const [nickname, setNickname] = useState('');
+  const displayedWorkouts = useMemo(() => {
+    const all = (workoutsQuery.data?.pages ?? []).flatMap((p) => p.data);
+    return all.filter((w) => w.status === WorkoutStatus.COMPLETED) as WorkoutWithRelations[];
+  }, [workoutsQuery.data]);
 
-  const [selectedMetricTypeId, setSelectedMetricTypeId] = useState<number | null>(null);
-  const [metricValue, setMetricValue] = useState('');
-
-  const handleEditProfile = () => {
-    if (profile) {
-      setFullName(profile.fullName);
-      setNickname(profile.nickname);
-      setEditMode(true);
+  const handleLoadMore = useCallback(() => {
+    if (workoutsQuery.hasNextPage && !workoutsQuery.isFetchingNextPage) {
+      workoutsQuery.fetchNextPage();
     }
-  };
-
-  const handleSaveProfile = () => {
-    updateProfile.mutate(
-      { fullName, nickname },
-      {
-        onSuccess: () => setEditMode(false),
-      },
-    );
-  };
-
-  const handleAddMetric = () => {
-    if (!selectedMetricTypeId || !metricValue) return;
-    createMetric.mutate(
-      { metricTypeId: selectedMetricTypeId, value: parseFloat(metricValue) },
-      {
-        onSuccess: () => setMetricValue(''),
-      },
-    );
-  };
-
-  const handleDeleteMetric = (id: number) => {
-    Alert.alert('Delete', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteMetric.mutate(String(id)) },
-    ]);
-  };
+  }, [workoutsQuery]);
 
   if (profileLoading) {
-    return (
-      <View style={styles.centered}>
-        <Text>Loading...</Text>
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.sectionTitle}>Profile</Text>
-
-      {editMode ? (
-        <View style={styles.card}>
-          <Text style={styles.label}>Full Name</Text>
-          <TextInput style={styles.input} value={fullName} onChangeText={setFullName} />
-          <Text style={styles.label}>Nickname</Text>
-          <TextInput style={styles.input} value={nickname} onChangeText={setNickname} />
-          <View style={styles.row}>
-            <Button title="Save" onPress={handleSaveProfile} />
-            <Button title="Cancel" variant="danger" onPress={() => setEditMode(false)} />
-          </View>
-        </View>
-      ) : (
-        <View style={styles.card}>
-          <Text style={styles.profileName}>{profile?.fullName}</Text>
-          <Text style={styles.profileInfo}>@{profile?.nickname}</Text>
-          <Text style={styles.profileInfo}>{profile?.email}</Text>
-          <Button title="Edit Profile" onPress={handleEditProfile} />
-        </View>
-      )}
-
-      <Text style={styles.sectionTitle}>Body Metrics</Text>
-
-      <View style={styles.card}>
-        <Text style={styles.label}>Metric Type</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
-          {metricTypes?.map((t) => (
-            <Text
-              key={t.id}
-              style={[styles.chip, selectedMetricTypeId === t.id && styles.chipActive]}
-              onPress={() => setSelectedMetricTypeId(t.id)}
-            >
-              {t.name}
-            </Text>
-          ))}
-        </ScrollView>
-
-        <Text style={styles.label}>Value</Text>
-        <TextInput
-          style={styles.input}
-          value={metricValue}
-          onChangeText={setMetricValue}
-          keyboardType="decimal-pad"
-          placeholder="Enter value"
-        />
-        <Button title="Add Metric" onPress={handleAddMetric} />
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 100 }}
+      showsVerticalScrollIndicator={false}
+      onScroll={({ nativeEvent }) => {
+        const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+        if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 200) {
+          handleLoadMore();
+        }
+      }}
+      scrollEventThrottle={400}
+    >
+      {/* Header Actions */}
+      <View style={styles.headerRow}>
+        <Pressable style={styles.headerBtn} onPress={() => router.push('/(app)/(profile)/edit-profile')}>
+          <Text style={styles.headerBtnIcon}>✏️</Text>
+        </Pressable>
+        <Pressable style={styles.headerBtn} onPress={() => router.push('/(app)/(profile)/settings')}>
+          <Text style={styles.headerBtnIcon}>⚙️</Text>
+        </Pressable>
       </View>
 
-      {bodyMetrics?.map((metric: IBodyMetric) => {
-        const typeName = metricTypes?.find((t) => t.id === metric.metricTypeId)?.name ?? '';
-        return (
-          <View key={metric.id} style={styles.metricRow}>
-            <View>
-              <Text style={styles.metricType}>{typeName}</Text>
-              <Text style={styles.metricValue}>{metric.value}</Text>
-              <Text style={styles.metricDate}>
-                {new Date(metric.recordedAt).toLocaleDateString()}
-              </Text>
-            </View>
-            <Text style={styles.deleteBtn} onPress={() => handleDeleteMetric(metric.id)}>
-              ✕
-            </Text>
+      {/* Profile Card */}
+      <View style={styles.profileCard}>
+        <Avatar name={profile?.fullName} size="lg" />
+        <Text style={styles.nickname}>@{profile?.nickname}</Text>
+        <Text style={styles.fullName}>{profile?.fullName}</Text>
+
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{summary?.totalWorkouts ?? 0}</Text>
+            <Text style={styles.statLabel}>Workouts</Text>
           </View>
-        );
-      })}
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{friends?.length ?? 0}</Text>
+            <Text style={styles.statLabel}>Friends</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Navigation Grid 2×2 */}
+      <View style={styles.section}>
+        <View style={styles.navGrid}>
+          <View style={styles.navRow}>
+            <NavCard variant="compact" icon="📅" title="Calendar" description="Training calendar" onPress={() => router.push('/(app)/(profile)/calendar')} />
+            <View style={styles.navGap} />
+            <NavCard variant="compact" icon="📊" title="Statistics" description="Workout stats" onPress={() => router.push('/(app)/(profile)/statistics')} />
+          </View>
+          <View style={styles.navRowGap} />
+          <View style={styles.navRow}>
+            <NavCard variant="compact" icon="💪" title="Exercise Progress" description="Per-exercise analytics" onPress={() => router.push('/(app)/(profile)/exercise-progress')} />
+            <View style={styles.navGap} />
+            <NavCard variant="compact" icon="🏆" title="Achievements" description="Your achievements" onPress={() => router.push('/(app)/(profile)/achievements')} />
+          </View>
+        </View>
+      </View>
+
+      {/* Workout History */}
+      <View style={styles.section}>
+        <SectionHeader title="Workout History" />
+        <WorkoutHistoryList
+          workouts={displayedWorkouts}
+          isLoading={workoutsQuery.isLoading}
+          onWorkoutPress={(id) =>
+            router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id) } })
+          }
+          emptyTitle="No workouts yet"
+          emptyDescription="Start your first workout to see history here"
+          emptyActionLabel="Start your first workout"
+          onEmptyAction={() => router.push('/(app)/(workout)')}
+        />
+        {workoutsQuery.isFetchingNextPage && (
+          <ActivityIndicator color={colors.primary} style={styles.loader} />
+        )}
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  content: { padding: 16 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  sectionTitle: { fontSize: 20, fontWeight: 'bold', marginVertical: 12 },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 12 },
-  label: { fontSize: 14, color: '#666', marginBottom: 4, marginTop: 8 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginBottom: 8,
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.lg,
   },
-  row: { flexDirection: 'row', gap: 8 },
-  profileName: { fontSize: 22, fontWeight: 'bold' },
-  profileInfo: { fontSize: 16, color: '#666', marginTop: 4 },
-  chipRow: { flexDirection: 'row', marginBottom: 8 },
-  chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#eee',
-    borderRadius: 16,
-    marginRight: 8,
-    overflow: 'hidden',
-  },
-  chipActive: { backgroundColor: '#007AFF', color: '#fff' },
-  metricRow: {
+  headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
+    justifyContent: 'flex-end',
+    gap: 12,
     marginBottom: 8,
   },
-  metricType: { fontSize: 14, color: '#666' },
-  metricValue: { fontSize: 18, fontWeight: '600' },
-  metricDate: { fontSize: 12, color: '#999' },
-  deleteBtn: { fontSize: 18, color: '#ff3b30', padding: 8 },
+  headerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  headerBtnIcon: {
+    fontSize: 18,
+  },
+  profileCard: {
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.xl,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: 24,
+  },
+  nickname: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginTop: 12,
+  },
+  fullName: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 4,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+    gap: 24,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  statLabel: {
+    fontSize: 13,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: colors.border,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  navGrid: {},
+  navRow: {
+    flexDirection: 'row',
+  },
+  navGap: {
+    width: 12,
+  },
+  navRowGap: {
+    height: 12,
+  },
+  loader: {
+    marginVertical: 20,
+  },
 });

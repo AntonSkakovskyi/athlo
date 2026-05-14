@@ -1,30 +1,70 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, Alert } from 'react-native';
+import { useState, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useGetDailySummary, useCreateLogMeal, useDeleteLogMeal, useAddWaterLog, useDeleteWaterLog } from '../../../hooks/api/useNutritionLogHooks';
 import { useGetMealTypes } from '../../../hooks/api/useMealTypeQueries';
-import { Button } from '../../../components/ui/Button';
+import { useGetActiveMealPlan, useGetMealPlanById } from '../../../hooks/api/useMealPlanHooks';
 import type { ILogMeal, IWaterLog } from '@athlo/shared';
+import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { Chip } from '../../../components/ui/Chip';
+import { Button } from '../../../components/ui/Button';
+import { EmptyState } from '../../../components/ui/EmptyState';
+import { DateSelector } from '../../../components/nutrition/DateSelector';
+import { DailyMacrosSummary } from '../../../components/nutrition/DailyMacrosSummary';
+import { MealCard } from '../../../components/nutrition/MealCard';
+import { WaterTracker } from '../../../components/nutrition/WaterTracker';
+import { ActivePlanBanner } from '../../../components/nutrition/ActivePlanBanner';
+
+function getDateString(date: Date): string {
+  return date.toISOString().split('T')[0];
+}
 
 export default function NutritionScreen() {
-  const today = new Date().toISOString().split('T')[0];
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+
+  const today = getDateString(new Date());
   const [date, setDate] = useState(today);
+  const isToday = date === today;
+
   const { data: summary, isLoading } = useGetDailySummary(date);
   const { data: mealTypes } = useGetMealTypes();
+  const { data: activePlan } = useGetActiveMealPlan();
+  const { data: activePlanDetails } = useGetMealPlanById(
+    activePlan?.mealPlanId ? String(activePlan.mealPlanId) : '',
+  );
+
   const createMeal = useCreateLogMeal();
   const deleteMeal = useDeleteLogMeal();
   const addWater = useAddWaterLog();
   const deleteWater = useDeleteWaterLog();
 
-  const [waterAmount, setWaterAmount] = useState('250');
   const [selectedMealTypeId, setSelectedMealTypeId] = useState<number | null>(null);
 
+  const handlePrevDay = useCallback(() => {
+    const d = new Date(date + 'T00:00:00');
+    d.setDate(d.getDate() - 1);
+    setDate(getDateString(d));
+  }, [date]);
+
+  const handleNextDay = useCallback(() => {
+    if (isToday) return;
+    const d = new Date(date + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    setDate(getDateString(d));
+  }, [date, isToday]);
+
   const handleAddMeal = () => {
-    if (!selectedMealTypeId) return;
+    if (!selectedMealTypeId) {
+      const firstType = mealTypes?.[0];
+      if (firstType) {
+        createMeal.mutate({ mealTypeId: firstType.id, name: firstType.name });
+      }
+      return;
+    }
     const mealTypeName = mealTypes?.find((t) => t.id === selectedMealTypeId)?.name;
-    createMeal.mutate({
-      mealTypeId: selectedMealTypeId,
-      name: mealTypeName,
-    });
+    createMeal.mutate({ mealTypeId: selectedMealTypeId, name: mealTypeName });
   };
 
   const handleDeleteMeal = (id: number) => {
@@ -34,168 +74,187 @@ export default function NutritionScreen() {
     ]);
   };
 
-  const handleAddWater = () => {
-    const ml = parseInt(waterAmount, 10);
-    if (ml > 0) {
-      addWater.mutate({ amountMl: ml });
-    }
+  const handleAddWater = (ml: number) => {
+    addWater.mutate({ amountMl: ml });
   };
 
   const handleDeleteWater = (id: number) => {
     deleteWater.mutate(String(id));
   };
 
-  if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
+  const handleAddFoodToMeal = (mealId: number) => {
+    router.push({
+      pathname: '/(app)/(nutrition)/food-picker',
+      params: { mealId: String(mealId), mode: 'logMeal' },
+    } as never);
+  };
+
+  const meals = useMemo(() => (summary?.meals ?? []) as ILogMeal[], [summary]);
+  const waterLogs = useMemo(() => (summary?.waterLogs ?? []) as IWaterLog[], [summary]);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Nutrition</Text>
-      <Text style={styles.date}>{date}</Text>
-
-      {summary && (
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Daily Summary</Text>
-          <View style={styles.macroRow}>
-            <View style={styles.macroItem}>
-              <Text style={styles.macroValue}>{summary.totalCalories}</Text>
-              <Text style={styles.macroLabel}>kcal</Text>
-            </View>
-            <View style={styles.macroItem}>
-              <Text style={styles.macroValue}>{summary.totalProteins}g</Text>
-              <Text style={styles.macroLabel}>Protein</Text>
-            </View>
-            <View style={styles.macroItem}>
-              <Text style={styles.macroValue}>{summary.totalFats}g</Text>
-              <Text style={styles.macroLabel}>Fat</Text>
-            </View>
-            <View style={styles.macroItem}>
-              <Text style={styles.macroValue}>{summary.totalCarbs}g</Text>
-              <Text style={styles.macroLabel}>Carbs</Text>
-            </View>
-          </View>
-          <Text style={styles.waterSummary}>💧 {summary.totalWaterMl} ml</Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 120 }}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.screenTitle}>Nutrition</Text>
+        <View style={styles.headerActions}>
+          <Pressable
+            style={styles.mealPlansBtn}
+            onPress={() => router.push('/(app)/(nutrition)/nutrition-history' as never)}
+          >
+            <Text style={styles.mealPlansBtnText}>📊 History</Text>
+          </Pressable>
+          <Pressable
+            style={styles.mealPlansBtn}
+            onPress={() => router.push('/(app)/(nutrition)/meal-plans')}
+          >
+            <Text style={styles.mealPlansBtnText}>📋 Meal Plans</Text>
+          </Pressable>
         </View>
+      </View>
+
+      {/* Date Selector */}
+      <DateSelector date={date} onPrev={handlePrevDay} onNext={handleNextDay} isToday={isToday} />
+
+      {/* Active Plan Banner */}
+      {activePlan?.isActive && (
+        <ActivePlanBanner
+          userMealPlan={activePlan}
+          planName={activePlanDetails?.name}
+          onPress={() => router.push(`/(app)/(nutrition)/meal-plan/${activePlan.mealPlanId}`)}
+        />
       )}
 
-      <Text style={styles.sectionTitle}>Meals</Text>
-      <View style={styles.card}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
-          {mealTypes?.map((t) => (
-            <Text
-              key={t.id}
-              style={[styles.chip, selectedMealTypeId === t.id && styles.chipActive]}
-              onPress={() => setSelectedMealTypeId(t.id)}
-            >
-              {t.name}
-            </Text>
-          ))}
-        </ScrollView>
-        <Button title="Add Meal" onPress={handleAddMeal} />
-      </View>
-
-      {(summary?.meals as ILogMeal[])?.map((meal) => (
-        <View key={meal.id} style={styles.mealRow}>
-          <View>
-            <Text style={styles.mealName}>{meal.name || 'Meal'}</Text>
-            <Text style={styles.mealTime}>
-              {new Date(meal.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
-          </View>
-          <Text style={styles.deleteBtn} onPress={() => handleDeleteMeal(meal.id)}>✕</Text>
-        </View>
-      ))}
-
-      <Text style={styles.sectionTitle}>Water</Text>
-      <View style={styles.card}>
-        <View style={styles.waterRow}>
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            value={waterAmount}
-            onChangeText={setWaterAmount}
-            keyboardType="number-pad"
-            placeholder="ml"
+      {/* Loading */}
+      {isLoading ? (
+        <ActivityIndicator color={colors.primary} style={styles.loader} />
+      ) : (
+        <>
+          {/* Daily Macros Summary */}
+          <DailyMacrosSummary
+            calories={summary?.totalCalories ?? 0}
+            proteins={summary?.totalProteins ?? 0}
+            fats={summary?.totalFats ?? 0}
+            carbs={summary?.totalCarbs ?? 0}
           />
-          <Button title="+ Water" onPress={handleAddWater} />
-        </View>
-      </View>
 
-      {(summary?.waterLogs as IWaterLog[])?.map((log) => (
-        <View key={log.id} style={styles.waterLogRow}>
-          <Text>{log.amountMl} ml</Text>
-          <Text style={styles.mealTime}>
-            {new Date(log.consumedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </Text>
-          <Text style={styles.deleteBtn} onPress={() => handleDeleteWater(log.id)}>✕</Text>
-        </View>
-      ))}
+          {/* Meals Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Meals</Text>
+
+            {/* Meal Type Chips */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chipRow}
+            >
+              {mealTypes?.map((type) => (
+                <Chip
+                  key={type.id}
+                  label={type.name}
+                  active={selectedMealTypeId === type.id}
+                  onPress={() =>
+                    setSelectedMealTypeId(selectedMealTypeId === type.id ? null : type.id)
+                  }
+                />
+              ))}
+            </ScrollView>
+
+            {/* Add Meal Button */}
+            <Button
+              title="+ Add Meal"
+              variant="secondary"
+              onPress={handleAddMeal}
+              isLoading={createMeal.isPending}
+              style={styles.addMealBtn}
+            />
+
+            {/* Meal Cards */}
+            {meals.length === 0 ? (
+              <EmptyState
+                title="No meals logged"
+                description="Add your first meal to start tracking"
+              />
+            ) : (
+              meals.map((meal) => (
+                <MealCard
+                  key={meal.id}
+                  meal={meal}
+                  onAddItem={handleAddFoodToMeal}
+                  onDelete={handleDeleteMeal}
+                />
+              ))
+            )}
+          </View>
+
+          {/* Water Section */}
+          <WaterTracker
+            waterLogs={waterLogs}
+            totalWaterMl={summary?.totalWaterMl ?? 0}
+            onAddWater={handleAddWater}
+            onDeleteWater={handleDeleteWater}
+          />
+        </>
+      )}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
-  content: { padding: 16 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: 'bold' },
-  date: { fontSize: 14, color: '#666', marginBottom: 12 },
-  summaryCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+    paddingHorizontal: spacing.lg,
   },
-  summaryTitle: { fontSize: 16, fontWeight: '600', marginBottom: 12 },
-  macroRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  macroItem: { alignItems: 'center' },
-  macroValue: { fontSize: 18, fontWeight: 'bold' },
-  macroLabel: { fontSize: 12, color: '#666' },
-  waterSummary: { marginTop: 12, fontSize: 16, textAlign: 'center' },
-  sectionTitle: { fontSize: 18, fontWeight: '600', marginVertical: 8 },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 8 },
-  chipRow: { flexDirection: 'row', marginBottom: 8 },
-  chip: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  screenTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  mealPlansBtn: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#eee',
-    borderRadius: 16,
-    marginRight: 8,
-    overflow: 'hidden',
-  },
-  chipActive: { backgroundColor: '#007AFF', color: '#fff' },
-  mealRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 6,
-  },
-  mealName: { fontSize: 16, fontWeight: '500' },
-  mealTime: { fontSize: 12, color: '#999' },
-  deleteBtn: { fontSize: 18, color: '#ff3b30', padding: 8 },
-  input: {
+    paddingVertical: 8,
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.md,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginRight: 8,
+    borderColor: colors.border,
   },
-  waterRow: { flexDirection: 'row', alignItems: 'center' },
-  waterLogRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 4,
+  mealPlansBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  loader: {
+    marginVertical: 40,
+  },
+  section: {
+    marginBottom: spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: spacing.md,
+  },
+  chipRow: {
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  addMealBtn: {
+    marginBottom: spacing.lg,
   },
 });
