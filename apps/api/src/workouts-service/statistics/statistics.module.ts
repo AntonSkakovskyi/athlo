@@ -6,6 +6,7 @@ import { WorkoutEntity } from '../entities/workout.entity';
 import { LogExerciseEntity } from '../entities/log-exercise.entity';
 import { LogSetEntity } from '../entities/log-set.entity';
 import { BodyMetricEntity } from '../../user-service/body-metrics/entities/body-metric.entity';
+import { ExerciseEntity } from '../../exercise-catalog/entities/exercise.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { BodyMetricEntity } from '../../user-service/body-metrics/entities/body-
       LogExerciseEntity,
       LogSetEntity,
       BodyMetricEntity,
+      ExerciseEntity,
     ]),
   ],
   controllers: [StatisticsController],

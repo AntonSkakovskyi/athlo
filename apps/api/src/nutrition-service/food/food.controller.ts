@@ -22,9 +22,15 @@ export class FoodController {
   @Get()
   @ApiOperation({ summary: 'Search or list all foods' })
   @ApiQuery({ name: 'search', required: false, description: 'Search foods by name' })
-  @ApiResponse({ status: 200, description: 'List of foods' })
-  findAll(@Query('search') search?: string) {
-    return this.foodService.findAll(search);
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiResponse({ status: 200, description: 'Paginated list of foods' })
+  findAll(
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.foodService.findAll(search, page ? Number(page) : 1, limit ? Number(limit) : 20);
   }
 
   @Get(':id')

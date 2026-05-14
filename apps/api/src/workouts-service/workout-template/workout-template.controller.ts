@@ -1,10 +1,10 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { WorkoutTemplateService } from './workout-template.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateWorkoutTemplateDto } from '../dto/workout-template/create-workout-template.dto';
 import { UpdateWorkoutTemplateDto } from '../dto/workout-template/update-workout-template.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Workout Templates')
 @ApiBearerAuth()
@@ -29,9 +29,15 @@ export class WorkoutTemplateController {
 
   @Get('public')
   @ApiOperation({ summary: 'Get public and friends-only templates' })
-  @ApiResponse({ status: 200, description: 'List of accessible templates' })
-  findPublicTemplates(@CurrentUser('id') userId: number) {
-    return this.templateService.findPublicTemplates(userId);
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiResponse({ status: 200, description: 'Paginated list of accessible templates' })
+  findPublicTemplates(
+    @CurrentUser('id') userId: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.templateService.findPublicTemplates(userId, page ? Number(page) : 1, limit ? Number(limit) : 10);
   }
 
   @Get('saved')

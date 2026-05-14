@@ -24,6 +24,26 @@ export class StatisticsController {
     return this.statisticsService.getWorkoutStatistics(userId, from, to);
   }
 
+  @Get('exercises/frequent')
+  @ApiOperation({ summary: 'Get exercises sorted by frequency of completion' })
+  @ApiResponse({ status: 200, description: 'Frequent exercises list' })
+  @ApiQuery({ name: 'search', required: false, description: 'Search by exercise name' })
+  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 20)' })
+  getFrequentExercises(
+    @CurrentUser('id') userId: number,
+    @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.statisticsService.getFrequentExercises(
+      userId,
+      page ? parseInt(page, 10) : 1,
+      limit ? parseInt(limit, 10) : 20,
+      search,
+    );
+  }
+
   @Get('exercises/:exerciseId')
   @ApiOperation({ summary: 'Get exercise progress over time' })
   @ApiResponse({ status: 200, description: 'Exercise progress data' })

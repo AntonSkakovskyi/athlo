@@ -158,4 +158,61 @@ export class NutritionLogService {
       waterLogs,
     };
   }
+
+  // ─── History (Date Range) ─────────────────────────
+
+  async getHistory(userId: number, from: string, to: string) {
+    const startDate = new Date(`${from}T00:00:00`);
+    const endDate = new Date(`${to}T23:59:59`);
+
+    const meals = await this.logMealRepository.find({
+      where: { userId, consumedAt: Between(startDate, endDate) },
+      relations: { items: { food: true } },
+      order: { consumedAt: 'ASC' },
+    });
+
+    const waterLogs = await this.waterLogRepository.find({
+      where: { userId, consumedAt: Between(startDate, endDate) },
+      order: { consumedAt: 'ASC' },
+    });
+
+    // Group by date
+    const dayMap = new Map<string, { calories: number; proteins: number; fats: number; carbs: number; waterMl: number }>();
+
+    for (const meal of meals) {
+      const date = new Date(meal.consumedAt).toISOString().split('T')[0];
+      if (!dayMap.has(date)) {
+        dayMap.set(date, { calories: 0, proteins: 0, fats: 0, carbs: 0, waterMl: 0 });
+      }
+      const day = dayMap.get(date)!;
+      for (const item of meal.items) {
+        const multiplier = Number(item.amount);
+        day.calories += Number(item.food.calories) * multiplier;
+        day.proteins += Number(item.food.proteins) * multiplier;
+        day.fats += Number(item.food.fats) * multiplier;
+        day.carbs += Number(item.food.carbs) * multiplier;
+      }
+    }
+
+    for (const log of waterLogs) {
+      const date = new Date(log.consumedAt).toISOString().split('T')[0];
+      if (!dayMap.has(date)) {
+        dayMap.set(date, { calories: 0, proteins: 0, fats: 0, carbs: 0, waterMl: 0 });
+      }
+      dayMap.get(date)!.waterMl += log.amountMl;
+    }
+
+    const history = Array.from(dayMap.entries())
+      .map(([date, data]) => ({
+        date,
+        calories: Math.round(data.calories * 100) / 100,
+        proteins: Math.round(data.proteins * 100) / 100,
+        fats: Math.round(data.fats * 100) / 100,
+        carbs: Math.round(data.carbs * 100) / 100,
+        waterMl: data.waterMl,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    return history;
+  }
 }

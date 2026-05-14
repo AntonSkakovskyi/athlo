@@ -47,7 +47,7 @@ export class WorkoutTemplateService {
     });
   }
 
-  async findPublicTemplates(userId: number) {
+  async findPublicTemplates(userId: number, page = 1, limit = 10) {
     const publicVisibilityId = this.getVisibilityId(VisibilityType.PUBLIC);
     const friendsOnlyVisibilityId = this.getVisibilityId(VisibilityType.FRIENDS_ONLY);
     const friendIds = await this.friendService.getFriendIds(userId);
@@ -69,15 +69,26 @@ export class WorkoutTemplateService {
           ...(friendIds.length > 0 ? { friendsId: friendsOnlyVisibilityId, friendIds } : {}),
         },
       )
+      .orderBy('template.id', 'DESC')
       .addOrderBy('te.order', 'ASC')
-      .addOrderBy('ts.order', 'ASC');
+      .addOrderBy('ts.order', 'ASC')
+      .skip((page - 1) * limit)
+      .take(limit);
 
-    return qb.getMany().then((templates) =>
-      templates.map((t) => {
+    const [templates, total] = await qb.getManyAndCount();
+
+    return {
+      data: templates.map((t) => {
         const { creator, ...rest } = t;
         return { ...rest, creatorNickname: creator?.nickname };
       }),
-    );
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: number, userId: number) {

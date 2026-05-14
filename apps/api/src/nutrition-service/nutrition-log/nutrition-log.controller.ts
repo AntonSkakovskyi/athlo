@@ -24,6 +24,19 @@ export class NutritionLogController {
     return this.nutritionLogService.getDailySummary(userId, date || new Date().toISOString().split('T')[0]);
   }
 
+  @Get('history')
+  @ApiOperation({ summary: 'Get nutrition history (daily summaries for a date range)' })
+  @ApiQuery({ name: 'from', required: true, description: 'Start date in YYYY-MM-DD format' })
+  @ApiQuery({ name: 'to', required: true, description: 'End date in YYYY-MM-DD format' })
+  @ApiResponse({ status: 200, description: 'Array of daily nutrition summaries' })
+  getHistory(
+    @CurrentUser('id') userId: number,
+    @Query('from') from: string,
+    @Query('to') to: string,
+  ) {
+    return this.nutritionLogService.getHistory(userId, from, to);
+  }
+
   // ─── Log Meals ────────────────────────────────────
 
   @Post('meals')

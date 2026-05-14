@@ -5,12 +5,14 @@ import { WorkoutEntity } from '../entities/workout.entity';
 import { LogExerciseEntity } from '../entities/log-exercise.entity';
 import { LogSetEntity } from '../entities/log-set.entity';
 import { BodyMetricEntity } from '../../user-service/body-metrics/entities/body-metric.entity';
+import { ExerciseEntity } from '../../exercise-catalog/entities/exercise.entity';
 import { WorkoutStatus } from '@athlo/shared';
 import type {
   IWorkoutStatistics,
   IExerciseProgress,
   IBodyMetricProgress,
   IStatisticsSummary,
+  IFrequentExercise,
 } from '@athlo/shared';
 
 @Injectable()
@@ -24,6 +26,8 @@ export class StatisticsService {
     private readonly logSetRepo: Repository<LogSetEntity>,
     @InjectRepository(BodyMetricEntity)
     private readonly bodyMetricRepo: Repository<BodyMetricEntity>,
+    @InjectRepository(ExerciseEntity)
+    private readonly exerciseRepo: Repository<ExerciseEntity>,
   ) {}
 
   async getWorkoutStatistics(
@@ -87,6 +91,33 @@ export class StatisticsService {
       .andWhere(dateFilter.clause, dateFilter.params)
       .getRawOne();
 
+    // Chart data: per-day aggregation for line charts
+    const chartDataRaw = await this.workoutRepo
+      .createQueryBuilder('w')
+      .select('w.started_at::date::text', 'date')
+      .addSelect('COUNT(DISTINCT w.id)::int', 'workoutsCount')
+      .addSelect('COUNT(ls.id) FILTER (WHERE ls.is_completed = true)::int', 'totalSets')
+      .addSelect(
+        'COALESCE(SUM(DISTINCT EXTRACT(EPOCH FROM (w.ended_at - w.started_at)) / 60), 0)',
+        'totalDurationMinutes',
+      )
+      .addSelect(
+        'COALESCE(SUM(ls.weight * ls.reps) FILTER (WHERE ls.is_completed = true), 0)',
+        'totalVolume',
+      )
+      .addSelect(
+        'COALESCE(SUM(ls.reps) FILTER (WHERE ls.is_completed = true), 0)::int',
+        'totalReps',
+      )
+      .leftJoin('w.logExercises', 'le')
+      .leftJoin('le.sets', 'ls')
+      .where('w.user_id = :userId', { userId })
+      .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .andWhere(dateFilter.clause, dateFilter.params)
+      .groupBy('w.started_at::date')
+      .orderBy('w.started_at::date', 'ASC')
+      .getRawMany();
+
     return {
       totalWorkouts: totalWorkoutsResult,
       totalSets: totalSetsResult,
@@ -97,6 +128,14 @@ export class StatisticsService {
       workoutsPerMonth: perMonth.map((r) => ({
         month: r.month,
         count: parseInt(r.count, 10),
+      })),
+      chartData: chartDataRaw.map((r) => ({
+        date: r.date,
+        workoutsCount: parseInt(r.workoutsCount, 10),
+        totalSets: parseInt(r.totalSets, 10),
+        totalDurationMinutes: parseFloat(parseFloat(r.totalDurationMinutes).toFixed(1)),
+        totalVolume: parseFloat(r.totalVolume),
+        totalReps: parseInt(r.totalReps, 10),
       })),
     };
   }
@@ -120,31 +159,22 @@ export class StatisticsService {
 
     const trackingType = trackingTypeResult?.exercise?.trackingType?.name ?? 'WEIGHT_AND_REPS';
 
-    // Determine the metric to track based on tracking type
-    let bestValueExpression: string;
-    switch (trackingType) {
-      case 'REPS_ONLY':
-        bestValueExpression = 'MAX(ls.reps)';
-        break;
-      case 'TIME_BASED':
-        bestValueExpression = 'MAX(ls.duration)';
-        break;
-      case 'WEIGHT_AND_REPS':
-      default:
-        bestValueExpression = 'MAX(ls.weight)';
-        break;
-    }
-
     const records = await this.logSetRepo
       .createQueryBuilder('ls')
       .select('w.id', 'workoutId')
       .addSelect('w.started_at::date::text', 'date')
-      .addSelect(bestValueExpression, 'bestValue')
+      .addSelect('MAX(ls.weight)', 'heaviestWeight')
+      .addSelect('MAX(ls.weight * ls.reps)', 'bestSetVolume')
+      .addSelect('SUM(ls.weight * ls.reps)', 'totalVolume')
+      .addSelect('SUM(ls.reps)', 'totalReps')
+      .addSelect('MAX(ls.duration)', 'bestDuration')
+      .addSelect('MAX(ls.distance)', 'bestDistance')
       .innerJoin('ls.logExercise', 'le')
       .innerJoin('le.workout', 'w')
       .where('w.user_id = :userId', { userId })
       .andWhere('le.exercise_id = :exerciseId', { exerciseId })
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .andWhere('ls.is_completed = true')
       .andWhere(dateFilter.clause, dateFilter.params)
       .groupBy('w.id')
       .addGroupBy('w.started_at')
@@ -156,9 +186,101 @@ export class StatisticsService {
       trackingType,
       records: records.map((r) => ({
         date: r.date,
-        bestValue: parseFloat(r.bestValue),
         workoutId: r.workoutId,
+        heaviestWeight: r.heaviestWeight != null ? parseFloat(r.heaviestWeight) : null,
+        bestSetVolume: r.bestSetVolume != null ? parseFloat(r.bestSetVolume) : null,
+        totalVolume: r.totalVolume != null ? parseFloat(r.totalVolume) : null,
+        totalReps: r.totalReps != null ? parseInt(r.totalReps, 10) : null,
+        bestDuration: r.bestDuration != null ? parseInt(r.bestDuration, 10) : null,
+        bestDistance: r.bestDistance != null ? parseFloat(r.bestDistance) : null,
       })),
+    };
+  }
+
+  async getFrequentExercises(
+    userId: number,
+    page = 1,
+    limit = 20,
+    search?: string,
+  ): Promise<{ data: IFrequentExercise[]; meta: { page: number; limit: number; total: number } }> {
+    const offset = (page - 1) * limit;
+
+    const qb = this.logSetRepo
+      .createQueryBuilder('ls')
+      .select('e.id', 'exerciseId')
+      .addSelect('e.name', 'exerciseName')
+      .addSelect('eq.name', 'equipmentName')
+      .addSelect('tt.name', 'trackingType')
+      .addSelect('COUNT(DISTINCT ls.id)::int', 'totalSets')
+      .addSelect('COUNT(DISTINCT w.id)::int', 'totalWorkouts')
+      .innerJoin('ls.logExercise', 'le')
+      .innerJoin('le.workout', 'w')
+      .innerJoin('le.exercise', 'e')
+      .leftJoin('e.equipment', 'eq')
+      .innerJoin('e.trackingType', 'tt')
+      .where('w.user_id = :userId', { userId })
+      .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .andWhere('ls.is_completed = true')
+      .groupBy('e.id')
+      .addGroupBy('e.name')
+      .addGroupBy('eq.name')
+      .addGroupBy('tt.name')
+      .orderBy('COUNT(ls.id)', 'DESC');
+
+    if (search) {
+      qb.andWhere('e.name ILIKE :search', { search: `%${search}%` });
+    }
+
+    // Get total count first
+    const countResult = await this.logSetRepo
+      .createQueryBuilder('ls')
+      .select('COUNT(DISTINCT le.exercise_id)::int', 'count')
+      .innerJoin('ls.logExercise', 'le')
+      .innerJoin('le.workout', 'w')
+      .innerJoin('le.exercise', 'e')
+      .where('w.user_id = :userId', { userId })
+      .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .andWhere('ls.is_completed = true')
+      .andWhere(search ? 'e.name ILIKE :search' : '1=1', search ? { search: `%${search}%` } : {})
+      .getRawOne();
+
+    const total = parseInt(countResult?.count ?? '0', 10);
+
+    const rawExercises = await qb.offset(offset).limit(limit).getRawMany();
+
+    // Fetch primary muscles for all returned exercises
+    const exerciseIds = rawExercises.map((r) => r.exerciseId);
+    let muscleMap: Record<number, string[]> = {};
+
+    if (exerciseIds.length > 0) {
+      const muscles = await this.exerciseRepo
+        .createQueryBuilder('e')
+        .select('e.id', 'exerciseId')
+        .addSelect('m.name', 'muscleName')
+        .innerJoin('e.exerciseMuscles', 'em')
+        .innerJoin('em.muscle', 'm')
+        .where('e.id IN (:...exerciseIds)', { exerciseIds })
+        .andWhere('em.is_primary = true')
+        .getRawMany();
+
+      muscleMap = muscles.reduce((acc, m) => {
+        if (!acc[m.exerciseId]) acc[m.exerciseId] = [];
+        acc[m.exerciseId].push(m.muscleName);
+        return acc;
+      }, {} as Record<number, string[]>);
+    }
+
+    return {
+      data: rawExercises.map((r) => ({
+        exerciseId: r.exerciseId,
+        exerciseName: r.exerciseName,
+        equipmentName: r.equipmentName,
+        trackingType: r.trackingType,
+        totalSets: r.totalSets,
+        totalWorkouts: r.totalWorkouts,
+        primaryMuscles: muscleMap[r.exerciseId] ?? [],
+      })),
+      meta: { page, limit, total },
     };
   }
 

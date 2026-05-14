@@ -30,11 +30,32 @@ export class WorkoutService {
     return this.workoutsRepository.save(workout);
   }
 
-  async findAllByUser(userId: number) {
-    return this.workoutsRepository.find({
+  async findAllByUser(userId: number, page = 1, limit = 10) {
+    const [data, total] = await this.workoutsRepository.findAndCount({
       where: { userId },
-      order: { started_at: 'DESC' },
+      relations: {
+        logExercises: {
+          exercise: true,
+          sets: true,
+        },
+      },
+      order: {
+        started_at: 'DESC',
+        logExercises: { order: 'ASC' },
+      },
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: number, userId: number) {

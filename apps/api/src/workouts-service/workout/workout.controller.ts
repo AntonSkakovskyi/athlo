@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { WorkoutService } from './workout.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
@@ -6,7 +6,7 @@ import { CreateWorkoutDto } from '../dto/workout/create-workout.dto';
 import { UpdateWorkoutDto } from '../dto/workout/update-workout.dto';
 import { CompleteWorkoutDto } from '../dto/workout/complete-workout.dto';
 import { BatchLastPerformanceDto } from '../dto/workout/batch-last-performance.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Workouts')
 @ApiBearerAuth()
@@ -24,9 +24,15 @@ export class WorkoutController {
 
   @Get()
   @ApiOperation({ summary: 'Get all workouts for current user' })
-  @ApiResponse({ status: 200, description: 'List of workouts' })
-  findAll(@CurrentUser('id') userId: number) {
-    return this.workoutService.findAllByUser(userId);
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiResponse({ status: 200, description: 'Paginated list of workouts' })
+  findAll(
+    @CurrentUser('id') userId: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.workoutService.findAllByUser(userId, page ? Number(page) : 1, limit ? Number(limit) : 10);
   }
 
   @Get(':id')

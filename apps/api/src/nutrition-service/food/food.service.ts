@@ -17,13 +17,24 @@ export class FoodService {
     return this.foodRepository.save(food);
   }
 
-  async findAll(search?: string) {
+  async findAll(search?: string, page = 1, limit = 20) {
     const where = search ? { name: ILike(`%${search}%`) } : {};
-    return this.foodRepository.find({
+    const [data, total] = await this.foodRepository.findAndCount({
       where,
       order: { name: 'ASC' },
-      take: 50,
+      skip: (page - 1) * limit,
+      take: limit,
     });
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: number) {
