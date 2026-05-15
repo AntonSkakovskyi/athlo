@@ -4,11 +4,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IFrequentExercise } from '@athlo/shared';
 import { colors, spacing } from '@/constants/theme';
-import { useFrequentExercises } from '../../../hooks/api/useStatisticsHooks';
+import { useFrequentExercises } from '@/features/profile/hooks';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { Input } from '@/components/ui/Input/Input';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { ExerciseProgressListItem } from '@/components/profile/ExerciseProgressListItem/ExerciseProgressListItem';
+import { ExerciseProgressListItem } from '@/features/profile/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 export default function ExerciseProgressScreen() {

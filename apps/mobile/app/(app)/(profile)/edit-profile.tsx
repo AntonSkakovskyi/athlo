@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, borderRadius, spacing } from '@/constants/theme';
-import { useGetProfile, useUpdateProfile } from '../../../hooks/api/useProfileHooks';
+import { useGetProfile, useUpdateProfile } from '@/features/profile/hooks';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { Spinner } from '@/components/ui/Spinner/Spinner';

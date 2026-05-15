@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { IUser } from '@athlo/shared';
-import apiClient from '../../api/api-client';
-import { apiRoutes } from '../../api/api-routes';
-import { profileKeys } from '../../api/queries/query-keys';
+import apiClient from '@/api/api-client';
+import { apiRoutes } from '@/api/api-routes';
+import { profileKeys } from '@/api/queries/query-keys';
 
 // ─── Queries ────────────────────────────────────────
 
