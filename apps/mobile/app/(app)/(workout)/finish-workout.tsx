@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   View,
   Text,
@@ -6,15 +5,11 @@ import {
   ScrollView,
   TextInput,
   Pressable,
-  Alert,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { colors, borderRadius, fontSize, spacing } from '@/constants/theme';
+import { colors, borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
-import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
-import { useCompleteWorkout, useDeleteWorkout } from '@/features/workout/hooks';
+import { useFinishWorkoutScreen } from '@/features/workout/hooks/useFinishWorkoutScreen';
 
 const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const FEELING_OPTIONS = [
@@ -36,72 +31,27 @@ function SummaryItem({ icon, value, label }: { icon: string; value: string; labe
 }
 
 export default function FinishWorkoutScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { duration, volume, completedSets, totalSets } = useLocalSearchParams<{
-    duration: string;
-    volume: string;
-    completedSets: string;
-    totalSets: string;
-  }>();
-
-  const { workout, endWorkout } = useActiveWorkout();
-  const completeWorkout = useCompleteWorkout();
-  const deleteWorkout = useDeleteWorkout();
-
-  const [rpe, setRpe] = useState<number | undefined>(undefined);
-  const [feeling, setFeeling] = useState<number | undefined>(undefined);
-  const [calories, setCalories] = useState('');
-  const [avgHr, setAvgHr] = useState('');
-  const [maxHr, setMaxHr] = useState('');
-
-  const handleFinish = () => {
-    if (!workout) return;
-    completeWorkout.mutate(
-      {
-        id: String(workout.id),
-        data: {
-          rpe,
-          feelingScore: feeling,
-          calories: calories ? Number(calories) : undefined,
-          avgHeartRate: avgHr ? Number(avgHr) : undefined,
-          maxHeartRate: maxHr ? Number(maxHr) : undefined,
-        },
-      },
-      {
-        onSuccess: () => {
-          endWorkout();
-          router.replace({
-            pathname: '/(app)/(workout)/workout-summary',
-            params: { workoutId: String(workout.id) },
-          });
-        },
-      },
-    );
-  };
-
-  const handleDiscard = () => {
-    if (!workout) return;
-    Alert.alert(
-      'Discard Workout',
-      'All progress will be lost. This cannot be undone.',
-      [
-        { text: 'Keep', style: 'cancel' },
-        {
-          text: 'Discard',
-          style: 'destructive',
-          onPress: () => {
-            deleteWorkout.mutate(String(workout.id), {
-              onSuccess: () => {
-                endWorkout();
-                router.replace('/(app)/(workout)');
-              },
-            });
-          },
-        },
-      ],
-    );
-  };
+  const {
+    duration,
+    volume,
+    completedSets,
+    totalSets,
+    rpe,
+    setRpe,
+    feeling,
+    setFeeling,
+    calories,
+    setCalories,
+    avgHr,
+    setAvgHr,
+    maxHr,
+    setMaxHr,
+    handleFinish,
+    handleDiscard,
+    completeWorkoutPending,
+    insets,
+    router,
+  } = useFinishWorkoutScreen();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
@@ -112,14 +62,12 @@ export default function FinishWorkoutScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Summary Preview */}
         <View style={styles.summaryRow}>
           <SummaryItem icon="⏱️" value={duration ?? '—'} label="Duration" />
           <SummaryItem icon="🏋️" value={`${Number(volume ?? 0).toLocaleString()} kg`} label="Volume" />
           <SummaryItem icon="✅" value={`${completedSets ?? 0}/${totalSets ?? 0}`} label="Sets" />
         </View>
 
-        {/* RPE Selector */}
         <Text style={styles.sectionLabel}>Rate of Perceived Exertion (RPE)</Text>
         <View style={styles.rpeRow}>
           {RPE_VALUES.map((val) => (
@@ -133,7 +81,6 @@ export default function FinishWorkoutScreen() {
           ))}
         </View>
 
-        {/* Feeling Selector */}
         <Text style={styles.sectionLabel}>How do you feel?</Text>
         <View style={styles.feelingRow}>
           {FEELING_OPTIONS.map((opt) => (
@@ -150,7 +97,6 @@ export default function FinishWorkoutScreen() {
           ))}
         </View>
 
-        {/* Optional Numeric Inputs */}
         <Text style={styles.sectionLabel}>Additional Metrics (optional)</Text>
         <View style={styles.inputsRow}>
           <View style={styles.inputGroup}>
@@ -194,7 +140,7 @@ export default function FinishWorkoutScreen() {
           title="Finish Workout"
           variant="primary"
           onPress={handleFinish}
-          isLoading={completeWorkout.isPending}
+          isLoading={completeWorkoutPending}
           style={styles.footerBtn}
         />
         <Button
@@ -218,26 +164,26 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: 24,
+    paddingBottom: spacing['2xl'],
   },
   summaryRow: {
     flexDirection: 'row',
     backgroundColor: colors.surfaceLight,
     borderRadius: borderRadius.lg,
-    padding: 16,
-    marginBottom: 24,
+    padding: spacing.lg,
+    marginBottom: spacing['2xl'],
   },
   summaryItem: {
     flex: 1,
     alignItems: 'center',
   },
   summaryIcon: {
-    fontSize: 20,
-    marginBottom: 4,
+    fontSize: fontSize.xl,
+    marginBottom: spacing.xs,
   },
   summaryValue: {
     fontSize: fontSize.md,
-    fontWeight: '700',
+    fontWeight: fontWeight.bold,
     color: colors.text,
   },
   summaryLabel: {
@@ -247,15 +193,15 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: fontSize.sm,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     color: colors.textSecondary,
-    marginBottom: 10,
+    marginBottom: spacing.sm,
   },
   rpeRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 20,
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
   },
   rpeBtn: {
     width: 36,
@@ -273,21 +219,21 @@ const styles = StyleSheet.create({
   },
   rpeText: {
     fontSize: fontSize.sm,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   rpeTextActive: {
-    color: '#000',
+    color: colors.black,
   },
   feelingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: spacing.xl,
   },
   feelingBtn: {
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.md,
     borderWidth: 1,
     borderColor: 'transparent',
@@ -297,8 +243,8 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   feelingEmoji: {
-    fontSize: 28,
-    marginBottom: 4,
+    fontSize: fontSize['3xl'],
+    marginBottom: spacing.xs,
   },
   feelingLabel: {
     fontSize: fontSize.xs,
@@ -306,12 +252,12 @@ const styles = StyleSheet.create({
   },
   feelingLabelActive: {
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
   },
   inputsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
+    gap: spacing.md,
+    marginBottom: spacing['2xl'],
   },
   inputGroup: {
     flex: 1,
@@ -319,13 +265,13 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: fontSize.xs,
     color: colors.textMuted,
-    marginBottom: 6,
+    marginBottom: spacing.xs,
   },
   input: {
     backgroundColor: colors.surfaceLight,
     borderRadius: borderRadius.sm,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     fontSize: fontSize.sm,
     color: colors.text,
     textAlign: 'center',
@@ -335,7 +281,7 @@ const styles = StyleSheet.create({
   footer: {
     padding: spacing.lg,
     paddingBottom: spacing.lg,
-    gap: 10,
+    gap: spacing.sm,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,

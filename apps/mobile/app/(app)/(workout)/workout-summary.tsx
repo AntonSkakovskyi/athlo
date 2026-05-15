@@ -1,25 +1,25 @@
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { MetricCard } from '@/components/ui/MetricCard/MetricCard';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
 import { ExerciseSummaryCard } from '@/features/workout/components';
-import type { IWorkoutWithRelations } from '@athlo/shared';
-import { useGetWorkoutById } from '@/features/workout/hooks';
-import { formatDuration } from '../../../utils/workout';
+import { useWorkoutSummaryScreen } from '@/features/workout/hooks/useWorkoutSummaryScreen';
 
 const FEELING_EMOJIS = ['😫', '😐', '😊', '😄', '🔥'];
 
 export default function WorkoutSummaryScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
-
-  const { data, isLoading } = useGetWorkoutById(workoutId ?? '');
-  const workout = data as IWorkoutWithRelations | undefined;
+  const {
+    workout,
+    isLoading,
+    exercises,
+    completedSets,
+    totalVolume,
+    duration,
+    insets,
+    router,
+  } = useWorkoutSummaryScreen();
 
   if (isLoading) {
     return <LoadingScreen paddingTop={insets.top} />;
@@ -29,29 +29,13 @@ export default function WorkoutSummaryScreen() {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
         <Text style={styles.emptyText}>Workout not found</Text>
-        <Button title="Go Back" variant="secondary" onPress={() => router.back()} style={{ marginTop: 16 }} />
+        <Button title="Go Back" variant="secondary" onPress={() => router.back()} style={styles.goBackBtn} />
       </View>
     );
   }
 
-  const exercises = workout.logExercises?.sort((a, b) => a.order - b.order) ?? [];
-  const completedSets = exercises.reduce(
-    (acc, ex) => acc + (ex.sets?.filter((s) => s.isCompleted).length ?? 0),
-    0,
-  );
-  const totalVolume = exercises.reduce(
-    (acc, ex) =>
-      acc +
-      (ex.sets
-        ?.filter((s) => s.isCompleted)
-        .reduce((sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0), 0) ?? 0),
-    0,
-  );
-  const duration = formatDuration(workout.started_at, workout.ended_at);
-
   return (
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
-      {/* Header */}
       <ScreenHeader title="Summary" onBack={() => router.back()} />
 
       <ScrollView
@@ -59,7 +43,6 @@ export default function WorkoutSummaryScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Workout Title & Date */}
         <Text style={styles.workoutName}>{workout.name}</Text>
         <Text style={styles.workoutDate}>
           {new Date(workout.started_at).toLocaleDateString('en-US', {
@@ -70,7 +53,6 @@ export default function WorkoutSummaryScreen() {
           })}
         </Text>
 
-        {/* Overview Cards */}
         <View style={styles.metricsGrid}>
           <MetricCard icon="⏱️" value={duration} label="Duration" />
           <MetricCard icon="🏋️" value={`${totalVolume.toLocaleString()} kg`} label="Volume" />
@@ -78,7 +60,6 @@ export default function WorkoutSummaryScreen() {
           <MetricCard icon="✅" value={String(completedSets)} label="Sets" />
         </View>
 
-        {/* Optional Metrics */}
         {(workout.rpe || workout.feelingScore || workout.calories || workout.avgHeartRate) && (
           <View style={styles.optionalMetrics}>
             {workout.rpe != null && (
@@ -113,7 +94,6 @@ export default function WorkoutSummaryScreen() {
           </View>
         )}
 
-        {/* Exercises List */}
         <Text style={styles.sectionTitle}>Exercises</Text>
         {exercises.map((ex) => (
           <ExerciseSummaryCard key={ex.id} exercise={ex} />
@@ -137,6 +117,9 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: fontSize.lg,
     color: colors.textSecondary,
+  },
+  goBackBtn: {
+    marginTop: 16,
   },
   scrollArea: {
     flex: 1,

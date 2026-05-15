@@ -1,14 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Pressable,
-  ScrollView,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import type { IExercise, IMuscle, IEquipment } from '@athlo/shared';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import type { IMuscle, IEquipment } from '@athlo/shared';
 import { colors, spacing } from '@/constants/theme';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
@@ -17,142 +8,32 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import { ExerciseListItem } from '@/features/workout/components';
-import { useInfiniteExercises } from '../../../hooks/api/useExerciseQueries';
-import { useGetMuscles } from '../../../hooks/api/useMuscleQueries';
-import { useGetEquipments } from '../../../hooks/api/useEquipmentQueries';
-import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
-import { useCreateLogExercise } from '@/features/workout/hooks';
-import { useCreateTemplateExercise } from '@/features/workout/hooks';
-import { getTrackingType, trackingTypeIcon } from '../../../utils/workout';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
-
-interface ExerciseWithRelations extends IExercise {
-  equipment?: IEquipment;
-  exerciseMuscles?: Array<{
-    muscle?: IMuscle;
-    isPrimary?: boolean;
-  }>;
-}
+import { trackingTypeIcon } from '@/utils/workout';
+import { useExercisePickerScreen } from '@/features/workout/hooks/useExercisePickerScreen';
+import { ExerciseWithRelations } from '@/hooks/api/useExerciseAPI';
 
 export default function ExercisePickerScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const params = useLocalSearchParams<{ workoutId?: string; templateId?: string }>();
-
-  const [search, setSearch] = useState('');
-  const [selectedMuscleIds, setSelectedMuscleIds] = useState<number[]>([]);
-  const [selectedEquipmentIds, setSelectedEquipmentIds] = useState<number[]>([]);
-  const [selectedExercises, setSelectedExercises] = useState<Set<number>>(new Set());
-
-  const { exercises: activeExercises, addExercise, workout } = useActiveWorkout();
-
-  const filters = useMemo(() => {
-    const f: Record<string, unknown> = {};
-    if (search.trim()) f.search = search.trim();
-    if (selectedMuscleIds.length > 0) f.muscleId = selectedMuscleIds[0];
-    if (selectedEquipmentIds.length > 0) f.equipmentId = selectedEquipmentIds[0];
-    return f;
-  }, [search, selectedMuscleIds, selectedEquipmentIds]);
-
-  const exercisesQuery = useInfiniteExercises(filters);
-  const musclesQuery = useGetMuscles();
-  const equipmentsQuery = useGetEquipments();
-
-  const createLogExercise = useCreateLogExercise(params.workoutId ?? String(workout?.id ?? ''));
-  const createTemplateExercise = useCreateTemplateExercise(params.templateId ?? '');
-
-  const exerciseList = useMemo(() => {
-    const pages = exercisesQuery.data?.pages ?? [];
-    return pages.flatMap((p) => p.data) as ExerciseWithRelations[];
-  }, [exercisesQuery.data]);
-
-  const toggleMuscle = useCallback((id: number) => {
-    setSelectedMuscleIds((prev) =>
-      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id],
-    );
-  }, []);
-
-  const toggleEquipment = useCallback((id: number) => {
-    setSelectedEquipmentIds((prev) =>
-      prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id],
-    );
-  }, []);
-
-  const toggleExercise = useCallback((id: number) => {
-    setSelectedExercises((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
-  const hasFilters = selectedMuscleIds.length > 0 || selectedEquipmentIds.length > 0;
-
-  const [isAdding, setIsAdding] = useState(false);
-
-  const handleAdd = useCallback(async () => {
-    const selectedList = exerciseList.filter((ex) => selectedExercises.has(ex.id));
-    if (selectedList.length === 0) return;
-
-    setIsAdding(true);
-    try {
-      const workoutId = params.workoutId ?? (workout?.id ? String(workout.id) : null);
-
-      if (workoutId) {
-        const promises = selectedList.map(
-          (ex, i) =>
-            new Promise<void>((resolve, reject) => {
-              createLogExercise.mutate(
-                {
-                  exerciseId: ex.id,
-                  order: activeExercises.length + 1 + i,
-                },
-                {
-                  onSuccess: (logExercise) => {
-                    addExercise({
-                      logExerciseId: logExercise.id,
-                      exerciseId: ex.id,
-                      exerciseName: ex.name,
-                      trackingType: getTrackingType(ex.trackingTypeId),
-                      restTime: 0,
-                    });
-                    resolve();
-                  },
-                  onError: reject,
-                },
-              );
-            }),
-        );
-        await Promise.all(promises);
-      } else if (params.templateId) {
-        const promises = selectedList.map(
-          (ex) =>
-            new Promise<void>((resolve, reject) => {
-              createTemplateExercise.mutate(
-                { exerciseId: ex.id, order: 1 },
-                { onSuccess: () => resolve(), onError: reject },
-              );
-            }),
-        );
-        await Promise.all(promises);
-      }
-
-      router.back();
-    } finally {
-      setIsAdding(false);
-    }
-  }, [
+  const {
+    search,
+    setSearch,
+    selectedMuscleIds,
+    selectedEquipmentIds,
     selectedExercises,
+    isAdding,
+    exercisesQuery,
+    musclesQuery,
+    equipmentsQuery,
     exerciseList,
-    params,
-    workout,
-    activeExercises,
-    createLogExercise,
-    createTemplateExercise,
-    addExercise,
+    hasFilters,
+    toggleMuscle,
+    toggleEquipment,
+    toggleExercise,
+    handleAdd,
+    clearFilters,
+    insets,
     router,
-  ]);
+  } = useExercisePickerScreen();
 
   const renderExercise = ({ item }: { item: ExerciseWithRelations }) => {
     const isSelected = selectedExercises.has(item.id);
@@ -176,10 +57,8 @@ export default function ExercisePickerScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
-      {/* Header */}
       <ScreenHeader title="Choose Exercise" onBack={() => router.back()} />
 
-      {/* Search */}
       <View style={styles.searchWrap}>
         <Input
           placeholder="Search exercises..."
@@ -189,14 +68,13 @@ export default function ExercisePickerScreen() {
         />
       </View>
 
-      {/* Muscle Filters */}
       {(musclesQuery.data?.length ?? 0) > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filtersRow}
         >
-          {musclesQuery.data!.map((muscle) => (
+          {musclesQuery.data!.map((muscle: IMuscle) => (
             <Chip
               key={muscle.id}
               label={muscle.name}
@@ -207,14 +85,13 @@ export default function ExercisePickerScreen() {
         </ScrollView>
       )}
 
-      {/* Equipment Filters */}
       {(equipmentsQuery.data?.length ?? 0) > 0 && (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filtersRow}
         >
-          {equipmentsQuery.data!.map((eq) => (
+          {equipmentsQuery.data!.map((eq: IEquipment) => (
             <Chip
               key={eq.id}
               label={eq.name}
@@ -226,24 +103,17 @@ export default function ExercisePickerScreen() {
       )}
 
       {hasFilters && (
-        <Pressable
-          style={styles.clearFilters}
-          onPress={() => {
-            setSelectedMuscleIds([]);
-            setSelectedEquipmentIds([]);
-          }}
-        >
+        <Pressable style={styles.clearFilters} onPress={clearFilters}>
           <Text style={styles.clearFiltersText}>Clear Filters</Text>
         </Pressable>
       )}
 
-      {/* Exercise List */}
       {exercisesQuery.isLoading ? (
         <Spinner size="large" style={styles.loader} />
       ) : (
         <InfiniteList
           data={exerciseList}
-          keyExtractor={(item) => String((item as ExerciseWithRelations).id)}
+          keyExtractor={(item) => String(item.id)}
           renderItem={renderExercise}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
@@ -259,7 +129,6 @@ export default function ExercisePickerScreen() {
         />
       )}
 
-      {/* Footer */}
       <View style={styles.footer}>
         <Button
           title={`Add Exercise${selectedExercises.size > 0 ? ` (${selectedExercises.size})` : ''}`}

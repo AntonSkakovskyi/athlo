@@ -1,80 +1,24 @@
-import { useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Alert,
-} from 'react-native';
-
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { WorkoutStatus } from '@athlo/shared';
-import { colors, spacing } from '@/constants/theme';
-import { useGetWorkouts, useCreateWorkout } from '@/features/workout/hooks';
-import { useGetMyTemplates, useStartFromTemplate } from '@/features/workout/hooks';
-import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
-import { TemplateCard } from '@/features/workout/components';
-import type { IWorkoutWithRelations } from '@athlo/shared';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { WorkoutHistoryList } from '@/features/workout/components';
 import { QuickActionCard } from '@/features/workout/components';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
+import { useWorkoutsScreen } from '@/features/workout/hooks/useWorkoutsScreen';
+import TemplateCard from '@/features/workout/components/TemplateCard/TemplateCard';
 
 export default function WorkoutsScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { startWorkout, isActive } = useActiveWorkout();
-
-  const workoutsQuery = useGetWorkouts();
-  const templatesQuery = useGetMyTemplates();
-  const createWorkout = useCreateWorkout();
-  const startFromTemplate = useStartFromTemplate();
-
-  const completedWorkouts = useMemo(
-    () => (workoutsQuery.data ?? []).filter((w) => w.status === WorkoutStatus.COMPLETED),
-    [workoutsQuery.data],
-  );
-
-  const handleEmptyWorkout = useCallback(() => {
-    if (isActive) {
-      Alert.alert('Active Workout', 'You already have an active workout. Finish it first.');
-      return;
-    }
-    createWorkout.mutate(
-      { name: 'Quick Workout' },
-      {
-        onSuccess: (workout) => {
-          startWorkout(workout, []);
-          router.push('/(app)/(workout)/active-workout');
-        },
-      },
-    );
-  }, [isActive, createWorkout, startWorkout, router]);
-
-  const handleStartFromTemplate = useCallback(
-    (templateId: number) => {
-      if (isActive) {
-        Alert.alert('Active Workout', 'You already have an active workout. Finish it first.');
-        return;
-      }
-      startFromTemplate.mutate(String(templateId), {
-        onSuccess: (workout) => {
-          if (workout) {
-            startWorkout(workout, []);
-            router.push('/(app)/(workout)/active-workout');
-          }
-        },
-      });
-    },
-    [isActive, startFromTemplate, startWorkout, router],
-  );
-
-  const templateItems = useMemo(
-    () => (templatesQuery.data ?? []).slice(0, 5),
-    [templatesQuery.data],
-  );
+  const {
+    completedWorkouts,
+    templateItems,
+    workoutsQuery,
+    templatesQuery,
+    handleEmptyWorkout,
+    handleStartFromTemplate,
+    insets,
+    router,
+  } = useWorkoutsScreen();
 
   return (
     <ScrollView
@@ -82,10 +26,8 @@ export default function WorkoutsScreen() {
       contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header */}
       <Text style={styles.screenTitle}>Workouts</Text>
 
-      {/* Quick Actions */}
       <View style={styles.quickActions}>
         <QuickActionCard
           icon="⚡"
@@ -101,7 +43,6 @@ export default function WorkoutsScreen() {
         />
       </View>
 
-      {/* My Templates */}
       <View style={styles.section}>
         <SectionHeader
           title="My Templates"
@@ -139,16 +80,16 @@ export default function WorkoutsScreen() {
         )}
       </View>
 
-      {/* Workout History */}
       <View style={styles.section}>
-        <SectionHeader
-          title="Recent Workouts"
-        />
+        <SectionHeader title="Recent Workouts" />
         <WorkoutHistoryList
-          workouts={completedWorkouts.slice(0, 10) as IWorkoutWithRelations[]}
+          workouts={completedWorkouts.slice(0, 10)}
           isLoading={workoutsQuery.isLoading}
           onWorkoutPress={(id) =>
-            router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id) } })
+            router.push({
+              pathname: '/(app)/(workout)/workout-summary',
+              params: { workoutId: String(id) },
+            })
           }
           emptyTitle="No workouts yet"
           emptyDescription="Start your first workout to see your history"
@@ -167,27 +108,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   screenTitle: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontSize: fontSize['3xl'],
+    fontWeight: fontWeight.bold,
     color: colors.text,
-    marginBottom: 20,
+    marginBottom: spacing.xl,
   },
   quickActions: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 28,
+    gap: spacing.md,
+    marginBottom: spacing['3xl'],
   },
   section: {
-    marginBottom: 28,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
+    marginBottom: spacing['3xl'],
   },
   templateList: {
     paddingRight: 16,
-    gap: 12,
+    gap: spacing.md,
   },
   templateCardWrapper: {
     width: 260,

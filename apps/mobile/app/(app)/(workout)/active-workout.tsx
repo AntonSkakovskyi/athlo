@@ -1,35 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Alert,
-  Pressable,
-  TextInput,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import type { IWorkoutWithRelations } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { View, Text, ScrollView, StyleSheet, Pressable, TextInput } from 'react-native';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { StatsBar } from '@/features/workout/components';
 import { ActiveExerciseCard } from '@/features/workout/components';
 import { RestTimerOverlay } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
-import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
-import {
-  useGetWorkoutById,
-  useUpdateWorkout,
-  useDeleteWorkout,
-  useGetBatchLastPerformance,
-} from '@/features/workout/hooks';
-import { formatElapsed, getTrackingType } from '../../../utils/workout';
+import { formatElapsed } from '@/utils/workout';
+import { useActiveWorkoutScreen } from '@/features/workout/hooks/useActiveWorkoutScreen';
 
 export default function ActiveWorkoutScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
   const {
     workout,
     exercises,
@@ -37,143 +17,25 @@ export default function ActiveWorkoutScreen() {
     totalVolume,
     completedSets,
     totalSets,
-    addExercise,
     updateExercise,
     addSet,
     updateSet,
     toggleSetComplete,
-    endWorkout,
-  } = useActiveWorkout();
-
-  const [elapsed, setElapsed] = useState(0);
-  const [editName, setEditName] = useState<string | null>(null);
-  const [showRestTimer, setShowRestTimer] = useState(false);
-  const [restTimerSeconds, setRestTimerSeconds] = useState(60);
-
-  const updateWorkoutMutation = useUpdateWorkout();
-  const deleteWorkout = useDeleteWorkout();
-
-  const workoutQuery = useGetWorkoutById(workout?.id ? String(workout.id) : '');
-
-  const exerciseIds = useMemo(() => {
-    const data = workoutQuery.data as IWorkoutWithRelations | undefined;
-    return data?.logExercises?.map((ex) => ex.exerciseId).filter((id): id is number => !!id) ?? [];
-  }, [workoutQuery.data]);
-
-  const lastPerfQuery = useGetBatchLastPerformance(exerciseIds);
-
-  const isLoadingExercises =
-    workoutQuery.isLoading ||
-    (!!workoutQuery.data &&
-      exercises.length === 0 &&
-      ((workoutQuery.data as IWorkoutWithRelations).logExercises?.length ?? 0) > 0 &&
-      !lastPerfQuery.isSuccess &&
-      !lastPerfQuery.isError);
-
-  useEffect(() => {
-    if (!isActive || !workout) return;
-    const start = new Date(workout.started_at).getTime();
-    const interval = setInterval(() => {
-      setElapsed(Date.now() - start);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isActive, workout]);
-
-  useEffect(() => {
-    if (!workoutQuery.data || exercises.length > 0) return;
-    if (exerciseIds.length > 0 && !lastPerfQuery.isSuccess && !lastPerfQuery.isError) return;
-    const workoutData = workoutQuery.data as IWorkoutWithRelations;
-    if (workoutData.logExercises?.length) {
-      for (const ex of workoutData.logExercises.sort((a, b) => a.order - b.order)) {
-        const trackingType = getTrackingType(ex.exercise?.trackingTypeId);
-        const prevSets = lastPerfQuery.data?.[ex.exerciseId]?.sets ?? [];
-        addExercise({
-          logExerciseId: ex.id,
-          exerciseId: ex.exerciseId,
-          exerciseName: ex.exercise?.name ?? `Exercise #${ex.order}`,
-          trackingType,
-          restTime: ex.restTime ?? 0,
-          notes: ex.notes ?? '',
-          sets:
-            ex.sets?.sort((a, b) => a.order - b.order).map((s, idx) => ({
-              id: s.id,
-              order: s.order,
-              weight: s.weight,
-              reps: s.reps,
-              duration: s.duration,
-              distance: s.distance,
-              isCompleted: s.isCompleted,
-              previousWeight: prevSets[idx]?.weight,
-              previousReps: prevSets[idx]?.reps,
-              previousDuration: prevSets[idx]?.duration,
-              previousDistance: prevSets[idx]?.distance,
-            })) ?? [{ order: 1, isCompleted: false }],
-        });
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workoutQuery.data, lastPerfQuery.data, lastPerfQuery.isSuccess, lastPerfQuery.isError, exerciseIds]);
-
-  const handleFinish = useCallback(() => {
-    if (!workout) return;
-    if (completedSets === 0) {
-      Alert.alert('No Sets Completed', 'Your workout has no set values.', [
-        { text: 'Ok' },
-      ]);
-      return;
-    }
-    router.push({
-      pathname: '/(app)/(workout)/finish-workout',
-      params: {
-        duration: formatElapsed(elapsed),
-        volume: String(totalVolume),
-        completedSets: String(completedSets),
-        totalSets: String(totalSets),
-      },
-    });
-  }, [workout, completedSets, elapsed, totalVolume, totalSets, router]);
-
-  const handleRestTimer = useCallback((seconds: number) => {
-    setRestTimerSeconds(seconds);
-    setShowRestTimer(true);
-  }, []);
-
-  const handleCancel = useCallback(() => {
-    if (!workout) return;
-    Alert.alert(
-      'Discard Workout',
-      'Are you sure? All progress will be lost.',
-      [
-        { text: 'Continue', style: 'cancel' },
-        {
-          text: 'Discard',
-          style: 'destructive',
-          onPress: () => {
-            deleteWorkout.mutate(String(workout.id), {
-              onSuccess: () => {
-                endWorkout();
-                router.back();
-              },
-            });
-          },
-        },
-      ],
-    );
-  }, [workout, deleteWorkout, endWorkout, router]);
-
-  const handleAddExercise = useCallback(() => {
-    if (!workout) return;
-    router.push({
-      pathname: '/(app)/(workout)/exercise-picker',
-      params: { workoutId: String(workout.id) },
-    });
-  }, [workout, router]);
-
-  const handleSaveName = useCallback(() => {
-    if (editName === null || !workout) return;
-    updateWorkoutMutation.mutate({ id: String(workout.id), data: { name: editName } });
-    setEditName(null);
-  }, [editName, workout, updateWorkoutMutation]);
+    elapsed,
+    editName,
+    setEditName,
+    showRestTimer,
+    setShowRestTimer,
+    restTimerSeconds,
+    isLoadingExercises,
+    handleFinish,
+    handleRestTimer,
+    handleCancel,
+    handleAddExercise,
+    handleSaveName,
+    insets,
+    router,
+  } = useActiveWorkoutScreen();
 
   if (!isActive || !workout) {
     return (
@@ -189,8 +51,7 @@ export default function ActiveWorkoutScreen() {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
-      {/* Top Bar */}
+    <View style={[styles.container, { paddingTop: insets.top + spacing.sm }]}>
       <View style={styles.topBar}>
         <Pressable onPress={() => router.back()}>
           <Text style={styles.backBtn}>← Back</Text>
@@ -217,7 +78,6 @@ export default function ActiveWorkoutScreen() {
         </Pressable>
       </View>
 
-      {/* Stats Bar */}
       <View style={styles.statsWrap}>
         <StatsBar
           duration={formatElapsed(elapsed)}
@@ -227,14 +87,13 @@ export default function ActiveWorkoutScreen() {
         />
       </View>
 
-      {/* Exercises List */}
       <ScrollView
         style={styles.scrollArea}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {isLoadingExercises ? (
-          <Spinner style={{ marginTop: 48 }} />
+          <Spinner style={{ marginTop: spacing['5xl'] }} />
         ) : exercises.length === 0 ? (
           <EmptyState
             title="No exercises yet"
@@ -251,9 +110,7 @@ export default function ActiveWorkoutScreen() {
               sets={ex.sets}
               notes={ex.notes}
               showNotes={ex.showNotes}
-              onToggleNotes={() =>
-                updateExercise(exIdx, { showNotes: !ex.showNotes })
-              }
+              onToggleNotes={() => updateExercise(exIdx, { showNotes: !ex.showNotes })}
               onNotesChange={(text) => updateExercise(exIdx, { notes: text })}
               onUpdateSet={(setIdx, data) => updateSet(exIdx, setIdx, data)}
               onToggleSetComplete={(setIdx) => toggleSetComplete(exIdx, setIdx)}
@@ -264,7 +121,6 @@ export default function ActiveWorkoutScreen() {
         )}
       </ScrollView>
 
-      {/* Footer */}
       <View style={styles.footer}>
         <Button
           title="+ Add Exercise"
@@ -280,13 +136,11 @@ export default function ActiveWorkoutScreen() {
         />
       </View>
 
-      {/* Rest Timer Overlay */}
       <RestTimerOverlay
         visible={showRestTimer}
         initialSeconds={restTimerSeconds}
         onClose={() => setShowRestTimer(false)}
       />
-
     </View>
   );
 }
@@ -306,59 +160,59 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    marginBottom: 12,
-    gap: 10,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
   },
   backBtn: {
-    fontSize: 15,
+    fontSize: fontSize.md,
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
   },
   nameWrap: {
     flex: 1,
   },
   workoutName: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
     color: colors.text,
     textAlign: 'center',
   },
   nameInput: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: fontSize.xl,
+    fontWeight: fontWeight.bold,
     color: colors.text,
     textAlign: 'center',
     borderBottomWidth: 2,
     borderBottomColor: colors.primary,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   finishBtn: {
     backgroundColor: colors.primaryLight,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
   },
   finishText: {
     color: colors.primary,
-    fontWeight: '700',
-    fontSize: 14,
+    fontWeight: fontWeight.bold,
+    fontSize: fontSize.md,
   },
   statsWrap: {
     paddingHorizontal: spacing.lg,
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   scrollArea: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: spacing.lg,
-    paddingBottom: 20,
+    paddingBottom: spacing.xl,
   },
   footer: {
     flexDirection: 'row',
     padding: spacing.lg,
-    gap: 12,
+    gap: spacing.md,
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
