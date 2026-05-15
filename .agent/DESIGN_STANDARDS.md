@@ -1,40 +1,31 @@
 # Figma Design Standards (Design-First Approach)
 
-Цей документ визначає правила створення дизайнів у Figma для проєкту Athlo. Мета — створити систему, яка максимально точно мапиться на структуру React Native компонентів та стилізацію Flexbox.
+Дизайн — джерело істини для React Native компонентів та Flexbox-стилізації.
 
-## 1. Організація простору (Organization)
-* **Pages**: Розділяй проєкт на чіткі сторінки:
-    * `🎨 Foundations`: Кольори, типографіка, сітки, іконки.
-    * `🧱 Components`: Бібліотека перевикористовуваних атомів та молекул.
-    * `📱 Screens`: Фінальні екрани, згруповані за функціоналом (Auth, Workouts, Profile).
-    * `🕹️ Prototypes`: Налаштовані переходи між екранами.
-* **Frames**: Кожен екран має бути окремим фреймом із назвою, що відповідає роутингу в `expo-router` (напр., `login.tsx`, `index.tsx`).
+## 1. Pages & Frames
+* `🎨 Foundations` (colors, typography, spacing), `🧱 Components`, `📱 Screens`, `🕹️ Prototypes`
+* Frame names = `expo-router` file names: `login.tsx`, `active-workout.tsx`
 
-## 2. Foundations (Variables & Styles)
-* **Кольори (Colors)**: Використовуй **Figma Variables**. Назви мають бути семантичними (напр., `brand/primary`, `surface/secondary`, `text/muted`), а не описовими (`blue/500`).
-* **Типографіка (Typography)**: Створюй стилі тексту, що відповідають ієрархії: `H1`, `H2`, `Body/Regular`, `Body/Bold`, `Caption`.
-* **Сітка та Відступи (Spacing)**:
-    * Використовуй 8-піксельну сітку (8pt grid).
-    * Створи змінні для відступів: `space/4`, `space/8`, `space/16`, `space/24`.
+## 2. Foundations
+* **Colors**: Figma Variables — semantic names (`brand/primary`, `text/muted`, not `blue/500`)
+* **Typography**: `H1`, `H2`, `Body/Regular`, `Body/Bold`, `Caption`
+* **Spacing**: 8pt grid; create `space/4`, `space/8`, `space/16`, `space/24` variables
 
-## 3. Component Architecture (Atomic Design)
-* **Auto Layout — ОБОВ'ЯЗКОВО**: Кожен компонент ПОВИНЕН використовувати Auto Layout. Це дозволяє ШІ-агенту легко перекладати структуру на Flexbox у React Native.
-* **Variants & Properties**:
-    * Використовуй **Component Sets** для різних станів (Default, Active, Disabled, Loading).
-    * Використовуй **Boolean properties** для елементів, що можуть з'являтися/зникати (напр., іконка в кнопці).
-* **Naming**: Назви компонентів мають бути в PascalCase (`WorkoutCard`, `PrimaryButton`), щоб вони збігалися з майбутніми назвами файлів `.tsx`.
+## 3. Components (Auto Layout REQUIRED)
+* All components must use Auto Layout → translates to Flexbox/React Native
+* **Variants**: Default, Active, Disabled, Loading states via Component Sets
+* **Boolean props**: Icons visible/hidden, labels optional
+* **Naming**: PascalCase — `WorkoutCard`, `PrimaryButton` → same as `.tsx` file names
 
-## 4. Mobile Specifics (React Native Context)
-* **Touch Targets**: Мінімальна область для натискання — 44x44pt.
-* **Safe Areas**: Залишай відступи зверху (StatusBar) та знизу (Home Indicator) згідно з гайдлайнами iOS та Android.
-* **Responsiveness**: Використовуй "Fill container" замість фіксованої ширини для елементів, що мають розтягуватися на всю ширину екрана.
+## 4. Mobile Specifics
+* Touch targets: 44x44pt minimum
+* Safe areas: StatusBar (top) + Home Indicator (bottom)
+* Responsiveness: "Fill container" for responsive widths
 
-## 5. Підготовка до розробки (Handover)
-* **Layer Naming**: Уникай назв на кшталт "Frame 1243". Шари мають називатися зрозуміло: `Container`, `Title`, `Icon`.
-* **Icons**: Всі іконки мають бути векторами всередині квадратного фрейму (напр., 24x24) для зручного експорту.
-* **Annotations**: Додавай коментарі до складних анімацій або логіки взаємодії, яку неможливо передати статичним макетом.
+## 5. Handover
+* Layer names clear: `Container`, `Title`, `Icon` (not "Frame 1243")
+* Icons: vectors in square frames (24x24+) for export
+* Annotate complex interactions
 
-## 6. Принцип відповідності
-Дизайн — це джерело істини для інтерфейсу. Перед тим як писати код для компонента, агент ПОВИНЕН перевірити:
-1. Які токени (кольори/відступи) використані в Figma.
-2. Яка вкладеність Auto Layout (вона визначає структуру `<View>` та `<Text>`).
+## 6. Before Coding
+Verify: (1) design tokens used in Figma, (2) Auto Layout nesting = View/Text hierarchy

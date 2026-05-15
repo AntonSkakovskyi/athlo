@@ -1,597 +1,312 @@
 # Unit Testing Guidelines — Athlo Monorepo
 
-Цей документ визначає стандарти та патерни написання юніт-тестів для бекенду (NestJS) та фронтенду (React Native + Expo) у межах монорепозиторію Athlo.
+## 0. Philosophy
+* **Test behavior, not implementation**: What does the code do, not how inside
+* **AAA pattern**: Arrange → Act → Assert
+* **One responsibility per test**: One `it()` = one scenario
+* **F.I.R.S.T**: Fast, Isolated, Repeatable, Self-validating, Timely
+* **Layer coverage**: Prioritize Services (backend), Hooks (frontend), Utilities. Controllers/Components secondary.
 
----
+## 1. File Structure
 
-## 0. Загальна Філософія
-
-* **Тестуй поведінку, а не реалізацію**: Тест перевіряє *що* робить одиниця коду, а не *як* вона це робить всередині.
-* **AAA-патерн**: Кожен тест будується за структурою **Arrange → Act → Assert**.
-* **Один тест — одна відповідальність**: Кожен `it()`/`test()` перевіряє рівно один сценарій.
-* **F.I.R.S.T**: Тести мають бути **F**ast, **I**solated, **R**epeatable, **S**elf-validating, **T**imely.
-* **Покриття по шарах**: Пишемо тести передусім для шарів із бізнес-логікою (Services на бекенді, хуки та утиліти на фронтенді). Контролери та компоненти — вторинні цілі.
-
----
-
-## 1. Загальні Правила Найменування та Структури
-
-### 1.1 Розташування файлів
-
-| Шар | Розташування тестового файлу |
-|---|---|
-| Backend Service | Поруч із файлом: `workout.service.spec.ts` |
-| Backend Controller | Поруч із файлом: `workout.controller.spec.ts` |
-| Frontend Hook | Поруч із файлом: `useWorkoutHooks.spec.ts` |
-| Frontend Component | Поруч із файлом: `Button.spec.tsx` |
-| Shared Utility | Поруч із файлом: `date.spec.ts` |
-
-### 1.2 Іменування тестів
-
-```ts
-// describe — назва тестованого юніту (клас або функція)
-describe('WorkoutService', () => {
-  // Вкладений describe — метод або сценарій
-  describe('create', () => {
-    // it — конкретний кейс у форматі "should [дія] when [умова]"
-    it('should create and save a new workout', async () => { ... });
-    it('should throw NotFoundException when workout does not exist', async () => { ... });
-  });
-});
-```
-
-### 1.3 Структура AAA всередині тесту
-
-```ts
-it('should return user without password hash', async () => {
-  // Arrange
-  const loginDto = { email: 'user@test.com', password: '123456' };
-  mockUserService.findByEmail.mockResolvedValue(mockUser);
-  jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
-
-  // Act
-  const result = await authService.login(loginDto);
-
-  // Assert
-  expect(result.user).not.toHaveProperty('password_hash');
-  expect(result.token).toBeDefined();
-});
-```
-
----
-
-## 2. Backend (NestJS) — Юніт Тести
-
-### 2.1 Інструменти
-
-* **Runner**: Jest (вбудований у NestJS CLI)
-* **Testing Module**: `@nestjs/testing` → `Test.createTestingModule()`
-* **Моки**: `jest.fn()` / `jest.spyOn()`
-* **Файли**: `*.spec.ts` поруч із вихідним файлом
-
-### 2.2 Що Тестувати в Першу Чергу
-
-| Пріоритет | Шар | Причина |
+| Layer | Location | Naming |
 |---|---|---|
-| 🔴 Обов'язково | **Services** | Вся бізнес-логіка, happy path + edge cases |
-| 🟡 Бажано | **Controllers** | Перевірка маршрутизації та делегування до сервісу |
-| 🟢 За потреби | **Guards / Strategies** | Тільки якщо є нетривіальна логіка |
+| Backend Service | Poruч iz file | `workout.service.spec.ts` |
+| Backend Controller | Poruc iz file | `workout.controller.spec.ts` |
+| Frontend Hook | Poruc iz file | `useWorkout.spec.ts` |
+| Frontend Component | Poruc iz file | `Button.spec.tsx` |
 
-### 2.3 Патерн: Тест Сервісу
+Naming: `describe('Unit')` → `describe('method')` → `it('should [do] when [condition]')`
 
-Сервіси залежать від репозиторіїв або інших сервісів. Їх треба **повністю мокати** — ніколи не підключати реальну БД у юніт-тестах.
+## 2. Backend (NestJS) — Jest + @nestjs/testing
+
+### 2.1 Service Pattern
+Mock all external dependencies (repositories, services). Never connect real DB.
 
 ```ts
-// workout.service.spec.ts
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { WorkoutService } from './workout.service';
 import { WorkoutEntity } from '../entities/workout.entity';
-import { LogSetEntity } from '../entities/log-set.entity';
-import { AchievementService } from '../achievement/achievement.service';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
-import { WorkoutStatus } from '@athlo/shared';
 
-// ── Фабрика мок-репозиторію ────────────────────────────────────────────
-const createMockRepository = () => ({
+const mockRepository = () => ({
   create: jest.fn(),
   save: jest.fn(),
-  find: jest.fn(),
   findOne: jest.fn(),
-  update: jest.fn(),
   delete: jest.fn(),
 });
 
 describe('WorkoutService', () => {
   let service: WorkoutService;
-  let workoutsRepo: ReturnType<typeof createMockRepository>;
+  let repo: ReturnType<typeof mockRepository>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       providers: [
         WorkoutService,
-        {
-          provide: getRepositoryToken(WorkoutEntity),
-          useValue: createMockRepository(),
-        },
-        {
-          provide: getRepositoryToken(LogSetEntity),
-          useValue: createMockRepository(),
-        },
-        {
-          provide: AchievementService,
-          useValue: { checkAndAwardAchievements: jest.fn() },
-        },
+        { provide: getRepositoryToken(WorkoutEntity), useValue: mockRepository() },
       ],
     }).compile();
-
-    service = module.get<WorkoutService>(WorkoutService);
-    workoutsRepo = module.get(getRepositoryToken(WorkoutEntity));
+    service = module.get(WorkoutService);
+    repo = module.get(getRepositoryToken(WorkoutEntity));
   });
 
   afterEach(() => jest.clearAllMocks());
 
-  // ── create ──────────────────────────────────────────────────────────
-  describe('create', () => {
-    it('should create and save a new workout with IN_PROGRESS status', async () => {
-      // Arrange
-      const dto = { name: 'Push Day', description: 'Chest & Shoulders' };
-      const userId = 1;
-      const mockWorkout = { id: 1, userId, ...dto, status: WorkoutStatus.IN_PROGRESS };
-
-      workoutsRepo.create.mockReturnValue(mockWorkout);
-      workoutsRepo.save.mockResolvedValue(mockWorkout);
-
-      // Act
-      const result = await service.create(userId, dto);
-
-      // Assert
-      expect(workoutsRepo.create).toHaveBeenCalledWith({
-        userId,
-        name: dto.name,
-        description: dto.description,
-        status: WorkoutStatus.IN_PROGRESS,
-      });
-      expect(workoutsRepo.save).toHaveBeenCalledWith(mockWorkout);
-      expect(result.status).toBe(WorkoutStatus.IN_PROGRESS);
-    });
+  it('should create a workout', async () => {
+    const dto = { name: 'Push Day' };
+    repo.create.mockReturnValue({ id: 1, ...dto });
+    repo.save.mockResolvedValue({ id: 1, ...dto });
+    const result = await service.create(1, dto);
+    expect(result.id).toBe(1);
   });
 
-  // ── findOne ──────────────────────────────────────────────────────────
-  describe('findOne', () => {
-    it('should throw NotFoundException when workout does not exist', async () => {
-      // Arrange
-      workoutsRepo.findOne.mockResolvedValue(null);
-
-      // Act & Assert
-      await expect(service.findOne(999, 1)).rejects.toThrow(NotFoundException);
-    });
-
-    it('should throw ForbiddenException when workout belongs to another user', async () => {
-      // Arrange
-      workoutsRepo.findOne.mockResolvedValue({ id: 1, userId: 2 });
-
-      // Act & Assert
-      await expect(service.findOne(1, 1)).rejects.toThrow(ForbiddenException);
-    });
-
-    it('should return workout when it belongs to the current user', async () => {
-      // Arrange
-      const mockWorkout = { id: 1, userId: 1, name: 'Leg Day' };
-      workoutsRepo.findOne.mockResolvedValue(mockWorkout);
-
-      // Act
-      const result = await service.findOne(1, 1);
-
-      // Assert
-      expect(result).toEqual(mockWorkout);
-    });
+  it('should throw NotFoundException when not found', async () => {
+    repo.findOne.mockResolvedValue(null);
+    await expect(service.findOne(999, 1)).rejects.toThrow(NotFoundException);
   });
 });
 ```
 
-### 2.4 Патерн: Тест Контролера
-
-Контролер делегує роботу сервісу. Тест Контролера перевіряє лише те, що він **викликає правильний метод сервісу з правильними аргументами**.
+### 2.2 Controller Pattern
+Test that controller calls the correct service method with correct arguments.
 
 ```ts
-// workout.controller.spec.ts
-
-import { Test, TestingModule } from '@nestjs/testing';
-import { WorkoutController } from './workout.controller';
-import { WorkoutService } from './workout.service';
-
 describe('WorkoutController', () => {
   let controller: WorkoutController;
   let service: jest.Mocked<WorkoutService>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    const module = await Test.createTestingModule({
       controllers: [WorkoutController],
-      providers: [
-        {
-          provide: WorkoutService,
-          // useValue з усіма методами-заглушками
-          useValue: {
-            create: jest.fn(),
-            findAllByUser: jest.fn(),
-            findOne: jest.fn(),
-            update: jest.fn(),
-            remove: jest.fn(),
-          },
-        },
-      ],
+      providers: [{ provide: WorkoutService, useValue: { create: jest.fn(), findOne: jest.fn() } }],
     }).compile();
-
-    controller = module.get<WorkoutController>(WorkoutController);
+    controller = module.get(WorkoutController);
     service = module.get(WorkoutService);
   });
 
-  describe('create', () => {
-    it('should call workoutService.create with userId and dto', async () => {
-      // Arrange
-      const dto = { name: 'Pull Day' };
-      const currentUser = { id: 1, email: 'a@b.com' };
-      const expected = { id: 10, ...dto };
-      service.create.mockResolvedValue(expected as any);
-
-      // Act
-      const result = await controller.create(currentUser, dto as any);
-
-      // Assert
-      expect(service.create).toHaveBeenCalledWith(currentUser.id, dto);
-      expect(result).toEqual(expected);
-    });
+  it('should call service.create', async () => {
+    service.create.mockResolvedValue({ id: 1, name: 'Push' });
+    const result = await controller.create({ id: 1 }, { name: 'Push' });
+    expect(service.create).toHaveBeenCalledWith(1, { name: 'Push' });
   });
 });
 ```
 
-### 2.5 Тестування AuthService — Спеціальні Правила
-
-`AuthService` використовує `bcrypt` — зовнішній модуль, який треба мокати через `jest.spyOn`, щоб тест не залежав від реального хешування.
+### 2.3 AuthService Special Rules
+Mock bcrypt and JwtService via `jest.spyOn`.
 
 ```ts
-// auth.service.spec.ts
-
-import * as bcrypt from 'bcrypt';
-
-it('should throw UnauthorizedException when password is invalid', async () => {
-  // Arrange
-  mockUserService.findByEmail.mockResolvedValue({ password_hash: 'hash' });
-  jest.spyOn(bcrypt, 'compare').mockResolvedValue(false as never);
-
-  // Act & Assert
-  await expect(authService.login({ email: 'a@b.com', password: 'wrong' }))
-    .rejects.toThrow(UnauthorizedException);
-});
-
-it('should not return password_hash in the response', async () => {
-  // Arrange
-  const user = { id: 1, email: 'a@b.com', password_hash: 'secret' };
-  mockUserService.findByEmail.mockResolvedValue(user);
+it('should not return password_hash', async () => {
+  mockUserService.findByEmail.mockResolvedValue({ id: 1, password_hash: 'secret' });
   jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never);
-  mockJwtService.sign.mockReturnValue('jwt-token');
-
-  // Act
-  const result = await authService.login({ email: 'a@b.com', password: '123456' });
-
-  // Assert — безпека: хеш паролю не має витікати назовні
+  mockJwtService.sign.mockReturnValue('token');
+  const result = await authService.login({ email: 'a@b.com', password: '123' });
   expect(result.user).not.toHaveProperty('password_hash');
 });
 ```
 
-### 2.6 Checklist: Бекенд
+### 2.4 Backend Checklist
+- [ ] TestingModule created/cleared in beforeEach/afterEach
+- [ ] All external dependencies mocked via useValue
+- [ ] Repositories mocked via getRepositoryToken()
+- [ ] Each NotFoundException/ForbiddenException has its own test
+- [ ] Happy path + edge cases covered
+- [ ] bcrypt, JwtService mocked via jest.spyOn
+- [ ] No real DB connections
+- [ ] Swagger decorators not tested
 
-- [ ] `TestingModule` створений у `beforeEach`, очищений у `afterEach` через `jest.clearAllMocks()`
-- [ ] Всі зовнішні залежності (репозиторії, сервіси) — замінені моками через `useValue`
-- [ ] Репозиторії мокаються через `getRepositoryToken(EntityClass)`
-- [ ] Кожен `NotFoundException` / `ForbiddenException` перевіряється окремим тестом
-- [ ] Happy path і edge cases покриті
-- [ ] `bcrypt`, `JwtService` та інші зовнішні утиліти мокаються через `jest.spyOn`
-- [ ] Тест не підключається до реальної БД (жодних TypeORM connections)
-- [ ] Тест не перевіряє Swagger-декоратори
+## 3. Frontend (React Native + Expo) — Jest + @testing-library/react-native
 
----
-
-## 3. Frontend (React Native + Expo) — Юніт Тести
-
-### 3.1 Інструменти
-
-* **Runner**: Jest + `jest-expo` (пресет з `package.json`)
-* **Component Testing**: `@testing-library/react-native` (`render`, `fireEvent`, `screen`)
-* **Hook Testing**: `renderHook` з `@testing-library/react-native`
-* **React Query**: обгортка `QueryClientProvider` у тестах, мокування `apiClient`
-* **Файли**: `*.spec.tsx` (компоненти) / `*.spec.ts` (хуки, утиліти)
-
-### 3.2 Що Тестувати в Першу Чергу
-
-| Пріоритет | Шар | Причина |
-|---|---|---|
-| 🔴 Обов'язково | **Utility functions** (`utils/`) | Чиста логіка без залежностей |
-| 🔴 Обов'язково | **API Hooks** (`hooks/api/`) | Взаємодія з сервером, кешування, мутації |
-| 🟡 Бажано | **UI компоненти** (`components/ui/`) | Перевірка рендерингу атомів |
-| 🟢 За потреби | **Screen компоненти** | Тільки інтеграційна логіка оркестратора |
-
-### 3.3 Патерн: Тест Утилітної Функції
-
-Найпростіший і найціннішіший тип — чисті функції без залежностей.
+### 3.1 Utility Function Pattern
+Pure functions without dependencies — simplest & most valuable.
 
 ```ts
-// utils/workout.spec.ts
-
-import { formatDuration, calculateTotalVolume } from './workout';
+import { formatDuration, calculateVolume } from './workout';
 
 describe('formatDuration', () => {
-  it('should format seconds to mm:ss string', () => {
+  it('should format seconds to mm:ss', () => {
     expect(formatDuration(90)).toBe('1:30');
   });
-
-  it('should pad single-digit seconds with zero', () => {
+  it('should pad single digits', () => {
     expect(formatDuration(65)).toBe('1:05');
-  });
-
-  it('should return "0:00" for zero duration', () => {
-    expect(formatDuration(0)).toBe('0:00');
   });
 });
 
-describe('calculateTotalVolume', () => {
-  it('should return sum of (weight * reps) for all sets', () => {
-    const sets = [
-      { weight: 100, reps: 5 },
-      { weight: 80, reps: 10 },
-    ];
-    expect(calculateTotalVolume(sets)).toBe(1300);
-  });
-
-  it('should return 0 for empty sets array', () => {
-    expect(calculateTotalVolume([])).toBe(0);
+describe('calculateVolume', () => {
+  it('should return sum of weight*reps', () => {
+    const sets = [{ weight: 100, reps: 5 }, { weight: 80, reps: 10 }];
+    expect(calculateVolume(sets)).toBe(1300);
   });
 });
 ```
 
-### 3.4 Патерн: Тест API-Хука
-
-Хуки використовують `apiClient` та React Query. Мокаємо `apiClient` повністю, обгортаємо у `QueryClientProvider`.
+### 3.2 API Hook Pattern
+Mock apiClient, wrap in QueryClientProvider with `retry: false`.
 
 ```ts
-// hooks/api/useWorkoutHooks.spec.ts
-
 import { renderHook, waitFor } from '@testing-library/react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
 import apiClient from '../../api/api-client';
-import { useGetWorkouts } from './useWorkoutHooks';
-import type { IWorkout } from '@athlo/shared';
+import { useGetWorkouts } from './useWorkoutAPI';
 
-// ── Мок apiClient ────────────────────────────────────────────────────────
 jest.mock('../../api/api-client');
-const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
 
-// ── Хелпер: обгортка з QueryClientProvider ───────────────────────────────
 const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return ({ children }: any) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 };
 
 describe('useGetWorkouts', () => {
   afterEach(() => jest.clearAllMocks());
 
-  it('should return workouts on successful fetch', async () => {
-    // Arrange
-    const mockWorkouts: IWorkout[] = [{ id: 1, name: 'Push Day' } as IWorkout];
-    mockedApiClient.get.mockResolvedValue({ data: mockWorkouts });
+  it('should return workouts on success', async () => {
+    const mockWorkouts = [{ id: 1, name: 'Push' }];
+    (apiClient.get as jest.Mock).mockResolvedValue({ data: mockWorkouts });
 
-    // Act
-    const { result } = renderHook(() => useGetWorkouts(), {
-      wrapper: createWrapper(),
-    });
-
-    // Assert
+    const { result } = renderHook(() => useGetWorkouts(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toEqual(mockWorkouts);
   });
 
-  it('should set isError when the request fails', async () => {
-    // Arrange
-    mockedApiClient.get.mockRejectedValue(new Error('Network error'));
-
-    // Act
-    const { result } = renderHook(() => useGetWorkouts(), {
-      wrapper: createWrapper(),
-    });
-
-    // Assert
+  it('should set isError on failure', async () => {
+    (apiClient.get as jest.Mock).mockRejectedValue(new Error('Network'));
+    const { result } = renderHook(() => useGetWorkouts(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.isError).toBe(true));
   });
 });
 ```
 
-### 3.5 Патерн: Тест Мутаційного Хука
+### 3.3 Mutation Hook Pattern
+Test that mutation calls API and invalidates cache.
 
 ```ts
-// hooks/api/useWorkoutHooks.spec.ts (продовження)
-
-import { useCreateWorkout } from './useWorkoutHooks';
+import { useCreateWorkout } from './useWorkoutAPI';
 import { act } from '@testing-library/react-native';
 
 describe('useCreateWorkout', () => {
-  it('should call apiClient.post and invalidate workouts cache on success', async () => {
-    // Arrange
-    const newWorkout = { id: 2, name: 'Leg Day' } as IWorkout;
-    mockedApiClient.post.mockResolvedValue({ data: newWorkout });
-
+  it('should post and invalidate cache', async () => {
+    (apiClient.post as jest.Mock).mockResolvedValue({ data: { id: 2, name: 'Leg' } });
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    const invalidateSpy = jest.spyOn(queryClient, 'invalidateQueries');
+    const spy = jest.spyOn(queryClient, 'invalidateQueries');
 
-    const wrapper = ({ children }: { children: React.ReactNode }) => (
+    const wrapper = ({ children }: any) => (
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
-
     const { result } = renderHook(() => useCreateWorkout(), { wrapper });
 
-    // Act
     await act(async () => {
-      await result.current.mutateAsync({ name: 'Leg Day' });
+      await result.current.mutateAsync({ name: 'Leg' });
     });
 
-    // Assert
-    expect(mockedApiClient.post).toHaveBeenCalledTimes(1);
-    expect(invalidateSpy).toHaveBeenCalled();
+    expect(apiClient.post).toHaveBeenCalled();
+    expect(spy).toHaveBeenCalled();
   });
 });
 ```
 
-### 3.6 Патерн: Тест UI-Компонента (Atomic)
-
-Тестуємо атомарні компоненти з `components/ui/`. Перевіряємо рендеринг, призначення варіантів та callback'и.
+### 3.4 Component Pattern
+Test rendering, variants, and callbacks.
 
 ```tsx
-// components/ui/Button.spec.tsx
-
-import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react-native';
 import { Button } from './Button';
 
 describe('Button', () => {
-  it('should render title text', () => {
-    render(<Button title="Зберегти" />);
-    expect(screen.getByText('Зберегти')).toBeTruthy();
+  it('should render title', () => {
+    render(<Button title="Save" />);
+    expect(screen.getByText('Save')).toBeTruthy();
   });
 
   it('should call onPress when pressed', () => {
     const onPress = jest.fn();
     render(<Button title="OK" onPress={onPress} />);
-
     fireEvent.press(screen.getByText('OK'));
-
-    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onPress).toHaveBeenCalled();
   });
 
   it('should not call onPress when disabled', () => {
     const onPress = jest.fn();
     render(<Button title="OK" onPress={onPress} disabled />);
-
     fireEvent.press(screen.getByText('OK'));
-
     expect(onPress).not.toHaveBeenCalled();
-  });
-
-  it('should render ActivityIndicator when isLoading is true', () => {
-    render(<Button title="Завантаження" isLoading />);
-    // При isLoading текст не рендериться — ActivityIndicator замість нього
-    expect(screen.queryByText('Завантаження')).toBeNull();
   });
 });
 ```
 
-### 3.7 Моки для React Native та Expo
-
-Деякі модулі Expo треба мокати глобально у `jest.setup.ts` або безпосередньо у файлах.
-
+### 3.5 Frontend Mocks (Global)
 ```ts
-// Мок для expo-secure-store (auth токени)
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(),
   setItemAsync: jest.fn(),
   deleteItemAsync: jest.fn(),
 }));
 
-// Мок для expo-router (навігація)
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), back: jest.fn() },
   useLocalSearchParams: jest.fn(() => ({})),
 }));
 
-// Мок AuthContext (якщо компонент читає поточного користувача)
 jest.mock('../../contexts/AuthContext', () => ({
   useAuth: jest.fn(() => ({ user: { id: 1, email: 'test@test.com' }, isLoading: false })),
 }));
 ```
 
-### 3.8 Checklist: Фронтенд
+### 3.6 Frontend Checklist
+- [ ] apiClient mocked via jest.mock()
+- [ ] Query hooks wrapped in QueryClientProvider with retry: false
+- [ ] New QueryClient per test (factory pattern)
+- [ ] jest.clearAllMocks() in afterEach
+- [ ] Navigation (expo-router) globally mocked
+- [ ] AuthContext mocked if component reads it
+- [ ] Utilities tested in isolation
+- [ ] Component tests check elements/behavior, not CSS
 
-- [ ] `apiClient` замокований через `jest.mock()`
-- [ ] Хуки React Query обгорнуті у `QueryClientProvider` з `retry: false`
-- [ ] `QueryClient` — новий екземпляр у кожному тесті (через фабрику)
-- [ ] `jest.clearAllMocks()` у `afterEach`
-- [ ] Навігація (`expo-router`) замокована глобально
-- [ ] `AuthContext` замокований, якщо компонент його читає
-- [ ] Утилітні функції протестовані ізольовано (без жодних моків)
-- [ ] Тести компонентів не перевіряють CSS-стилі — тільки наявність елементів та поведінку
+## 4. Anti-Patterns
 
----
-
-## 4. Що НЕ Тестувати (Anti-Patterns)
-
-| ❌ Не роби | ✅ Роби натомість |
+| ❌ Don't | ✅ Do |
 |---|---|
-| Тестувати приватні методи напряму | Тестуй публічний метод, що їх викликає |
-| Перевіряти конкретні стилі компонентів | Перевіряй наявність/відсутність елементів та events |
-| Snapshot-тести для складних Screen-компонентів | Snapshot — лише для простих атомарних компонентів |
-| Мокати сам тестований клас/функцію | Мокай лише зовнішні залежності |
-| Тести, що потребують живої БД або мережі | Завжди мокай I/O у юніт-тестах |
-| Тестувати Swagger-декоратори | Це відповідальність e2e або integration тестів |
-| Писати один великий тест на "все разом" | Один `it()` — один сценарій |
+| Test private methods directly | Test public method that calls them |
+| Check specific component styles | Check element presence/absence and events |
+| Snapshot tests for complex screens | Snapshots only for simple atoms |
+| Mock the code under test | Mock only external dependencies |
+| Tests requiring live DB or network | Always mock I/O in unit tests |
+| Test Swagger decorators | That's e2e/integration concern |
+| One massive test for "everything" | One `it()` = one scenario |
 
----
-
-## 5. Запуск Тестів
-
+## 5. Run Tests
 ```bash
-# Backend — всі юніт тести
-cd apps/api
-npx jest
+# Backend — all
+cd apps/api && npx jest
 
-# Backend — з покриттям
-npx jest --coverage
-
-# Backend — watch mode під час розробки
-npx jest --watch
-
-# Backend — один файл
+# Backend — one file
 npx jest workout.service.spec.ts
 
-# Frontend — всі тести
-cd apps/mobile
-npx jest
+# Backend — coverage
+npx jest --coverage
 
-# Frontend — один файл
-npx jest useWorkoutHooks.spec.ts
+# Frontend — all
+cd apps/mobile && npx jest
+
+# Frontend — watch
+npx jest --watch
 ```
 
----
-
-## 6. Конфігурація Jest (Backend)
-
-Jest для бекенду вже налаштований у `apps/api/package.json`. Стандартна конфігурація NestJS CLI:
-
+## 6. Jest Config (Backend)
 ```json
 "jest": {
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "src",
   "testRegex": ".*\\.spec\\.ts$",
   "transform": { "^.+\\.(t|j)s$": "ts-jest" },
-  "collectCoverageFrom": ["**/*.(t|j)s"],
-  "coverageDirectory": "../coverage",
   "testEnvironment": "node"
 }
 ```
 
-## 7. Конфігурація Jest (Frontend)
-
-Frontend використовує пресет `jest-expo` з `apps/mobile/package.json`:
-
+## 7. Jest Config (Frontend)
 ```json
 "jest": {
   "preset": "jest-expo",
-  "transformIgnorePatterns": [
-    "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)"
-  ]
+  "transformIgnorePatterns": [...]
 }
 ```

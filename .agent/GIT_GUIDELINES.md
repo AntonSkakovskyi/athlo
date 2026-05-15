@@ -1,40 +1,27 @@
 # Git & Commit Standards
 
-Цей документ визначає правила роботи з Git у нашому монорепозиторії. Всі повідомлення комітів мають бути структурованими, лаконічними та відповідати принципу "одна логічна зміна = один коміт".
+Commits: one logical change per commit, descriptive message, clean linear history.
 
-## 1. Формат повідомлення (Commit Message Format)
-Використовуй наступну структуру:
-`<scope>: <short description in English>`
+## 1. Message Format
+`<scope>: <short description>`
 
-### Дозволені Scope (Області):
-* **api**: Бекенд (NestJS).
-* **mobile**: Фронтенд (React Native/Expo).
-* **shared**: Спільні типи та інтерфейси (@athlo/shared).
-* **monorepo**: Глобальні налаштування, конфіги, CI/CD.
-* **docs**: Документація (.md файли).
+**Scope:** `api` (NestJS), `mobile` (React Native), `shared` (@athlo/shared), `monorepo` (config/CI), `docs` (markdown)
 
-## 2. Приклади правильних комітів
-* `api: implement workout module with controller and service` (замість трьох окремих комітів)
+## 2. Examples
+* `api: implement workout module with controller and service`
 * `mobile: add authentication flow and useAuth hook`
 * `shared: define exercise and muscle interfaces`
-* `api: add validation pipes to register dto`
+* `api: add validation to register dto`
 
-## 3. Правила атомарності та групування (ВАЖЛИВО)
-* **Feature Slices (Функціональні зрізи)**: При створенні нового функціоналу на NestJS (наприклад, модуля вправ), **НЕ КОМІТЬ** окремо сервіс, окремо контролер і окремо модуль. Об'єднуй всю логіку одного модуля в один коміт.
-* **Заборона "скелетів"**: Не створюй коміт з "порожніми" файлами без логіки. Коміт має містити працездатний (або логічно завершений) шматок коду.
-* **Мова та стиль**: Англійська, наказовий спосіб (Imperative mood). "add feature", а не "added" або "adds".
-* **Довжина**: Заголовок до 60 символів.
+## 3. Rules
+* **Feature slices**: Group all logic for one module (service, controller, dto, entity) in ONE commit
+* **No skeletons**: Don't commit empty files — commits must contain working code
+* **English, imperative**: "add feature", not "added"
+* **Max 60 characters** for title
+* **Linear history**: Use `git pull --rebase`, avoid merge commits
 
-## 4. Стратегія роботи з гілками
-* **Linear History**: Використовуй `git pull --rebase`. Уникай Merge-комітів у стилі "Merge branch 'main' into...".
-
-## 5. Інструкція для ШІ (AI Agent Instructions)
-Перед тим як запропонувати коміт, ШІ повинен:
-1.  **Групувати файли за змістом**: Якщо ти створив папку модуля (module, controller, service, dto, entity), об'єднай їх у ОДИН коміт з описом модуля.
-2.  **Перевіряти Scope**: 
-    * Якщо зміни тільки в `apps/api` -> `api: ...`
-    * Якщо зміни тільки в `apps/mobile` -> `mobile: ...`
-    * Якщо зміни стосуються і фронту, і беку (наприклад, нова фіча) -> зроби **два окремих коміти** (один для api, один для mobile), щоб зберегти чистоту історії кожного додатку.
-3.  **Уникати дублювання**: Не пропонуй комітити файл, який уже був частиною попереднього (незакоміченого) пропонування.
-4.  **Команда**: Завжди пропонуй конкретну команду, наприклад:
-    `git add . && git commit -m "api: implement user profile management"`
+## 4. AI Instructions
+1. Group files by feature — one logical feature = one commit
+2. Check scope: api-only → `api: ...`, mobile-only → `mobile: ...`, both → two separate commits
+3. Avoid duplicates — don't propose committing files already in a prior proposal
+4. Provide exact command: `git add . && git commit -m "scope: description"`

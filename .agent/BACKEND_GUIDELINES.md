@@ -4,58 +4,49 @@
 
 ## 1. Архітектура та Розділення Відповідальності
 
-* **Модульність**: Кожен логічний домен (Auth, Workouts, Users) має власний модуль (`.module.ts`).
-* **Controllers**: Відповідають **виключно** за HTTP-маршрутизацію, отримання параметрів (`@Body()`, `@Query()`, `@Param()`) та повернення відповідей. Жодної бізнес-логіки.
-* **Services**: Вся бізнес-логіка та взаємодія з базою даних. Сервіси мають бути незалежними від HTTP-контексту (не повинні знати про `Request` чи `Response`).
-* **Dependency Injection**: Завжди використовуй вбудований DI-контейнер NestJS (конструктори класів).
+* **Модульність**: Кожен домен (Auth, Workouts, Users) — окремий модуль.
+* **Controllers**: HTTP-маршрутизація тільки, ніякої бізнес-логіки.
+* **Services**: Вся бізнес-логіка та взаємодія з БД.
+* **Dependency Injection**: Вбудований DI-контейнер NestJS.
 
 ## 2. Спільні Інтерфейси (Monorepo Rule)
 
-* **НАЙВИЩИЙ ПРІОРИТЕТ**: Ніколи не створюй інтерфейси даних з нуля на бекенді, якщо вони стосуються клієнта.
-* Всі базові контракти (Request, Response, Models) імпортуються з `@athlo/shared`.
-* **DTO**: DTO-класи на бекенді обов'язково імплементують спільні інтерфейси:
-  ```ts
-  export class RegisterDto implements RegisterRequest { ... }
-  ```
+* Всі контракти імпортуються з `@athlo/shared`
+* DTO-класи імплементують спільні інтерфейси: `export class RegisterDto implements RegisterRequest { ... }`
 
 ## 3. Валідація та DTO
 
-* Суворо використовуй `class-validator` та `class-transformer`.
-* Всі поля в DTO повинні мати декоратори (`@IsString()`, `@IsEmail()`, `@IsOptional()` тощо).
-* У `main.ts` глобально увімкнений `ValidationPipe` з `whitelist: true` та `transform: true`.
+* Суворо `class-validator` + `class-transformer`
+* Всі поля в DTO — декоратори (`@IsString()`, `@IsEmail()`, `@IsOptional()`)
+* `ValidationPipe` + `whitelist: true` + `transform: true`
 
 ## 4. Безпека та Авторизація
 
-* **Guards**: Використовуй `JwtAuthGuard` для захисту приватних ендпоінтів.
-* За замовчуванням всі маршрути захищені (Global Guard). Публічні маршрути позначаються `@Public()`.
-* **Current User**: Для даних авторизованого користувача — кастомний декоратор `@CurrentUser()`, не `req.user` напряму.
-* **Паролі**: Ніколи не повертай хеші паролів у відповідях API.
+* `JwtAuthGuard` для приватних ендпоінтів
+* Глобальна Guard за замовчуванням, публічні маршрути — `@Public()`
+* `@CurrentUser()` декоратор замість `req.user`
+* Ніколи не повертай хеші паролів
 
 ## 5. Обробка Помилок
 
-* **Де кидати винятки**: HTTP-винятки (`NotFoundException`, `BadRequestException`, `UnauthorizedException`) кидаються **в сервісах**, а не в контролерах. Контролери лише перехоплюють їх через глобальний exception filter.
-* Не використовуй стандартний `Error` або `console.log` для помилок.
-* Забезпечуй інформативні повідомлення: `new NotFoundException('Workout with ID 123 not found')`.
+* HTTP-винятки кидаються **в сервісах**, не в контролерах
+* Інформативні повідомлення: `new NotFoundException('Workout with ID 123 not found')`
 
 ## 6. Документація (Swagger)
 
-* Кожен ендпоінт документується через `@nestjs/swagger`.
-* **Контролери**: `@ApiTags('Name')`.
-* **Ендпоінти**: `@ApiOperation()`, `@ApiResponse()` (успішні та неуспішні відповіді).
-* **DTO**: всі поля описані `@ApiProperty()`.
+* `@ApiTags('Name')` у контролерах
+* `@ApiOperation()`, `@ApiResponse()` для ендпоінтів
+* `@ApiProperty()` для DTO-полів
 
 ## 7. Найменування
 
-* **Файли**: `[name].[type].ts` — `workout.controller.ts`, `workout.service.ts`.
-* **Класи**: PascalCase — `WorkoutService`.
-* **Методи та змінні**: camelCase — `getWorkoutById`, `workoutData`.
-* **Ендпоінти**: множина для ресурсів REST — `GET /exercises`, `POST /workouts/:id/sets`.
+* **Файли**: `[name].[type].ts` — `workout.controller.ts`, `workout.service.ts`
+* **Класи**: PascalCase — `WorkoutService`
+* **Методи**: camelCase — `getWorkoutById`
+* **Ендпоінти**: множина для ресурсів — `GET /exercises`, `POST /workouts/:id/sets`
 
-## 8. Правила для ШІ при написанні нових модулів
+## 8. API Design — Real-World Usage
 
-Цей розділ відповідає §3 `AI_INSTRUCTIONS` (проектування API).
-
-* **Реальні потреби**: Ендпоінти мають відображати реальний UX, а не лише CRUD. Приклади:  
-  `PATCH /workouts/:id/complete`, `POST /workouts/:id/copy-from-template`, `GET /exercises/:id/personal-records`.
-* **Комплексність**: Передбачай фільтрацію, пагінацію, вкладені дані (тренування + сети + назви вправ).
-* **Без "сміттєвих" ендпоінтів**: Кожен метод контролера — конкретна фіча з `DEVELOPMENT_PLAN.md`.
+* Ендпоінти мають відображати реальний UX: `PATCH /workouts/:id/complete`, `POST /workouts/:id/copy-from-template`
+* Передбачай фільтрацію, пагінацію, вкладені дані (тренування + сети + вправи)
+* Кожен метод контролера — конкретна фіча з документації, без "сміттєвих" ендпоінтів
