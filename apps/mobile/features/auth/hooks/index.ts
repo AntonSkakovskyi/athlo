@@ -1,1 +1,1 @@
-export * from './useAuthMutations';
+export * from '@/hooks/api/useAuthAPI';
