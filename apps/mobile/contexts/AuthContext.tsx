@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { IUser } from '@athlo/shared';
-import { AuthService } from '../services/auth';
+import { AuthService } from '@/features/auth/services';
 import apiClient, { setUnauthorizedHandler } from '../api/api-client';
 import { apiRoutes } from '../api/api-routes';
 

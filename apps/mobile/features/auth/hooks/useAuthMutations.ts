@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import type { IUser } from '@athlo/shared';
-import apiClient from '../../api/api-client';
-import { apiRoutes } from '../../api/api-routes';
+import apiClient from '@/api/api-client';
+import { apiRoutes } from '@/api/api-routes';
 
 interface LoginRequest {
   email: string;
