@@ -8,7 +8,7 @@ import {
   Modal,
   Vibration,
 } from 'react-native';
-import { colors, borderRadius, fontSize, spacing } from '../../constants/theme';
+import { colors, borderRadius, fontSize, spacing } from '@/constants/theme';
 
 interface RestTimerProps {
   visible: boolean;

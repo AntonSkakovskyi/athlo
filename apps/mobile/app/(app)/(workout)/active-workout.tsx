@@ -11,11 +11,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IWorkoutWithRelations } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
-import { StatsBar } from '../../../components/workout/StatsBar';
-import { ActiveExerciseCard } from '../../../components/workout/ActiveExerciseCard';
-import { RestTimerOverlay } from '../../../components/workout/RestTimerOverlay';
+import { StatsBar } from '@/components/workout/StatsBar/StatsBar';
+import { ActiveExerciseCard } from '@/components/workout/ActiveExerciseCard/ActiveExerciseCard';
+import { RestTimerOverlay } from '@/components/workout/RestTimerOverlay/RestTimerOverlay';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';

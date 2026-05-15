@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IAchievement, IUserAchievement } from '@athlo/shared';
 import { AchievementType } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { useGetAchievements, useGetUserAchievements, useGetExerciseRecords } from '../../../hooks/api/useAchievementHooks';
 import { useGetExercises } from '../../../hooks/api/useExerciseQueries';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';

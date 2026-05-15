@@ -9,11 +9,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IWorkoutTemplate, IUserWorkoutTemplate } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
-import { TemplateCard } from '../../../components/workout/TemplateCard';
+import { TemplateCard } from '@/components/workout/TemplateCard/TemplateCard';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import { Spinner } from '@/components/ui/Spinner/Spinner';

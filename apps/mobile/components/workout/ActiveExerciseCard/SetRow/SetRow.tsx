@@ -1,5 +1,5 @@
 import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius } from '../../constants/theme';
+import { colors, borderRadius } from '@/constants/theme';
 import { TrackingType } from '@athlo/shared';
 
 export interface SetRowData {

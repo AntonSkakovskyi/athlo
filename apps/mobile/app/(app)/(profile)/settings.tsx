@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { useAuth } from '../../../contexts/AuthContext';
 
 interface SettingsRowProps {

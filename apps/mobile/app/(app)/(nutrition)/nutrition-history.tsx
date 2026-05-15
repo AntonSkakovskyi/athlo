@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useGetNutritionHistory } from '../../../hooks/api/useNutritionLogHooks';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '../../../constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { NutritionBarChart } from '../../../components/nutrition/NutritionBarChart';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 

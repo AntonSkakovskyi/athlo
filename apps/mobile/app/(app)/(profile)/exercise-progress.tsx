@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IFrequentExercise } from '@athlo/shared';
-import { colors, spacing } from '../../../constants/theme';
+import { colors, spacing } from '@/constants/theme';
 import { useFrequentExercises } from '../../../hooks/api/useStatisticsHooks';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { Input } from '@/components/ui/Input/Input';

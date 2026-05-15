@@ -8,7 +8,7 @@ import {
   TextInput,
   ScrollView,
 } from 'react-native';
-import { colors, borderRadius, fontSize, spacing } from '../../constants/theme';
+import { colors, borderRadius, fontSize, spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 
 interface FinishWorkoutModalProps {

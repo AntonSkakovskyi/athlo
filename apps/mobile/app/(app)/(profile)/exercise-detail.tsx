@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { IExerciseProgressRecord } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { useExerciseProgress } from '../../../hooks/api/useStatisticsHooks';
 import { useGetExerciseById } from '../../../hooks/api/useExerciseQueries';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';

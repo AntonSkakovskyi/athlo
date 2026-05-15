@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { WorkoutStatus } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useGetProfile } from '../../../hooks/api/useProfileHooks';
 import { useStatisticsSummary } from '../../../hooks/api/useStatisticsHooks';
@@ -13,8 +13,8 @@ import { NavCard } from '@/components/ui/NavCard/NavCard';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
-import { WorkoutHistoryList } from '../../../components/workout/WorkoutHistoryList';
-import type { WorkoutWithRelations } from '../../../components/workout/WorkoutHistoryList';
+import { WorkoutHistoryList } from '@/components/workout/WorkoutHistoryList/WorkoutHistoryList';
+import type { WorkoutWithRelations } from '@/components/workout/WorkoutHistoryList/WorkoutHistoryList';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();

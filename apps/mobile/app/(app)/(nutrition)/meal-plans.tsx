@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import type { IMealPlan } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 const VISIBILITY_LABELS: Record<number, string> = {

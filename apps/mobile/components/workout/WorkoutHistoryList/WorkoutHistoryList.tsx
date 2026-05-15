@@ -4,13 +4,13 @@ import { useRouter } from 'expo-router';
 import type { IWorkoutTemplate, IWorkoutWithRelations } from '@athlo/shared';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { WorkoutHistoryCard } from './WorkoutHistoryCard';
-import { formatDuration, formatDate, computeVolume } from '../../utils/workout';
-import { useActiveWorkout } from '../../contexts/ActiveWorkoutContext';
-import { useCreateWorkout, useDeleteWorkout } from '../../hooks/api/useWorkoutHooks';
-import { useCreateTemplate } from '../../hooks/api/useTemplateHooks';
-import apiClient from '../../api/api-client';
-import { apiRoutes } from '../../api/api-routes';
+import { WorkoutHistoryCard } from '@/components/workout/WorkoutHistoryCard/WorkoutHistoryCard';
+import { formatDuration, formatDate, computeVolume } from '@/utils/workout';
+import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
+import { useCreateWorkout, useDeleteWorkout } from '@/hooks/api/useWorkoutHooks';
+import { useCreateTemplate } from '@/hooks/api/useTemplateHooks';
+import apiClient from '@/api/api-client';
+import { apiRoutes } from '@/api/api-routes';
 
 export type { IWorkoutWithRelations as WorkoutWithRelations };
 

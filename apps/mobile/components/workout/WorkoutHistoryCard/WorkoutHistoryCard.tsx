@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
-import { colors, borderRadius, fontSize, spacing } from '../../constants/theme';
+import { colors, borderRadius, fontSize, spacing } from '@/constants/theme';
 
 export interface ExerciseSetSummary {
   exerciseName: string;

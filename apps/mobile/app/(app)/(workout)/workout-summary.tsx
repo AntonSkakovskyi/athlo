@@ -1,12 +1,12 @@
 import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { colors, borderRadius, spacing, fontSize } from '../../../constants/theme';
+import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { MetricCard } from '@/components/ui/MetricCard/MetricCard';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
-import { ExerciseSummaryCard } from '../../../components/workout/ExerciseSummaryCard';
+import { ExerciseSummaryCard } from '@/components/workout/ExerciseSummaryCard/ExerciseSummaryCard';
 import type { IWorkoutWithRelations } from '@athlo/shared';
 import { useGetWorkoutById } from '../../../hooks/api/useWorkoutHooks';
 import { formatDuration } from '../../../utils/workout';

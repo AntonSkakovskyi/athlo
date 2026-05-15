@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IWorkoutChartPoint } from '@athlo/shared';
-import { colors, spacing } from '../../../constants/theme';
+import { colors, spacing } from '@/constants/theme';
 import { useWorkoutStatistics } from '../../../hooks/api/useStatisticsHooks';
 import { useBodyMetricProgress } from '../../../hooks/api/useStatisticsHooks';
 import { useGetMetricTypes } from '../../../hooks/api/useBodyMetricHooks';

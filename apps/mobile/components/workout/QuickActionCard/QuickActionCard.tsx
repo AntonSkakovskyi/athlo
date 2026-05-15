@@ -1,5 +1,5 @@
 import { Text, Pressable, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '../../constants/theme';
+import { colors, borderRadius } from '@/constants/theme';
 
 interface QuickActionCardProps {
   icon: string;

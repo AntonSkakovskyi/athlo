@@ -6,7 +6,7 @@ import { useGetDailySummary, useCreateLogMeal, useDeleteLogMeal, useAddWaterLog,
 import { useGetMealTypes } from '../../../hooks/api/useMealTypeQueries';
 import { useGetActiveMealPlan, useGetMealPlanById } from '../../../hooks/api/useMealPlanHooks';
 import type { ILogMeal, IWaterLog } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';

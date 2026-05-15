@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '../../constants/theme';
+import { colors, borderRadius } from '@/constants/theme';
 import { RadioCircle } from '@/components/ui/RadioCircle/RadioCircle';
 import { Tag } from '@/components/ui/Tag/Tag';
 

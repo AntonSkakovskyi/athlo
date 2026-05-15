@@ -9,14 +9,14 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { IExercise, IMuscle, IEquipment } from '@athlo/shared';
-import { colors, spacing } from '../../../constants/theme';
+import { colors, spacing } from '@/constants/theme';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
-import { ExerciseListItem } from '../../../components/workout/ExerciseListItem';
+import { ExerciseListItem } from '@/components/workout/ExerciseListItem/ExerciseListItem';
 import { useInfiniteExercises } from '../../../hooks/api/useExerciseQueries';
 import { useGetMuscles } from '../../../hooks/api/useMuscleQueries';
 import { useGetEquipments } from '../../../hooks/api/useEquipmentQueries';

@@ -10,14 +10,14 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { WorkoutStatus } from '@athlo/shared';
-import { colors, spacing } from '../../../constants/theme';
+import { colors, spacing } from '@/constants/theme';
 import { useGetWorkouts, useCreateWorkout } from '../../../hooks/api/useWorkoutHooks';
 import { useGetMyTemplates, useStartFromTemplate } from '../../../hooks/api/useTemplateHooks';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
-import { TemplateCard } from '../../../components/workout/TemplateCard';
+import { TemplateCard } from '@/components/workout/TemplateCard/TemplateCard';
 import type { IWorkoutWithRelations } from '@athlo/shared';
-import { WorkoutHistoryList } from '../../../components/workout/WorkoutHistoryList';
-import { QuickActionCard } from '../../../components/workout/QuickActionCard';
+import { WorkoutHistoryList } from '@/components/workout/WorkoutHistoryList/WorkoutHistoryList';
+import { QuickActionCard } from '@/components/workout/QuickActionCard/QuickActionCard';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';

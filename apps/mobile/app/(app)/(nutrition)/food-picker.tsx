@@ -11,7 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { IFood } from '@athlo/shared';
-import { colors, borderRadius, spacing, fontSize } from '../../../constants/theme';
+import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';

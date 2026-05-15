@@ -1,8 +1,8 @@
 import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius } from '../../constants/theme';
+import { colors, borderRadius } from '@/constants/theme';
 import { TrackingType } from '@athlo/shared';
-import { SetRow } from './SetRow';
-import type { SetRowData } from './SetRow';
+import { SetRow } from './SetRow/SetRow';
+import type { SetRowData } from './SetRow/SetRow';
 
 interface ActiveExerciseCardProps {
   exerciseName: string;

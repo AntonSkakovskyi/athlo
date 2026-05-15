@@ -1,8 +1,8 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { TrackingType } from '@athlo/shared';
 import type { ILogExerciseWithSets } from '@athlo/shared';
-import { colors, borderRadius, fontSize } from '../../constants/theme';
-import { getTrackingType } from '../../utils/workout';
+import { colors, borderRadius, fontSize } from '@/constants/theme';
+import { getTrackingType } from '@/utils/workout';
 
 interface ExerciseSummaryCardProps {
   exercise: ILogExerciseWithSets;

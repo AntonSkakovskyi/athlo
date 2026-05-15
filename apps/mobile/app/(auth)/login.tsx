@@ -6,7 +6,7 @@ import { useLogin } from '../../hooks/api/useAuthMutations';
 import { AxiosError } from 'axios';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
-import { colors } from '../../constants/theme';
+import { colors } from '@/constants/theme';
 
 function extractErrorMessages(error: unknown): string[] {
   if (error instanceof AxiosError) {

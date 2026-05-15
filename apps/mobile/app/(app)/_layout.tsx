@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useActiveWorkout } from '../../contexts/ActiveWorkoutContext';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors } from '../../constants/theme';
+import { colors } from '@/constants/theme';
 import { useDeleteWorkout } from '../../hooks/api/useWorkoutHooks';
 
 function FloatingWorkoutMini() {
