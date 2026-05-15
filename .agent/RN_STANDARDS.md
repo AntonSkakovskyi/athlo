@@ -132,7 +132,14 @@ app/(app)/
 - Import and compose components, nothing else.
 - Contain no inline styles.
 - Contain no business logic — delegate to hooks.
-- Be under ~60–80 lines.
+- Be under ~60–80 lines of JSX; extract logic sections to hooks.
+
+### 1.4 Component Decomposition Thresholds
+
+- **Component files > 150 lines** → split into sub-components (folder structure per 1.2)
+- **JSX sections > 80 lines** within a component → extract to separate component or custom hook
+- **Nested ternaries / conditionals > 3 levels** → extract to computed variables or guards at top
+- Apply before comitting; large components slow development and reduce code clarity
 
 ---
 
@@ -156,8 +163,9 @@ app/(app)/
 - **No implicit `any`** — enable `strict: true` in `tsconfig.json`.
 - **Interfaces for props:** Every component must have a named `Props` interface.
 - **API response types:** Every API response must be typed. Store shared models in `types/` or `features/<feature>/types.ts`.
-- **Avoid type assertions (`as`)** unless absolutely necessary; add a comment explaining why.
-- **Use discriminated unions** for state variants (e.g., loading / success / error).
+- **Untyped `useState`:** If type cannot be inferred, add explicit generic: `useState<Workout | null>(null)` not `useState(null)`.
+- **Type assertions (`as`):** Avoid entirely; use type guards. If unavoidable, add single-line comment explaining why.
+- **Discriminated unions** for state variants (e.g., `{ status: 'loading' }` not separate booleans).
 
 ```typescript
 // ✅ Good
@@ -166,44 +174,54 @@ interface WorkoutsListProps {
   onPress: (id: string) => void;
   isLoading?: boolean;
 }
+const [workout, setWorkout] = useState<Workout | null>(null);
 
 // ❌ Bad
 const WorkoutsList = (props: any) => { ... }
+const [workout, setWorkout] = useState(null);
 ```
 
 ---
 
 ## 4. Components & Styling
 
-### 4.1 Styling Rules
-- Use `StyleSheet.create()` for all styles. Never use inline style objects.
-- All design tokens come from `constants/theme.ts` — no hardcoded color/spacing values.
-- Use flexbox for layout. Avoid fixed pixels unless necessary.
-- Support dark mode via theme tokens from the start.
+### 4.1 Styling Rules (ZERO Hardcoded Values)
+- **All** styles via `StyleSheet.create()` — never inline `style={{ ... }}`
+- **All design tokens** from `constants/theme.ts`: colors, spacing, borderRadius, fontSize, shadows
+- Consolidate theme tokens: zero unique border-radius, shadow, or font-weight values across project
+- Layout: flexbox always. Fixed pixels only with justification
+- Support dark mode via tokens from start
 
 ### 4.2 Performance & Responsiveness
-- Wrap expensive components in `React.memo()`.
-- Use `useCallback` for prop functions, `useMemo` for expensive computations.
-- Always provide `keyExtractor` for lists; never use index as key.
-- Use `FlatList` instead of `ScrollView` for long lists.
-- Use `useWindowDimensions()` for responsive sizing.
-- Respect safe areas via `useSafeAreaInsets()`.
+- Wrap expensive components in `React.memo()`
+- Functions as props → `useCallback`, expensive computations → `useMemo`
+- Lists: `keyExtractor` required (never index), `getItemLayout` for long lists, set `initialNumToRender`
+- Long `ScrollView` → replace with `FlatList` or `FlashList`
+- Responsive: `useWindowDimensions()` for sizing, `useSafeAreaInsets()` for safe areas
 
 ---
 
-## 5. Atomic UI Components (MANDATORY)
+## 5. Atomic UI Components (MANDATORY — Replace All Raw Primitives)
 
 > **Rule:** Never write an inline primitive where an atomic component already exists or could exist.
 
-### 5.1 Lookup Algorithm
-Before writing any button, input, chip, or other primitive:
+### 5.1 Primitive Replacement Rules
+- Raw `<Pressable>`, `<TouchableOpacity>`, `<TouchableHighlight>` rendering text/icon as button → `<Button>`
+- Raw `<TextInput>` → wrap with `<Input>` (even simple inputs)
+- Styled `<Text>` with fontSize/fontWeight/color → `<Typography variant="...">`
+- `<View>` with card pattern (bg + borderRadius + shadow) → `<Card>`
+- Loading placeholders (grey boxes, skeleton UI) → `<Skeleton>`
+- Empty-state UI (illustration + text + button) → `<EmptyState>`
+- Duplicate implementations (multiple "badge" or "chip" versions) → consolidate into one atom
+
+### 5.2 Lookup Algorithm
+Before writing any primitive:
 
 1. **Check `components/ui/`** — does a component already exist?
 2. **If yes** — import and use it. Do not duplicate.
 3. **If no** — create it in `components/ui/` first, then use it.
 
-
-### 5.2 Creating a New Atomic Component
+### 5.3 Creating a New Atomic Component
 1. Create `components/ui/ComponentName/ComponentName.tsx`
 2. Use only tokens from `constants/theme.ts`
 3. Export from `components/ui/index.ts`
@@ -230,16 +248,17 @@ Before writing any button, input, chip, or other primitive:
 - Centralized, typed query key factory
 - No magic strings in API hooks
 
-**Query Keys Pattern:** `constants/queryKeys.ts` with typed, structured keys (no magic strings).
+### 6.2 Data Fetching Enforcement Rules
 
-**API Hook Pattern:**
-- One export per query/mutation
-- Use `useQueryClient()` for invalidations
-- Set `staleTime`: 0 (real-time), 5 min (user data), 1 hour (static)
-
-**Error States:** Every component handles `isPending`, `isError` with `<LoadingScreen />` / `<ErrorState />`.
-
-**Optimistic Updates:** Use `onMutate` / `onError` for mutations affecting lists.
+- **No direct fetch/axios in components** — extract to service + hook layer
+- **Every useQuery/useMutation** must use `queryKeys.*` factory (no magic strings like `['workouts']`)
+- **Query Keys Pattern:** `constants/queryKeys.ts` with typed, structured keys
+- **API Hook Pattern:**
+  - One export per query/mutation
+  - Use `useQueryClient()` for invalidations
+  - Set `staleTime`: 0 (real-time), 5 min (user data), 1 hour (static)
+- **Error States:** Every component handles `isPending`, `isError` with `<LoadingScreen />` / `<ErrorState />`
+- **Optimistic Updates:** Use `onMutate` / `onError` for mutations affecting lists
 
 ---
 
@@ -301,7 +320,8 @@ Before writing any button, input, chip, or other primitive:
 - **Optional Chaining & Nullish Coalescing:** Use `?.` and `??`
 - **No magic values:** Extract to `constants/`
 - **Max ~200 lines:** Decompose if longer
-- **Absolute imports:** Use path aliases (`@/components/ui`), no relative paths
+- **Absolute imports only:** Use path aliases (`@/components/ui`), never relative imports (no `../../..`)
+- **No import chains > 2 levels deep** — if needed, convert to absolute alias or add new alias
 ---
 
 ## 13. Security
