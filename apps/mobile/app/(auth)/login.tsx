@@ -6,7 +6,7 @@ import { useLogin } from '@/features/auth/hooks';
 import { AxiosError } from 'axios';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
-import { colors } from '@/constants/theme';
+import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
 
 function extractErrorMessages(error: unknown): string[] {
   if (error instanceof AxiosError) {
@@ -77,8 +77,8 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
-  link: { marginTop: 16, textAlign: 'center', color: '#007AFF' },
-  generalError: { fontSize: 13, color: colors.danger, marginBottom: 12, textAlign: 'center' },
+  container: { flex: 1, justifyContent: 'center', padding: spacing.xl },
+  title: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, marginBottom: spacing.xl, textAlign: 'center' },
+  link: { marginTop: spacing.lg, textAlign: 'center', color: colors.link },
+  generalError: { fontSize: fontSize.sm, color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
 });
