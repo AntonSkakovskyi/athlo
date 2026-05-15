@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { IFrequentExercise } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Tag } from '@/components/ui/Tag/Tag';
 
 interface ExerciseProgressListItemProps {

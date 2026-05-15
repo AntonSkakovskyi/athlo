@@ -8,7 +8,7 @@ import { useFrequentExercises } from '../../../hooks/api/useStatisticsHooks';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { Input } from '@/components/ui/Input/Input';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { ExerciseProgressListItem } from '../../../components/profile/ExerciseProgressListItem';
+import { ExerciseProgressListItem } from '@/components/profile/ExerciseProgressListItem/ExerciseProgressListItem';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 export default function ExerciseProgressScreen() {
