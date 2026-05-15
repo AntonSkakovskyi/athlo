@@ -10,11 +10,11 @@ import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { DateSelector } from '../../../components/nutrition/DateSelector';
-import { DailyMacrosSummary } from '../../../components/nutrition/DailyMacrosSummary';
-import { MealCard } from '../../../components/nutrition/MealCard';
-import { WaterTracker } from '../../../components/nutrition/WaterTracker';
-import { ActivePlanBanner } from '../../../components/nutrition/ActivePlanBanner';
+import { DateSelector } from '@/components/nutrition/DateSelector/DateSelector';
+import { DailyMacrosSummary } from '@/components/nutrition/DailyMacrosSummary/DailyMacrosSummary';
+import { MealCard } from '@/components/nutrition/MealCard/MealCard';
+import { WaterTracker } from '@/components/nutrition/WaterTracker/WaterTracker';
+import { ActivePlanBanner } from '@/components/nutrition/ActivePlanBanner/ActivePlanBanner';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 function getDateString(date: Date): string {

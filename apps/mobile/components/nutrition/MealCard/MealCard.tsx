@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { ILogMeal } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 
 interface MealCardProps {

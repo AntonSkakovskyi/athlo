@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { IUserMealPlan } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 
 interface ActivePlanBannerProps {
   userMealPlan: IUserMealPlan;

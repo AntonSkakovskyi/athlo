@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius, spacing, fontSize } from '../../constants/theme';
+import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
 
 interface DataPoint {
   date: string;

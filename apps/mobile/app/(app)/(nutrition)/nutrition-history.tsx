@@ -6,7 +6,7 @@ import { useGetNutritionHistory } from '../../../hooks/api/useNutritionLogHooks'
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
-import { NutritionBarChart } from '../../../components/nutrition/NutritionBarChart';
+import { NutritionBarChart } from '@/components/nutrition/NutritionBarChart/NutritionBarChart';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 type Scope = '1W' | '1M' | '3M';

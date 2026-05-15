@@ -24,10 +24,10 @@ import { useGetMealTypes } from '../../../../hooks/api/useMealTypeQueries';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '../../../../constants/theme';
-import { DayTabsRow } from '../../../../components/nutrition/DayTabsRow';
-import { PlanMealCard } from '../../../../components/nutrition/PlanMealCard';
-import { AddMealSheet } from '../../../../components/nutrition/AddMealSheet';
-import { DaySummaryFooter } from '../../../../components/nutrition/DaySummaryFooter';
+import { DayTabsRow } from '@/components/nutrition/DayTabsRow/DayTabsRow';
+import { PlanMealCard } from '@/components/nutrition/PlanMealCard/PlanMealCard';
+import { AddMealSheet } from '@/components/nutrition/AddMealSheet/AddMealSheet';
+import { DaySummaryFooter } from '@/components/nutrition/DaySummaryFooter/DaySummaryFooter';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 interface PlanDayWithMeals {

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing } from '../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 
 interface DateSelectorProps {
   date: string;
