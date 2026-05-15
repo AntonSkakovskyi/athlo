@@ -1,39 +1,25 @@
-import React, { useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { WorkoutStatus } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
-import { useGetProfile } from '@/features/profile/hooks';
-import { useStatisticsSummary } from '@/features/profile/hooks';
-import { useGetFriends } from '@/features/profile/hooks';
-import { useInfiniteWorkouts } from '@/features/workout/hooks';
 import { NavCard } from '@/components/ui/NavCard/NavCard';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
 import { WorkoutHistoryList } from '@/features/workout/components';
-import type { WorkoutWithRelations } from '@/features/workout';
+import { useProfileScreen } from '@/features/profile/hooks/useProfileScreen';
 
 export default function ProfileScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const { data: profile, isLoading: profileLoading } = useGetProfile();
-  const { data: summary } = useStatisticsSummary();
-  const { data: friends } = useGetFriends();
-  const workoutsQuery = useInfiniteWorkouts();
-
-  const displayedWorkouts = useMemo(() => {
-    const all = (workoutsQuery.data?.pages ?? []).flatMap((p) => p.data);
-    return all.filter((w) => w.status === WorkoutStatus.COMPLETED) as WorkoutWithRelations[];
-  }, [workoutsQuery.data]);
-
-  const handleLoadMore = useCallback(() => {
-    if (workoutsQuery.hasNextPage && !workoutsQuery.isFetchingNextPage) {
-      workoutsQuery.fetchNextPage();
-    }
-  }, [workoutsQuery]);
+  const {
+    insets,
+    router,
+    profile,
+    profileLoading,
+    summary,
+    friends,
+    workoutsQuery,
+    displayedWorkouts,
+    handleLoadMore,
+  } = useProfileScreen();
 
   if (profileLoading) {
     return <LoadingScreen />;
@@ -52,7 +38,6 @@ export default function ProfileScreen() {
       }}
       scrollEventThrottle={400}
     >
-      {/* Header Actions */}
       <View style={styles.headerRow}>
         <Pressable style={styles.headerBtn} onPress={() => router.push('/(app)/(profile)/edit-profile')}>
           <Text style={styles.headerBtnIcon}>✏️</Text>
@@ -62,12 +47,10 @@ export default function ProfileScreen() {
         </Pressable>
       </View>
 
-      {/* Profile Card */}
       <View style={styles.profileCard}>
         <Avatar name={profile?.fullName} size="lg" />
         <Text style={styles.nickname}>@{profile?.nickname}</Text>
         <Text style={styles.fullName}>{profile?.fullName}</Text>
-
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
             <Text style={styles.statValue}>{summary?.totalWorkouts ?? 0}</Text>
@@ -81,7 +64,6 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Navigation Grid 2×2 */}
       <View style={styles.section}>
         <View style={styles.navGrid}>
           <View style={styles.navRow}>
@@ -98,7 +80,6 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Workout History */}
       <View style={styles.section}>
         <SectionHeader title="Workout History" />
         <WorkoutHistoryList
@@ -112,9 +93,7 @@ export default function ProfileScreen() {
           emptyActionLabel="Start your first workout"
           onEmptyAction={() => router.push('/(app)/(workout)')}
         />
-        {workoutsQuery.isFetchingNextPage && (
-          <Spinner style={styles.loader} />
-        )}
+        {workoutsQuery.isFetchingNextPage && <Spinner style={styles.loader} />}
       </View>
     </ScrollView>
   );
@@ -126,12 +105,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
   },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-    marginBottom: 8,
-  },
+  headerRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.md, marginBottom: spacing.sm },
   headerBtn: {
     width: 40,
     height: 40,
@@ -142,67 +116,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  headerBtnIcon: {
-    fontSize: 18,
-  },
+  headerBtnIcon: { fontSize: fontSize.xl },
   profileCard: {
     alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: borderRadius.xl,
-    padding: 24,
+    padding: spacing['2xl'],
     borderWidth: 1,
     borderColor: colors.border,
-    marginBottom: 24,
+    marginBottom: spacing['2xl'],
   },
-  nickname: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.text,
-    marginTop: 12,
-  },
-  fullName: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 4,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 20,
-    gap: 24,
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statValue: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  statLabel: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: colors.border,
-  },
-  section: {
-    marginBottom: 24,
-  },
+  nickname: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text, marginTop: spacing.md },
+  fullName: { fontSize: fontSize.md, color: colors.textSecondary, marginTop: spacing.xs },
+  statsRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xl, gap: spacing['2xl'] },
+  statItem: { alignItems: 'center' },
+  statValue: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, color: colors.text },
+  statLabel: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.xxs },
+  statDivider: { width: 1, height: 32, backgroundColor: colors.border },
+  section: { marginBottom: spacing['2xl'] },
   navGrid: {},
-  navRow: {
-    flexDirection: 'row',
-  },
-  navGap: {
-    width: 12,
-  },
-  navRowGap: {
-    height: 12,
-  },
-  loader: {
-    marginVertical: 20,
-  },
+  navRow: { flexDirection: 'row' },
+  navGap: { width: spacing.md },
+  navRowGap: { height: spacing.md },
+  loader: { marginVertical: spacing.xl },
 });
