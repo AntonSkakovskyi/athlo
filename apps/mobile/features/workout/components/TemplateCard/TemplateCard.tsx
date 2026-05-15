@@ -1,5 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { Button } from '@/components/ui/Button/Button';
+import { Tag } from '@/components/ui/Tag/Tag';
 
 interface TemplateCardProps {
   name: string;
@@ -15,7 +17,7 @@ interface TemplateCardProps {
   onUnsave?: () => void;
 }
 
-export function TemplateCard({
+export default function TemplateCard({
   name,
   description,
   exerciseCount,
@@ -47,9 +49,7 @@ export function TemplateCard({
         {muscles && muscles.length > 0 && (
           <View style={styles.muscleRow}>
             {muscles.slice(0, 4).map((m) => (
-              <View key={m} style={styles.muscleChip}>
-                <Text style={styles.muscleText}>{m}</Text>
-              </View>
+              <Tag key={m} label={m} />
             ))}
           </View>
         )}
@@ -57,24 +57,16 @@ export function TemplateCard({
 
       <View style={styles.actions}>
         {onStart && (
-          <Pressable style={styles.actionPrimary} onPress={onStart}>
-            <Text style={styles.actionPrimaryText}>▶ Start</Text>
-          </Pressable>
+          <Button title="▶ Start" variant="primary" onPress={onStart} style={styles.actionFlex} />
         )}
         {variant === 'my' && onDelete && (
-          <Pressable style={styles.actionDanger} onPress={onDelete}>
-            <Text style={styles.actionDangerText}>Delete</Text>
-          </Pressable>
+          <Button title="Delete" variant="danger" onPress={onDelete} />
         )}
         {variant === 'public' && onSave && (
-          <Pressable style={styles.actionSecondary} onPress={onSave}>
-            <Text style={styles.actionSecondaryText}>Save</Text>
-          </Pressable>
+          <Button title="Save" variant="secondary" onPress={onSave} style={styles.actionFlex} />
         )}
         {variant === 'saved' && onUnsave && (
-          <Pressable style={styles.actionDanger} onPress={onUnsave}>
-            <Text style={styles.actionDangerText}>Remove</Text>
-          </Pressable>
+          <Button title="Remove" variant="danger" onPress={onUnsave} />
         )}
       </View>
     </Pressable>
@@ -86,8 +78,8 @@ const styles = StyleSheet.create({
     height: 150,
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
-    padding: 16,
-    marginBottom: 12,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
     justifyContent: 'space-between',
@@ -101,81 +93,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   name: {
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
     color: colors.text,
     flex: 1,
   },
   count: {
-    fontSize: 13,
+    fontSize: fontSize.sm,
     color: colors.primary,
-    fontWeight: '500',
-    marginLeft: 8,
+    fontWeight: fontWeight.medium,
+    marginLeft: spacing.sm,
   },
   description: {
-    fontSize: 14,
+    fontSize: fontSize.md,
     color: colors.textSecondary,
-    marginTop: 6,
+    marginTop: spacing.xs,
   },
   author: {
-    fontSize: 13,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   muscleRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 10,
-    gap: 6,
-  },
-  muscleChip: {
-    backgroundColor: colors.surfaceLight,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: borderRadius.full,
-  },
-  muscleText: {
-    fontSize: 12,
-    color: colors.textSecondary,
+    marginTop: spacing.sm,
+    gap: spacing.xs,
   },
   actions: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
-  actionPrimary: {
+  actionFlex: {
     flex: 1,
-    backgroundColor: colors.primary,
-    paddingVertical: 10,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  actionPrimaryText: {
-    color: '#000',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  actionSecondary: {
-    flex: 1,
-    backgroundColor: colors.surfaceLight,
-    paddingVertical: 10,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  actionSecondaryText: {
-    color: colors.text,
-    fontWeight: '500',
-    fontSize: 14,
-  },
-  actionDanger: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.dangerLight,
-    alignItems: 'center',
-  },
-  actionDangerText: {
-    color: colors.danger,
-    fontWeight: '500',
-    fontSize: 14,
   },
 });

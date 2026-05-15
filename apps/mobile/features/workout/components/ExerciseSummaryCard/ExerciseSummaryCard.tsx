@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { TrackingType } from '@athlo/shared';
 import type { ILogExerciseWithSets } from '@athlo/shared';
-import { colors, borderRadius, fontSize } from '@/constants/theme';
+import { colors, borderRadius, fontSize, fontWeight, spacing } from '@/constants/theme';
 import { getTrackingType } from '@/utils/workout';
 
 interface ExerciseSummaryCardProps {
@@ -119,34 +119,34 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
-    padding: 14,
-    marginBottom: 12,
+    padding: spacing.md,
+    marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
   },
   name: {
     fontSize: fontSize.md,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     color: colors.primary,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   notes: {
     fontSize: fontSize.sm,
     color: colors.textSecondary,
     fontStyle: 'italic',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 6,
+    paddingBottom: spacing.xs,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   headerCol: {
     fontSize: fontSize.xs,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     color: colors.textMuted,
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -154,19 +154,19 @@ const styles = StyleSheet.create({
   setRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
   },
   bestSetRow: {
     backgroundColor: colors.primaryLight,
     borderRadius: borderRadius.sm,
-    marginHorizontal: -4,
-    paddingHorizontal: 8,
+    marginHorizontal: -spacing.xs,
+    paddingHorizontal: spacing.sm,
   },
   setNum: {
     width: 28,
     fontSize: fontSize.sm,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     color: colors.textSecondary,
     textAlign: 'center',
   },
@@ -178,16 +178,16 @@ const styles = StyleSheet.create({
   },
   bestText: {
     color: colors.primary,
-    fontWeight: '700',
+    fontWeight: fontWeight.bold,
   },
   bestBadge: {
-    fontSize: 14,
-    marginLeft: 4,
+    fontSize: fontSize.md,
+    marginLeft: spacing.xs,
   },
   noSets: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
     textAlign: 'center',
-    paddingVertical: 12,
+    paddingVertical: spacing.md,
   },
 });

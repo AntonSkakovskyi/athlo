@@ -1,8 +1,9 @@
-import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { TrackingType } from '@athlo/shared';
 import { SetRow } from './SetRow/SetRow';
 import type { SetRowData } from './SetRow/SetRow';
+import { Input } from '@/components/ui/Input/Input';
 
 interface ActiveExerciseCardProps {
   exerciseName: string;
@@ -48,13 +49,14 @@ export function ActiveExerciseCard({
       </View>
 
       {showNotes && (
-        <TextInput
-          style={styles.notesInput}
+        <Input
+          label="Notes"
+          multiline
           placeholder="Add notes..."
           placeholderTextColor={colors.textMuted}
           value={notes ?? ''}
           onChangeText={onNotesChange}
-          multiline
+          style={styles.notesInput}
         />
       )}
 
@@ -101,8 +103,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
-    padding: 14,
-    marginBottom: 12,
+    padding: spacing.md,
+    marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -110,17 +112,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: spacing.sm,
   },
   exerciseName: {
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
     color: colors.primary,
     flex: 1,
   },
   headerActions: {
     flexDirection: 'row',
-    gap: 6,
+    gap: spacing.xs,
   },
   iconBtn: {
     width: 34,
@@ -131,41 +133,41 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iconText: {
-    fontSize: 16,
+    fontSize: fontSize.lg,
   },
   notesInput: {
     backgroundColor: colors.surfaceLight,
     borderRadius: borderRadius.sm,
-    padding: 10,
-    fontSize: 14,
+    padding: spacing.sm,
+    fontSize: fontSize.md,
     color: colors.text,
-    marginBottom: 10,
+    marginBottom: spacing.sm,
     minHeight: 40,
   },
   columnHeaders: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 4,
-    paddingBottom: 6,
-    gap: 6,
+    paddingHorizontal: spacing.xs,
+    paddingBottom: spacing.xs,
+    gap: spacing.xs,
   },
   colHeader: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
     color: colors.textMuted,
     textAlign: 'center',
     textTransform: 'uppercase',
   },
   addSetBtn: {
-    marginTop: 8,
-    paddingVertical: 10,
+    marginTop: spacing.sm,
+    paddingVertical: spacing.sm,
     alignItems: 'center',
     backgroundColor: colors.surfaceLight,
     borderRadius: borderRadius.sm,
   },
   addSetText: {
     color: colors.primary,
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.md,
   },
 });

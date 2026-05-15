@@ -4,12 +4,11 @@ import {
   Text,
   StyleSheet,
   Modal,
-  Pressable,
-  TextInput,
   ScrollView,
 } from 'react-native';
-import { colors, borderRadius, fontSize, spacing } from '@/constants/theme';
+import { colors, borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
+import { MetricsForm } from './MetricsForm';
 
 interface FinishWorkoutModalProps {
   visible: boolean;
@@ -29,15 +28,6 @@ export interface FinishWorkoutData {
   avgHeartRate?: number;
   maxHeartRate?: number;
 }
-
-const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const FEELING_OPTIONS = [
-  { value: 1, emoji: '😫', label: 'Terrible' },
-  { value: 2, emoji: '😐', label: 'Bad' },
-  { value: 3, emoji: '😊', label: 'OK' },
-  { value: 4, emoji: '😄', label: 'Good' },
-  { value: 5, emoji: '🔥', label: 'Great' },
-];
 
 export function FinishWorkoutModal({
   visible,
@@ -80,76 +70,18 @@ export function FinishWorkoutModal({
               <SummaryItem icon="✅" value={`${completedSets}/${totalSets}`} label="Sets" />
             </View>
 
-            {/* RPE Selector */}
-            <Text style={styles.sectionLabel}>Rate of Perceived Exertion (RPE)</Text>
-            <View style={styles.rpeRow}>
-              {RPE_VALUES.map((val) => (
-                <Pressable
-                  key={val}
-                  style={[styles.rpeBtn, rpe === val && styles.rpeBtnActive]}
-                  onPress={() => setRpe(rpe === val ? undefined : val)}
-                >
-                  <Text style={[styles.rpeText, rpe === val && styles.rpeTextActive]}>
-                    {val}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            {/* Feeling Selector */}
-            <Text style={styles.sectionLabel}>How do you feel?</Text>
-            <View style={styles.feelingRow}>
-              {FEELING_OPTIONS.map((opt) => (
-                <Pressable
-                  key={opt.value}
-                  style={[styles.feelingBtn, feeling === opt.value && styles.feelingBtnActive]}
-                  onPress={() => setFeeling(feeling === opt.value ? undefined : opt.value)}
-                >
-                  <Text style={styles.feelingEmoji}>{opt.emoji}</Text>
-                  <Text style={[styles.feelingLabel, feeling === opt.value && styles.feelingLabelActive]}>
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            {/* Optional Numeric Inputs */}
-            <Text style={styles.sectionLabel}>Additional Metrics (optional)</Text>
-            <View style={styles.inputsRow}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Calories</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  placeholder="kcal"
-                  placeholderTextColor={colors.textMuted}
-                  value={calories}
-                  onChangeText={setCalories}
-                />
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Avg HR</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  placeholder="bpm"
-                  placeholderTextColor={colors.textMuted}
-                  value={avgHr}
-                  onChangeText={setAvgHr}
-                />
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Max HR</Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  placeholder="bpm"
-                  placeholderTextColor={colors.textMuted}
-                  value={maxHr}
-                  onChangeText={setMaxHr}
-                />
-              </View>
-            </View>
+            <MetricsForm
+              rpe={rpe}
+              setRpe={setRpe}
+              feeling={feeling}
+              setFeeling={setFeeling}
+              calories={calories}
+              setCalories={setCalories}
+              avgHr={avgHr}
+              setAvgHr={setAvgHr}
+              maxHr={maxHr}
+              setMaxHr={setMaxHr}
+            />
           </ScrollView>
 
           {/* Actions */}
@@ -200,30 +132,30 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: fontSize.xl,
-    fontWeight: '700',
+    fontWeight: fontWeight.bold,
     color: colors.text,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: spacing.xl,
   },
   // Summary
   summaryRow: {
     flexDirection: 'row',
     backgroundColor: colors.surfaceLight,
     borderRadius: borderRadius.lg,
-    padding: 16,
-    marginBottom: 24,
+    padding: spacing.lg,
+    marginBottom: spacing['2xl'],
   },
   summaryItem: {
     flex: 1,
     alignItems: 'center',
   },
   summaryIcon: {
-    fontSize: 20,
-    marginBottom: 4,
+    fontSize: fontSize.xl,
+    marginBottom: spacing.xs,
   },
   summaryValue: {
     fontSize: fontSize.md,
-    fontWeight: '700',
+    fontWeight: fontWeight.bold,
     color: colors.text,
   },
   summaryLabel: {
@@ -231,101 +163,10 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginTop: 2,
   },
-  // Sections
-  sectionLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    marginBottom: 10,
-  },
-  // RPE
-  rpeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 20,
-  },
-  rpeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.surfaceLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  rpeBtnActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  rpeText: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  rpeTextActive: {
-    color: '#000',
-  },
-  // Feeling
-  feelingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  feelingBtn: {
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  feelingBtnActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  feelingEmoji: {
-    fontSize: 28,
-    marginBottom: 4,
-  },
-  feelingLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-  },
-  feelingLabelActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  // Inputs
-  inputsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
-  inputGroup: {
-    flex: 1,
-  },
-  inputLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginBottom: 6,
-  },
-  input: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    fontSize: fontSize.sm,
-    color: colors.text,
-    textAlign: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
   // Actions
   actions: {
-    gap: 10,
-    marginTop: 8,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
   actionBtn: {
     width: '100%',

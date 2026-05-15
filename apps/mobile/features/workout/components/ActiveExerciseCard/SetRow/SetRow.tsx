@@ -1,5 +1,6 @@
-import { View, Text, TextInput, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { NumericInput } from '@/components/ui';
 import { TrackingType } from '@athlo/shared';
 
 export interface SetRowData {
@@ -47,19 +48,13 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
 
       {trackingType === TrackingType.WEIGHT_AND_REPS && (
         <>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
+          <NumericInput
             placeholder="kg"
-            placeholderTextColor={colors.textMuted}
             value={set.weight != null ? String(set.weight) : ''}
             onChangeText={(t) => onUpdate({ weight: t ? Number(t) : undefined })}
           />
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
+          <NumericInput
             placeholder="reps"
-            placeholderTextColor={colors.textMuted}
             value={set.reps != null ? String(set.reps) : ''}
             onChangeText={(t) => onUpdate({ reps: t ? Number(t) : undefined })}
           />
@@ -67,11 +62,9 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
       )}
 
       {trackingType === TrackingType.REPS_ONLY && (
-        <TextInput
-          style={[styles.input, styles.inputWide]}
-          keyboardType="numeric"
+        <NumericInput
+          wide
           placeholder="reps"
-          placeholderTextColor={colors.textMuted}
           value={set.reps != null ? String(set.reps) : ''}
           onChangeText={(t) => onUpdate({ reps: t ? Number(t) : undefined })}
         />
@@ -79,19 +72,13 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
 
       {trackingType === TrackingType.TIME_BASED && (
         <>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
+          <NumericInput
             placeholder="sec"
-            placeholderTextColor={colors.textMuted}
             value={set.duration != null ? String(set.duration) : ''}
             onChangeText={(t) => onUpdate({ duration: t ? Number(t) : undefined })}
           />
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
+          <NumericInput
             placeholder="m"
-            placeholderTextColor={colors.textMuted}
             value={set.distance != null ? String(set.distance) : ''}
             onChangeText={(t) => onUpdate({ distance: t ? Number(t) : undefined })}
           />
@@ -118,9 +105,9 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    gap: 6,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    gap: spacing.xs,
   },
   rowCompleted: {
     backgroundColor: colors.primaryLight,
@@ -128,30 +115,16 @@ const styles = StyleSheet.create({
   },
   setNum: {
     width: 24,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
     color: colors.textSecondary,
     textAlign: 'center',
   },
   previous: {
     width: 60,
-    fontSize: 13,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
     textAlign: 'center',
-  },
-  input: {
-    flex: 1,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    fontSize: 14,
-    color: colors.text,
-    textAlign: 'center',
-    minWidth: 52,
-  },
-  inputWide: {
-    flex: 2,
   },
   checkbox: {
     width: 32,
@@ -167,8 +140,8 @@ const styles = StyleSheet.create({
     borderColor: colors.primary,
   },
   checkmark: {
-    color: '#000',
-    fontWeight: 'bold',
-    fontSize: 16,
+    color: colors.black,
+    fontWeight: fontWeight.bold,
+    fontSize: fontSize.lg,
   },
 });

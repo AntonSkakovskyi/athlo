@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
-import { colors, borderRadius, fontSize, spacing } from '@/constants/theme';
+import { colors, borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
+import { SetSummaryList } from './SetSummaryList';
 
 export interface ExerciseSetSummary {
   exerciseName: string;
@@ -79,19 +80,7 @@ export function WorkoutHistoryCard({
         {preview.length > 0 && (
           <>
             <View style={styles.divider} />
-            <View style={styles.exerciseList}>
-              {preview.map((item, i) => (
-                <View key={i} style={styles.exerciseRow}>
-                  <Text style={styles.exerciseName} numberOfLines={1}>{item.exerciseName}</Text>
-                  <Text style={styles.exerciseSets}>{item.setsCount} sets</Text>
-                </View>
-              ))}
-              {hasMore && (
-                <Pressable onPress={onPress} style={styles.seeMoreWrap}>
-                  <Text style={styles.seeMore}>See more</Text>
-                </Pressable>
-              )}
-            </View>
+            <SetSummaryList sets={preview} hasMore={hasMore} onSeeMore={onPress} />
           </>
         )}
       </Pressable>
@@ -171,8 +160,8 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
-    padding: 16,
-    marginBottom: 12,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -182,15 +171,15 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   nameDateCol: {
     flex: 1,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   name: {
     fontSize: fontSize.md,
-    fontWeight: '700',
+    fontWeight: fontWeight.bold,
     color: colors.text,
     marginBottom: 3,
   },
@@ -201,19 +190,19 @@ const styles = StyleSheet.create({
   menuTrigger: {
     width: 28,
     height: 28,
-    borderRadius: 50,
+    borderRadius: borderRadius.full,
     backgroundColor: colors.surfaceLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   menuTriggerText: {
-    fontSize: 18,
+    fontSize: fontSize.xl,
     color: colors.textSecondary,
     lineHeight: 20,
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
     flexWrap: 'wrap',
   },
   statBadge: {
@@ -221,9 +210,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surfaceLight,
     borderRadius: borderRadius.sm,
-    paddingVertical: 5,
-    paddingHorizontal: 9,
-    gap: 4,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    gap: spacing.xs,
   },
   statIcon: {
     fontSize: 11,
@@ -231,40 +220,12 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: fontSize.xs,
     color: colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: fontWeight.medium,
   },
   divider: {
     height: 1,
     backgroundColor: colors.border,
-    marginVertical: 12,
-  },
-  exerciseList: {
-    gap: 8,
-  },
-  exerciseRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  exerciseName: {
-    fontSize: fontSize.sm,
-    color: colors.text,
-    flex: 1,
-    marginRight: 8,
-  },
-  exerciseSets: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    fontWeight: '500',
-  },
-  seeMoreWrap: {
-    alignItems: 'center',
-    paddingTop: 4,
-  },
-  seeMore: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: '600',
+    marginVertical: spacing.md,
   },
   // Modal / bottom sheet
   overlay: {
@@ -276,8 +237,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceElevated,
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
-    paddingTop: 12,
-    paddingBottom: 20,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
     borderTopWidth: 1,
     borderColor: colors.border,
@@ -286,9 +247,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 4,
     backgroundColor: colors.border,
-    borderRadius: 2,
+    borderRadius: borderRadius.xs,
     alignSelf: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   menuItem: {
     flexDirection: 'row',
@@ -300,14 +261,14 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   menuItemIcon: {
-    fontSize: 20,
+    fontSize: fontSize.xl,
     width: 24,
     textAlign: 'center',
   },
   menuItemLabel: {
     fontSize: fontSize.md,
     color: colors.text,
-    fontWeight: '500',
+    fontWeight: fontWeight.medium,
   },
   menuItemDanger: {
     color: colors.danger,
@@ -315,7 +276,7 @@ const styles = StyleSheet.create({
   menuDivider: {
     height: 1,
     backgroundColor: colors.border,
-    marginVertical: 4,
+    marginVertical: spacing.xs,
   },
   cancelRow: {
     paddingVertical: 14,
@@ -324,6 +285,6 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: fontSize.md,
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
   },
 });

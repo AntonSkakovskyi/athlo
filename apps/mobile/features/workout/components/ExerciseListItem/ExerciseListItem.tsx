@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { RadioCircle } from '@/components/ui/RadioCircle/RadioCircle';
 import { Tag } from '@/components/ui/Tag/Tag';
 
@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    padding: 14,
-    marginBottom: 8,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -61,25 +61,25 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   icon: {
-    fontSize: 16,
+    fontSize: fontSize.lg,
   },
   name: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
     color: colors.text,
     flex: 1,
   },
   tags: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
-    gap: 8,
+    marginTop: spacing.xs,
+    gap: spacing.sm,
   },
   muscleText: {
-    fontSize: 12,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
   },
 });

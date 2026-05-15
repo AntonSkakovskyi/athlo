@@ -8,7 +8,8 @@ import {
   Modal,
   Vibration,
 } from 'react-native';
-import { colors, borderRadius, fontSize, spacing } from '@/constants/theme';
+import { colors, borderRadius, fontSize, fontWeight, spacing } from '@/constants/theme';
+import { TimerDisplay } from './TimerDisplay';
 
 interface RestTimerProps {
   visible: boolean;
@@ -83,10 +84,7 @@ export function RestTimerOverlay({ visible, initialSeconds, onClose }: RestTimer
           <Text style={styles.title}>Rest Timer</Text>
 
           {/* Timer display */}
-          <View style={styles.timerCircle}>
-            <Text style={styles.timerText}>{formatTime(remaining)}</Text>
-            {remaining === 0 && <Text style={styles.doneText}>Done!</Text>}
-          </View>
+          <TimerDisplay remaining={remaining} formatTime={formatTime} />
 
           {/* Progress bar */}
           <View style={styles.progressTrack}>
@@ -129,53 +127,31 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: fontSize.lg,
-    fontWeight: '700',
+    fontWeight: fontWeight.bold,
     color: colors.text,
-    marginBottom: 24,
-  },
-  timerCircle: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    borderWidth: 4,
-    borderColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  timerText: {
-    fontSize: 48,
-    fontWeight: '700',
-    color: colors.text,
-    fontVariant: ['tabular-nums'],
-  },
-  doneText: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: '600',
-    marginTop: 4,
+    marginBottom: spacing['2xl'],
   },
   progressTrack: {
     width: '100%',
     height: 6,
     backgroundColor: colors.surfaceLight,
-    borderRadius: 3,
-    marginBottom: 24,
+    borderRadius: borderRadius.xs,
+    marginBottom: spacing['2xl'],
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
     backgroundColor: colors.primary,
-    borderRadius: 3,
+    borderRadius: borderRadius.xs,
   },
   adjustRow: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 20,
+    gap: spacing.lg,
+    marginBottom: spacing.xl,
   },
   adjustBtn: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing['2xl'],
     borderRadius: borderRadius.md,
     backgroundColor: colors.surfaceLight,
     borderWidth: 1,
@@ -183,18 +159,18 @@ const styles = StyleSheet.create({
   },
   adjustText: {
     fontSize: fontSize.md,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
     color: colors.text,
   },
   skipBtn: {
-    paddingVertical: 14,
-    paddingHorizontal: 32,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing['3xl'],
     borderRadius: borderRadius.md,
     backgroundColor: colors.primaryLight,
   },
   skipText: {
     fontSize: fontSize.md,
-    fontWeight: '700',
+    fontWeight: fontWeight.bold,
     color: colors.primary,
   },
 });
