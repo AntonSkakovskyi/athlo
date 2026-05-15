@@ -13,7 +13,7 @@ import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
-import { TemplateCard } from '@/components/workout/TemplateCard/TemplateCard';
+import { TemplateCard } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
@@ -27,7 +27,7 @@ import {
   useSaveTemplate,
   useUnsaveTemplate,
   useStartFromTemplate,
-} from '../../../hooks/api/useTemplateHooks';
+} from '@/features/workout/hooks';
 
 const TABS = ['My', 'Public', 'Saved'];
 

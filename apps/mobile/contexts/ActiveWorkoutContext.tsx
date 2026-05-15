@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useMemo, useRef, useState } fro
 import type { ReactNode } from 'react';
 import type { IWorkout } from '@athlo/shared';
 import { TrackingType } from '@athlo/shared';
-import type { SetRowData } from '../components/workout/SetRow';
+import type { SetRowData } from '@/features/workout/components/ActiveExerciseCard/SetRow/SetRow';
 
 export interface ActiveExercise {
   logExerciseId?: number;

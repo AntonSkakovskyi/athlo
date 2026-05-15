@@ -5,7 +5,7 @@ import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useActiveWorkout } from '../../contexts/ActiveWorkoutContext';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '@/constants/theme';
-import { useDeleteWorkout } from '../../hooks/api/useWorkoutHooks';
+import { useDeleteWorkout } from '@/features/workout/hooks';
 
 function FloatingWorkoutMini() {
   const { workout, isActive, exercises, completedSets, totalSets, endWorkout } = useActiveWorkout();

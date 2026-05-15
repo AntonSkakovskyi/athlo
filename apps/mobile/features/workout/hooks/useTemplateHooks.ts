@@ -1,8 +1,8 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { IWorkoutTemplate, IWorkout, IUserWorkoutTemplate, IPaginatedResponse } from '@athlo/shared';
-import apiClient from '../../api/api-client';
-import { apiRoutes } from '../../api/api-routes';
-import { templateKeys, workoutKeys } from '../../api/queries/query-keys';
+import apiClient from '@/api/api-client';
+import { apiRoutes } from '@/api/api-routes';
+import { templateKeys, workoutKeys } from '@/api/queries/query-keys';
 
 // ─── Queries ────────────────────────────────────────
 

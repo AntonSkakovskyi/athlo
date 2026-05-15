@@ -1,18 +1,16 @@
 import { useCallback } from 'react';
 import { Alert, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import type { IWorkoutTemplate, IWorkoutWithRelations } from '@athlo/shared';
+import type { IWorkout, IWorkoutTemplate, IWorkoutWithRelations } from '@athlo/shared';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { WorkoutHistoryCard } from '@/components/workout/WorkoutHistoryCard/WorkoutHistoryCard';
+import { WorkoutHistoryCard } from '@/features/workout/components';
 import { formatDuration, formatDate, computeVolume } from '@/utils/workout';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
-import { useCreateWorkout, useDeleteWorkout } from '@/hooks/api/useWorkoutHooks';
-import { useCreateTemplate } from '@/hooks/api/useTemplateHooks';
+import { useCreateWorkout, useDeleteWorkout } from '@/features/workout/hooks';
+import { useCreateTemplate } from '@/features/workout/hooks';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
-
-export type { IWorkoutWithRelations as WorkoutWithRelations };
 
 interface WorkoutHistoryListProps {
   workouts: IWorkoutWithRelations[];

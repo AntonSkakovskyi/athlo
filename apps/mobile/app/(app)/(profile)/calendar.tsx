@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { WorkoutStatus } from '@athlo/shared';
-import type { IWorkout } from '@athlo/shared';
+import type { IWorkoutWithRelations } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '@/constants/theme';
-import { useGetWorkouts, useCreateWorkout } from '../../../hooks/api/useWorkoutHooks';
+import { useGetWorkouts, useCreateWorkout } from '@/features/workout/hooks';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
-import { WorkoutHistoryCard } from '@/components/workout/WorkoutHistoryCard/WorkoutHistoryCard';
+import { WorkoutHistoryCard } from '@/features/workout/components';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { formatDuration, formatDate, computeVolume } from '../../../utils/workout';
@@ -42,12 +42,6 @@ function getYearRange(): number[] {
   return years;
 }
 
-interface WorkoutWithRelations extends IWorkout {
-  logExercises?: Array<{
-    exercise?: { name: string };
-    sets?: Array<{ weight?: number; reps?: number; isCompleted?: boolean }>;
-  }>;
-}
 
 export default function CalendarScreen() {
   const insets = useSafeAreaInsets();
@@ -71,11 +65,11 @@ export default function CalendarScreen() {
   );
 
   const workoutsByDate = useMemo(() => {
-    const map: Record<string, WorkoutWithRelations[]> = {};
+    const map: Record<string, IWorkoutWithRelations[]> = {};
     completedWorkouts.forEach((w) => {
       const key = toDateKey(new Date(w.started_at));
       if (!map[key]) map[key] = [];
-      map[key].push(w as WorkoutWithRelations);
+      map[key].push(w as IWorkoutWithRelations);
     });
     return map;
   }, [completedWorkouts]);
@@ -237,7 +231,7 @@ export default function CalendarScreen() {
               duration={formatDuration(w.started_at, w.ended_at)}
               volume={computeVolume(w)}
               exerciseCount={w.logExercises?.length ?? 0}
-              sets={w.logExercises?.map((e) => ({
+              sets={w.logExercises?.map((e: NonNullable<IWorkoutWithRelations['logExercises']>[0]) => ({
                 exerciseName: e.exercise?.name ?? '',
                 setsCount: e.sets?.length ?? 0,
               })) ?? []}

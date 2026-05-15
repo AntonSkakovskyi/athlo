@@ -14,7 +14,7 @@ import { colors, borderRadius, fontSize, spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
-import { useCompleteWorkout, useDeleteWorkout } from '../../../hooks/api/useWorkoutHooks';
+import { useCompleteWorkout, useDeleteWorkout } from '@/features/workout/hooks';
 
 const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const FEELING_OPTIONS = [

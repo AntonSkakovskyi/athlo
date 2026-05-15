@@ -20,8 +20,8 @@ import {
   useUpdateTemplate,
   useDeleteTemplate,
   useStartFromTemplate,
-} from '../../../../hooks/api/useTemplateHooks';
-import { useDeleteTemplateExercise } from '../../../../hooks/api/useTemplateExerciseHooks';
+} from '@/features/workout/hooks';
+import { useDeleteTemplateExercise } from '@/features/workout/hooks';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 interface TemplateExerciseWithRelations extends ITemplateExercise {

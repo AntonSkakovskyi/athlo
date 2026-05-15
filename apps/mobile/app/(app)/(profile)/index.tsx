@@ -8,13 +8,13 @@ import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useGetProfile } from '../../../hooks/api/useProfileHooks';
 import { useStatisticsSummary } from '../../../hooks/api/useStatisticsHooks';
 import { useGetFriends } from '../../../hooks/api/useFriendHooks';
-import { useInfiniteWorkouts } from '../../../hooks/api/useWorkoutHooks';
+import { useInfiniteWorkouts } from '@/features/workout/hooks';
 import { NavCard } from '@/components/ui/NavCard/NavCard';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
-import { WorkoutHistoryList } from '@/components/workout/WorkoutHistoryList/WorkoutHistoryList';
-import type { WorkoutWithRelations } from '@/components/workout/WorkoutHistoryList/WorkoutHistoryList';
+import { WorkoutHistoryList } from '@/features/workout/components';
+import type { WorkoutWithRelations } from '@/features/workout';
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();

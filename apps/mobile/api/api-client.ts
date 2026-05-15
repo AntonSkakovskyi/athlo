@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { API_URL } from './config';
-import { AuthService } from '../services/auth';
+import { AuthService } from '@/features/auth/services';
 
 let onUnauthorized: (() => void) | null = null;
 

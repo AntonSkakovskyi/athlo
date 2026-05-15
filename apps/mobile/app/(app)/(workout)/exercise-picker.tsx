@@ -16,13 +16,13 @@ import { Chip } from '@/components/ui/Chip/Chip';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
-import { ExerciseListItem } from '@/components/workout/ExerciseListItem/ExerciseListItem';
+import { ExerciseListItem } from '@/features/workout/components';
 import { useInfiniteExercises } from '../../../hooks/api/useExerciseQueries';
 import { useGetMuscles } from '../../../hooks/api/useMuscleQueries';
 import { useGetEquipments } from '../../../hooks/api/useEquipmentQueries';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
-import { useCreateLogExercise } from '../../../hooks/api/useLogExerciseHooks';
-import { useCreateTemplateExercise } from '../../../hooks/api/useTemplateExerciseHooks';
+import { useCreateLogExercise } from '@/features/workout/hooks';
+import { useCreateTemplateExercise } from '@/features/workout/hooks';
 import { getTrackingType, trackingTypeIcon } from '../../../utils/workout';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 

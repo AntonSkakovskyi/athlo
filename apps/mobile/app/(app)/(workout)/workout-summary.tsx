@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { MetricCard } from '@/components/ui/MetricCard/MetricCard';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
-import { ExerciseSummaryCard } from '@/components/workout/ExerciseSummaryCard/ExerciseSummaryCard';
+import { ExerciseSummaryCard } from '@/features/workout/components';
 import type { IWorkoutWithRelations } from '@athlo/shared';
-import { useGetWorkoutById } from '../../../hooks/api/useWorkoutHooks';
+import { useGetWorkoutById } from '@/features/workout/hooks';
 import { formatDuration } from '../../../utils/workout';
 
 const FEELING_EMOJIS = ['😫', '😐', '😊', '😄', '🔥'];

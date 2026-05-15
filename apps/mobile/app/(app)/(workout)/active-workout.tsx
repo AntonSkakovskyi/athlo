@@ -13,9 +13,9 @@ import { useRouter } from 'expo-router';
 import type { IWorkoutWithRelations } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
-import { StatsBar } from '@/components/workout/StatsBar/StatsBar';
-import { ActiveExerciseCard } from '@/components/workout/ActiveExerciseCard/ActiveExerciseCard';
-import { RestTimerOverlay } from '@/components/workout/RestTimerOverlay/RestTimerOverlay';
+import { StatsBar } from '@/features/workout/components';
+import { ActiveExerciseCard } from '@/features/workout/components';
+import { RestTimerOverlay } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
@@ -24,7 +24,7 @@ import {
   useUpdateWorkout,
   useDeleteWorkout,
   useGetBatchLastPerformance,
-} from '../../../hooks/api/useWorkoutHooks';
+} from '@/features/workout/hooks';
 import { formatElapsed, getTrackingType } from '../../../utils/workout';
 
 export default function ActiveWorkoutScreen() {
@@ -66,7 +66,7 @@ export default function ActiveWorkoutScreen() {
     workoutQuery.isLoading ||
     (!!workoutQuery.data &&
       exercises.length === 0 &&
-      (workoutQuery.data as IWorkoutWithRelations).logExercises?.length > 0 &&
+      ((workoutQuery.data as IWorkoutWithRelations).logExercises?.length ?? 0) > 0 &&
       !lastPerfQuery.isSuccess &&
       !lastPerfQuery.isError);
 

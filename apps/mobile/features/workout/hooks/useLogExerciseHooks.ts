@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ILogExercise } from '@athlo/shared';
-import apiClient from '../../api/api-client';
-import { apiRoutes } from '../../api/api-routes';
-import { workoutKeys } from '../../api/queries/query-keys';
+import apiClient from '@/api/api-client';
+import { apiRoutes } from '@/api/api-routes';
+import { workoutKeys } from '@/api/queries/query-keys';
 
 // ─── Mutations ──────────────────────────────────────
 
