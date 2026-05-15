@@ -9,7 +9,7 @@ import {
   useActivateMealPlan,
   useDeactivateMealPlan,
   useGetActiveMealPlan,
-} from '../../../hooks/api/useMealPlanHooks';
+} from '@/features/nutrition/hooks';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';

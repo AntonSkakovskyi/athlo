@@ -19,15 +19,15 @@ import {
   useAddPlanMeal,
   useRemovePlanMeal,
   useRemovePlanMealItem,
-} from '../../../../hooks/api/useMealPlanHooks';
-import { useGetMealTypes } from '../../../../hooks/api/useMealTypeQueries';
+} from '@/features/nutrition/hooks';
+import { useGetMealTypes } from '@/features/nutrition/hooks';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '../../../../constants/theme';
-import { DayTabsRow } from '@/components/nutrition/DayTabsRow/DayTabsRow';
-import { PlanMealCard } from '@/components/nutrition/PlanMealCard/PlanMealCard';
-import { AddMealSheet } from '@/components/nutrition/AddMealSheet/AddMealSheet';
-import { DaySummaryFooter } from '@/components/nutrition/DaySummaryFooter/DaySummaryFooter';
+import { DayTabsRow } from '@/features/nutrition/components';
+import { PlanMealCard } from '@/features/nutrition/components';
+import { AddMealSheet } from '@/features/nutrition/components';
+import { DaySummaryFooter } from '@/features/nutrition/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 interface PlanDayWithMeals {

@@ -2,11 +2,11 @@ import { useState, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useGetNutritionHistory } from '../../../hooks/api/useNutritionLogHooks';
+import { useGetNutritionHistory } from '@/features/nutrition/hooks';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
-import { NutritionBarChart } from '@/components/nutrition/NutritionBarChart/NutritionBarChart';
+import { NutritionBarChart } from '@/features/nutrition/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 type Scope = '1W' | '1M' | '3M';

@@ -16,9 +16,9 @@ import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
-import { useInfiniteSearchFoods, useCreateFood } from '../../../hooks/api/useFoodHooks';
-import { useAddLogMealItem } from '../../../hooks/api/useNutritionLogHooks';
-import { useAddPlanMealItem } from '../../../hooks/api/useMealPlanHooks';
+import { useInfiniteSearchFoods, useCreateFood } from '@/features/nutrition/hooks';
+import { useAddLogMealItem } from '@/features/nutrition/hooks';
+import { useAddPlanMealItem } from '@/features/nutrition/hooks';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 type PickerMode = 'logMeal' | 'planMeal';

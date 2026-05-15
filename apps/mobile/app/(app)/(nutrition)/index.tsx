@@ -2,19 +2,19 @@ import { useState, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useGetDailySummary, useCreateLogMeal, useDeleteLogMeal, useAddWaterLog, useDeleteWaterLog } from '../../../hooks/api/useNutritionLogHooks';
-import { useGetMealTypes } from '../../../hooks/api/useMealTypeQueries';
-import { useGetActiveMealPlan, useGetMealPlanById } from '../../../hooks/api/useMealPlanHooks';
+import { useGetDailySummary, useCreateLogMeal, useDeleteLogMeal, useAddWaterLog, useDeleteWaterLog } from '@/features/nutrition/hooks';
+import { useGetMealTypes } from '@/features/nutrition/hooks';
+import { useGetActiveMealPlan, useGetMealPlanById } from '@/features/nutrition/hooks';
 import type { ILogMeal, IWaterLog } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { DateSelector } from '@/components/nutrition/DateSelector/DateSelector';
-import { DailyMacrosSummary } from '@/components/nutrition/DailyMacrosSummary/DailyMacrosSummary';
-import { MealCard } from '@/components/nutrition/MealCard/MealCard';
-import { WaterTracker } from '@/components/nutrition/WaterTracker/WaterTracker';
-import { ActivePlanBanner } from '@/components/nutrition/ActivePlanBanner/ActivePlanBanner';
+import { DateSelector } from '@/features/nutrition/components';
+import { DailyMacrosSummary } from '@/features/nutrition/components';
+import { MealCard } from '@/features/nutrition/components';
+import { WaterTracker } from '@/features/nutrition/components';
+import { ActivePlanBanner } from '@/features/nutrition/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 function getDateString(date: Date): string {

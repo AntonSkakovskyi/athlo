@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import type { IMealType } from '@athlo/shared';
-import apiClient from '../../api/api-client';
-import { apiRoutes } from '../../api/api-routes';
-import { mealTypeKeys } from '../../api/queries/query-keys';
+import apiClient from '@/api/api-client';
+import { apiRoutes } from '@/api/api-routes';
+import { mealTypeKeys } from '@/api/queries/query-keys';
 
 export const useGetMealTypes = () => {
   return useQuery({
