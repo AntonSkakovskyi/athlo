@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 
 type TagColor = 'default' | 'primary' | 'success' | 'danger';
 
@@ -26,12 +26,12 @@ export function Tag({ label, color = 'default' }: TagProps) {
 
 const styles = StyleSheet.create({
   tag: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
     borderRadius: borderRadius.full,
   },
   label: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
   },
 });

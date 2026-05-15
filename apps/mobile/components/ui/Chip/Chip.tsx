@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 
 interface ChipProps {
   label: string;
@@ -20,24 +20,24 @@ export function Chip({ label, active = false, onPress }: ChipProps) {
 
 const styles = StyleSheet.create({
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   chipActive: {
-    backgroundColor: colors.primaryLight,
     borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
   },
   label: {
-    fontSize: 13,
+    fontSize: fontSize.sm,
     color: colors.textSecondary,
   },
   labelActive: {
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: fontWeight.semibold,
   },
 });

@@ -3,13 +3,12 @@ import {
   View,
   Text,
   StyleSheet,
-  Pressable,
-  ScrollView,
   type LayoutChangeEvent,
 } from 'react-native';
 import { LineChart, type lineDataItem } from 'react-native-gifted-charts';
 import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
-import { Chip } from '@/components/ui/Chip/Chip';
+import { PeriodSelector } from './PeriodSelector/PeriodSelector';
+import { MetricSelector } from './MetricSelector/MetricSelector';
 
 interface DataPoint {
   date: string;
@@ -102,35 +101,13 @@ export function LineChartBlock({
               <Text style={styles.headerDate}>· {formatDate(displayPoint.date)}</Text>
             </Text>
           )}
-          <Pressable
-            style={styles.periodDropdown}
-            onPress={() => setPeriodOpen(!periodOpen)}
-          >
-            <Text style={styles.periodText}>{period} ▼</Text>
-          </Pressable>
-          {periodOpen && (
-            <View style={styles.periodMenu}>
-              {periods.map((p) => (
-                <Pressable
-                  key={p}
-                  style={[styles.periodItem, p === period && styles.periodItemActive]}
-                  onPress={() => {
-                    onPeriodChange(p);
-                    setPeriodOpen(false);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.periodItemText,
-                      p === period && styles.periodItemTextActive,
-                    ]}
-                  >
-                    {p}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          )}
+          <PeriodSelector
+            period={period}
+            periods={periods}
+            open={periodOpen}
+            onToggle={() => setPeriodOpen(!periodOpen)}
+            onSelect={(p) => { onPeriodChange(p); setPeriodOpen(false); }}
+          />
         </View>
       </View>
 
@@ -179,21 +156,12 @@ export function LineChartBlock({
       ) : null}
 
       {/* Metric chips */}
-      {metrics && onMetricChange && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.chipRow}
-        >
-          {metrics.map((m, i) => (
-            <Chip
-              key={m}
-              label={m}
-              active={activeMetric === i}
-              onPress={() => onMetricChange(i)}
-            />
-          ))}
-        </ScrollView>
+      {metrics && onMetricChange && activeMetric !== undefined && (
+        <MetricSelector
+          metrics={metrics}
+          activeMetric={activeMetric}
+          onMetricChange={onMetricChange}
+        />
       )}
     </View>
   );
@@ -236,43 +204,6 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: colors.textSecondary,
   },
-  periodDropdown: {
-    marginTop: spacing.sm,
-    paddingHorizontal: 10,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.surfaceLight,
-  },
-  periodText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  periodMenu: {
-    position: 'absolute',
-    top: 52,
-    right: 0,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    zIndex: 10,
-    minWidth: 120,
-  },
-  periodItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  periodItemActive: {
-    backgroundColor: colors.primaryLight,
-  },
-  periodItemText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  periodItemTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
   emptyText: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
@@ -281,8 +212,5 @@ const styles = StyleSheet.create({
   },
   chartWrapper: {
     marginBottom: spacing.sm,
-  },
-  chipRow: {
-    paddingTop: spacing.md,
   },
 });

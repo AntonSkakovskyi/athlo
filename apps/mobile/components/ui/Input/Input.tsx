@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TextInput as RNTextInput, StyleSheet, Text, View, Pressable } from 'react-native';
 import type { TextInputProps as RNTextInputProps } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 
 interface InputProps extends RNTextInputProps {
   label?: string;
@@ -39,12 +39,12 @@ export function Input({ label, error, style, secureTextEntry, ...rest }: InputPr
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '500',
-    marginBottom: 4,
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.medium,
+    marginBottom: spacing.xs,
     color: colors.textSecondary,
   },
   row: {
@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: borderRadius.md,
-    padding: 12,
-    fontSize: 16,
+    padding: spacing.md,
+    fontSize: fontSize.lg,
     color: colors.text,
     backgroundColor: colors.surface,
   },
@@ -69,15 +69,15 @@ const styles = StyleSheet.create({
   },
   eyeBtn: {
     position: 'absolute',
-    right: 12,
-    padding: 4,
+    right: spacing.md,
+    padding: spacing.xs,
   },
   eyeIcon: {
-    fontSize: 18,
+    fontSize: fontSize.xl,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: fontSize.sm,
     color: colors.danger,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
 });

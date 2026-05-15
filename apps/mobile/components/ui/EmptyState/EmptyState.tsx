@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 
 interface EmptyStateProps {
   title: string;
@@ -25,31 +25,31 @@ export function EmptyState({ title, description, actionLabel, onAction }: EmptyS
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+    paddingVertical: spacing['4xl'],
+    paddingHorizontal: spacing['2xl'],
   },
   title: {
-    fontSize: 17,
-    fontWeight: '600',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.semibold,
     color: colors.textSecondary,
     textAlign: 'center',
   },
   description: {
-    fontSize: 14,
+    fontSize: fontSize.md,
     color: colors.textMuted,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
   button: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm,
     backgroundColor: colors.primaryLight,
     borderRadius: borderRadius.md,
   },
   buttonText: {
     color: colors.primary,
-    fontWeight: '600',
-    fontSize: 15,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.md,
   },
 });

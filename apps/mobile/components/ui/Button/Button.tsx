@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
-import { colors } from '@/constants/theme';
+import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 
@@ -13,7 +13,7 @@ interface ButtonProps extends Omit<PressableProps, 'style'> {
 }
 
 const VARIANT_COLORS: Record<ButtonVariant, { bg: string; text: string; border?: string }> = {
-  primary: { bg: colors.primary, text: '#000' },
+  primary: { bg: colors.primary, text: colors.black },
   secondary: { bg: colors.surfaceLight, text: colors.text },
   danger: { bg: colors.dangerLight, text: colors.danger },
   ghost: { bg: 'transparent', text: colors.textSecondary, border: colors.border },
@@ -48,7 +48,7 @@ export function Button({
       ) : (
         <>
           {icon}
-          <Text style={[styles.text, { color: variantColors.text }, icon ? { marginLeft: 6 } : undefined]}>{title}</Text>
+          <Text style={[styles.text, { color: variantColors.text }, icon ? { marginLeft: spacing.xs } : undefined]}>{title}</Text>
         </>
       )}
     </Pressable>
@@ -57,15 +57,15 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    padding: 14,
-    borderRadius: 10,
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
   },
   text: {
-    fontWeight: '600',
-    fontSize: 15,
+    fontWeight: fontWeight.semibold,
+    fontSize: fontSize.md,
   },
   disabled: {
     opacity: 0.5,
