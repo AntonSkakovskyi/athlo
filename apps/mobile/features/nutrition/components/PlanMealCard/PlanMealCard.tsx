@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
+import { MealItemRow } from './MealItemRow';
 
 interface PlanMealItemDisplay {
   id: number;
@@ -62,23 +63,9 @@ export function PlanMealCard({ meal, onAddFood, onRemoveMeal, onRemoveItem }: Pl
       </View>
 
       {/* Food Items */}
-      {items.map((item) => {
-        const calories = item.food ? Math.round((item.food.calories * item.amount) / 100) : 0;
-        return (
-          <View key={item.id} style={styles.itemRow}>
-            <Text style={styles.itemName} numberOfLines={1}>
-              {item.food?.name ?? 'Unknown'}
-            </Text>
-            <Text style={styles.itemAmount}>
-              {item.amount} {item.unit?.name ?? 'g'}
-            </Text>
-            <Text style={styles.itemCal}>{calories}</Text>
-            <Pressable onPress={() => onRemoveItem(item.id)} hitSlop={8}>
-              <Text style={styles.itemDelete}>✕</Text>
-            </Pressable>
-          </View>
-        );
-      })}
+      {items.map((item) => (
+        <MealItemRow key={item.id} item={item} onRemove={onRemoveItem} />
+      ))}
 
       {/* Meal Totals */}
       {items.length > 0 && (
@@ -148,34 +135,6 @@ const styles = StyleSheet.create({
   deleteBtn: {
     fontSize: 16,
     color: colors.textMuted,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-    gap: spacing.sm,
-  },
-  itemName: {
-    flex: 1,
-    fontSize: fontSize.sm,
-    color: colors.text,
-  },
-  itemAmount: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-  },
-  itemCal: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    width: 40,
-    textAlign: 'right',
-  },
-  itemDelete: {
-    fontSize: 12,
-    color: colors.danger,
-    marginLeft: spacing.xs,
   },
   totals: {
     flexDirection: 'row',

@@ -1,9 +1,10 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useState } from 'react';
 import type { IWaterLog } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
+import { WaterLogEntry } from './WaterLogEntry';
 
 interface WaterTrackerProps {
   waterLogs: IWaterLog[];
@@ -91,18 +92,7 @@ export function WaterTracker({
       {waterLogs.length > 0 && (
         <View style={styles.logList}>
           {waterLogs.map((log) => (
-            <View key={log.id} style={styles.logRow}>
-              <Text style={styles.logAmount}>{log.amountMl} ml</Text>
-              <Text style={styles.logTime}>
-                {new Date(log.consumedAt).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </Text>
-              <Pressable onPress={() => onDeleteWater(log.id)} hitSlop={8}>
-                <Text style={styles.logDelete}>✕</Text>
-              </Pressable>
-            </View>
+            <WaterLogEntry key={log.id} log={log} onDelete={onDeleteWater} />
           ))}
         </View>
       )}
@@ -126,26 +116,26 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
     color: colors.text,
   },
   summary: {
-    fontSize: 14,
+    fontSize: fontSize.md,
     color: colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: fontWeight.medium,
   },
   progressBarBg: {
     height: 8,
     backgroundColor: colors.surfaceLight,
-    borderRadius: 4,
+    borderRadius: borderRadius.xs,
     overflow: 'hidden',
     marginBottom: spacing.lg,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#4DA6FF',
-    borderRadius: 4,
+    backgroundColor: colors.info,
+    borderRadius: borderRadius.xs,
   },
   quickAddRow: {
     flexDirection: 'row',
@@ -153,7 +143,7 @@ const styles = StyleSheet.create({
   },
   quickAddBtn: {
     flex: 1,
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   customRow: {
     flexDirection: 'row',
@@ -172,25 +162,5 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
     paddingTop: spacing.md,
-  },
-  logRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  logAmount: {
-    flex: 1,
-    fontSize: 14,
-    color: colors.text,
-  },
-  logTime: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginRight: spacing.md,
-  },
-  logDelete: {
-    fontSize: 14,
-    color: colors.danger,
-    padding: 4,
   },
 });

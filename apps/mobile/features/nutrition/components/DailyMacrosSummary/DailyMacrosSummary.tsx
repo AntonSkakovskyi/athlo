@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 
 interface DailyMacrosSummaryProps {
   calories: number;
@@ -42,9 +42,9 @@ export function DailyMacrosSummary({
 
       {/* Macro Bars */}
       <View style={styles.macrosRow}>
-        <MacroBar label="Protein" value={proteins} goal={proteinGoal} color="#4DA6FF" unit="g" />
-        <MacroBar label="Fats" value={fats} goal={fatGoal} color="#FFB020" unit="g" />
-        <MacroBar label="Carbs" value={carbs} goal={carbGoal} color="#2BDE6A" unit="g" />
+        <MacroBar label="Protein" value={proteins} goal={proteinGoal} color={colors.info} unit="g" />
+        <MacroBar label="Fats" value={fats} goal={fatGoal} color={colors.warning} unit="g" />
+        <MacroBar label="Carbs" value={carbs} goal={carbGoal} color={colors.success} unit="g" />
       </View>
     </View>
   );
@@ -102,14 +102,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calorieValue: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: fontSize['2xl'],
+    fontWeight: fontWeight.bold,
     color: colors.text,
   },
   calorieLabel: {
-    fontSize: 11,
+    fontSize: fontSize.xs,
     color: colors.textMuted,
-    marginTop: 2,
+    marginTop: spacing.xxs,
   },
   ringProgress: {
     position: 'absolute',
@@ -120,9 +120,9 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.sm,
   },
   ringPercent: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: '#000',
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.semibold,
+    color: colors.black,
   },
   macrosRow: {
     flexDirection: 'row',
@@ -134,14 +134,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   macroLabel: {
-    fontSize: 12,
+    fontSize: fontSize.sm,
     color: colors.textMuted,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   macroValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 6,
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    marginBottom: spacing.xs,
   },
   macroBarBg: {
     width: '100%',
@@ -155,8 +155,8 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   macroGoal: {
-    fontSize: 10,
+    fontSize: fontSize.xs,
     color: colors.textMuted,
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
 });
