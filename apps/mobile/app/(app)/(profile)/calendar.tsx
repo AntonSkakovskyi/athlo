@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { WorkoutStatus } from '@athlo/shared';
@@ -8,10 +8,11 @@ import { colors, borderRadius, spacing } from '../../../constants/theme';
 import { useGetWorkouts, useCreateWorkout } from '../../../hooks/api/useWorkoutHooks';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
 import { WorkoutHistoryCard } from '../../../components/workout/WorkoutHistoryCard';
-import { ScreenHeader } from '../../../components/ui/ScreenHeader';
-import { EmptyState } from '../../../components/ui/EmptyState';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { formatDuration, formatDate, computeVolume } from '../../../utils/workout';
 import { toDateKey, formatFullDate } from '../../../utils/date';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MONTH_NAMES = [
@@ -226,7 +227,7 @@ export default function CalendarScreen() {
         <Text style={styles.selectedDateText}>{formatFullDate(selectedDate)}</Text>
 
         {isLoading ? (
-          <ActivityIndicator color={colors.primary} style={styles.loader} />
+          <Spinner style={styles.loader} />
         ) : selectedWorkouts.length > 0 ? (
           selectedWorkouts.map((w) => (
             <WorkoutHistoryCard

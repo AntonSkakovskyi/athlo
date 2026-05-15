@@ -6,7 +6,6 @@ import {
   ScrollView,
   Pressable,
   Alert,
-  ActivityIndicator,
   TextInput,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,13 +21,14 @@ import {
   useRemovePlanMealItem,
 } from '../../../../hooks/api/useMealPlanHooks';
 import { useGetMealTypes } from '../../../../hooks/api/useMealTypeQueries';
-import { Button } from '../../../../components/ui/Button';
-import { EmptyState } from '../../../../components/ui/EmptyState';
+import { Button } from '@/components/ui/Button/Button';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '../../../../constants/theme';
 import { DayTabsRow } from '../../../../components/nutrition/DayTabsRow';
 import { PlanMealCard } from '../../../../components/nutrition/PlanMealCard';
 import { AddMealSheet } from '../../../../components/nutrition/AddMealSheet';
 import { DaySummaryFooter } from '../../../../components/nutrition/DaySummaryFooter';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 interface PlanDayWithMeals {
   id: number;
@@ -182,7 +182,7 @@ export default function MealPlanDetailScreen() {
   if (isLoading) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Spinner size="large" />
       </View>
     );
   }

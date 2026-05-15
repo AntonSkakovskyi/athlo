@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import { ActivityIndicator, Alert, View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import type { IWorkout, IWorkoutTemplate } from '@athlo/shared';
-import { colors } from '../../constants/theme';
-import { EmptyState } from '../ui/EmptyState';
+import type { IWorkoutTemplate, IWorkoutWithRelations } from '@athlo/shared';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { WorkoutHistoryCard } from './WorkoutHistoryCard';
 import { formatDuration, formatDate, computeVolume } from '../../utils/workout';
 import { useActiveWorkout } from '../../contexts/ActiveWorkoutContext';
@@ -12,28 +12,10 @@ import { useCreateTemplate } from '../../hooks/api/useTemplateHooks';
 import apiClient from '../../api/api-client';
 import { apiRoutes } from '../../api/api-routes';
 
-export interface WorkoutWithRelations extends IWorkout {
-  logExercises?: Array<{
-    id?: number;
-    exerciseId?: number;
-    order?: number;
-    restTime?: number;
-    notes?: string;
-    exercise?: { name: string };
-    sets?: Array<{
-      id?: number;
-      order?: number;
-      weight?: number;
-      reps?: number;
-      duration?: number;
-      distance?: number;
-      isCompleted?: boolean;
-    }>;
-  }>;
-}
+export type { IWorkoutWithRelations as WorkoutWithRelations };
 
 interface WorkoutHistoryListProps {
-  workouts: WorkoutWithRelations[];
+  workouts: IWorkoutWithRelations[];
   isLoading?: boolean;
   onWorkoutPress: (workoutId: number) => void;
   emptyTitle?: string;
@@ -58,7 +40,7 @@ export function WorkoutHistoryList({
   const createTemplate = useCreateTemplate();
 
   const handleSaveAsTemplate = useCallback(
-    async (w: WorkoutWithRelations) => {
+    async (w: IWorkoutWithRelations) => {
       try {
         const template = await new Promise<IWorkoutTemplate>((resolve, reject) => {
           createTemplate.mutate({ name: w.name }, { onSuccess: resolve, onError: reject });
@@ -87,7 +69,7 @@ export function WorkoutHistoryList({
   );
 
   const handleCopyWorkout = useCallback(
-    async (w: WorkoutWithRelations) => {
+    async (w: IWorkoutWithRelations) => {
       if (isActive) {
         Alert.alert('Active Workout', 'You already have an active workout. Finish it first.');
         return;
@@ -126,7 +108,7 @@ export function WorkoutHistoryList({
   );
 
   const handleDelete = useCallback(
-    (w: WorkoutWithRelations) => {
+    (w: IWorkoutWithRelations) => {
       Alert.alert('Delete Workout', 'This cannot be undone.', [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -140,7 +122,7 @@ export function WorkoutHistoryList({
   );
 
   if (isLoading) {
-    return <ActivityIndicator color={colors.primary} style={{ marginVertical: 20 }} />;
+    return <Spinner style={{ marginVertical: 20 }} />;
   }
 
   if (!workouts.length) {

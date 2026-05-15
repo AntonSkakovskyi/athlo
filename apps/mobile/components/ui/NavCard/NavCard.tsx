@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, borderRadius, spacing } from '../../constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 
 interface NavCardProps {
   icon: string;

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '../../constants/theme';
+import { colors, borderRadius } from '@/constants/theme';
 
 interface ChartBarProps {
   value: number;

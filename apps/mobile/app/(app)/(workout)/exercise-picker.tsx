@@ -4,19 +4,18 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { IExercise, IMuscle, IEquipment } from '@athlo/shared';
 import { colors, spacing } from '../../../constants/theme';
-import { Input } from '../../../components/ui/Input';
-import { Button } from '../../../components/ui/Button';
-import { Chip } from '../../../components/ui/Chip';
-import { ScreenHeader } from '../../../components/ui/ScreenHeader';
-import { EmptyState } from '../../../components/ui/EmptyState';
-import { InfiniteList } from '../../../components/ui/InfiniteList';
+import { Input } from '@/components/ui/Input/Input';
+import { Button } from '@/components/ui/Button/Button';
+import { Chip } from '@/components/ui/Chip/Chip';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import { ExerciseListItem } from '../../../components/workout/ExerciseListItem';
 import { useInfiniteExercises } from '../../../hooks/api/useExerciseQueries';
 import { useGetMuscles } from '../../../hooks/api/useMuscleQueries';
@@ -25,6 +24,7 @@ import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
 import { useCreateLogExercise } from '../../../hooks/api/useLogExerciseHooks';
 import { useCreateTemplateExercise } from '../../../hooks/api/useTemplateExerciseHooks';
 import { getTrackingType, trackingTypeIcon } from '../../../utils/workout';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 interface ExerciseWithRelations extends IExercise {
   equipment?: IEquipment;
@@ -239,7 +239,7 @@ export default function ExercisePickerScreen() {
 
       {/* Exercise List */}
       {exercisesQuery.isLoading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+        <Spinner size="large" style={styles.loader} />
       ) : (
         <InfiniteList
           data={exerciseList}

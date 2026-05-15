@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 
@@ -16,11 +15,12 @@ import { useGetWorkouts, useCreateWorkout } from '../../../hooks/api/useWorkoutH
 import { useGetMyTemplates, useStartFromTemplate } from '../../../hooks/api/useTemplateHooks';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
 import { TemplateCard } from '../../../components/workout/TemplateCard';
+import type { IWorkoutWithRelations } from '@athlo/shared';
 import { WorkoutHistoryList } from '../../../components/workout/WorkoutHistoryList';
-import type { WorkoutWithRelations } from '../../../components/workout/WorkoutHistoryList';
 import { QuickActionCard } from '../../../components/workout/QuickActionCard';
-import { SectionHeader } from '../../../components/ui/SectionHeader';
-import { EmptyState } from '../../../components/ui/EmptyState';
+import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 export default function WorkoutsScreen() {
   const insets = useSafeAreaInsets();
@@ -110,7 +110,7 @@ export default function WorkoutsScreen() {
         />
 
         {templatesQuery.isLoading ? (
-          <ActivityIndicator color={colors.primary} style={styles.loader} />
+          <Spinner style={styles.loader} />
         ) : !templateItems.length ? (
           <EmptyState
             title="No templates yet"
@@ -145,7 +145,7 @@ export default function WorkoutsScreen() {
           title="Recent Workouts"
         />
         <WorkoutHistoryList
-          workouts={completedWorkouts.slice(0, 10) as WorkoutWithRelations[]}
+          workouts={completedWorkouts.slice(0, 10) as IWorkoutWithRelations[]}
           isLoading={workoutsQuery.isLoading}
           onWorkoutPress={(id) =>
             router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id) } })

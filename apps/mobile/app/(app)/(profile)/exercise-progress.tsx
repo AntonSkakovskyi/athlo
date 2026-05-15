@@ -1,14 +1,15 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IFrequentExercise } from '@athlo/shared';
 import { colors, spacing } from '../../../constants/theme';
 import { useFrequentExercises } from '../../../hooks/api/useStatisticsHooks';
-import { ScreenHeader } from '../../../components/ui/ScreenHeader';
-import { Input } from '../../../components/ui/Input';
-import { EmptyState } from '../../../components/ui/EmptyState';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { Input } from '@/components/ui/Input/Input';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { ExerciseProgressListItem } from '../../../components/profile/ExerciseProgressListItem';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 export default function ExerciseProgressScreen() {
   const insets = useSafeAreaInsets();
@@ -84,7 +85,7 @@ export default function ExerciseProgressScreen() {
       )}
       ListEmptyComponent={
         isLoading ? (
-          <ActivityIndicator color={colors.primary} style={styles.loader} />
+          <Spinner style={styles.loader} />
         ) : (
           <EmptyState
             title="Start working out to track your progress"
@@ -96,7 +97,7 @@ export default function ExerciseProgressScreen() {
       onEndReachedThreshold={0.3}
       ListFooterComponent={
         isFetchingNextPage ? (
-          <ActivityIndicator color={colors.primary} style={styles.loader} />
+          <Spinner style={styles.loader} />
         ) : null
       }
     />

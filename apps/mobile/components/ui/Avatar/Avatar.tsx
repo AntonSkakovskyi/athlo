@@ -1,5 +1,5 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '../../constants/theme';
+import { colors, borderRadius } from '@/constants/theme';
 
 interface AvatarProps {
   name?: string;

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  ActivityIndicator,
   Alert,
   Pressable,
 } from 'react-native';
@@ -11,12 +10,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IWorkoutTemplate, IUserWorkoutTemplate } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../../constants/theme';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { SegmentControl } from '../../../components/ui/SegmentControl';
+import { Button } from '@/components/ui/Button/Button';
+import { Input } from '@/components/ui/Input/Input';
+import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
 import { TemplateCard } from '../../../components/workout/TemplateCard';
-import { EmptyState } from '../../../components/ui/EmptyState';
-import { InfiniteList } from '../../../components/ui/InfiniteList';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
 import {
   useGetMyTemplates,
@@ -237,7 +237,7 @@ export default function TemplatesScreen() {
 
       {/* Template List */}
       {activeQuery.isLoading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+        <Spinner size="large" style={styles.loader} />
       ) : activeQuery.error ? (
         <Text style={styles.errorText}>Failed to load templates</Text>
       ) : (

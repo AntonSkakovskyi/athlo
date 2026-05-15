@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { ILogMeal } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../constants/theme';
-import { Button } from '../ui/Button';
+import { Button } from '@/components/ui/Button/Button';
 
 interface MealCardProps {
   meal: ILogMeal & { items?: MealItemDisplay[] };

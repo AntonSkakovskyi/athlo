@@ -1,12 +1,13 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useGetNutritionHistory } from '../../../hooks/api/useNutritionLogHooks';
-import { SegmentControl } from '../../../components/ui/SegmentControl';
-import { EmptyState } from '../../../components/ui/EmptyState';
+import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '../../../constants/theme';
 import { NutritionBarChart } from '../../../components/nutrition/NutritionBarChart';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 type Scope = '1W' | '1M' | '3M';
 const SCOPES: Scope[] = ['1W', '1M', '3M'];
@@ -101,7 +102,7 @@ export default function NutritionHistoryScreen() {
       </View>
 
       {isLoading ? (
-        <ActivityIndicator color={colors.primary} style={styles.loader} />
+        <Spinner style={styles.loader} />
       ) : !history?.length ? (
         <EmptyState
           title="No nutrition data"

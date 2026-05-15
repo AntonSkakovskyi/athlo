@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IWorkoutChartPoint } from '@athlo/shared';
@@ -7,11 +7,12 @@ import { colors, spacing } from '../../../constants/theme';
 import { useWorkoutStatistics } from '../../../hooks/api/useStatisticsHooks';
 import { useBodyMetricProgress } from '../../../hooks/api/useStatisticsHooks';
 import { useGetMetricTypes } from '../../../hooks/api/useBodyMetricHooks';
-import { SegmentControl } from '../../../components/ui/SegmentControl';
-import { ScreenHeader } from '../../../components/ui/ScreenHeader';
-import { EmptyState } from '../../../components/ui/EmptyState';
-import { LineChartBlock } from '../../../components/ui/LineChartBlock';
+import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { LineChartBlock } from '@/components/ui/LineChartBlock/LineChartBlock';
 import { getScopeRange } from '../../../utils/date';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 type Scope = '3m' | '1y' | 'all';
 
@@ -126,7 +127,7 @@ export default function StatisticsScreen() {
       {tabIndex === 0 ? (
         /* ───── Performance Tab ───── */
         statsLoading ? (
-          <ActivityIndicator color={colors.primary} style={styles.loader} />
+          <Spinner style={styles.loader} />
         ) : !stats ? (
           <EmptyState
             title="No workout data yet"

@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Redirect, Tabs, useRouter, usePathname } from 'expo-router';
+import { Redirect, Tabs, useRouter, useSegments } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useActiveWorkout } from '../../contexts/ActiveWorkoutContext';
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { colors } from '../../constants/theme';
 import { useDeleteWorkout } from '../../hooks/api/useWorkoutHooks';
 
 function FloatingWorkoutMini() {
   const { workout, isActive, exercises, completedSets, totalSets, endWorkout } = useActiveWorkout();
   const router = useRouter();
-  const pathname = usePathname();
+  const segments = useSegments();
   const deleteWorkout = useDeleteWorkout();
   const [elapsed, setElapsed] = useState('');
 
@@ -28,8 +29,9 @@ function FloatingWorkoutMini() {
     return () => clearInterval(id);
   }, [isActive, workout]);
 
-  const isHomeTab = pathname === '/(app)/(workout)' || pathname.endsWith('/(workout)');
-  if (!isActive || !workout || !isHomeTab) return null;
+  const isInWorkoutTab = segments.includes('(workout)');
+  const isOnActiveWorkoutScreen = segments.includes('active-workout');
+  if (!isActive || !workout || !isInWorkoutTab || isOnActiveWorkoutScreen) return null;
 
   const currentExercise = exercises.find((e) => e.sets.some((s) => !s.isCompleted));
   const currentSetIndex = currentExercise
@@ -91,7 +93,7 @@ export default function AppLayout() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Spinner size="large" />
       </View>
     );
   }

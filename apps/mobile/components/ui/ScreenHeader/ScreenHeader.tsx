@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, spacing, fontSize } from '../../constants/theme';
+import { colors, spacing, fontSize } from '@/constants/theme';
 
 interface ScreenHeaderProps {
   title: string;

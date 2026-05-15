@@ -11,8 +11,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors, borderRadius, fontSize, spacing } from '../../../constants/theme';
-import { Button } from '../../../components/ui/Button';
-import { ScreenHeader } from '../../../components/ui/ScreenHeader';
+import { Button } from '@/components/ui/Button/Button';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
 import { useCompleteWorkout, useDeleteWorkout } from '../../../hooks/api/useWorkoutHooks';
 

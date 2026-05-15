@@ -1,6 +1,6 @@
-import { ActivityIndicator, FlatList, View } from 'react-native';
+import { FlatList, View } from 'react-native';
 import type { FlatListProps } from 'react-native';
-import { colors } from '../../constants/theme';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 interface InfiniteListProps<T> extends Omit<FlatListProps<T>, 'ListFooterComponent'> {
   hasNextPage?: boolean;
@@ -23,7 +23,7 @@ export function InfiniteList<T>({
       ListFooterComponent={
         isFetchingNextPage ? (
           <View style={{ paddingVertical: 16 }}>
-            <ActivityIndicator color={colors.primary} />
+            <Spinner />
           </View>
         ) : null
       }

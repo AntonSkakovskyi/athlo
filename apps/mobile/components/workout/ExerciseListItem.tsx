@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { colors, borderRadius } from '../../constants/theme';
-import { RadioCircle } from '../ui/RadioCircle';
-import { Tag } from '../ui/Tag';
+import { RadioCircle } from '@/components/ui/RadioCircle/RadioCircle';
+import { Tag } from '@/components/ui/Tag/Tag';
 
 interface ExerciseListItemProps {
   name: string;

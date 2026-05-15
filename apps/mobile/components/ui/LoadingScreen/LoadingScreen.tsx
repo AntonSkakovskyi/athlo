@@ -1,5 +1,6 @@
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { colors } from '../../constants/theme';
+import { View, StyleSheet } from 'react-native';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
+import { colors } from '@/constants/theme';
 
 interface LoadingScreenProps {
   paddingTop?: number;
@@ -8,7 +9,7 @@ interface LoadingScreenProps {
 export function LoadingScreen({ paddingTop }: LoadingScreenProps) {
   return (
     <View style={[styles.container, paddingTop != null && { paddingTop }]}>
-      <ActivityIndicator size="large" color={colors.primary} />
+      <Spinner size="large" />
     </View>
   );
 }

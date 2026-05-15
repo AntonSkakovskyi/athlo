@@ -1,5 +1,5 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors } from '../../constants/theme';
+import { colors } from '@/constants/theme';
 
 interface SectionHeaderProps {
   title: string;

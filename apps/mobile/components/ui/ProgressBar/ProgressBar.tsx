@@ -1,5 +1,5 @@
 import { View, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '../../constants/theme';
+import { colors, borderRadius } from '@/constants/theme';
 
 interface ProgressBarProps {
   progress: number; // 0..100

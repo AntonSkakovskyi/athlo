@@ -4,8 +4,8 @@ import { Link } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRegister } from '../../hooks/api/useAuthMutations';
 import { AxiosError } from 'axios';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
+import { Input } from '@/components/ui/Input/Input';
+import { Button } from '@/components/ui/Button/Button';
 import { colors } from '../../constants/theme';
 
 function extractErrorMessages(error: unknown): string[] {

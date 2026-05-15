@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
-import { colors, borderRadius } from '../../constants/theme';
+import { colors, borderRadius } from '@/constants/theme';
 
 interface ChipProps {
   label: string;

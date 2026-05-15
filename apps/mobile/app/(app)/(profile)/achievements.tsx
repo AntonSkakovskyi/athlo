@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Pressable, Modal, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Modal, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IAchievement, IUserAchievement } from '@athlo/shared';
@@ -7,10 +7,11 @@ import { AchievementType } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../../constants/theme';
 import { useGetAchievements, useGetUserAchievements, useGetExerciseRecords } from '../../../hooks/api/useAchievementHooks';
 import { useGetExercises } from '../../../hooks/api/useExerciseQueries';
-import { SegmentControl } from '../../../components/ui/SegmentControl';
-import { ScreenHeader } from '../../../components/ui/ScreenHeader';
-import { ProgressBar } from '../../../components/ui/ProgressBar';
-import { EmptyState } from '../../../components/ui/EmptyState';
+import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.45;
@@ -116,7 +117,7 @@ export default function AchievementsScreen() {
 
         {/* Content — Grid of achievements */}
         {isLoading ? (
-          <ActivityIndicator color={colors.primary} style={styles.loader} />
+          <Spinner style={styles.loader} />
         ) : displayedAchievements.length === 0 ? (
           <EmptyState
             title={tabIndex === 0 ? 'No achievements unlocked yet' : 'All achievements unlocked!'}

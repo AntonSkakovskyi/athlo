@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,18 +10,20 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import type { IWorkout } from '@athlo/shared';
+import type { IWorkoutWithRelations } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../../constants/theme';
-import { Button } from '../../../components/ui/Button';
+import { Button } from '@/components/ui/Button/Button';
 import { StatsBar } from '../../../components/workout/StatsBar';
 import { ActiveExerciseCard } from '../../../components/workout/ActiveExerciseCard';
 import { RestTimerOverlay } from '../../../components/workout/RestTimerOverlay';
-import { EmptyState } from '../../../components/ui/EmptyState';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useActiveWorkout } from '../../../contexts/ActiveWorkoutContext';
 import {
   useGetWorkoutById,
   useUpdateWorkout,
   useDeleteWorkout,
+  useGetBatchLastPerformance,
 } from '../../../hooks/api/useWorkoutHooks';
 import { formatElapsed, getTrackingType } from '../../../utils/workout';
 
@@ -53,6 +55,21 @@ export default function ActiveWorkoutScreen() {
 
   const workoutQuery = useGetWorkoutById(workout?.id ? String(workout.id) : '');
 
+  const exerciseIds = useMemo(() => {
+    const data = workoutQuery.data as IWorkoutWithRelations | undefined;
+    return data?.logExercises?.map((ex) => ex.exerciseId).filter((id): id is number => !!id) ?? [];
+  }, [workoutQuery.data]);
+
+  const lastPerfQuery = useGetBatchLastPerformance(exerciseIds);
+
+  const isLoadingExercises =
+    workoutQuery.isLoading ||
+    (!!workoutQuery.data &&
+      exercises.length === 0 &&
+      (workoutQuery.data as IWorkoutWithRelations).logExercises?.length > 0 &&
+      !lastPerfQuery.isSuccess &&
+      !lastPerfQuery.isError);
+
   useEffect(() => {
     if (!isActive || !workout) return;
     const start = new Date(workout.started_at).getTime();
@@ -64,28 +81,12 @@ export default function ActiveWorkoutScreen() {
 
   useEffect(() => {
     if (!workoutQuery.data || exercises.length > 0) return;
-    const workoutData = workoutQuery.data as IWorkout & {
-      logExercises?: Array<{
-        id: number;
-        exerciseId: number;
-        order: number;
-        notes?: string;
-        restTime?: number;
-        exercise?: { name: string; trackingTypeId?: number };
-        logSets?: Array<{
-          id: number;
-          order: number;
-          weight?: number;
-          reps?: number;
-          duration?: number;
-          distance?: number;
-          isCompleted: boolean;
-        }>;
-      }>;
-    };
+    if (exerciseIds.length > 0 && !lastPerfQuery.isSuccess && !lastPerfQuery.isError) return;
+    const workoutData = workoutQuery.data as IWorkoutWithRelations;
     if (workoutData.logExercises?.length) {
       for (const ex of workoutData.logExercises.sort((a, b) => a.order - b.order)) {
         const trackingType = getTrackingType(ex.exercise?.trackingTypeId);
+        const prevSets = lastPerfQuery.data?.[ex.exerciseId]?.sets ?? [];
         addExercise({
           logExerciseId: ex.id,
           exerciseId: ex.exerciseId,
@@ -94,7 +95,7 @@ export default function ActiveWorkoutScreen() {
           restTime: ex.restTime ?? 0,
           notes: ex.notes ?? '',
           sets:
-            ex.logSets?.sort((a, b) => a.order - b.order).map((s) => ({
+            ex.sets?.sort((a, b) => a.order - b.order).map((s, idx) => ({
               id: s.id,
               order: s.order,
               weight: s.weight,
@@ -102,12 +103,16 @@ export default function ActiveWorkoutScreen() {
               duration: s.duration,
               distance: s.distance,
               isCompleted: s.isCompleted,
+              previousWeight: prevSets[idx]?.weight,
+              previousReps: prevSets[idx]?.reps,
+              previousDuration: prevSets[idx]?.duration,
+              previousDistance: prevSets[idx]?.distance,
             })) ?? [{ order: 1, isCompleted: false }],
         });
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workoutQuery.data]);
+  }, [workoutQuery.data, lastPerfQuery.data, lastPerfQuery.isSuccess, lastPerfQuery.isError, exerciseIds]);
 
   const handleFinish = useCallback(() => {
     if (!workout) return;
@@ -228,7 +233,9 @@ export default function ActiveWorkoutScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {exercises.length === 0 ? (
+        {isLoadingExercises ? (
+          <Spinner style={{ marginTop: 48 }} />
+        ) : exercises.length === 0 ? (
           <EmptyState
             title="No exercises yet"
             description="Add an exercise to begin"

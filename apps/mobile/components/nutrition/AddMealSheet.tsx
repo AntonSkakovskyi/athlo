@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '../../constants/theme';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
+import { Button } from '@/components/ui/Button/Button';
+import { Input } from '@/components/ui/Input/Input';
 import type { IMealType } from '@athlo/shared';
 
 interface AddMealSheetProps {

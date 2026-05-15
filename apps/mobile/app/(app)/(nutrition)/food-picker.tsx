@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   Pressable,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Modal,
@@ -13,13 +12,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { IFood } from '@athlo/shared';
 import { colors, borderRadius, spacing, fontSize } from '../../../constants/theme';
-import { Input } from '../../../components/ui/Input';
-import { Button } from '../../../components/ui/Button';
-import { EmptyState } from '../../../components/ui/EmptyState';
-import { InfiniteList } from '../../../components/ui/InfiniteList';
+import { Input } from '@/components/ui/Input/Input';
+import { Button } from '@/components/ui/Button/Button';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import { useInfiniteSearchFoods, useCreateFood } from '../../../hooks/api/useFoodHooks';
 import { useAddLogMealItem } from '../../../hooks/api/useNutritionLogHooks';
 import { useAddPlanMealItem } from '../../../hooks/api/useMealPlanHooks';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 type PickerMode = 'logMeal' | 'planMeal';
 
@@ -189,7 +189,7 @@ export default function FoodPickerScreen() {
 
       {/* Food List */}
       {foodsQuery.isLoading ? (
-        <ActivityIndicator size="large" color={colors.primary} style={styles.loader} />
+        <Spinner size="large" style={styles.loader} />
       ) : (
         <InfiniteList
           data={foodList}

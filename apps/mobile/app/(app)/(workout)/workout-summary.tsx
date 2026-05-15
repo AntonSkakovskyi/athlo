@@ -2,48 +2,14 @@ import { View, Text, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { colors, borderRadius, spacing, fontSize } from '../../../constants/theme';
-import { Button } from '../../../components/ui/Button';
-import { ScreenHeader } from '../../../components/ui/ScreenHeader';
-import { MetricCard } from '../../../components/ui/MetricCard';
-import { LoadingScreen } from '../../../components/ui/LoadingScreen';
+import { Button } from '@/components/ui/Button/Button';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { MetricCard } from '@/components/ui/MetricCard/MetricCard';
+import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
 import { ExerciseSummaryCard } from '../../../components/workout/ExerciseSummaryCard';
+import type { IWorkoutWithRelations } from '@athlo/shared';
 import { useGetWorkoutById } from '../../../hooks/api/useWorkoutHooks';
 import { formatDuration } from '../../../utils/workout';
-
-interface LogSetData {
-  id: number;
-  order: number;
-  weight?: number;
-  reps?: number;
-  duration?: number;
-  distance?: number;
-  isCompleted: boolean;
-}
-
-interface LogExerciseData {
-  id: number;
-  exerciseId: number;
-  order: number;
-  notes?: string;
-  restTime?: number;
-  exercise?: { name: string; trackingTypeId?: number };
-  logSets?: LogSetData[];
-}
-
-interface WorkoutDetailData {
-  id: number;
-  name: string;
-  status: string;
-  started_at: string | Date;
-  ended_at?: string | Date | null;
-  description?: string | null;
-  calories?: number | null;
-  avgHeartRate?: number | null;
-  maxHeartRate?: number | null;
-  rpe?: number | null;
-  feelingScore?: number | null;
-  logExercises?: LogExerciseData[];
-}
 
 const FEELING_EMOJIS = ['😫', '😐', '😊', '😄', '🔥'];
 
@@ -53,7 +19,7 @@ export default function WorkoutSummaryScreen() {
   const { workoutId } = useLocalSearchParams<{ workoutId: string }>();
 
   const { data, isLoading } = useGetWorkoutById(workoutId ?? '');
-  const workout = data as WorkoutDetailData | undefined;
+  const workout = data as IWorkoutWithRelations | undefined;
 
   if (isLoading) {
     return <LoadingScreen paddingTop={insets.top} />;
@@ -70,13 +36,13 @@ export default function WorkoutSummaryScreen() {
 
   const exercises = workout.logExercises?.sort((a, b) => a.order - b.order) ?? [];
   const completedSets = exercises.reduce(
-    (acc, ex) => acc + (ex.logSets?.filter((s) => s.isCompleted).length ?? 0),
+    (acc, ex) => acc + (ex.sets?.filter((s) => s.isCompleted).length ?? 0),
     0,
   );
   const totalVolume = exercises.reduce(
     (acc, ex) =>
       acc +
-      (ex.logSets
+      (ex.sets
         ?.filter((s) => s.isCompleted)
         .reduce((sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0), 0) ?? 0),
     0,

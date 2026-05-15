@@ -2,8 +2,8 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useState } from 'react';
 import type { IWaterLog } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../constants/theme';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
+import { Button } from '@/components/ui/Button/Button';
+import { Input } from '@/components/ui/Input/Input';
 
 interface WaterTrackerProps {
   waterLogs: IWaterLog[];

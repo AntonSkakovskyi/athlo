@@ -1,7 +1,8 @@
 export const exerciseKeys = {
   all: ['exercises'] as const,
-  list: (filters: Record<string, unknown>) => [...exerciseKeys.all, filters] as const,
-  byId: (id: string) => [...exerciseKeys.all, id] as const,
+  list: (filters: Record<string, unknown>) => ['exercises', filters] as const,
+  byId: (id: string) => ['exercises', id] as const,
+  infinite: (filters: Record<string, unknown>) => ['exercises', filters, 'infinite'] as const,
 };
 
 export const muscleKeys = {
@@ -15,15 +16,17 @@ export const equipmentKeys = {
 export const workoutKeys = {
   all: ['workouts'] as const,
   infinite: ['workouts', 'infinite'] as const,
-  byId: (id: string) => [...workoutKeys.all, id] as const,
+  byId: (id: string) => ['workouts', id] as const,
 };
 
 export const templateKeys = {
   all: ['templates'] as const,
-  byId: (id: string) => [...templateKeys.all, id] as const,
-  public: [...['templates'], 'public'] as const,
-  publicInfinite: [...['templates'], 'public', 'infinite'] as const,
-  saved: [...['templates'], 'saved'] as const,
+  byId: (id: string) => ['templates', id] as const,
+  public: ['templates', 'public'] as const,
+  publicInfinite: ['templates', 'public', 'infinite'] as const,
+  publicInfiniteSearch: (search?: string) =>
+    ['templates', 'public', 'infinite', { search }] as const,
+  saved: ['templates', 'saved'] as const,
 };
 
 export const profileKeys = {
@@ -32,14 +35,15 @@ export const profileKeys = {
 
 export const bodyMetricKeys = {
   all: ['body-metrics'] as const,
-  byType: (metricTypeId: string) => [...bodyMetricKeys.all, { metricTypeId }] as const,
+  byType: (metricTypeId: string) => ['body-metrics', { metricTypeId }] as const,
   metricTypes: ['metric-types'] as const,
 };
 
 export const foodKeys = {
   all: ['foods'] as const,
-  search: (query: string) => [...foodKeys.all, { query }] as const,
-  byId: (id: string) => [...foodKeys.all, id] as const,
+  search: (query: string) => ['foods', { query }] as const,
+  byId: (id: string) => ['foods', id] as const,
+  infinite: (query: string) => ['foods', { query }, 'infinite'] as const,
 };
 
 export const mealTypeKeys = {
@@ -48,11 +52,12 @@ export const mealTypeKeys = {
 
 export const mealPlanKeys = {
   all: ['meal-plans'] as const,
-  byId: (id: string) => [...mealPlanKeys.all, id] as const,
-  active: [...['meal-plans'], 'active'] as const,
+  byId: (id: string) => ['meal-plans', id] as const,
+  active: ['meal-plans', 'active'] as const,
 };
 
 export const nutritionLogKeys = {
+  all: ['nutrition-log'] as const,
   summary: (date: string) => ['nutrition-log', 'summary', date] as const,
   history: (from: string, to: string) => ['nutrition-log', 'history', { from, to }] as const,
   meals: (date: string) => ['nutrition-log', 'meals', date] as const,
@@ -88,4 +93,3 @@ export const achievementKeys = {
   records: ['achievements', 'records'] as const,
   recordByExercise: (exerciseId: string) => ['achievements', 'records', exerciseId] as const,
 };
-

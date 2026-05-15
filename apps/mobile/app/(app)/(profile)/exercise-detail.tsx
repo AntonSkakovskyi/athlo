@@ -1,16 +1,17 @@
 import { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { IExerciseProgressRecord } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../../constants/theme';
 import { useExerciseProgress } from '../../../hooks/api/useStatisticsHooks';
 import { useGetExerciseById } from '../../../hooks/api/useExerciseQueries';
-import { ScreenHeader } from '../../../components/ui/ScreenHeader';
-import { EmptyState } from '../../../components/ui/EmptyState';
-import { Tag } from '../../../components/ui/Tag';
-import { LineChartBlock } from '../../../components/ui/LineChartBlock';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
+import { Tag } from '@/components/ui/Tag/Tag';
+import { LineChartBlock } from '@/components/ui/LineChartBlock/LineChartBlock';
 import { getScopeRange } from '../../../utils/date';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 type Scope = '3m' | '1y' | 'all';
 
@@ -149,7 +150,7 @@ export default function ExerciseDetailScreen() {
 
       {/* Line Chart */}
       {isLoading ? (
-        <ActivityIndicator color={colors.primary} style={styles.loader} />
+        <Spinner style={styles.loader} />
       ) : (
         <LineChartBlock
           metricLabel={currentMetric}

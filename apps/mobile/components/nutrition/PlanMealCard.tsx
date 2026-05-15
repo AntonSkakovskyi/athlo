@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '../../constants/theme';
-import { Button } from '../ui/Button';
+import { Button } from '@/components/ui/Button/Button';
 
 interface PlanMealItemDisplay {
   id: number;

@@ -8,8 +8,8 @@ import {
   type LayoutChangeEvent,
 } from 'react-native';
 import { LineChart, type lineDataItem } from 'react-native-gifted-charts';
-import { colors, borderRadius, spacing, fontSize } from '../../constants/theme';
-import { Chip } from './Chip';
+import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
+import { Chip } from '@/components/ui/Chip/Chip';
 
 interface DataPoint {
   date: string;

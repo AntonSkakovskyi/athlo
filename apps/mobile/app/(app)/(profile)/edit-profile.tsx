@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors, borderRadius, spacing } from '../../../constants/theme';
 import { useGetProfile, useUpdateProfile } from '../../../hooks/api/useProfileHooks';
-import { Input } from '../../../components/ui/Input';
-import { Button } from '../../../components/ui/Button';
+import { Input } from '@/components/ui/Input/Input';
+import { Button } from '@/components/ui/Button/Button';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 export default function EditProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -36,7 +37,7 @@ export default function EditProfileScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Spinner size="large" />
       </View>
     );
   }

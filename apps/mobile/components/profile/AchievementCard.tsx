@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import type { IAchievement, IUserAchievement } from '@athlo/shared';
 import { colors, borderRadius } from '../../constants/theme';
-import { ProgressBar } from '../ui/ProgressBar';
+import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
 
 interface AchievementCardProps {
   achievement: IAchievement;

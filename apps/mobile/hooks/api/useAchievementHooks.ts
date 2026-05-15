@@ -6,7 +6,7 @@ import type {
 } from '@athlo/shared';
 import apiClient from '../../api/api-client';
 import { apiRoutes } from '../../api/api-routes';
-import { achievementKeys } from '../../api/queries/query-keys';
+import { achievementKeys } from '@/api/queries/query-keys';
 
 // ─── Queries ────────────────────────────────────────
 

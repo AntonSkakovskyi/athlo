@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   StyleSheet,
-  ActivityIndicator,
   Alert,
   Pressable,
   TextInput,
@@ -13,8 +12,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { ITemplateExercise, ITemplateSet, IExercise } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../../../constants/theme';
-import { Button } from '../../../../components/ui/Button';
-import { EmptyState } from '../../../../components/ui/EmptyState';
+import { Button } from '@/components/ui/Button/Button';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { useActiveWorkout } from '../../../../contexts/ActiveWorkoutContext';
 import {
   useGetTemplateById,
@@ -23,6 +22,7 @@ import {
   useStartFromTemplate,
 } from '../../../../hooks/api/useTemplateHooks';
 import { useDeleteTemplateExercise } from '../../../../hooks/api/useTemplateExerciseHooks';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 interface TemplateExerciseWithRelations extends ITemplateExercise {
   exercise?: IExercise & { equipment?: { name: string } };
@@ -126,7 +126,7 @@ export default function TemplateDetailScreen() {
   if (isLoading) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Spinner size="large" />
       </View>
     );
   }

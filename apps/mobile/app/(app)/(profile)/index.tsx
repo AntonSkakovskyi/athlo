@@ -1,17 +1,18 @@
 import React, { useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { WorkoutStatus } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useGetProfile } from '../../../hooks/api/useProfileHooks';
 import { useStatisticsSummary } from '../../../hooks/api/useStatisticsHooks';
 import { useGetFriends } from '../../../hooks/api/useFriendHooks';
 import { useInfiniteWorkouts } from '../../../hooks/api/useWorkoutHooks';
-import { NavCard } from '../../../components/ui/NavCard';
-import { Avatar } from '../../../components/ui/Avatar';
-import { SectionHeader } from '../../../components/ui/SectionHeader';
-import { LoadingScreen } from '../../../components/ui/LoadingScreen';
+import { NavCard } from '@/components/ui/NavCard/NavCard';
+import { Avatar } from '@/components/ui/Avatar/Avatar';
+import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
+import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
 import { WorkoutHistoryList } from '../../../components/workout/WorkoutHistoryList';
 import type { WorkoutWithRelations } from '../../../components/workout/WorkoutHistoryList';
 
@@ -112,7 +113,7 @@ export default function ProfileScreen() {
           onEmptyAction={() => router.push('/(app)/(workout)')}
         />
         {workoutsQuery.isFetchingNextPage && (
-          <ActivityIndicator color={colors.primary} style={styles.loader} />
+          <Spinner style={styles.loader} />
         )}
       </View>
     </ScrollView>

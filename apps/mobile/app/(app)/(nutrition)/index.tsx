@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useGetDailySummary, useCreateLogMeal, useDeleteLogMeal, useAddWaterLog, useDeleteWaterLog } from '../../../hooks/api/useNutritionLogHooks';
@@ -7,14 +7,15 @@ import { useGetMealTypes } from '../../../hooks/api/useMealTypeQueries';
 import { useGetActiveMealPlan, useGetMealPlanById } from '../../../hooks/api/useMealPlanHooks';
 import type { ILogMeal, IWaterLog } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../../constants/theme';
-import { Chip } from '../../../components/ui/Chip';
-import { Button } from '../../../components/ui/Button';
-import { EmptyState } from '../../../components/ui/EmptyState';
+import { Chip } from '@/components/ui/Chip/Chip';
+import { Button } from '@/components/ui/Button/Button';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { DateSelector } from '../../../components/nutrition/DateSelector';
 import { DailyMacrosSummary } from '../../../components/nutrition/DailyMacrosSummary';
 import { MealCard } from '../../../components/nutrition/MealCard';
 import { WaterTracker } from '../../../components/nutrition/WaterTracker';
 import { ActivePlanBanner } from '../../../components/nutrition/ActivePlanBanner';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 function getDateString(date: Date): string {
   return date.toISOString().split('T')[0];
@@ -131,7 +132,7 @@ export default function NutritionScreen() {
 
       {/* Loading */}
       {isLoading ? (
-        <ActivityIndicator color={colors.primary} style={styles.loader} />
+        <Spinner style={styles.loader} />
       ) : (
         <>
           {/* Daily Macros Summary */}

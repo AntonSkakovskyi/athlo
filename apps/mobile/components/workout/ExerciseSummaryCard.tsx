@@ -1,30 +1,11 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { TrackingType } from '@athlo/shared';
+import type { ILogExerciseWithSets } from '@athlo/shared';
 import { colors, borderRadius, fontSize } from '../../constants/theme';
 import { getTrackingType } from '../../utils/workout';
 
-interface LogSetData {
-  id: number;
-  order: number;
-  weight?: number;
-  reps?: number;
-  duration?: number;
-  distance?: number;
-  isCompleted: boolean;
-}
-
-interface LogExerciseData {
-  id: number;
-  exerciseId: number;
-  order: number;
-  notes?: string;
-  restTime?: number;
-  exercise?: { name: string; trackingTypeId?: number };
-  logSets?: LogSetData[];
-}
-
 interface ExerciseSummaryCardProps {
-  exercise: LogExerciseData;
+  exercise: ILogExerciseWithSets;
 }
 
 function formatTimeDuration(seconds: number): string {
@@ -37,7 +18,7 @@ function formatTimeDuration(seconds: number): string {
 export function ExerciseSummaryCard({ exercise }: ExerciseSummaryCardProps) {
   const trackingType = getTrackingType(exercise.exercise?.trackingTypeId);
   const completedSets =
-    exercise.logSets?.filter((s) => s.isCompleted).sort((a, b) => a.order - b.order) ?? [];
+    exercise.sets?.filter((s) => s.isCompleted).sort((a, b) => a.order - b.order) ?? [];
 
   let bestSetIndex = -1;
   if (completedSets.length > 0) {

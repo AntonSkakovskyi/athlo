@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import {
@@ -10,11 +10,12 @@ import {
   useDeactivateMealPlan,
   useGetActiveMealPlan,
 } from '../../../hooks/api/useMealPlanHooks';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { EmptyState } from '../../../components/ui/EmptyState';
+import { Button } from '@/components/ui/Button/Button';
+import { Input } from '@/components/ui/Input/Input';
+import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import type { IMealPlan } from '@athlo/shared';
 import { colors, borderRadius, spacing } from '../../../constants/theme';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 const VISIBILITY_LABELS: Record<number, string> = {
   1: '🔒 Private',
@@ -90,7 +91,7 @@ export default function MealPlansScreen() {
   if (isLoading) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <Spinner size="large" />
       </View>
     );
   }
