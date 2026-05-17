@@ -5,6 +5,7 @@ import type { IAchievement, IUserAchievement } from '@athlo/shared';
 import { AchievementType } from '@athlo/shared';
 import { useGetAchievements, useGetUserAchievements, useGetExerciseRecords } from '@/features/profile/hooks';
 import { useGetExercises } from '@/hooks/api/useExerciseAPI';
+import { useStatisticsSummary } from '@/hooks/api/useStatisticsAPI';
 
 export function useAchievementsScreen() {
   const insets = useSafeAreaInsets();
@@ -14,6 +15,7 @@ export function useAchievementsScreen() {
   const { data: userAchievements, isLoading: userLoading } = useGetUserAchievements();
   const { data: exercises } = useGetExercises();
   const { data: exerciseRecords } = useGetExerciseRecords();
+  const { data: statisticsSummary } = useStatisticsSummary();
 
   const [tabIndex, setTabIndex] = useState(0);
   const [selectedAchievement, setSelectedAchievement] = useState<IAchievement | null>(null);
@@ -54,8 +56,8 @@ export function useAchievementsScreen() {
   const displayedAchievements = tabIndex === 0 ? unlockedAchievements : lockedAchievements;
 
   const getProgressForAchievement = useCallback((achievement: IAchievement): number => {
-    if (!exerciseRecords) return 0;
     if (achievement.type === AchievementType.EXERCISE_PERSONAL_RECORD && achievement.exerciseId) {
+      if (!exerciseRecords) return 0;
       const record = exerciseRecords.find((r) => r.exerciseId === achievement.exerciseId);
       if (!record) return 0;
       switch (achievement.trackingMetric) {
@@ -67,8 +69,19 @@ export function useAchievementsScreen() {
         default: return 0;
       }
     }
-    return 0;
-  }, [exerciseRecords]);
+
+    if (!statisticsSummary) return 0;
+    switch (achievement.type) {
+      case AchievementType.GLOBAL_WORKOUTS:
+        return statisticsSummary.totalWorkouts;
+      case AchievementType.GLOBAL_SETS:
+        return statisticsSummary.totalSets;
+      case AchievementType.GLOBAL_WEIGHT:
+        return statisticsSummary.totalWeightLifted;
+      default:
+        return 0;
+    }
+  }, [exerciseRecords, statisticsSummary]);
 
   const handleCloseSheet = useCallback(() => {
     setSelectedAchievement(null);

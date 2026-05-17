@@ -12,12 +12,12 @@ export function useProfileScreen() {
   const { data: profile, isLoading: profileLoading } = useGetProfile();
   const { data: summary } = useStatisticsSummary();
   const { data: friends } = useGetFriends();
-  const workoutsQuery = useInfiniteWorkouts();
+  const workoutsQuery = useInfiniteWorkouts(WorkoutStatus.COMPLETED);
 
-  const displayedWorkouts = useMemo(() => {
-    const all = (workoutsQuery.data?.pages ?? []).flatMap((p) => p.data);
-    return all.filter((w) => w.status === WorkoutStatus.COMPLETED);
-  }, [workoutsQuery.data]);
+  const displayedWorkouts = useMemo(
+    () => (workoutsQuery.data?.pages ?? []).flatMap((p) => p.data),
+    [workoutsQuery.data],
+  );
 
   const handleLoadMore = useCallback(() => {
     if (workoutsQuery.hasNextPage && !workoutsQuery.isFetchingNextPage) {

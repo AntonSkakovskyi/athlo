@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
+import { useRef } from 'react';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
-import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { NavCard } from '@/components/ui/NavCard/NavCard';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
@@ -25,19 +25,8 @@ export default function ProfileScreen() {
     return <LoadingScreen />;
   }
 
-  return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 100 }}
-      showsVerticalScrollIndicator={false}
-      onScroll={({ nativeEvent }) => {
-        const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-        if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 200) {
-          handleLoadMore();
-        }
-      }}
-      scrollEventThrottle={400}
-    >
+  const renderHeader = () => (
+    <View style={styles.headerContainer}>
       <View style={styles.headerRow}>
         <Pressable style={styles.headerBtn} onPress={() => router.push('/(app)/(profile)/edit-profile')}>
           <Text style={styles.headerBtnIcon}>✏️</Text>
@@ -57,10 +46,10 @@ export default function ProfileScreen() {
             <Text style={styles.statLabel}>Workouts</Text>
           </View>
           <View style={styles.statDivider} />
-          <View style={styles.statItem}>
+          <Pressable style={styles.statItem} onPress={() => router.push('/(app)/(profile)/friends')}>
             <Text style={styles.statValue}>{friends?.length ?? 0}</Text>
             <Text style={styles.statLabel}>Friends</Text>
-          </View>
+          </Pressable>
         </View>
       </View>
 
@@ -80,22 +69,28 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View style={styles.section}>
-        <SectionHeader title="Workout History" />
-        <WorkoutHistoryList
-          workouts={displayedWorkouts}
-          isLoading={workoutsQuery.isLoading}
-          onWorkoutPress={(id) =>
-            router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id) } })
-          }
-          emptyTitle="No workouts yet"
-          emptyDescription="Start your first workout to see history here"
-          emptyActionLabel="Start your first workout"
-          onEmptyAction={() => router.push('/(app)/(workout)')}
-        />
-        {workoutsQuery.isFetchingNextPage && <Spinner style={styles.loader} />}
-      </View>
-    </ScrollView>
+      <SectionHeader title="Workout History" />
+    </View>
+  );
+
+  return (
+    <WorkoutHistoryList
+      style={styles.container}
+      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 100 }}
+      ListHeaderComponent={renderHeader()}
+      workouts={displayedWorkouts}
+      isLoading={workoutsQuery.isLoading}
+      hasNextPage={workoutsQuery.hasNextPage}
+      isFetchingNextPage={workoutsQuery.isFetchingNextPage}
+      onLoadMore={handleLoadMore}
+      onWorkoutPress={(id) =>
+        router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id) } })
+      }
+      emptyTitle="No workouts yet"
+      emptyDescription="Start your first workout to see history here"
+      emptyActionLabel="Start your first workout"
+      onEmptyAction={() => router.push('/(app)/(workout)')}
+    />
   );
 }
 
@@ -104,6 +99,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
+  },
+  headerContainer: {
+    paddingBottom: spacing.sm,
   },
   headerRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.md, marginBottom: spacing.sm },
   headerBtn: {
