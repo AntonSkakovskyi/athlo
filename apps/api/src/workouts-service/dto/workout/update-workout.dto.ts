@@ -35,4 +35,8 @@ export class UpdateWorkoutDto {
   @Min(1)
   @Max(5)
   feelingScore?: number;
+
+  @IsOptional()
+  @IsString()
+  ended_at?: string;
 }

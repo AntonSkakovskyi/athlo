@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import type { ILogSet } from '@athlo/shared';
 import { LogExerciseEntity } from './log-exercise.entity';
+import { ColumnNumericTransformer } from './utils/column-numeric-transformer';
 
 @Entity({ name: 'log_sets' })
 export class LogSetEntity implements ILogSet {
@@ -13,7 +14,13 @@ export class LogSetEntity implements ILogSet {
   @Column()
   order: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
   weight: number;
 
   @Column({ default: 0 })
@@ -22,7 +29,13 @@ export class LogSetEntity implements ILogSet {
   @Column({ default: 0 })
   duration: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
   distance: number;
 
   @Column({ name: 'is_completed', default: false })

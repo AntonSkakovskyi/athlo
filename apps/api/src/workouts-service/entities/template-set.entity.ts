@@ -1,6 +1,7 @@
 import type { ITemplateSet } from '@athlo/shared';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { TemplateExerciseEntity } from './template-exercise.entity';
+import { ColumnNumericTransformer } from './utils/column-numeric-transformer';
 
 @Entity({ name: 'template_sets' })
 export class TemplateSetEntity implements ITemplateSet {
@@ -13,7 +14,13 @@ export class TemplateSetEntity implements ITemplateSet {
   @Column()
   order: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
   weight: number;
 
   @Column({ default: 0 })
@@ -22,7 +29,13 @@ export class TemplateSetEntity implements ITemplateSet {
   @Column({ default: 0 })
   duration: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
   distance: number;
 
   @ManyToOne(() => TemplateExerciseEntity, (te) => te.templateSets, { onDelete: 'CASCADE' })

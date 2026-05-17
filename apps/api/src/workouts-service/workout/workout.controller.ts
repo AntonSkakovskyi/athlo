@@ -7,6 +7,7 @@ import { UpdateWorkoutDto } from '../dto/workout/update-workout.dto';
 import { CompleteWorkoutDto } from '../dto/workout/complete-workout.dto';
 import { BatchLastPerformanceDto } from '../dto/workout/batch-last-performance.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { WorkoutStatus } from '@athlo/shared';
 
 @ApiTags('Workouts')
 @ApiBearerAuth()
@@ -26,13 +27,34 @@ export class WorkoutController {
   @ApiOperation({ summary: 'Get all workouts for current user' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'status', required: false, enum: WorkoutStatus })
   @ApiResponse({ status: 200, description: 'Paginated list of workouts' })
   findAll(
     @CurrentUser('id') userId: number,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('status') status?: WorkoutStatus,
   ) {
-    return this.workoutService.findAllByUser(userId, page ? Number(page) : 1, limit ? Number(limit) : 10);
+    return this.workoutService.findAllByUser(userId, page ? Number(page) : 1, limit ? Number(limit) : 10, status);
+  }
+
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get workouts for another user (visibility aware)' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiResponse({ status: 200, description: 'Paginated list of workouts' })
+  findWorkoutsForUser(
+    @CurrentUser('id') currentUserId: number,
+    @Param('userId', ParseIntPipe) targetUserId: number,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.workoutService.findWorkoutsForUser(
+      currentUserId,
+      targetUserId,
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 10,
+    );
   }
 
   @Get(':id')
@@ -93,5 +115,13 @@ export class WorkoutController {
   @ApiResponse({ status: 404, description: 'Workout not found' })
   remove(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
     return this.workoutService.remove(id, userId);
+  }
+
+  @Post(':id/copy')
+  @ApiOperation({ summary: 'Copy a workout to a new one' })
+  @ApiResponse({ status: 201, description: 'Workout copied' })
+  @ApiResponse({ status: 404, description: 'Workout not found' })
+  copy(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+    return this.workoutService.copyWorkout(id, userId);
   }
 }

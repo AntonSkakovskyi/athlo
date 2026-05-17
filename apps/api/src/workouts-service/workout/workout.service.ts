@@ -1,23 +1,32 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WorkoutEntity } from '../entities/workout.entity';
-import { Repository } from 'typeorm';
+import { LogExerciseEntity } from '../entities/log-exercise.entity';
+import { In, Repository } from 'typeorm';
 import { CreateWorkoutDto } from '../dto/workout/create-workout.dto';
 import { UpdateWorkoutDto } from '../dto/workout/update-workout.dto';
 import { CompleteWorkoutDto } from '../dto/workout/complete-workout.dto';
 import { WorkoutStatus } from '@athlo/shared';
 import { LogSetEntity } from '../entities/log-set.entity';
-import type { ILastPerformance } from '@athlo/shared';
+import { ILastPerformance, VisibilityType } from '@athlo/shared';
 import { AchievementService } from '../achievement/achievement.service';
+import { FriendService } from '../../user-service/friends/friend.service';
 
 @Injectable()
 export class WorkoutService {
   constructor(
     @InjectRepository(WorkoutEntity)
     private readonly workoutsRepository: Repository<WorkoutEntity>,
+    @InjectRepository(LogExerciseEntity)
+    private readonly logExerciseRepository: Repository<LogExerciseEntity>,
     @InjectRepository(LogSetEntity)
     private readonly logSetRepository: Repository<LogSetEntity>,
     private readonly achievementService: AchievementService,
+    private readonly friendService: FriendService,
   ) {}
 
   async create(userId: number, dto: CreateWorkoutDto) {
@@ -30,9 +39,24 @@ export class WorkoutService {
     return this.workoutsRepository.save(workout);
   }
 
-  async findAllByUser(userId: number, page = 1, limit = 10) {
+  async findWorkoutsForUser(
+    currentUserId: number,
+    targetUserId: number,
+    page = 1,
+    limit = 10,
+  ) {
+    const isFriend = await this.friendService.isFriend(currentUserId, targetUserId);
+    const visibilityIds = [2]; // PUBLIC
+    if (isFriend) {
+      visibilityIds.push(3); // FRIENDS_ONLY
+    }
+
     const [data, total] = await this.workoutsRepository.findAndCount({
-      where: { userId },
+      where: {
+        userId: targetUserId,
+        status: WorkoutStatus.COMPLETED,
+        visibilityTypeId: In(visibilityIds),
+      },
       relations: {
         logExercises: {
           exercise: true,
@@ -41,10 +65,53 @@ export class WorkoutService {
       },
       order: {
         started_at: 'DESC',
-        logExercises: { order: 'ASC' },
       },
       skip: (page - 1) * limit,
       take: limit,
+    });
+
+    return {
+      data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async findAllByUser(
+    userId: number,
+    page = 1,
+    limit = 10,
+    status?: WorkoutStatus,
+  ) {
+    const [data, total] = await this.workoutsRepository.findAndCount({
+      where: status ? { userId, status } : { userId },
+      relations: {
+        logExercises: {
+          exercise: true,
+          sets: true,
+        },
+      },
+      order: {
+        started_at: 'DESC',
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    // Sort relations in memory since TypeORM pagination breaks when ordering by relations
+    data.forEach((workout) => {
+      if (workout.logExercises) {
+        workout.logExercises.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        workout.logExercises.forEach((le) => {
+          if (le.sets) {
+            le.sets.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          }
+        });
+      }
     });
 
     return {
@@ -111,6 +178,48 @@ export class WorkoutService {
   async remove(id: number, userId: number) {
     const workout = await this.findOne(id, userId);
     await this.workoutsRepository.remove(workout);
+  }
+
+  async copyWorkout(id: number, userId: number) {
+    const original = await this.findOne(id, userId);
+
+    const workout = this.workoutsRepository.create({
+      userId,
+      name: `${original.name} (Copy)`,
+      description: original.description,
+      status: WorkoutStatus.IN_PROGRESS,
+    });
+    const savedWorkout = await this.workoutsRepository.save(workout);
+
+    if (original.logExercises?.length) {
+      for (const ex of original.logExercises) {
+        const logExercise = this.logExerciseRepository.create({
+          workoutId: savedWorkout.id,
+          exerciseId: ex.exerciseId,
+          order: ex.order,
+          notes: ex.notes,
+          restTime: ex.restTime,
+        });
+        const savedLogExercise = await this.logExerciseRepository.save(logExercise);
+
+        if (ex.sets?.length) {
+          const sets = ex.sets.map((s) =>
+            this.logSetRepository.create({
+              logExerciseId: savedLogExercise.id,
+              order: s.order,
+              weight: s.weight,
+              reps: s.reps,
+              duration: s.duration,
+              distance: s.distance,
+              isCompleted: false, // Reset completion status for the new workout
+            }),
+          );
+          await this.logSetRepository.save(sets);
+        }
+      }
+    }
+
+    return this.findOne(savedWorkout.id, userId);
   }
 
   async getLastPerformance(

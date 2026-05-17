@@ -31,13 +31,27 @@ export class WorkoutTemplateController {
   @ApiOperation({ summary: 'Get public and friends-only templates' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'search', required: false })
   @ApiResponse({ status: 200, description: 'Paginated list of accessible templates' })
   findPublicTemplates(
     @CurrentUser('id') userId: number,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('search') search?: string,
   ) {
-    return this.templateService.findPublicTemplates(userId, page ? Number(page) : 1, limit ? Number(limit) : 10);
+    return this.templateService.findPublicTemplates(
+      userId,
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 10,
+      search,
+    );
+  }
+
+  @Get('friends')
+  @ApiOperation({ summary: 'Get templates of friends' })
+  @ApiResponse({ status: 200, description: 'List of templates from friends' })
+  findFriendsTemplates(@CurrentUser('id') userId: number) {
+    return this.templateService.findFriendsTemplates(userId);
   }
 
   @Get('saved')
@@ -45,6 +59,16 @@ export class WorkoutTemplateController {
   @ApiResponse({ status: 200, description: 'List of saved templates' })
   getSavedTemplates(@CurrentUser('id') userId: number) {
     return this.templateService.getSavedTemplates(userId);
+  }
+
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get templates for another user' })
+  @ApiResponse({ status: 200, description: 'List of templates' })
+  findTemplatesForUser(
+    @CurrentUser('id') currentUserId: number,
+    @Param('userId', ParseIntPipe) targetUserId: number,
+  ) {
+    return this.templateService.findTemplatesForUser(currentUserId, targetUserId);
   }
 
   @Get(':id')
@@ -97,5 +121,16 @@ export class WorkoutTemplateController {
   @ApiResponse({ status: 201, description: 'Workout created from template' })
   startFromTemplate(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
     return this.templateService.startFromTemplate(id, userId);
+  }
+
+  @Post('from-workout/:workoutId')
+  @ApiOperation({ summary: 'Create a template from an existing workout' })
+  @ApiResponse({ status: 201, description: 'Template created from workout' })
+  createFromWorkout(
+    @Param('workoutId', ParseIntPipe) workoutId: number,
+    @CurrentUser('id') userId: number,
+    @Body('name') name: string,
+  ) {
+    return this.templateService.createFromWorkout(workoutId, userId, name);
   }
 }
