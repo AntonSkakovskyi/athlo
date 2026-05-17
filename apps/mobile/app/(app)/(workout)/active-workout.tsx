@@ -1,9 +1,7 @@
 import { View, Text, ScrollView, StyleSheet, Pressable, TextInput } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
-import { StatsBar } from '@/features/workout/components';
-import { ActiveExerciseCard } from '@/features/workout/components';
-import { RestTimerOverlay } from '@/features/workout/components';
+import { StatsBar, ExerciseLogCard, RestTimerOverlay } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { formatElapsed } from '@/utils/workout';
@@ -20,7 +18,10 @@ export default function ActiveWorkoutScreen() {
     updateExercise,
     addSet,
     updateSet,
+    deleteSet,
     toggleSetComplete,
+    deleteExercise,
+    moveExercise,
     elapsed,
     editName,
     setEditName,
@@ -103,19 +104,35 @@ export default function ActiveWorkoutScreen() {
           />
         ) : (
           exercises.map((ex, exIdx) => (
-            <ActiveExerciseCard
+            <ExerciseLogCard
               key={ex.logExerciseId ?? `local-${exIdx}`}
               exerciseName={ex.exerciseName}
               trackingType={ex.trackingType}
+              mode="active"
               sets={ex.sets}
               notes={ex.notes}
               showNotes={ex.showNotes}
+              restTime={ex.restTime}
               onToggleNotes={() => updateExercise(exIdx, { showNotes: !ex.showNotes })}
               onNotesChange={(text) => updateExercise(exIdx, { notes: text })}
               onUpdateSet={(setIdx, data) => updateSet(exIdx, setIdx, data)}
+              onDeleteSet={(setIdx) => deleteSet(exIdx, setIdx)}
               onToggleSetComplete={(setIdx) => toggleSetComplete(exIdx, setIdx)}
               onAddSet={() => addSet(exIdx)}
               onRestTimer={ex.restTime > 0 ? () => handleRestTimer(ex.restTime) : undefined}
+              onDeleteExercise={() => deleteExercise(exIdx)}
+              onMoveUp={exIdx > 0 ? () => moveExercise(exIdx, 'up') : undefined}
+              onMoveDown={exIdx < exercises.length - 1 ? () => moveExercise(exIdx, 'down') : undefined}
+              onChangeExercise={() => {
+                router.push({
+                  pathname: '/(app)/(workout)/exercise-picker',
+                  params: { 
+                    workoutId: String(workout.id), 
+                    replaceLogExerciseId: String(ex.logExerciseId),
+                    replaceOrder: String(exIdx + 1)
+                  }
+                });
+              }}
             />
           ))
         )}

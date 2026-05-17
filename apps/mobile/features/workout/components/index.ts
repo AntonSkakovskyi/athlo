@@ -1,4 +1,7 @@
 export * from './ActiveExerciseCard/ActiveExerciseCard';
+export * from './DurationPicker/DurationPicker';
+export * from './ExerciseLogCard/ExerciseLogCard';
+export * from './ExerciseLogCard/LogSetRow/LogSetRow';
 export * from './ExerciseListItem/ExerciseListItem';
 export * from './ExerciseSummaryCard/ExerciseSummaryCard';
 export * from './FinishWorkoutModal/FinishWorkoutModal';

@@ -4,20 +4,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { WorkoutStatus } from '@athlo/shared';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
-import { useCreateWorkout, useGetMyTemplates, useGetWorkouts, useStartFromTemplate } from '@/hooks/api';
+import { useCreateWorkout, useGetMyTemplates, useInfiniteWorkouts, useStartFromTemplate } from '@/hooks/api';
 
 export function useWorkoutsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { startWorkout, isActive } = useActiveWorkout();
 
-  const workoutsQuery = useGetWorkouts();
+  const workoutsQuery = useInfiniteWorkouts(WorkoutStatus.COMPLETED);
   const templatesQuery = useGetMyTemplates();
   const createWorkout = useCreateWorkout();
   const startFromTemplate = useStartFromTemplate();
 
-  const completedWorkouts = useMemo(
-    () => (workoutsQuery.data ?? []).filter((w) => w.status === WorkoutStatus.COMPLETED),
+  const displayedWorkouts = useMemo(
+    () => (workoutsQuery.data?.pages ?? []).flatMap((p) => p.data),
     [workoutsQuery.data],
   );
 
@@ -60,13 +60,20 @@ export function useWorkoutsScreen() {
     [isActive, startFromTemplate, startWorkout, router],
   );
 
+  const handleLoadMore = useCallback(() => {
+    if (workoutsQuery.hasNextPage && !workoutsQuery.isFetchingNextPage) {
+      workoutsQuery.fetchNextPage();
+    }
+  }, [workoutsQuery]);
+
   return {
-    completedWorkouts,
+    displayedWorkouts,
     templateItems,
     workoutsQuery,
     templatesQuery,
     handleEmptyWorkout,
     handleStartFromTemplate,
+    handleLoadMore,
     insets,
     router,
   };

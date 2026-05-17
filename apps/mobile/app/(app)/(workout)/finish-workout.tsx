@@ -10,6 +10,7 @@ import { colors, borderRadius, fontSize, spacing, fontWeight } from '@/constants
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { useFinishWorkoutScreen } from '@/features/workout/hooks/useFinishWorkoutScreen';
+import { VisibilityType } from '@athlo/shared';
 
 const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const FEELING_OPTIONS = [
@@ -18,6 +19,12 @@ const FEELING_OPTIONS = [
   { value: 3, emoji: '😊', label: 'OK' },
   { value: 4, emoji: '😄', label: 'Good' },
   { value: 5, emoji: '🔥', label: 'Great' },
+];
+
+const VISIBILITY_OPTIONS = [
+  { value: VisibilityType.PUBLIC, label: 'Public', icon: '🌍' },
+  { value: VisibilityType.FRIENDS_ONLY, label: 'Friends', icon: '👥' },
+  { value: VisibilityType.PRIVATE, label: 'Private', icon: '🔒' },
 ];
 
 function SummaryItem({ icon, value, label }: { icon: string; value: string; label: string }) {
@@ -46,6 +53,10 @@ export default function FinishWorkoutScreen() {
     setAvgHr,
     maxHr,
     setMaxHr,
+    visibility,
+    setVisibility,
+    description,
+    setDescription,
     handleFinish,
     handleDiscard,
     completeWorkoutPending,
@@ -66,6 +77,33 @@ export default function FinishWorkoutScreen() {
           <SummaryItem icon="⏱️" value={duration ?? '—'} label="Duration" />
           <SummaryItem icon="🏋️" value={`${Number(volume ?? 0).toLocaleString()} kg`} label="Volume" />
           <SummaryItem icon="✅" value={`${completedSets ?? 0}/${totalSets ?? 0}`} label="Sets" />
+        </View>
+
+        <Text style={styles.sectionLabel}>Workout Notes</Text>
+        <TextInput
+          style={styles.descriptionInput}
+          placeholder="How did it go? (optional)"
+          placeholderTextColor={colors.textMuted}
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          numberOfLines={3}
+        />
+
+        <Text style={styles.sectionLabel}>Visibility</Text>
+        <View style={styles.visibilityRow}>
+          {VISIBILITY_OPTIONS.map((opt) => (
+            <Pressable
+              key={opt.value}
+              style={[styles.visibilityBtn, visibility === opt.value && styles.visibilityBtnActive]}
+              onPress={() => setVisibility(opt.value)}
+            >
+              <Text style={styles.visibilityIcon}>{opt.icon}</Text>
+              <Text style={[styles.visibilityLabel, visibility === opt.value && styles.visibilityLabelActive]}>
+                {opt.label}
+              </Text>
+            </Pressable>
+          ))}
         </View>
 
         <Text style={styles.sectionLabel}>Rate of Perceived Exertion (RPE)</Text>
@@ -197,15 +235,60 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: spacing.sm,
   },
+  descriptionInput: {
+    backgroundColor: colors.surfaceLight,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    fontSize: fontSize.sm,
+    color: colors.text,
+    minHeight: 80,
+    textAlignVertical: 'top',
+    marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  visibilityRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
+  },
+  visibilityBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.surfaceLight,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  visibilityBtnActive: {
+    backgroundColor: colors.primaryLight,
+    borderColor: colors.primary,
+  },
+  visibilityIcon: {
+    fontSize: fontSize.md,
+  },
+  visibilityLabel: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+    fontWeight: fontWeight.medium,
+  },
+  visibilityLabelActive: {
+    color: colors.primary,
+    fontWeight: fontWeight.bold,
+  },
   rpeRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     gap: spacing.sm,
     marginBottom: spacing.xl,
   },
   rpeBtn: {
-    width: 36,
-    height: 36,
+    width: 32,
+    height: 32,
     borderRadius: borderRadius.sm,
     backgroundColor: colors.surfaceLight,
     alignItems: 'center',

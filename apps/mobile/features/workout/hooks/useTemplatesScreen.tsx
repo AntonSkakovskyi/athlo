@@ -1,169 +1,115 @@
-import { useState, useMemo, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import type { IWorkoutTemplate, IUserWorkoutTemplate } from '@athlo/shared';
-import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
-import { useCreateTemplate, useDeleteTemplate, useGetMyTemplates, useGetSavedTemplates, useInfinitePublicTemplates, useSaveTemplate, useStartFromTemplate, useUnsaveTemplate } from '@/hooks/api';
-import TemplateCard from '@/features/workout/components/TemplateCard/TemplateCard';
-
-type SavedTemplateItem = IUserWorkoutTemplate & {
-  workoutTemplate?: IWorkoutTemplate & { creatorNickname?: string };
-};
-
-type PublicTemplateItem = IWorkoutTemplate & { creatorNickname?: string };
+import { useGetWorkoutTemplates, useCreateWorkoutTemplate, useStartWorkoutFromTemplate } from '@/hooks/api';
+import type { IWorkoutTemplate } from '@athlo/shared';
+import { VisibilityType } from '@athlo/shared';
+import TemplateCard from '../components/TemplateCard/TemplateCard';
 
 export function useTemplatesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-
   const [activeTab, setActiveTab] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDescription, setNewDescription] = useState('');
   const [search, setSearch] = useState('');
+  const [visibility, setVisibility] = useState<VisibilityType>(VisibilityType.PRIVATE);
 
-  const { startWorkout, isActive } = useActiveWorkout();
+  const myTemplatesQuery = useGetWorkoutTemplates({ 
+    onlyMy: true,
+    search: search.trim() || undefined 
+  });
+  const publicTemplatesQuery = useGetWorkoutTemplates({ 
+    onlyPublic: true,
+    search: search.trim() || undefined 
+  });
+  const friendsTemplatesQuery = useGetWorkoutTemplates({ 
+    onlyFriends: true,
+    search: search.trim() || undefined 
+  });
 
-  const myTemplates = useGetMyTemplates();
-  const publicTemplatesQuery = useInfinitePublicTemplates(search.trim() || undefined);
-  const savedTemplates = useGetSavedTemplates();
+  const activeQuery = activeTab === 0 ? myTemplatesQuery : activeTab === 1 ? publicTemplatesQuery : friendsTemplatesQuery;
 
-  const createTemplate = useCreateTemplate();
-  const deleteTemplate = useDeleteTemplate();
-  const saveTemplate = useSaveTemplate();
-  const unsaveTemplate = useUnsaveTemplate();
-  const startFromTemplate = useStartFromTemplate();
+  const createTemplate = useCreateWorkoutTemplate();
+  const startFromTemplate = useStartWorkoutFromTemplate();
 
-  const handleCreate = useCallback(() => {
+  const handleCreate = () => {
     if (!newName.trim()) return;
     createTemplate.mutate(
-      { name: newName.trim(), description: newDescription.trim() || undefined },
+      { 
+        name: newName.trim(), 
+        description: newDescription.trim() || undefined,
+        visibilityTypeId: visibility,
+      },
       {
-        onSuccess: (template) => {
+        onSuccess: (tpl) => {
           setNewName('');
           setNewDescription('');
+          setVisibility(VisibilityType.PRIVATE);
           setShowCreate(false);
-          router.push(`/(app)/(workout)/template/${template.id}`);
+          router.push(`/(app)/(workout)/template/${tpl.id}`);
         },
-      },
-    );
-  }, [newName, newDescription, createTemplate, router]);
-
-  const handleDelete = useCallback(
-    (id: number) => {
-      Alert.alert('Delete Template', 'Are you sure you want to delete this template?', [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deleteTemplate.mutate(String(id)),
-        },
-      ]);
-    },
-    [deleteTemplate],
-  );
-
-  const handleStart = useCallback(
-    (id: number) => {
-      if (isActive) {
-        Alert.alert('Active Workout', 'You already have an active workout. Finish it first.');
-        return;
       }
-      startFromTemplate.mutate(String(id), {
-        onSuccess: (workout) => {
-          if (workout) {
-            startWorkout(workout, []);
-            router.push('/(app)/(workout)/active-workout');
-          }
-        },
-      });
-    },
-    [isActive, startFromTemplate, startWorkout, router],
-  );
-
-  const filterBySearch = useCallback(
-    <T extends { name: string }>(items: T[]) => {
-      if (!search.trim()) return items;
-      const q = search.toLowerCase();
-      return items.filter((t) => t.name.toLowerCase().includes(q));
-    },
-    [search],
-  );
-
-  const filteredMy = useMemo(
-    () => filterBySearch(myTemplates.data ?? []),
-    [myTemplates.data, filterBySearch],
-  );
-
-  const flatPublicTemplates = useMemo(
-    () => (publicTemplatesQuery.data?.pages ?? []).flatMap((p) => p.data),
-    [publicTemplatesQuery.data],
-  );
-
-  const filteredSaved = useMemo(() => {
-    const items = savedTemplates.data ?? [];
-    if (!search.trim()) return items;
-    const q = search.toLowerCase();
-    return items.filter(
-      (s) => s.workoutTemplate?.name?.toLowerCase().includes(q) ?? false,
     );
-  }, [savedTemplates.data, search]);
+  };
 
-  const activeQuery = useMemo(() => {
-    switch (activeTab) {
-      case 0:
-        return myTemplates;
-      case 1:
-        return publicTemplatesQuery;
-      case 2:
-        return savedTemplates;
-      default:
-        return myTemplates;
-    }
-  }, [activeTab, myTemplates, publicTemplatesQuery, savedTemplates]);
+  const handleStartFromTemplate = (id: number) => {
+    startFromTemplate.mutate(String(id), {
+      onSuccess: () => {
+        router.replace('/(app)/(workout)/active-workout');
+      },
+    });
+  };
 
-  const renderMyItem = useCallback(
-    ({ item }: { item: IWorkoutTemplate }) => (
+  const renderTemplateItem = (item: IWorkoutTemplate, variant: 'my' | 'public' | 'saved', creatorNickname?: string) => (
+    <View key={item.id} style={{ marginBottom: 12 }}>
       <TemplateCard
         name={item.name}
         description={item.description}
-        variant="my"
+        creatorName={creatorNickname}
+        variant={variant}
         onPress={() => router.push(`/(app)/(workout)/template/${item.id}`)}
-        onStart={() => handleStart(item.id)}
-        onDelete={() => handleDelete(item.id)}
+        onStart={() => handleStartFromTemplate(item.id)}
       />
-    ),
-    [router, handleStart, handleDelete],
+    </View>
   );
 
-  const renderPublicItem = useCallback(
-    ({ item }: { item: PublicTemplateItem }) => (
-      <TemplateCard
-        name={item.name}
-        description={item.description}
-        author={item.creatorNickname}
-        variant="public"
-        onStart={() => handleStart(item.id)}
-        onSave={() => saveTemplate.mutate(String(item.id))}
-      />
-    ),
-    [handleStart, saveTemplate],
-  );
+  const myGroups = useMemo(() => {
+    const templates = myTemplatesQuery.data?.pages.flatMap(p => p.items) ?? [];
+    return {
+      my: templates.filter(t => t.isCreator),
+      friends: templates.filter(t => !t.isCreator && t.visibilityTypeId === VisibilityType.FRIENDS_ONLY),
+      public: templates.filter(t => !t.isCreator && t.visibilityTypeId === VisibilityType.PUBLIC)
+    };
+  }, [myTemplatesQuery.data]);
 
-  const renderSavedItem = useCallback(
-    ({ item }: { item: SavedTemplateItem }) => (
-      <TemplateCard
-        name={item.workoutTemplate?.name ?? 'Template'}
-        description={item.workoutTemplate?.description}
-        author={item.workoutTemplate?.creatorNickname}
-        variant="saved"
-        onStart={() => handleStart(item.workoutTemplateId)}
-        onUnsave={() => unsaveTemplate.mutate(String(item.workoutTemplateId))}
-      />
-    ),
-    [handleStart, unsaveTemplate],
-  );
+  const publicGroups = useMemo(() => {
+    const templates = publicTemplatesQuery.data?.pages.flatMap(p => p.items) ?? [];
+    return {
+      general: templates.filter(t => !t.creatorId),
+      public: templates.filter(t => t.creatorId)
+    };
+  }, [publicTemplatesQuery.data]);
+
+  const friendsGroups = useMemo(() => {
+    const templates = friendsTemplatesQuery.data?.pages.flatMap(p => p.items) ?? [];
+    // Group by friend
+    const groups: Record<number, { friend: { id: number; nickname?: string; fullName: string }; templates: IWorkoutTemplate[] }> = {};
+    templates.forEach(t => {
+      if (t.creatorId && t.creatorNickname) {
+        if (!groups[t.creatorId]) {
+          groups[t.creatorId] = { 
+            friend: { id: t.creatorId, nickname: t.creatorNickname, fullName: t.creatorNickname },
+            templates: [] 
+          };
+        }
+        groups[t.creatorId].templates.push(t);
+      }
+    });
+    return Object.values(groups);
+  }, [friendsTemplatesQuery.data]);
 
   return {
     activeTab,
@@ -176,27 +122,17 @@ export function useTemplatesScreen() {
     setNewDescription,
     search,
     setSearch,
-    myTemplates,
-    publicTemplatesQuery,
-    savedTemplates,
-    filteredMy,
-    flatPublicTemplates,
-    filteredSaved,
+    visibility,
+    setVisibility,
+    myGroups,
+    publicGroups,
+    friendsGroups,
     activeQuery,
     createTemplate,
-    deleteTemplate,
-    saveTemplate,
-    unsaveTemplate,
-    startFromTemplate,
+    publicTemplatesQuery,
+    renderTemplateItem,
     handleCreate,
-    handleDelete,
-    handleStart,
-    renderMyItem,
-    renderPublicItem,
-    renderSavedItem,
     insets,
     router,
-    startWorkout,
-    isActive,
   };
 }

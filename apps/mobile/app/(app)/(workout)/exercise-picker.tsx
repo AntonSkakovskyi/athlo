@@ -33,6 +33,7 @@ export default function ExercisePickerScreen() {
     clearFilters,
     insets,
     router,
+    isReplaceMode,
   } = useExercisePickerScreen();
 
   const renderExercise = ({ item }: { item: ExerciseWithRelations }) => {
@@ -57,7 +58,7 @@ export default function ExercisePickerScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
-      <ScreenHeader title="Choose Exercise" onBack={() => router.back()} />
+      <ScreenHeader title={isReplaceMode ? 'Replace Exercise' : 'Choose Exercise'} onBack={() => router.back()} />
 
       <View style={styles.searchWrap}>
         <Input
@@ -131,7 +132,7 @@ export default function ExercisePickerScreen() {
 
       <View style={styles.footer}>
         <Button
-          title={`Add Exercise${selectedExercises.size > 0 ? ` (${selectedExercises.size})` : ''}`}
+          title={isReplaceMode ? 'Replace Exercise' : `Add Exercise${selectedExercises.size > 0 ? ` (${selectedExercises.size})` : ''}`}
           variant="primary"
           onPress={handleAdd}
           disabled={selectedExercises.size === 0 || isAdding}

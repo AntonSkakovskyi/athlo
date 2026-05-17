@@ -14,11 +14,17 @@ interface CreateTemplateSetData {
   distance?: number;
 }
 
-export const useCreateTemplateSet = (templateId: string, exerciseId: string) => {
+export const useCreateTemplateSet = (templateId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateTemplateSetData) => {
+    mutationFn: async ({
+      exerciseId,
+      data,
+    }: {
+      exerciseId: string;
+      data: CreateTemplateSetData;
+    }) => {
       const response = await apiClient.post<ITemplateSet>(
         apiRoutes.templates.sets(templateId, exerciseId),
         data,
@@ -39,13 +45,21 @@ interface UpdateTemplateSetData {
   distance?: number;
 }
 
-export const useUpdateTemplateSet = (templateId: string, exerciseId: string) => {
+export const useUpdateTemplateSet = (templateId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateTemplateSetData }) => {
+    mutationFn: async ({
+      exerciseId,
+      setId,
+      data,
+    }: {
+      exerciseId: string;
+      setId: string;
+      data: UpdateTemplateSetData;
+    }) => {
       const response = await apiClient.patch<ITemplateSet>(
-        apiRoutes.templates.set(templateId, exerciseId, id),
+        apiRoutes.templates.set(templateId, exerciseId, setId),
         data,
       );
       return response.data;
@@ -56,12 +70,12 @@ export const useUpdateTemplateSet = (templateId: string, exerciseId: string) => 
   });
 };
 
-export const useDeleteTemplateSet = (templateId: string, exerciseId: string) => {
+export const useDeleteTemplateSet = (templateId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) =>
-      apiClient.delete(apiRoutes.templates.set(templateId, exerciseId, id)),
+    mutationFn: ({ exerciseId, setId }: { exerciseId: string; setId: string }) =>
+      apiClient.delete(apiRoutes.templates.set(templateId, exerciseId, setId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: templateKeys.byId(templateId) });
     },

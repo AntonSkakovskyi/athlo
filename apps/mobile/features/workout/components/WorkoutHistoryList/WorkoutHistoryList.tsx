@@ -1,17 +1,20 @@
-import { useCallback } from 'react';
-import { Alert, View } from 'react-native';
+import React, { useCallback, forwardRef } from 'react';
+import { Alert, View, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
-import type { IWorkout, IWorkoutTemplate, IWorkoutWithRelations } from '@athlo/shared';
+import type { IWorkoutWithRelations } from '@athlo/shared';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { WorkoutHistoryCard } from '@/features/workout/components/WorkoutHistoryCard/WorkoutHistoryCard';
 import { formatDuration, formatDate, computeVolume } from '@/utils/workout';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
-import apiClient from '@/api/api-client';
-import { apiRoutes } from '@/api/api-routes';
-import { useCreateTemplate, useCreateWorkout, useDeleteWorkout } from '@/hooks/api';
+import {
+  useCopyWorkout,
+  useCreateTemplateFromWorkout,
+  useDeleteWorkout,
+} from '@/hooks/api';
+import { InfiniteList, InfiniteListProps } from '@/components/ui/InfiniteList/InfiniteList';
 
-interface WorkoutHistoryListProps {
+interface WorkoutHistoryListProps extends Omit<InfiniteListProps<IWorkoutWithRelations>, 'data' | 'renderItem'> {
   workouts: IWorkoutWithRelations[];
   isLoading?: boolean;
   onWorkoutPress: (workoutId: number) => void;
@@ -21,7 +24,7 @@ interface WorkoutHistoryListProps {
   onEmptyAction?: () => void;
 }
 
-export function WorkoutHistoryList({
+export const WorkoutHistoryList = ({
   workouts,
   isLoading,
   onWorkoutPress,
@@ -29,40 +32,29 @@ export function WorkoutHistoryList({
   emptyDescription = 'Start your first workout to see your history',
   emptyActionLabel,
   onEmptyAction,
-}: WorkoutHistoryListProps) {
+  ListHeaderComponent,
+  contentContainerStyle,
+  ...infiniteListProps
+}: WorkoutHistoryListProps) => {
   const router = useRouter();
   const { isActive, startWorkout } = useActiveWorkout();
-  const createWorkout = useCreateWorkout();
   const deleteWorkout = useDeleteWorkout();
-  const createTemplate = useCreateTemplate();
+  const copyWorkout = useCopyWorkout();
+  const createTemplateFromWorkout = useCreateTemplateFromWorkout();
 
   const handleSaveAsTemplate = useCallback(
     async (w: IWorkoutWithRelations) => {
       try {
-        const template = await new Promise<IWorkoutTemplate>((resolve, reject) => {
-          createTemplate.mutate({ name: w.name }, { onSuccess: resolve, onError: reject });
+        const template = await createTemplateFromWorkout.mutateAsync({
+          workoutId: String(w.id),
+          name: w.name,
         });
-
-        for (const ex of w.logExercises ?? []) {
-          if (!ex.exerciseId) continue;
-          const { data: templateExercise } = await apiClient.post(
-            apiRoutes.templates.exercises(String(template.id)),
-            { exerciseId: ex.exerciseId, order: ex.order ?? 1, restTime: ex.restTime ?? 0 },
-          );
-          for (const s of ex.sets ?? []) {
-            await apiClient.post(
-              apiRoutes.templates.sets(String(template.id), String(templateExercise.id)),
-              { order: s.order ?? 1, weight: s.weight, reps: s.reps, duration: s.duration, distance: s.distance },
-            );
-          }
-        }
-
         router.push(`/(app)/(workout)/template/${template.id}`);
       } catch {
         Alert.alert('Error', 'Failed to save as template. Please try again.');
       }
     },
-    [createTemplate, router],
+    [createTemplateFromWorkout, router],
   );
 
   const handleCopyWorkout = useCallback(
@@ -72,36 +64,14 @@ export function WorkoutHistoryList({
         return;
       }
       try {
-        const newWorkout = await new Promise<IWorkout>((resolve, reject) => {
-          createWorkout.mutate({ name: w.name }, { onSuccess: resolve, onError: reject });
-        });
-
-        for (const ex of w.logExercises ?? []) {
-          if (!ex.exerciseId) continue;
-          const { data: newExercise } = await apiClient.post(
-            apiRoutes.workouts.exercises(String(newWorkout.id)),
-            {
-              exerciseId: ex.exerciseId,
-              order: ex.order ?? 1,
-              restTime: ex.restTime ?? 0,
-              notes: ex.notes ?? '',
-            },
-          );
-          for (const s of ex.sets ?? []) {
-            await apiClient.post(
-              apiRoutes.workouts.sets(String(newWorkout.id), String(newExercise.id)),
-              { order: s.order ?? 1, weight: s.weight, reps: s.reps, duration: s.duration, distance: s.distance },
-            );
-          }
-        }
-
+        const newWorkout = await copyWorkout.mutateAsync(String(w.id));
         startWorkout(newWorkout, []);
         router.push('/(app)/(workout)/active-workout');
       } catch {
         Alert.alert('Error', 'Failed to copy workout. Please try again.');
       }
     },
-    [isActive, createWorkout, startWorkout, router],
+    [isActive, copyWorkout, startWorkout, router],
   );
 
   const handleDelete = useCallback(
@@ -119,23 +89,36 @@ export function WorkoutHistoryList({
   );
 
   if (isLoading) {
-    return <Spinner style={{ marginVertical: 20 }} />;
-  }
-
-  if (!workouts.length) {
     return (
-      <EmptyState
-        title={emptyTitle}
-        description={emptyDescription}
-        actionLabel={emptyActionLabel}
-        onAction={onEmptyAction}
-      />
+      <View style={contentContainerStyle}>
+        {typeof ListHeaderComponent === 'function' ? (
+          <ListHeaderComponent />
+        ) : (
+          ListHeaderComponent
+        )}
+        <Spinner style={{ marginVertical: 20 }} />
+      </View>
     );
   }
 
+  const renderEmptyComponent = () => (
+    <EmptyState
+      title={emptyTitle}
+      description={emptyDescription}
+      actionLabel={emptyActionLabel}
+      onAction={onEmptyAction}
+    />
+  );
+
   return (
-    <View>
-      {workouts.map((w) => {
+    <InfiniteList
+      data={workouts}
+      keyExtractor={(item) => String(item.id)}
+      ListHeaderComponent={ListHeaderComponent}
+      ListEmptyComponent={renderEmptyComponent}
+      contentContainerStyle={contentContainerStyle}
+      showsVerticalScrollIndicator={false}
+      renderItem={({ item: w }) => {
         const exerciseSets =
           w.logExercises?.map((e) => ({
             exerciseName: e.exercise?.name ?? '',
@@ -144,7 +127,6 @@ export function WorkoutHistoryList({
 
         return (
           <WorkoutHistoryCard
-            key={w.id}
             name={w.name}
             date={formatDate(w.started_at)}
             duration={formatDuration(w.started_at, w.ended_at)}
@@ -155,12 +137,18 @@ export function WorkoutHistoryList({
             onSaveAsTemplate={() => handleSaveAsTemplate(w)}
             onCopyWorkout={() => handleCopyWorkout(w)}
             onEdit={() =>
-              router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(w.id) } })
+              router.push({
+                pathname: '/(app)/(workout)/workout-summary',
+                params: { workoutId: String(w.id), autoEdit: 'true' },
+              })
             }
             onDelete={() => handleDelete(w)}
           />
         );
-      })}
-    </View>
+      }}
+      {...infiniteListProps}
+    />
   );
-}
+};
+
+

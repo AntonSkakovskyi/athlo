@@ -10,22 +10,19 @@ import TemplateCard from '@/features/workout/components/TemplateCard/TemplateCar
 
 export default function WorkoutsScreen() {
   const {
-    completedWorkouts,
+    displayedWorkouts,
     templateItems,
     workoutsQuery,
     templatesQuery,
     handleEmptyWorkout,
     handleStartFromTemplate,
+    handleLoadMore,
     insets,
     router,
   } = useWorkoutsScreen();
 
-  return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 100 }}
-      showsVerticalScrollIndicator={false}
-    >
+  const renderHeader = () => (
+    <View style={styles.headerContainer}>
       <Text style={styles.screenTitle}>Workouts</Text>
 
       <View style={styles.quickActions}>
@@ -80,24 +77,33 @@ export default function WorkoutsScreen() {
         )}
       </View>
 
-      <View style={styles.section}>
+      <View style={styles.sectionHeaderContainer}>
         <SectionHeader title="Recent Workouts" />
-        <WorkoutHistoryList
-          workouts={completedWorkouts.slice(0, 10)}
-          isLoading={workoutsQuery.isLoading}
-          onWorkoutPress={(id) =>
-            router.push({
-              pathname: '/(app)/(workout)/workout-summary',
-              params: { workoutId: String(id) },
-            })
-          }
-          emptyTitle="No workouts yet"
-          emptyDescription="Start your first workout to see your history"
-          emptyActionLabel="Start Workout"
-          onEmptyAction={handleEmptyWorkout}
-        />
       </View>
-    </ScrollView>
+    </View>
+  );
+
+  return (
+    <WorkoutHistoryList
+      style={styles.container}
+      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 100 }}
+      ListHeaderComponent={renderHeader()}
+      workouts={displayedWorkouts}
+      isLoading={workoutsQuery.isLoading}
+      hasNextPage={workoutsQuery.hasNextPage}
+      isFetchingNextPage={workoutsQuery.isFetchingNextPage}
+      onLoadMore={handleLoadMore}
+      onWorkoutPress={(id) =>
+        router.push({
+          pathname: '/(app)/(workout)/workout-summary',
+          params: { workoutId: String(id) },
+        })
+      }
+      emptyTitle="No workouts yet"
+      emptyDescription="Start your first workout to see your history"
+      emptyActionLabel="Start Workout"
+      onEmptyAction={handleEmptyWorkout}
+    />
   );
 }
 
@@ -106,6 +112,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
     paddingHorizontal: spacing.lg,
+  },
+  headerContainer: {
+    paddingBottom: spacing.sm,
   },
   screenTitle: {
     fontSize: fontSize['3xl'],
@@ -120,6 +129,9 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: spacing['3xl'],
+  },
+  sectionHeaderContainer: {
+    marginBottom: spacing.md,
   },
   templateList: {
     paddingRight: 16,

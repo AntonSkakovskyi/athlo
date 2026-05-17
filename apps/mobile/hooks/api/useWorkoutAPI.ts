@@ -1,5 +1,6 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { IWorkout, IWorkoutWithRelations, ILastPerformance, IPaginatedResponse } from '@athlo/shared';
+import { WorkoutStatus, VisibilityType } from '@athlo/shared';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
 import { workoutKeys, lastPerformanceKeys } from '@/api/queries/query-keys';
@@ -18,13 +19,13 @@ export const useGetWorkouts = () => {
   });
 };
 
-export const useInfiniteWorkouts = () => {
+export const useInfiniteWorkouts = (status?: WorkoutStatus) => {
   return useInfiniteQuery({
-    queryKey: workoutKeys.infinite,
+    queryKey: status ? [...workoutKeys.infinite, { status }] : workoutKeys.infinite,
     queryFn: async ({ pageParam = 1 }) => {
-      const response = await apiClient.get<IPaginatedResponse<IWorkoutWithRelations>>(apiRoutes.workouts.getAll, {
-        params: { page: pageParam, limit: 10 },
-      });
+      const params: Record<string, string | number> = { page: pageParam, limit: 5 };
+      if (status) params.status = status;
+      const response = await apiClient.get<IPaginatedResponse<IWorkoutWithRelations>>(apiRoutes.workouts.getAll, { params });
       return response.data;
     },
     initialPageParam: 1,
@@ -32,6 +33,25 @@ export const useInfiniteWorkouts = () => {
       const { page, limit, total } = lastPage.meta;
       return page * limit < total ? page + 1 : undefined;
     },
+  });
+};
+
+export const useInfiniteUserWorkouts = (userId: string) => {
+  return useInfiniteQuery({
+    queryKey: workoutKeys.infiniteByUser(userId),
+    queryFn: async ({ pageParam = 1 }) => {
+      const response = await apiClient.get<IPaginatedResponse<IWorkoutWithRelations>>(
+        apiRoutes.workouts.getByUserId(userId),
+        { params: { page: pageParam, limit: 10 } },
+      );
+      return response.data;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { page, limit, total } = lastPage.meta;
+      return page * limit < total ? page + 1 : undefined;
+    },
+    enabled: !!userId,
   });
 };
 
@@ -75,6 +95,8 @@ interface UpdateWorkoutData {
   maxHeartRate?: number;
   rpe?: number;
   feelingScore?: number;
+  ended_at?: string;
+  visibility?: VisibilityType;
 }
 
 export const useUpdateWorkout = () => {
@@ -98,6 +120,8 @@ interface CompleteWorkoutData {
   maxHeartRate?: number;
   rpe?: number;
   feelingScore?: number;
+  visibility?: VisibilityType;
+  description?: string;
 }
 
 export const useCompleteWorkout = () => {
@@ -120,6 +144,20 @@ export const useDeleteWorkout = () => {
 
   return useMutation({
     mutationFn: (id: string) => apiClient.delete(apiRoutes.workouts.getById(id)),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: workoutKeys.all });
+    },
+  });
+};
+
+export const useCopyWorkout = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.post<IWorkout>(apiRoutes.workouts.copy(id));
+      return response.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workoutKeys.all });
     },

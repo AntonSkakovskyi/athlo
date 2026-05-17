@@ -5,6 +5,8 @@ import { colors, fontSize, fontWeight, spacing, borderRadius } from '@/constants
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { useDeleteWorkout } from '@/hooks/api';
 
+const HIDDEN_SCREENS = ['active-workout', 'exercise-picker', 'finish-workout', 'workout-summary', 'template'];
+
 export function FloatingWorkoutMini() {
   const { workout, isActive, exercises, completedSets, totalSets, endWorkout } = useActiveWorkout();
   const router = useRouter();
@@ -28,8 +30,9 @@ export function FloatingWorkoutMini() {
   }, [isActive, workout]);
 
   const isInWorkoutTab = segments.includes('(workout)');
-  const isOnActiveWorkoutScreen = segments.includes('active-workout');
-  if (!isActive || !workout || !isInWorkoutTab || isOnActiveWorkoutScreen) return null;
+  const isOnHiddenScreen = segments.some(s => HIDDEN_SCREENS.includes(s));
+  
+  if (!isActive || !workout || !isInWorkoutTab || isOnHiddenScreen) return null;
 
   const currentExercise = exercises.find((e) => e.sets.some((s) => !s.isCompleted));
   const currentSetIndex = currentExercise

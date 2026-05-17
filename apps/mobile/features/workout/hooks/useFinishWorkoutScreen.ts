@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { useCompleteWorkout, useDeleteWorkout } from '@/hooks/api';
+import { VisibilityType } from '@athlo/shared';
 
 export function useFinishWorkoutScreen() {
   const insets = useSafeAreaInsets();
@@ -24,6 +25,8 @@ export function useFinishWorkoutScreen() {
   const [calories, setCalories] = useState('');
   const [avgHr, setAvgHr] = useState('');
   const [maxHr, setMaxHr] = useState('');
+  const [visibility, setVisibility] = useState<VisibilityType>(VisibilityType.PUBLIC);
+  const [description, setDescription] = useState('');
 
   const handleFinish = useCallback(() => {
     if (!workout) return;
@@ -36,6 +39,8 @@ export function useFinishWorkoutScreen() {
           calories: calories ? Number(calories) : undefined,
           avgHeartRate: avgHr ? Number(avgHr) : undefined,
           maxHeartRate: maxHr ? Number(maxHr) : undefined,
+          visibility,
+          description: description.trim() || undefined,
         },
       },
       {
@@ -48,7 +53,7 @@ export function useFinishWorkoutScreen() {
         },
       },
     );
-  }, [workout, completeWorkout, rpe, feeling, calories, avgHr, maxHr, endWorkout, router]);
+  }, [workout, completeWorkout, rpe, feeling, calories, avgHr, maxHr, visibility, description, endWorkout, router]);
 
   const handleDiscard = useCallback(() => {
     if (!workout) return;
@@ -90,6 +95,10 @@ export function useFinishWorkoutScreen() {
     setAvgHr,
     maxHr,
     setMaxHr,
+    visibility,
+    setVisibility,
+    description,
+    setDescription,
     handleFinish,
     handleDiscard,
     completeWorkoutPending: completeWorkout.isPending,

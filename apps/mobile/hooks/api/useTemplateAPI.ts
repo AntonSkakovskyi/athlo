@@ -28,6 +28,17 @@ export const useGetTemplateById = (id: string) => {
   });
 };
 
+export const useGetUserTemplates = (userId: string) => {
+  return useQuery({
+    queryKey: templateKeys.byUserId(userId),
+    queryFn: async () => {
+      const response = await apiClient.get<IWorkoutTemplate[]>(apiRoutes.templates.getByUserId(userId));
+      return response.data;
+    },
+    enabled: !!userId,
+  });
+};
+
 export const useGetPublicTemplates = () => {
   return useQuery({
     queryKey: templateKeys.public,
@@ -64,7 +75,17 @@ export const useGetSavedTemplates = () => {
   return useQuery({
     queryKey: templateKeys.saved,
     queryFn: async () => {
-      const response = await apiClient.get<(IUserWorkoutTemplate & { workoutTemplate?: IWorkoutTemplate })[]>(apiRoutes.templates.getSaved);
+      const response = await apiClient.get<(IUserWorkoutTemplate & { workoutTemplate?: IWorkoutTemplate & { creatorNickname?: string } })[]>(apiRoutes.templates.getSaved);
+      return response.data;
+    },
+  });
+};
+
+export const useGetFriendsTemplates = () => {
+  return useQuery({
+    queryKey: [...templateKeys.all, 'friends'],
+    queryFn: async () => {
+      const response = await apiClient.get<(IWorkoutTemplate & { creatorNickname?: string })[]>(apiRoutes.templates.getFriends);
       return response.data;
     },
   });
@@ -156,6 +177,23 @@ export const useStartFromTemplate = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workoutKeys.all });
+    },
+  });
+};
+
+export const useCreateTemplateFromWorkout = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ workoutId, name }: { workoutId: string; name?: string }) => {
+      const response = await apiClient.post<IWorkoutTemplate>(
+        apiRoutes.templates.createFromWorkout(workoutId),
+        { name },
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: templateKeys.all });
     },
   });
 };

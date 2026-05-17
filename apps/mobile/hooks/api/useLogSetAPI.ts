@@ -15,13 +15,13 @@ interface CreateLogSetData {
   isCompleted?: boolean;
 }
 
-export const useCreateLogSet = (workoutId: string, logExerciseId: string) => {
+export const useCreateLogSet = (workoutId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateLogSetData) => {
+    mutationFn: async ({ exerciseId, data }: { exerciseId: string; data: CreateLogSetData }) => {
       const response = await apiClient.post<ILogSet>(
-        apiRoutes.workouts.sets(workoutId, logExerciseId),
+        apiRoutes.workouts.sets(workoutId, exerciseId),
         data,
       );
       return response.data;
@@ -41,13 +41,21 @@ interface UpdateLogSetData {
   isCompleted?: boolean;
 }
 
-export const useUpdateLogSet = (workoutId: string, logExerciseId: string) => {
+export const useUpdateLogSet = (workoutId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateLogSetData }) => {
+    mutationFn: async ({
+      exerciseId,
+      setId,
+      data,
+    }: {
+      exerciseId: string;
+      setId: string;
+      data: UpdateLogSetData;
+    }) => {
       const response = await apiClient.patch<ILogSet>(
-        apiRoutes.workouts.set(workoutId, logExerciseId, id),
+        apiRoutes.workouts.set(workoutId, exerciseId, setId),
         data,
       );
       return response.data;
@@ -58,12 +66,12 @@ export const useUpdateLogSet = (workoutId: string, logExerciseId: string) => {
   });
 };
 
-export const useDeleteLogSet = (workoutId: string, logExerciseId: string) => {
+export const useDeleteLogSet = (workoutId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) =>
-      apiClient.delete(apiRoutes.workouts.set(workoutId, logExerciseId, id)),
+    mutationFn: ({ exerciseId, setId }: { exerciseId: string; setId: string }) =>
+      apiClient.delete(apiRoutes.workouts.set(workoutId, exerciseId, setId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: workoutKeys.byId(workoutId) });
     },

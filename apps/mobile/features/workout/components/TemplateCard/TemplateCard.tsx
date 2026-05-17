@@ -9,6 +9,8 @@ interface TemplateCardProps {
   exerciseCount?: number;
   muscles?: string[];
   author?: string;
+  authorId?: number;
+  onAuthorPress?: (authorId: number) => void;
   variant: 'my' | 'saved' | 'public';
   onPress?: () => void;
   onStart?: () => void;
@@ -23,6 +25,8 @@ export default function TemplateCard({
   exerciseCount,
   muscles,
   author,
+  authorId,
+  onAuthorPress,
   variant,
   onPress,
   onStart,
@@ -44,7 +48,11 @@ export default function TemplateCard({
           <Text style={styles.description} numberOfLines={2}>{description}</Text>
         ) : null}
 
-        {author ? <Text style={styles.author}>@{author}</Text> : null}
+        {author ? (
+          <Pressable onPress={() => authorId && onAuthorPress?.(authorId)}>
+            <Text style={styles.author}>@{author}</Text>
+          </Pressable>
+        ) : null}
 
         {muscles && muscles.length > 0 && (
           <View style={styles.muscleRow}>
@@ -75,7 +83,7 @@ export default function TemplateCard({
 
 const styles = StyleSheet.create({
   card: {
-    height: 150,
+    height: 160,
     backgroundColor: colors.surface,
     borderRadius: borderRadius.lg,
     padding: spacing.lg,
@@ -112,7 +120,7 @@ const styles = StyleSheet.create({
   author: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
-    marginTop: spacing.xs,
+    marginVertical: spacing.xs,
   },
   muscleRow: {
     flexDirection: 'row',
