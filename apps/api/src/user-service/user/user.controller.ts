@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Body, Patch, UseGuards, Query, Param, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -17,6 +17,23 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'User profile data' })
   getProfile(@CurrentUser('id') userId: number) {
     return this.userService.getProfile(userId);
+  }
+
+  @Get('search')
+  @ApiOperation({ summary: 'Search users' })
+  @ApiResponse({ status: 200, description: 'List of users' })
+  searchUsers(
+    @CurrentUser('id') currentUserId: number,
+    @Query('query') query: string,
+  ) {
+    return this.userService.searchUsers(query, currentUserId);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get another user profile' })
+  @ApiResponse({ status: 200, description: 'User profile data' })
+  getOtherProfile(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.getProfile(id);
   }
 
   @Patch()

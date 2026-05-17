@@ -135,15 +135,20 @@ export class FriendService {
       relations: { user: true, friend: true },
     });
 
-    return friendships.map((f) => {
+    const uniqueFriends = new Map();
+    friendships.forEach((f) => {
       const other = f.userId === userId ? f.friend : f.user;
-      return {
-        id: other.id,
-        fullName: other.fullName,
-        nickname: other.nickname,
-        email: other.email,
-      };
+      if (!uniqueFriends.has(other.id)) {
+        uniqueFriends.set(other.id, {
+          id: other.id,
+          fullName: other.fullName,
+          nickname: other.nickname,
+          email: other.email,
+        });
+      }
     });
+
+    return Array.from(uniqueFriends.values());
   }
 
   async getIncomingRequests(userId: number) {
@@ -197,6 +202,6 @@ export class FriendService {
         { friendId: userId, status: FriendRequestStatus.ACCEPTED },
       ],
     });
-    return friendships.map((f) => (f.userId === userId ? f.friendId : f.userId));
+    return Array.from(new Set(friendships.map((f) => (f.userId === userId ? f.friendId : f.userId))));
   }
 }

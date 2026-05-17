@@ -45,6 +45,16 @@ export class UserService {
     return profile;
   }
 
+  async searchUsers(query: string, currentUserId: number) {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .where('(user.nickname ILIKE :query OR user.fullName ILIKE :query)', { query: `%${query}%` })
+      .andWhere('user.id != :currentUserId', { currentUserId })
+      .limit(20)
+      .getMany()
+      .then((users) => users.map(({ password_hash, ...u }) => u));
+  }
+
   async updateProfile(id: number, dto: UpdateProfileDto) {
     const user = await this.findOne(id);
     Object.assign(user, dto);
