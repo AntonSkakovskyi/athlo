@@ -197,6 +197,8 @@ const [workout, setWorkout] = useState(null);
 - Functions as props → `useCallback`, expensive computations → `useMemo`
 - Lists: `keyExtractor` required (never index), `getItemLayout` for long lists, set `initialNumToRender`
 - Long `ScrollView` → replace with `FlatList` or `FlashList`
+- **Large / Paginated Lists:** If you suspect a list will have a large number of elements or needs pagination, always use the `<InfiniteList>` component from `@/components/ui/InfiniteList/InfiniteList`.
+  - **Crucial Rule for InfiniteList:** Never place an `<InfiniteList>` inside a `ScrollView`. If a screen requires content above the list (e.g., profile headers, stat cards), pass that upper content to the `ListHeaderComponent` prop of `<InfiniteList>` instead of wrapping the entire screen in a `ScrollView`. This prevents the "VirtualizedLists should never be nested inside plain ScrollViews" warning and ensures optimal performance.
 - Responsive: `useWindowDimensions()` for sizing, `useSafeAreaInsets()` for safe areas
 
 ---
