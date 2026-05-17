@@ -7,12 +7,20 @@ import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useMealPlansScreen, VISIBILITY_LABELS } from '@/features/nutrition/hooks/useMealPlansScreen';
+import { VisibilityType } from '@athlo/shared';
+
+const VISIBILITY_OPTIONS = [
+  { value: VisibilityType.PUBLIC, label: 'Public', icon: '🌍' },
+  { value: VisibilityType.FRIENDS_ONLY, label: 'Friends', icon: '👥' },
+  { value: VisibilityType.PRIVATE, label: 'Private', icon: '🔒' },
+];
 
 export default function MealPlansScreen() {
   const insets = useSafeAreaInsets();
   const {
     isLoading, activePlanId, sortedPlans, showCreate, setShowCreate,
     name, setName, description, setDescription, totalDays, setTotalDays,
+    visibility, setVisibility,
     handleCreate, handleDelete, handleActivate, handleDeactivate, isCreatePending, router,
   } = useMealPlansScreen();
 
@@ -45,6 +53,23 @@ export default function MealPlansScreen() {
           <Input label="Plan Name" value={name} onChangeText={setName} placeholder="e.g. Cutting Plan" />
           <Input label="Description (optional)" value={description} onChangeText={setDescription} placeholder="Describe your plan" />
           <Input label="Total Days" value={totalDays} onChangeText={setTotalDays} keyboardType="numeric" placeholder="7" />
+          
+          <Text style={styles.sectionLabel}>Visibility</Text>
+          <View style={styles.visibilityRow}>
+            {VISIBILITY_OPTIONS.map((opt) => (
+              <Pressable
+                key={opt.value}
+                style={[styles.visibilityBtn, visibility === opt.value && styles.visibilityBtnActive]}
+                onPress={() => setVisibility(opt.value)}
+              >
+                <Text style={styles.visibilityIcon}>{opt.icon}</Text>
+                <Text style={[styles.visibilityLabel, visibility === opt.value && styles.visibilityLabelActive]}>
+                  {opt.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
           <Button title="Create" variant="primary" onPress={handleCreate} isLoading={isCreatePending} disabled={!name.trim()} style={styles.createBtn} />
         </View>
       )}
@@ -98,7 +123,25 @@ const styles = StyleSheet.create({
   screenTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text },
   createHeaderBtn: { fontSize: fontSize.md, color: colors.primary, fontWeight: fontWeight.semibold },
   createCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.lg, marginBottom: spacing.lg, borderWidth: 1, borderColor: colors.border },
-  createBtn: { marginTop: spacing.xs },
+  createBtn: { marginTop: spacing.md },
+  sectionLabel: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: colors.textSecondary, marginBottom: spacing.sm },
+  visibilityRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
+  visibilityBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xxs,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.surfaceLight,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  visibilityBtnActive: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
+  visibilityIcon: { fontSize: fontSize.md },
+  visibilityLabel: { fontSize: fontSize.xs, color: colors.textSecondary, fontWeight: fontWeight.medium },
+  visibilityLabelActive: { color: colors.primary, fontWeight: fontWeight.bold },
   activeBanner: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.lg, marginBottom: spacing.lg, borderWidth: 1.5, borderColor: colors.primary },
   activeBannerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
   activePlanName: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.text },

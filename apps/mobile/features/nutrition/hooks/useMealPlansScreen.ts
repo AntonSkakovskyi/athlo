@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { VisibilityType } from '@athlo/shared';
 import {
   useGetMyMealPlans,
   useCreateMealPlan,
@@ -11,9 +12,9 @@ import {
 } from '@/features/nutrition/hooks';
 
 export const VISIBILITY_LABELS: Record<number, string> = {
-  1: '🔒 Private',
-  2: '🌐 Public',
-  3: '👥 Friends Only',
+  [VisibilityType.PRIVATE as unknown as number]: '🔒 Private',
+  [VisibilityType.PUBLIC as unknown as number]: '🌐 Public',
+  [VisibilityType.FRIENDS_ONLY as unknown as number]: '👥 Friends Only',
 };
 
 export function useMealPlansScreen() {
@@ -29,6 +30,7 @@ export function useMealPlansScreen() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [totalDays, setTotalDays] = useState('7');
+  const [visibility, setVisibility] = useState<VisibilityType>(VisibilityType.PRIVATE);
 
   const activePlanId = activePlan?.mealPlanId;
 
@@ -51,12 +53,14 @@ export function useMealPlansScreen() {
         name: name.trim(),
         description: description.trim() || undefined,
         totalDays: isNaN(days) || days < 1 ? 7 : days,
+        visibilityTypeId: visibility,
       },
       {
         onSuccess: (newPlan) => {
           setName('');
           setDescription('');
           setTotalDays('7');
+          setVisibility(VisibilityType.PRIVATE);
           setShowCreate(false);
           router.push(`/(app)/(nutrition)/meal-plan/${newPlan.id}` as never);
         },
@@ -93,6 +97,8 @@ export function useMealPlansScreen() {
     setDescription,
     totalDays,
     setTotalDays,
+    visibility,
+    setVisibility,
     handleCreate,
     handleDelete,
     handleActivate,

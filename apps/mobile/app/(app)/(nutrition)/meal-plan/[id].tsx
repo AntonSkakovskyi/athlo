@@ -21,7 +21,7 @@ export default function MealPlanDetailScreen() {
     selectedDayIndex, setSelectedDayIndex, showAddMeal, setShowAddMeal,
     editingName, nameValue, setNameValue,
     handleActivate, handleAddDay, handleRemoveDay, handleAddMeal,
-    handleRemoveMeal, handleRemoveItem, handleAddFoodToMeal,
+    handleRemoveMeal, handleUpdatePlanMeal, handleRemoveItem, handleAddFoodToMeal,
     handleSaveName, startEditName, isActivatePending,
   } = useMealPlanDetailScreen(id);
 
@@ -79,7 +79,7 @@ export default function MealPlanDetailScreen() {
           <EmptyState title="No meals for this day" description="Add a meal to start planning" actionLabel="+ Add Meal" onAction={() => setShowAddMeal(true)} />
         ) : (
           currentDayMeals.map((meal) => (
-            <PlanMealCard key={meal.id} meal={meal} onAddFood={() => handleAddFoodToMeal(meal.id)} onRemoveMeal={() => handleRemoveMeal(meal.id)} onRemoveItem={handleRemoveItem} />
+            <PlanMealCard key={meal.id} meal={meal} onAddFood={() => handleAddFoodToMeal(meal.id)} onRemoveMeal={() => handleRemoveMeal(meal.id)} onRemoveItem={handleRemoveItem} onUpdateTime={(mealId, time) => handleUpdatePlanMeal(mealId, { timeSuggestion: time })} />
           ))
         )}
         {currentDay && currentDayMeals.length > 0 && (

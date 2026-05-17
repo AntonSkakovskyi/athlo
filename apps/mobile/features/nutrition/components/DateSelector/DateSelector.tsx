@@ -22,7 +22,7 @@ export function DateSelector({ date, onPrev, onNext, isToday }: DateSelectorProp
       </Pressable>
       <View style={styles.dateContainer}>
         <Text style={styles.dateText}>{isToday ? 'Today' : formatted}</Text>
-        {!isToday && <Text style={styles.dateSubtext}>{formatted}</Text>}
+        {isToday && <Text style={styles.dateSubtext}>{formatted}</Text>}
       </View>
       <Pressable onPress={onNext} hitSlop={12} style={[styles.arrow, isToday && styles.arrowDisabled]} disabled={isToday}>
         <Text style={[styles.arrowText, isToday && styles.arrowTextDisabled]}>›</Text>

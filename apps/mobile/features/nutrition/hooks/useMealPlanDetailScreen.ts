@@ -10,6 +10,7 @@ import {
   useRemovePlanDay,
   useAddPlanMeal,
   useRemovePlanMeal,
+  useUpdatePlanMeal,
   useRemovePlanMealItem,
   useGetMealTypes,
 } from '@/features/nutrition/hooks';
@@ -65,6 +66,7 @@ export function useMealPlanDetailScreen(id: string) {
   const removeDay = useRemovePlanDay();
   const addMeal = useAddPlanMeal();
   const removeMeal = useRemovePlanMeal();
+  const updateMeal = useUpdatePlanMeal();
   const removeItem = useRemovePlanMealItem();
 
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
@@ -151,6 +153,10 @@ export function useMealPlanDetailScreen(id: string) {
     ]);
   };
 
+  const handleUpdatePlanMeal = (mealId: number, data: { timeSuggestion?: string; mealTypeId?: number; order?: number }) => {
+    updateMeal.mutate({ planId: id, mealId: String(mealId), data });
+  };
+
   const handleRemoveItem = (itemId: number) => {
     removeItem.mutate({ planId: id, itemId: String(itemId) });
   };
@@ -194,6 +200,7 @@ export function useMealPlanDetailScreen(id: string) {
     handleRemoveDay,
     handleAddMeal,
     handleRemoveMeal,
+    handleUpdatePlanMeal,
     handleRemoveItem,
     handleAddFoodToMeal,
     handleSaveName,

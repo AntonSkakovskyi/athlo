@@ -27,6 +27,17 @@ export const useGetMealPlanById = (id: string) => {
   });
 };
 
+export const useGetUserMealPlans = (userId: string) => {
+  return useQuery({
+    queryKey: mealPlanKeys.byUserId(userId),
+    queryFn: async () => {
+      const response = await apiClient.get<IMealPlan[]>(apiRoutes.mealPlans.getByUserId(userId));
+      return response.data;
+    },
+    enabled: !!userId,
+  });
+};
+
 export const useGetActiveMealPlan = () => {
   return useQuery({
     queryKey: mealPlanKeys.active,
@@ -194,6 +205,26 @@ export const useAddPlanMealItem = () => {
       data: { foodId: number; unitId: number; amount: number };
     }) => {
       const response = await apiClient.post(apiRoutes.mealPlans.mealItems(planId, mealId), data);
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: mealPlanKeys.byId(variables.planId) });
+    },
+  });
+};
+
+interface UpdatePlanMealData {
+  mealTypeId?: number;
+  order?: number;
+  timeSuggestion?: string;
+}
+
+export const useUpdatePlanMeal = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ planId, mealId, data }: { planId: string; mealId: string; data: UpdatePlanMealData }) => {
+      const response = await apiClient.patch(apiRoutes.mealPlans.meal(planId, mealId), data);
       return response.data;
     },
     onSuccess: (_data, variables) => {

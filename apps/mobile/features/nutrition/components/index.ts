@@ -1,5 +1,6 @@
 export * from './ActivePlanBanner/ActivePlanBanner';
 export * from './AddMealSheet/AddMealSheet';
+export * from './LogMealSheet/LogMealSheet';
 export * from './DailyMacrosSummary/DailyMacrosSummary';
 export * from './DateSelector/DateSelector';
 export * from './DaySummaryFooter/DaySummaryFooter';

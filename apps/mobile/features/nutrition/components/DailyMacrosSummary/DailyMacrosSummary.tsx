@@ -12,6 +12,18 @@ interface DailyMacrosSummaryProps {
   carbGoal?: number;
 }
 
+function getMacroColor(percent: number, baseColor: string): string {
+  if (percent > 150) return colors.danger;
+  if (percent > 100) return colors.warning;
+  return baseColor;
+}
+
+function getCalorieRingColor(percent: number): string {
+  if (percent > 150) return colors.danger;
+  if (percent > 100) return colors.warning;
+  return colors.primary;
+}
+
 export function DailyMacrosSummary({
   calories,
   proteins,
@@ -22,19 +34,21 @@ export function DailyMacrosSummary({
   fatGoal = 70,
   carbGoal = 250,
 }: DailyMacrosSummaryProps) {
-  const caloriePercent = calorieGoal > 0 ? Math.min((calories / calorieGoal) * 100, 100) : 0;
+  const caloriePercent = calorieGoal > 0 ? (calories / calorieGoal) * 100 : 0;
+  const ringColor = getCalorieRingColor(caloriePercent);
 
   return (
     <View style={styles.container}>
       {/* Calorie Ring */}
       <View style={styles.ringSection}>
-        <View style={styles.ringOuter}>
+        <View style={[styles.ringOuter, { borderColor: caloriePercent > 0 ? ringColor : colors.surfaceLight }]}>
           <View style={styles.ringInner}>
-            <Text style={styles.calorieValue}>{Math.round(calories)}</Text>
+            <Text style={[styles.calorieValue, caloriePercent > 100 && { color: ringColor }]}>
+              {Math.round(calories)}
+            </Text>
             <Text style={styles.calorieLabel}>/ {calorieGoal} kcal</Text>
           </View>
-          {/* Progress arc indicator */}
-          <View style={[styles.ringProgress, { opacity: caloriePercent > 0 ? 1 : 0.3 }]}>
+          <View style={[styles.ringProgress, { backgroundColor: ringColor }]}>
             <Text style={styles.ringPercent}>{Math.round(caloriePercent)}%</Text>
           </View>
         </View>
@@ -59,16 +73,18 @@ interface MacroBarProps {
 }
 
 function MacroBar({ label, value, goal, color, unit }: MacroBarProps) {
-  const percent = goal > 0 ? Math.min((value / goal) * 100, 100) : 0;
+  const percent = goal > 0 ? (value / goal) * 100 : 0;
+  const displayPercent = Math.min(percent, 100);
+  const activeColor = getMacroColor(percent, color);
 
   return (
     <View style={styles.macroItem}>
       <Text style={styles.macroLabel}>{label}</Text>
-      <Text style={[styles.macroValue, { color }]}>
+      <Text style={[styles.macroValue, { color: activeColor }]}>
         {Math.round(value)}{unit}
       </Text>
       <View style={styles.macroBarBg}>
-        <View style={[styles.macroBarFill, { width: `${percent}%`, backgroundColor: color }]} />
+        <View style={[styles.macroBarFill, { width: `${displayPercent}%`, backgroundColor: activeColor }]} />
       </View>
       <Text style={styles.macroGoal}>{Math.round(value)} / {goal}{unit}</Text>
     </View>
@@ -93,7 +109,6 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 6,
-    borderColor: colors.surfaceLight,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -114,7 +129,6 @@ const styles = StyleSheet.create({
   ringProgress: {
     position: 'absolute',
     bottom: -8,
-    backgroundColor: colors.primary,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: borderRadius.sm,

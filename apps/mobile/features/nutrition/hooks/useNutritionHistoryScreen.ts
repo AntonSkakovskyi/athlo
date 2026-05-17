@@ -26,6 +26,47 @@ export function getDateRange(scope: Scope): { from: string; to: string } {
   };
 }
 
+type DataPoint = { date: string; value: number; label?: string };
+
+function getWeekStart(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1)); // Monday
+  return d.toISOString().split('T')[0];
+}
+
+function formatWeekLabel(start: string, end: string): string {
+  const s = new Date(start + 'T00:00:00');
+  const e = new Date(end + 'T00:00:00');
+  const sStr = s.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const eStr = s.getMonth() === e.getMonth()
+    ? e.toLocaleDateString('en-US', { day: 'numeric' })
+    : e.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  return `${sStr}–${eStr}`;
+}
+
+function aggregateWeekly(data: DataPoint[]): DataPoint[] {
+  const weekMap = new Map<string, { sum: number; count: number; end: string }>();
+  for (const point of data) {
+    const ws = getWeekStart(point.date);
+    if (!weekMap.has(ws)) {
+      const endDate = new Date(ws + 'T00:00:00');
+      endDate.setDate(endDate.getDate() + 6);
+      weekMap.set(ws, { sum: 0, count: 0, end: endDate.toISOString().split('T')[0] });
+    }
+    const week = weekMap.get(ws)!;
+    week.sum += point.value;
+    week.count++;
+  }
+  return Array.from(weekMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([ws, { sum, count, end }]) => ({
+      date: ws,
+      value: count > 0 ? Math.round((sum / count) * 100) / 100 : 0,
+      label: formatWeekLabel(ws, end),
+    }));
+}
+
 export function useNutritionHistoryScreen() {
   const router = useRouter();
   const [scopeIndex, setScopeIndex] = useState(0);
@@ -44,30 +85,30 @@ export function useNutritionHistoryScreen() {
     return Math.round(history.reduce((sum, d) => sum + d.waterMl, 0) / history.length);
   }, [history]);
 
-  const caloriesData = useMemo(
-    () => (history ?? []).map((d) => ({ date: d.date, value: d.calories })),
-    [history],
-  );
+  const caloriesData = useMemo(() => {
+    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.calories }));
+    return scope === '3M' ? aggregateWeekly(daily) : daily;
+  }, [history, scope]);
 
-  const proteinData = useMemo(
-    () => (history ?? []).map((d) => ({ date: d.date, value: d.proteins })),
-    [history],
-  );
+  const proteinData = useMemo(() => {
+    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.proteins }));
+    return scope === '3M' ? aggregateWeekly(daily) : daily;
+  }, [history, scope]);
 
-  const fatData = useMemo(
-    () => (history ?? []).map((d) => ({ date: d.date, value: d.fats })),
-    [history],
-  );
+  const fatData = useMemo(() => {
+    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.fats }));
+    return scope === '3M' ? aggregateWeekly(daily) : daily;
+  }, [history, scope]);
 
-  const carbData = useMemo(
-    () => (history ?? []).map((d) => ({ date: d.date, value: d.carbs })),
-    [history],
-  );
+  const carbData = useMemo(() => {
+    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.carbs }));
+    return scope === '3M' ? aggregateWeekly(daily) : daily;
+  }, [history, scope]);
 
-  const waterData = useMemo(
-    () => (history ?? []).map((d) => ({ date: d.date, value: d.waterMl })),
-    [history],
-  );
+  const waterData = useMemo(() => {
+    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.waterMl }));
+    return scope === '3M' ? aggregateWeekly(daily) : daily;
+  }, [history, scope]);
 
   return {
     router,

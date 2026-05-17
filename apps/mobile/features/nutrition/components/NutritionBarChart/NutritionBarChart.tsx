@@ -1,9 +1,11 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
 
 interface DataPoint {
   date: string;
   value: number;
+  label?: string;
 }
 
 interface NutritionBarChartProps {
@@ -13,20 +15,27 @@ interface NutritionBarChartProps {
 }
 
 export function NutritionBarChart({ data, color, unit }: NutritionBarChartProps) {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
   if (data.length === 0) return null;
 
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const chartHeight = 140;
 
-  // Show max ~14 bars, downsample if needed
-  const displayData = data.length > 14 ? downsample(data, 14) : data;
+  const displayData = data;
+  const selected = selectedIndex !== null ? displayData[selectedIndex] : null;
+
+  const handleBarPress = (index: number) => {
+    setSelectedIndex((prev) => (prev === index ? null : index));
+  };
 
   return (
+    <View>
     <View style={styles.container}>
       {/* Y-axis labels */}
       <View style={styles.yAxis}>
-        <Text style={styles.yLabel}>{formatValue(maxValue, unit)}</Text>
-        <Text style={styles.yLabel}>{formatValue(maxValue / 2, unit)}</Text>
+        <Text style={styles.yLabel}>{formatValue(maxValue)}</Text>
+        <Text style={styles.yLabel}>{formatValue(maxValue / 2)}</Text>
         <Text style={styles.yLabel}>0</Text>
       </View>
 
@@ -41,18 +50,20 @@ export function NutritionBarChart({ data, color, unit }: NutritionBarChartProps)
         <View style={styles.barsContainer}>
           {displayData.map((point, index) => {
             const barHeight = (point.value / maxValue) * chartHeight;
+            const isSelected = selectedIndex === index;
             return (
-              <View key={index} style={styles.barWrapper}>
+              <Pressable key={index} style={styles.barWrapper} onPress={() => handleBarPress(index)}>
                 <View
                   style={[
                     styles.bar,
                     {
                       height: Math.max(barHeight, 2),
                       backgroundColor: color,
+                      opacity: selectedIndex === null || isSelected ? 1 : 0.4,
                     },
                   ]}
                 />
-              </View>
+              </Pressable>
             );
           })}
         </View>
@@ -62,43 +73,49 @@ export function NutritionBarChart({ data, color, unit }: NutritionBarChartProps)
       <View style={styles.xAxis}>
         {displayData.length > 0 && (
           <>
-            <Text style={styles.xLabel}>{formatDate(displayData[0].date)}</Text>
+            <Text style={styles.xLabel}>{displayData[0].label ?? formatDate(displayData[0].date)}</Text>
             {displayData.length > 2 && (
               <Text style={styles.xLabel}>
-                {formatDate(displayData[Math.floor(displayData.length / 2)].date)}
+                {(() => { const m = displayData[Math.floor(displayData.length / 2)]; return m.label ?? formatDate(m.date); })()}
               </Text>
             )}
             <Text style={styles.xLabel}>
-              {formatDate(displayData[displayData.length - 1].date)}
+              {(() => { const l = displayData[displayData.length - 1]; return l.label ?? formatDate(l.date); })()}
             </Text>
           </>
         )}
       </View>
+
+    </View>
+
+    {/* Detail panel — sibling of chart card, fixed height */}
+    <View style={styles.detailPanel}>
+      {selected ? (
+        <>
+          <Text style={styles.detailDate}>{selected.label ?? formatDate(selected.date)}</Text>
+          <Text style={[styles.detailValue, { color }]}>{formatValueFull(selected.value, unit)}</Text>
+        </>
+      ) : (
+        <Text style={styles.detailHint}>Tap a bar for details</Text>
+      )}
+    </View>
     </View>
   );
 }
 
-function downsample(data: DataPoint[], targetCount: number): DataPoint[] {
-  const step = Math.ceil(data.length / targetCount);
-  const result: DataPoint[] = [];
-  for (let i = 0; i < data.length; i += step) {
-    const chunk = data.slice(i, i + step);
-    const avgValue = chunk.reduce((sum, d) => sum + d.value, 0) / chunk.length;
-    result.push({ date: chunk[0].date, value: avgValue });
-  }
-  return result;
-}
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function formatValue(value: number, unit: string): string {
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(1)}k`;
-  }
+function formatValue(value: number): string {
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
   return `${Math.round(value)}`;
+}
+
+function formatValueFull(value: number, unit: string): string {
+  return `${Math.round(value)} ${unit}`;
 }
 
 const styles = StyleSheet.create({
@@ -108,6 +125,28 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  detailPanel: {
+    height: 44,
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xs,
+  },
+  detailDate: {
+    fontSize: fontSize.sm,
+    color: colors.textSecondary,
+  },
+  detailValue: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+  },
+  detailHint: {
+    fontSize: fontSize.xs,
+    color: colors.textMuted,
+    flex: 1,
+    textAlign: 'center',
   },
   yAxis: {
     position: 'absolute',
