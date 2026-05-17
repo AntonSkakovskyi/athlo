@@ -1,8 +1,10 @@
 export { Avatar } from './Avatar/Avatar';
+export { BottomSheet, BottomSheetItem } from './BottomSheet/BottomSheet';
 export { Button } from './Button/Button';
 export { Card } from './Card/Card';
 export { ChartBlock } from './ChartBlock/ChartBlock';
 export { Chip } from './Chip/Chip';
+export { CollapsibleSection } from './CollapsibleSection/CollapsibleSection';
 export { EmptyState } from './EmptyState/EmptyState';
 export { InfiniteList } from './InfiniteList/InfiniteList';
 export { Input } from './Input/Input';
@@ -19,3 +21,4 @@ export { SegmentControl } from './SegmentControl/SegmentControl';
 export { Spinner } from './Spinner/Spinner';
 export { Tag } from './Tag/Tag';
 export { Typography } from './Typography/Typography';
+export { TimePicker } from './TimePicker/TimePicker';

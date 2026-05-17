@@ -1,20 +1,21 @@
 import { useState } from 'react';
 import { TextInput as RNTextInput, StyleSheet, Text, View, Pressable } from 'react-native';
-import type { TextInputProps as RNTextInputProps } from 'react-native';
+import type { TextInputProps as RNTextInputProps, ViewStyle, StyleProp } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 
 interface InputProps extends RNTextInputProps {
   label?: string;
   error?: string;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
-export function Input({ label, error, style, secureTextEntry, ...rest }: InputProps) {
+export function Input({ label, error, style, secureTextEntry, containerStyle, ...rest }: InputProps) {
   const [hidden, setHidden] = useState(true);
 
   const isPassword = secureTextEntry === true;
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
       <View style={styles.row}>
         <RNTextInput

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRegister } from '@/features/auth/hooks';
 import { AxiosError } from 'axios';
@@ -19,6 +19,7 @@ function extractErrorMessages(error: unknown): string[] {
 
 export default function RegisterScreen() {
   const { setSession } = useAuth();
+  const router = useRouter();
   const registerMutation = useRegister();
   const [fullName, setFullName] = useState('');
   const [nickname, setNickname] = useState('');
@@ -31,6 +32,7 @@ export default function RegisterScreen() {
     try {
       const { user, token } = await registerMutation.mutateAsync({ email, password, fullName, nickname });
       await setSession(user, token);
+      router.replace('/(app)/(workout)');
     } catch (error) {
       setErrors(extractErrorMessages(error));
     }

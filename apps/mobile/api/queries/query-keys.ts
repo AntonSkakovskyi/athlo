@@ -16,12 +16,14 @@ export const equipmentKeys = {
 export const workoutKeys = {
   all: ['workouts'] as const,
   infinite: ['workouts', 'infinite'] as const,
+  infiniteByUser: (userId: string) => ['workouts', 'infinite', { userId }] as const,
   byId: (id: string) => ['workouts', id] as const,
 };
 
 export const templateKeys = {
   all: ['templates'] as const,
   byId: (id: string) => ['templates', id] as const,
+  byUserId: (userId: string) => ['templates', { userId }] as const,
   public: ['templates', 'public'] as const,
   publicInfinite: ['templates', 'public', 'infinite'] as const,
   publicInfiniteSearch: (search?: string) =>
@@ -31,6 +33,8 @@ export const templateKeys = {
 
 export const profileKeys = {
   me: ['profile'] as const,
+  byId: (id: string) => ['profile', id] as const,
+  search: (query: string) => ['profile', 'search', { query }] as const,
 };
 
 export const bodyMetricKeys = {
@@ -53,6 +57,7 @@ export const mealTypeKeys = {
 export const mealPlanKeys = {
   all: ['meal-plans'] as const,
   byId: (id: string) => ['meal-plans', id] as const,
+  byUserId: (userId: string) => ['meal-plans', { userId }] as const,
   active: ['meal-plans', 'active'] as const,
 };
 

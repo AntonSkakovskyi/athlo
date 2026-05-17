@@ -1,18 +1,20 @@
+import React from 'react';
 import { FlatList, View } from 'react-native';
 import type { FlatListProps } from 'react-native';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
-interface InfiniteListProps<T> extends Omit<FlatListProps<T>, 'ListFooterComponent'> {
+export interface InfiniteListProps<T> extends FlatListProps<T> {
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;
   onLoadMore?: () => void;
 }
 
-export function InfiniteList<T>({
+export const InfiniteList = function InfiniteList<T>({
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
   onEndReachedThreshold,
+  ListFooterComponent,
   ...props
 }: InfiniteListProps<T>) {
   return (
@@ -21,12 +23,17 @@ export function InfiniteList<T>({
       onEndReached={hasNextPage && !isFetchingNextPage ? onLoadMore : undefined}
       onEndReachedThreshold={onEndReachedThreshold ?? 0.3}
       ListFooterComponent={
-        isFetchingNextPage ? (
-          <View style={{ paddingVertical: 16 }}>
-            <Spinner />
-          </View>
-        ) : null
+        <>
+          {ListFooterComponent}
+          {isFetchingNextPage ? (
+            <View style={{ paddingVertical: 16 }}>
+              <Spinner />
+            </View>
+          ) : null}
+        </>
       }
     />
   );
-}
+};
+
+

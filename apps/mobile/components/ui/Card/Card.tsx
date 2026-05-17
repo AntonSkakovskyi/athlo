@@ -1,12 +1,26 @@
-import { View, StyleSheet } from 'react-native';
-import type { ViewProps } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
+import type { ViewProps, PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { colors, borderRadius, spacing } from '@/constants/theme';
 
-interface CardProps extends ViewProps {
+interface CardProps extends Omit<PressableProps, 'style'> {
   padding?: number;
+  onPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function Card({ style, padding, children, ...rest }: CardProps) {
+export function Card({ style, padding, children, onPress, ...rest }: CardProps) {
+  if (onPress) {
+    return (
+      <Pressable
+        style={[styles.card, padding !== undefined ? { padding } : undefined, style]}
+        onPress={onPress}
+        {...rest}
+      >
+        {children}
+      </Pressable>
+    );
+  }
+
   return (
     <View
       style={[styles.card, padding !== undefined ? { padding } : undefined, style]}

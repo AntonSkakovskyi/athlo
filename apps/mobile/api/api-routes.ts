@@ -22,7 +22,9 @@ export const apiRoutes = {
   workouts: {
     getAll: 'workouts',
     getById: (id: string) => `workouts/${id}`,
+    getByUserId: (userId: string) => `workouts/user/${userId}`,
     complete: (id: string) => `workouts/${id}/complete`,
+    copy: (id: string) => `workouts/${id}/copy`,
     exercises: (workoutId: string) => `workouts/${workoutId}/exercises`,
     exercise: (workoutId: string, id: string) => `workouts/${workoutId}/exercises/${id}`,
     sets: (workoutId: string, logExerciseId: string) =>
@@ -33,10 +35,13 @@ export const apiRoutes = {
   templates: {
     getAll: 'templates',
     getById: (id: string) => `templates/${id}`,
+    getByUserId: (userId: string) => `templates/user/${userId}`,
     getPublic: 'templates/public',
+    getFriends: 'templates/friends',
     getSaved: 'templates/saved',
     save: (id: string) => `templates/${id}/save`,
     start: (id: string) => `templates/${id}/start`,
+    createFromWorkout: (workoutId: string) => `templates/from-workout/${workoutId}`,
     exercises: (templateId: string) => `templates/${templateId}/exercises`,
     exercise: (templateId: string, id: string) => `templates/${templateId}/exercises/${id}`,
     sets: (templateId: string, exerciseId: string) =>
@@ -46,6 +51,8 @@ export const apiRoutes = {
   },
   profile: {
     get: 'profile',
+    getById: (id: string) => `profile/${id}`,
+    search: 'profile/search',
     update: 'profile',
   },
   bodyMetrics: {
@@ -63,6 +70,7 @@ export const apiRoutes = {
   mealPlans: {
     getAll: 'meal-plans',
     getById: (id: string) => `meal-plans/${id}`,
+    getByUserId: (userId: string) => `meal-plans/user/${userId}`,
     active: 'meal-plans/active',
     activate: (id: string) => `meal-plans/${id}/activate`,
     deactivate: 'meal-plans/deactivate',
