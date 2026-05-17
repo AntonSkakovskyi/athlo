@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Pool } = require('pg');
 
 const USER_ID = 1;
+const FRIEND_ID = 2;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
 function daysAgo(n, hour = 9) {
@@ -25,6 +26,32 @@ async function insertRow(client, table, data) {
   const ph = vals.map((_, i) => `$${i + 1}`).join(', ');
   const r = await client.query(`INSERT INTO "${table}" (${cols}) VALUES (${ph}) RETURNING id`, vals);
   return r.rows[0].id;
+}
+
+async function seedUsersAndFriends(client) {
+  const pwdHash = '$2b$10$oTPuRIChn9z3KsC63c/0a.tIC3OsCgYVAG9Hgrn712fecnLbnfwmW'; // 'password'
+  
+  // Ensure FRIEND_ID exists
+  const fCheck = await client.query(`SELECT id FROM users WHERE id=$1`, [FRIEND_ID]);
+  if (!fCheck.rows.length) {
+    await insertRow(client, 'users', {
+      id: FRIEND_ID,
+      email: 'friend@example.com',
+      full_name: 'John Friend',
+      nickname: 'johnny_f',
+      password_hash: pwdHash,
+    });
+  }
+
+  // Ensure friendship exists
+  const frCheck = await client.query(
+    `SELECT id FROM user_friends WHERE (user_id=$1 AND friend_id=$2) OR (user_id=$2 AND friend_id=$1)`,
+    [USER_ID, FRIEND_ID]
+  );
+  if (!frCheck.rows.length) {
+    await insertRow(client, 'user_friends', { user_id: USER_ID, friend_id: FRIEND_ID, status: 'ACCEPTED' });
+  }
+  console.log('  → Users and friendship ready');
 }
 
 // ─── Exercise definitions ───────────────────────────────────────────────────
@@ -324,27 +351,31 @@ async function seedWorkouts(client, { vt }, exIds) {
 }
 
 async function seedTemplates(client, { vt }, exIds) {
-  for (const tpl of [
-    { name: 'Push Day', desc: 'Chest, shoulders, triceps',  exList: PUSH },
-    { name: 'Pull Day', desc: 'Back and biceps',            exList: PULL },
-    { name: 'Leg Day',  desc: 'Quads, hamstrings, glutes',  exList: LEGS },
-  ]) {
+  const tplConfigs = [
+    { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Push Day', desc: 'Chest, shoulders, triceps',  exList: PUSH },
+    { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Pull Day', desc: 'Back and biceps',            exList: PULL },
+    { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Leg Day',  desc: 'Quads, hamstrings, glutes',  exList: LEGS },
+    { creatorId: FRIEND_ID, vis: vt['FRIENDS_ONLY'], name: 'Home Full Body', desc: 'Friend\'s home routine', exList: [32, 35, 36, 41, 42] },
+    { creatorId: FRIEND_ID, vis: vt['FRIENDS_ONLY'], name: 'Dumbbell Only',  desc: 'Hypertrophy with DBs', exList: [12, 11, 14, 15, 16] },
+  ];
+
+  for (const tpl of tplConfigs) {
     const s = await client.query(
-      `SELECT id FROM workout_templates WHERE name=$1 AND creator_id=$2 LIMIT 1`, [tpl.name, USER_ID]
+      `SELECT id FROM workout_templates WHERE name=$1 AND creator_id=$2 LIMIT 1`, [tpl.name, tpl.creatorId]
     );
     let tId = s.rows.length
       ? s.rows[0].id
       : await insertRow(client, 'workout_templates', {
-          creator_id: USER_ID, visibility_type_id: vt['PRIVATE'],
+          creator_id: tpl.creatorId, visibility_type_id: tpl.vis,
           name: tpl.name, description: tpl.desc,
         });
 
     const us = await client.query(
       `SELECT id FROM user_workout_templates WHERE user_id=$1 AND workout_template_id=$2 LIMIT 1`,
-      [USER_ID, tId]
+      [tpl.creatorId, tId]
     );
     if (!us.rows.length)
-      await insertRow(client, 'user_workout_templates', { user_id: USER_ID, workout_template_id: tId });
+      await insertRow(client, 'user_workout_templates', { user_id: tpl.creatorId, workout_template_id: tId });
 
     for (let order = 0; order < tpl.exList.length; order++) {
       const exIdx = tpl.exList[order];
@@ -373,7 +404,53 @@ async function seedTemplates(client, { vt }, exIds) {
       }
     }
   }
-  console.log('  → 3 templates ready');
+  console.log('  → User and Friend templates ready');
+}
+
+async function seedPublicTemplates(client, { vt }, exIds) {
+  for (const tpl of [
+    { name: 'Full Body (Beginner)', desc: 'Fundamental movements for total body development', exList: [1, 0, 4, 11, 25, 32, 42] },
+    { name: 'Upper Body Power', desc: 'Heavy compound lifts for upper body strength', exList: [0, 4, 3, 31, 7] },
+    { name: 'Lower Body Strength', desc: 'Leg focused strength routine', exList: [1, 2, 24, 27, 43] },
+  ]) {
+    const s = await client.query(
+      `SELECT id FROM workout_templates WHERE name=$1 AND creator_id IS NULL LIMIT 1`, [tpl.name]
+    );
+    let tId = s.rows.length
+      ? s.rows[0].id
+      : await insertRow(client, 'workout_templates', {
+          creator_id: null, visibility_type_id: vt['PUBLIC'],
+          name: tpl.name, description: tpl.desc,
+        });
+
+    for (let order = 0; order < tpl.exList.length; order++) {
+      const exIdx = tpl.exList[order];
+      const exId  = exIds[exIdx];
+      const ex    = EXERCISES[exIdx];
+
+      const te = await client.query(
+        `SELECT id FROM template_exercises WHERE workout_template_id=$1 AND exercise_id=$2 LIMIT 1`,
+        [tId, exId]
+      );
+      let teId = te.rows.length
+        ? te.rows[0].id
+        : await insertRow(client, 'template_exercises', {
+            workout_template_id: tId, exercise_id: exId, order: order + 1, rest_time: 90,
+          });
+
+      const setCount = await client.query(`SELECT COUNT(*) FROM template_sets WHERE template_exercise_id=$1`, [teId]);
+      if (parseInt(setCount.rows[0].count) > 0) continue;
+
+      for (let s = 1; s <= 3; s++) {
+        const setData = { template_exercise_id: teId, order: s };
+        if (ex.tt === 'Weight & Reps')      { setData.weight = WEIGHT_PROG[exIdx]?.base || 0; setData.reps = 8; }
+        else if (ex.tt === 'Reps only')     { setData.weight = 0; setData.reps = 10; }
+        else                                { setData.duration = 60; }
+        await insertRow(client, 'template_sets', setData);
+      }
+    }
+  }
+  console.log('  → 3 public templates ready');
 }
 
 async function seedNutrition(client, { mealTypes, units, vt }) {
@@ -454,56 +531,68 @@ async function seedNutrition(client, { mealTypes, units, vt }) {
   }
 
   // Meal plan
-  const planEx = await client.query(
-    `SELECT id FROM meal_plans WHERE creator_id=$1 AND name='Clean Bulk Plan' LIMIT 1`, [USER_ID]
-  );
-  if (planEx.rows.length) { console.log('  → meal plan already seeded'); return; }
-
-  const DINNER_VAR = [
-    [['Beef Steak', 200], ['Sweet Potato', 200], ['Broccoli', 100]],
-    [['Salmon', 200],     ['Potato', 200],        ['Broccoli', 100]],
-    [['Chicken Breast', 200], ['Pasta', 150],     ['Broccoli', 100]],
-    [['Tuna (canned)', 150],  ['White Rice', 150],['Avocado', 80]],
-  ];
-  const PLAN_MEALS = [
-    { type: 'Breakfast', items: [['Oats', 80], ['Banana', 120], ['Milk (2%)', 200], ['Greek Yogurt', 150]] },
-    { type: 'Lunch',     items: [['Chicken Breast', 200], ['White Rice', 150], ['Broccoli', 100], ['Olive Oil', 15]] },
-    { type: 'Dinner',    items: null },
-    { type: 'Snack',     items: [['Whey Protein', 30], ['Almonds', 30], ['Apple', 150]] },
+  const mealPlanConfigs = [
+    { name: 'Clean Bulk Plan', desc: '7-day high-protein bulk plan', creator: USER_ID, vis: vt['PRIVATE'], assignTo: USER_ID },
+    { name: 'Friend Fat Loss Plan', desc: 'Low carb plan', creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], assignTo: FRIEND_ID },
+    { name: 'Public Keto Guide', desc: 'A standard keto approach', creator: null, vis: vt['PUBLIC'], assignTo: null },
+    { name: 'Balanced Maintenance', desc: 'Stable calorie maintenance plan', creator: null, vis: vt['PUBLIC'], assignTo: null },
   ];
 
-  const planId = await insertRow(client, 'meal_plans', {
-    creator_id: USER_ID, visibility_type_id: vt['PRIVATE'],
-    name: 'Clean Bulk Plan', description: '7-day high-protein bulk plan', total_days: 7,
-  });
+  for (const plan of mealPlanConfigs) {
+    const planEx = plan.creator 
+      ? await client.query(`SELECT id FROM meal_plans WHERE creator_id=$1 AND name=$2 LIMIT 1`, [plan.creator, plan.name])
+      : await client.query(`SELECT id FROM meal_plans WHERE creator_id IS NULL AND name=$1 LIMIT 1`, [plan.name]);
+      
+    if (planEx.rows.length) continue; // Skip if already seeded
 
-  for (let day = 1; day <= 7; day++) {
-    const dayId = await insertRow(client, 'plan_days', { meal_plan_id: planId, day_number: day });
-    for (let mi = 0; mi < PLAN_MEALS.length; mi++) {
-      const m = PLAN_MEALS[mi];
-      const items = m.type === 'Dinner' ? DINNER_VAR[day % 4] : m.items;
-      const pmId = await insertRow(client, 'plan_meals', {
-        plan_day_id: dayId, meal_type_id: mealTypes[m.type], order: mi + 1,
-      });
-      for (const [fname, amount] of items) {
-        if (!foodIds[fname]) continue;
-        await insertRow(client, 'plan_meal_items', {
-          plan_meal_id: pmId, food_id: foodIds[fname], unit_id: gId, amount,
+    const DINNER_VAR = [
+      [['Beef Steak', 200], ['Sweet Potato', 200], ['Broccoli', 100]],
+      [['Salmon', 200],     ['Potato', 200],        ['Broccoli', 100]],
+      [['Chicken Breast', 200], ['Pasta', 150],     ['Broccoli', 100]],
+      [['Tuna (canned)', 150],  ['White Rice', 150],['Avocado', 80]],
+    ];
+    const PLAN_MEALS = [
+      { type: 'Breakfast', items: [['Oats', 80], ['Banana', 120], ['Milk (2%)', 200], ['Greek Yogurt', 150]] },
+      { type: 'Lunch',     items: [['Chicken Breast', 200], ['White Rice', 150], ['Broccoli', 100], ['Olive Oil', 15]] },
+      { type: 'Dinner',    items: null },
+      { type: 'Snack',     items: [['Whey Protein', 30], ['Almonds', 30], ['Apple', 150]] },
+    ];
+
+    const planId = await insertRow(client, 'meal_plans', {
+      creator_id: plan.creator, visibility_type_id: plan.vis,
+      name: plan.name, description: plan.desc, total_days: 7,
+    });
+
+    for (let day = 1; day <= 7; day++) {
+      const dayId = await insertRow(client, 'plan_days', { meal_plan_id: planId, day_number: day });
+      for (let mi = 0; mi < PLAN_MEALS.length; mi++) {
+        const m = PLAN_MEALS[mi];
+        const items = m.type === 'Dinner' ? DINNER_VAR[day % 4] : m.items;
+        const pmId = await insertRow(client, 'plan_meals', {
+          plan_day_id: dayId, meal_type_id: mealTypes[m.type], order: mi + 1,
+        });
+        for (const [fname, amount] of items) {
+          if (!foodIds[fname]) continue;
+          await insertRow(client, 'plan_meal_items', {
+            plan_meal_id: pmId, food_id: foodIds[fname], unit_id: gId, amount,
+          });
+        }
+      }
+    }
+
+    if (plan.assignTo) {
+      const umpEx = await client.query(
+        `SELECT id FROM user_meal_plans WHERE user_id=$1 LIMIT 1`, [plan.assignTo]
+      );
+      if (!umpEx.rows.length) {
+        await insertRow(client, 'user_meal_plans', {
+          user_id: plan.assignTo, meal_plan_id: planId, is_active: true,
+          started_at: new Date().toISOString().split('T')[0],
         });
       }
     }
   }
-
-  const umpEx = await client.query(
-    `SELECT id FROM user_meal_plans WHERE user_id=$1 LIMIT 1`, [USER_ID]
-  );
-  if (!umpEx.rows.length) {
-    await insertRow(client, 'user_meal_plans', {
-      user_id: USER_ID, meal_plan_id: planId, is_active: true,
-      started_at: new Date().toISOString().split('T')[0],
-    });
-  }
-  console.log('  → 1 meal plan (7 days) ready');
+  console.log('  → Meal plans ready (User 1, Friend, Public)');
 }
 
 async function seedAchievements(client, exIds) {
@@ -586,6 +675,9 @@ async function seed() {
   try {
     await client.query('BEGIN');
 
+    console.log('\nPhase 0: Users & Friends');
+    await seedUsersAndFriends(client);
+
     console.log('\nPhase 1: Lookup tables');
     const ids = await seedLookups(client);
 
@@ -600,6 +692,7 @@ async function seed() {
 
     console.log('\nPhase 5: Templates');
     await seedTemplates(client, ids, exIds);
+    await seedPublicTemplates(client, ids, exIds);
 
     console.log('\nPhase 6: Nutrition');
     await seedNutrition(client, ids);
