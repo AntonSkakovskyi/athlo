@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import type { IWaterLog } from '@athlo/shared';
 import { UserEntity } from '../../user-service/user/entities/user.entity';
 
@@ -13,7 +13,7 @@ export class WaterLogEntity implements IWaterLog {
   @Column({ name: 'amount_ml' })
   amountMl: number;
 
-  @CreateDateColumn({ name: 'consumed_at', type: 'timestamptz' })
+  @Column({ name: 'consumed_at', type: 'timestamptz', default: () => 'now()' })
   consumedAt: Date;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })

@@ -7,6 +7,8 @@ import { WaterLogEntity } from '../entities/water-log.entity';
 import { CreateLogMealDto } from '../dto/nutrition-log/create-log-meal.dto';
 import { CreateLogMealItemDto } from '../dto/nutrition-log/create-log-meal-item.dto';
 import { CreateWaterLogDto } from '../dto/nutrition-log/create-water-log.dto';
+import { UpdateWaterLogDto } from '../dto/nutrition-log/update-water-log.dto';
+import { UpdateLogMealDto } from '../dto/nutrition-log/update-log-meal.dto';
 
 @Injectable()
 export class NutritionLogService {
@@ -60,6 +62,14 @@ export class NutritionLogService {
     return meal;
   }
 
+  async updateMeal(id: number, userId: number, dto: UpdateLogMealDto) {
+    const meal = await this.getMealById(id, userId);
+    if (dto.mealTypeId !== undefined) meal.mealTypeId = dto.mealTypeId;
+    if (dto.name !== undefined) meal.name = dto.name;
+    if (dto.consumedAt !== undefined) meal.consumedAt = new Date(dto.consumedAt);
+    return this.logMealRepository.save(meal);
+  }
+
   async removeMeal(id: number, userId: number) {
     const meal = await this.getMealById(id, userId);
     await this.logMealRepository.remove(meal);
@@ -99,7 +109,21 @@ export class NutritionLogService {
     const log = this.waterLogRepository.create({
       userId,
       amountMl: dto.amountMl,
+      ...(dto.consumedAt ? { consumedAt: new Date(dto.consumedAt) } : {}),
     });
+    return this.waterLogRepository.save(log);
+  }
+
+  async updateWaterLog(id: number, userId: number, dto: UpdateWaterLogDto) {
+    const log = await this.waterLogRepository.findOne({ where: { id } });
+    if (!log) {
+      throw new NotFoundException(`Water log with ID ${id} not found`);
+    }
+    if (log.userId !== userId) {
+      throw new ForbiddenException('You do not have access to this water log');
+    }
+    if (dto.amountMl !== undefined) log.amountMl = dto.amountMl;
+    if (dto.consumedAt !== undefined) log.consumedAt = new Date(dto.consumedAt);
     return this.waterLogRepository.save(log);
   }
 
@@ -136,7 +160,7 @@ export class NutritionLogService {
 
     for (const meal of meals) {
       for (const item of meal.items) {
-        const multiplier = Number(item.amount);
+        const multiplier = Number(item.calculatedWeightG ?? item.amount) / 100;
         totalCalories += Number(item.food.calories) * multiplier;
         totalProteins += Number(item.food.proteins) * multiplier;
         totalFats += Number(item.food.fats) * multiplier;
@@ -186,7 +210,7 @@ export class NutritionLogService {
       }
       const day = dayMap.get(date)!;
       for (const item of meal.items) {
-        const multiplier = Number(item.amount);
+        const multiplier = Number(item.calculatedWeightG ?? item.amount) / 100;
         day.calories += Number(item.food.calories) * multiplier;
         day.proteins += Number(item.food.proteins) * multiplier;
         day.fats += Number(item.food.fats) * multiplier;
@@ -200,6 +224,17 @@ export class NutritionLogService {
         dayMap.set(date, { calories: 0, proteins: 0, fats: 0, carbs: 0, waterMl: 0 });
       }
       dayMap.get(date)!.waterMl += log.amountMl;
+    }
+
+    // Fill missing dates with zeros so the frontend always gets a continuous range
+    const cursor = new Date(`${from}T00:00:00`);
+    const rangeEnd = new Date(`${to}T00:00:00`);
+    while (cursor <= rangeEnd) {
+      const dateStr = cursor.toISOString().split('T')[0];
+      if (!dayMap.has(dateStr)) {
+        dayMap.set(dateStr, { calories: 0, proteins: 0, fats: 0, carbs: 0, waterMl: 0 });
+      }
+      cursor.setDate(cursor.getDate() + 1);
     }
 
     const history = Array.from(dayMap.entries())

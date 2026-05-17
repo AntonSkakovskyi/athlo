@@ -7,6 +7,7 @@ import { UpdateMealPlanDto } from '../dto/meal-plan/update-meal-plan.dto';
 import { CreatePlanDayDto } from '../dto/meal-plan/create-plan-day.dto';
 import { CreatePlanMealDto } from '../dto/meal-plan/create-plan-meal.dto';
 import { CreatePlanMealItemDto } from '../dto/meal-plan/create-plan-meal-item.dto';
+import { UpdatePlanMealDto } from '../dto/meal-plan/update-plan-meal.dto';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Meal Plans')
@@ -37,6 +38,16 @@ export class MealPlanController {
   @ApiResponse({ status: 200, description: 'Active meal plan' })
   getActivePlan(@CurrentUser('id') userId: number) {
     return this.mealPlanService.getActivePlan(userId);
+  }
+
+  @Get('user/:userId')
+  @ApiOperation({ summary: 'Get meal plans for another user' })
+  @ApiResponse({ status: 200, description: 'List of meal plans' })
+  findMealPlansForUser(
+    @CurrentUser('id') currentUserId: number,
+    @Param('userId', ParseIntPipe) targetUserId: number,
+  ) {
+    return this.mealPlanService.findMealPlansForUser(currentUserId, targetUserId);
   }
 
   @Get(':id')
@@ -101,6 +112,18 @@ export class MealPlanController {
     @Body() dto: CreatePlanMealDto,
   ) {
     return this.mealPlanService.addMeal(planId, dayId, userId, dto);
+  }
+
+  @Patch(':id/meals/:mealId')
+  @ApiOperation({ summary: 'Update a plan meal (time, type, order)' })
+  @ApiResponse({ status: 200, description: 'Plan meal updated' })
+  updatePlanMeal(
+    @Param('id', ParseIntPipe) planId: number,
+    @Param('mealId', ParseIntPipe) mealId: number,
+    @CurrentUser('id') userId: number,
+    @Body() dto: UpdatePlanMealDto,
+  ) {
+    return this.mealPlanService.updatePlanMeal(planId, mealId, userId, dto);
   }
 
   @Delete(':id/meals/:mealId')

@@ -1,10 +1,12 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { NutritionLogService } from './nutrition-log.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateLogMealDto } from '../dto/nutrition-log/create-log-meal.dto';
 import { CreateLogMealItemDto } from '../dto/nutrition-log/create-log-meal-item.dto';
 import { CreateWaterLogDto } from '../dto/nutrition-log/create-water-log.dto';
+import { UpdateWaterLogDto } from '../dto/nutrition-log/update-water-log.dto';
+import { UpdateLogMealDto } from '../dto/nutrition-log/update-log-meal.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Nutrition Log')
@@ -62,6 +64,17 @@ export class NutritionLogController {
     return this.nutritionLogService.getMealById(id, userId);
   }
 
+  @Patch('meals/:id')
+  @ApiOperation({ summary: 'Update a logged meal' })
+  @ApiResponse({ status: 200, description: 'Meal updated' })
+  updateMeal(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+    @Body() dto: UpdateLogMealDto,
+  ) {
+    return this.nutritionLogService.updateMeal(id, userId, dto);
+  }
+
   @Delete('meals/:id')
   @ApiOperation({ summary: 'Delete a logged meal' })
   @ApiResponse({ status: 200, description: 'Meal deleted' })
@@ -107,6 +120,17 @@ export class NutritionLogController {
   @ApiResponse({ status: 200, description: 'List of water logs' })
   getWaterLogsByDate(@CurrentUser('id') userId: number, @Query('date') date: string) {
     return this.nutritionLogService.getWaterLogsByDate(userId, date || new Date().toISOString().split('T')[0]);
+  }
+
+  @Patch('water/:id')
+  @ApiOperation({ summary: 'Update a water log (amount or time)' })
+  @ApiResponse({ status: 200, description: 'Water log updated' })
+  updateWaterLog(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+    @Body() dto: UpdateWaterLogDto,
+  ) {
+    return this.nutritionLogService.updateWaterLog(id, userId, dto);
   }
 
   @Delete('water/:id')

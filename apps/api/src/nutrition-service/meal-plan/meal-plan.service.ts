@@ -11,7 +11,9 @@ import { UpdateMealPlanDto } from '../dto/meal-plan/update-meal-plan.dto';
 import { CreatePlanDayDto } from '../dto/meal-plan/create-plan-day.dto';
 import { CreatePlanMealDto } from '../dto/meal-plan/create-plan-meal.dto';
 import { CreatePlanMealItemDto } from '../dto/meal-plan/create-plan-meal-item.dto';
+import { UpdatePlanMealDto } from '../dto/meal-plan/update-plan-meal.dto';
 import { FriendService } from '../../user-service/friends/friend.service';
+import { In } from 'typeorm';
 
 @Injectable()
 export class MealPlanService {
@@ -47,6 +49,27 @@ export class MealPlanService {
       where: { creatorId: userId },
       order: { id: 'DESC' },
     });
+  }
+
+  async findMealPlansForUser(currentUserId: number, targetUserId: number) {
+    const isFriend = await this.friendService.isFriend(currentUserId, targetUserId);
+    const visibilityIds = [2]; // PUBLIC
+    if (isFriend) {
+      visibilityIds.push(3); // FRIENDS_ONLY
+    }
+
+    return this.mealPlanRepository.find({
+      where: {
+        creatorId: targetUserId,
+        visibilityTypeId: In(visibilityIds),
+      },
+      relations: { creator: true },
+      order: { id: 'DESC' },
+    }).then(plans => plans.map(p => ({
+      ...p,
+      creatorNickname: p.creator?.nickname,
+      creator: undefined,
+    })));
   }
 
   async findOne(id: number, userId: number) {
@@ -139,6 +162,18 @@ export class MealPlanService {
       order: dto.order,
       timeSuggestion: dto.timeSuggestion,
     });
+    return this.planMealRepository.save(meal);
+  }
+
+  async updatePlanMeal(planId: number, mealId: number, userId: number, dto: UpdatePlanMealDto) {
+    await this.assertOwner(planId, userId);
+    const meal = await this.planMealRepository.findOne({ where: { id: mealId } });
+    if (!meal) {
+      throw new NotFoundException(`Plan meal with ID ${mealId} not found`);
+    }
+    if (dto.mealTypeId !== undefined) meal.mealTypeId = dto.mealTypeId;
+    if (dto.order !== undefined) meal.order = dto.order;
+    if (dto.timeSuggestion !== undefined) meal.timeSuggestion = dto.timeSuggestion;
     return this.planMealRepository.save(meal);
   }
 
