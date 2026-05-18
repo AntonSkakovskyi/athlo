@@ -1,3 +1,5 @@
+import { ILogSet } from './log-set.interface';
+
 export interface IExerciseProgressRecord {
   date: string;
   workoutId: number;
@@ -7,6 +9,7 @@ export interface IExerciseProgressRecord {
   totalReps: number | null;
   bestDuration: number | null;
   bestDistance: number | null;
+  sets: ILogSet[];
 }
 
 export interface IExerciseProgress {

@@ -3,5 +3,6 @@ export interface IStatisticsSummary {
   totalExercisesPerformed: number;
   totalSets: number;
   totalWeightLifted: number;
+  totalDurationSeconds: number;
   currentStreak: number;
 }

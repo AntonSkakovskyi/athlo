@@ -1,3 +1,5 @@
+import type { IAchievement } from './achievement.interface.js';
+
 export interface ILogSet {
   id: number;
   logExerciseId: number;
@@ -7,4 +9,7 @@ export interface ILogSet {
   duration?: number;
   distance?: number;
   isCompleted: boolean;
+  isPR?: boolean;
+  achievementId?: number | null;
+  achievement?: IAchievement | null;
 }
