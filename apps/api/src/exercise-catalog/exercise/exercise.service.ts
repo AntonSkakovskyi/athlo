@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, Brackets } from 'typeorm';
+import { WorkoutStatus } from '@athlo/shared';
 import { ExerciseEntity } from '../entities/exercise.entity';
 import { ExerciseMuscleEntity } from '../entities/exercise-muscle.entity';
 import { GetExercisesQueryDto } from '../dto/get-exercises-query.dto';
@@ -37,23 +38,76 @@ export class ExerciseService {
     }
 
     if (search) {
-      qb.andWhere('exercise.name ILIKE :search', { search: `%${search}%` });
+      qb.andWhere(
+        new Brackets((sub) => {
+          sub.where('exercise.name ILIKE :search', { search: `%${search}%` })
+            .orWhere('equipment.name ILIKE :search', { search: `%${search}%` })
+            .orWhere('muscle.name ILIKE :search', { search: `%${search}%` });
+        }),
+      );
     }
 
     if (equipmentId) {
-      qb.andWhere('exercise.equipmentId = :equipmentId', { equipmentId });
+      if (equipmentId === -1) {
+        qb.andWhere('exercise.equipmentId IS NULL');
+      } else {
+        qb.andWhere('exercise.equipmentId = :equipmentId', { equipmentId });
+      }
     }
 
     if (muscleId) {
       qb.andWhere('exerciseMuscles.muscleId = :muscleId', { muscleId });
     }
 
-    qb.orderBy('exercise.name', 'ASC');
+    if (userId) {
+      qb.addSelect((subQuery) => {
+        return subQuery
+          .select('COUNT(ls_sub.id)', 'count')
+          .from('log_sets', 'ls_sub')
+          .innerJoin('log_exercises', 'le_sub', 'le_sub.id = ls_sub.log_exercise_id')
+          .innerJoin('workouts', 'w_sub', 'w_sub.id = le_sub.workout_id')
+          .where('le_sub.exercise_id = exercise.id')
+          .andWhere('w_sub.user_id = :userId', { userId })
+          .andWhere('w_sub.status = :status', { status: WorkoutStatus.COMPLETED })
+          .andWhere('ls_sub.is_completed = true');
+      }, 'frequency');
+      qb.orderBy('frequency', 'DESC');
+    }
+
+    qb.addOrderBy('exercise.name', 'ASC');
 
     const skip = (page - 1) * limit;
     qb.skip(skip).take(limit);
 
     const [data, total] = await qb.getManyAndCount();
+
+    if (userId && data.length > 0) {
+      const exerciseIds = data.map((e) => e.id);
+      const stats = await this.exerciseRepository.manager
+        .createQueryBuilder()
+        .select('le.exercise_id', 'exerciseId')
+        .addSelect('COUNT(DISTINCT ls.id)::int', 'totalSets')
+        .addSelect('COUNT(DISTINCT w.id)::int', 'totalWorkouts')
+        .from('log_sets', 'ls')
+        .innerJoin('log_exercises', 'le', 'le.id = ls.log_exercise_id')
+        .innerJoin('workouts', 'w', 'w.id = le.workout_id')
+        .where('le.exercise_id IN (:...exerciseIds)', { exerciseIds })
+        .andWhere('w.user_id = :userId', { userId })
+        .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+        .andWhere('ls.is_completed = true')
+        .groupBy('le.exercise_id')
+        .getRawMany();
+
+      const statsMap = stats.reduce((acc, s) => {
+        acc[s.exerciseId] = s;
+        return acc;
+      }, {} as Record<number, { totalSets: number; totalWorkouts: number }>);
+
+      data.forEach((ex) => {
+        (ex as any).totalSets = statsMap[ex.id]?.totalSets || 0;
+        (ex as any).totalWorkouts = statsMap[ex.id]?.totalWorkouts || 0;
+      });
+    }
 
     return {
       data,

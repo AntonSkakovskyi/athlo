@@ -49,7 +49,12 @@ export class LogSetService {
 
     const saved = await this.logSetRepository.save(set);
     await this.achievementService.checkAndUpdateRecords(userId, logExerciseId);
-    return saved;
+    
+    // Return with relations
+    return this.logSetRepository.findOne({
+      where: { id: saved.id },
+      relations: { achievement: true },
+    });
   }
 
   async update(id: number, workoutId: number, logExerciseId: number, userId: number, dto: UpdateLogSetDto) {
@@ -66,7 +71,12 @@ export class LogSetService {
     Object.assign(set, dto);
     const saved = await this.logSetRepository.save(set);
     await this.achievementService.checkAndUpdateRecords(userId, logExerciseId);
-    return saved;
+
+    // Return with relations
+    return this.logSetRepository.findOne({
+      where: { id: saved.id },
+      relations: { achievement: true },
+    });
   }
 
   async remove(id: number, workoutId: number, logExerciseId: number, userId: number) {
@@ -81,5 +91,6 @@ export class LogSetService {
     }
 
     await this.logSetRepository.remove(set);
+    await this.achievementService.checkAndUpdateRecords(userId, logExerciseId);
   }
 }

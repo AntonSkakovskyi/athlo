@@ -56,61 +56,61 @@ async function seedUsersAndFriends(client) {
 
 // ─── Exercise definitions ───────────────────────────────────────────────────
 const EXERCISES = [
-  // 0–10  Weight & Reps — Barbell
-  { name: 'Bench Press (Barbell)',          tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Chest',      sm: ['Triceps', 'Shoulders'] },
-  { name: 'Squat (Barbell)',                tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
-  { name: 'Deadlift (Barbell)',             tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Hamstrings', sm: ['Quadriceps', 'Lower Back', 'Glutes'] },
-  { name: 'Overhead Press (Barbell)',       tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Shoulders',  sm: ['Triceps'] },
-  { name: 'Bent Over Row (Barbell)',        tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Upper Back', sm: [] },
-  { name: 'Incline Bench Press (Barbell)',  tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Chest',      sm: [] },
-  { name: 'Romanian Deadlift (Barbell)',    tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Hamstrings', sm: ['Glutes'] },
-  { name: 'Bicep Curl (Barbell)',           tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Biceps',     sm: [] },
-  { name: 'Front Squat',                    tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
-  { name: 'Hack Squat',                     tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
-  { name: 'Hip Thrust (Barbell)',           tt: 'Weight & Reps', eq: 'Barbell',       pm: 'Glutes',     sm: [] },
-  // 11–18  Weight & Reps — Dumbbell
-  { name: 'Shoulder Press (Dumbbell)',      tt: 'Weight & Reps', eq: 'Dumbbell',      pm: 'Shoulders',  sm: [] },
-  { name: 'Bench Press (Dumbbell)',         tt: 'Weight & Reps', eq: 'Dumbbell',      pm: 'Chest',      sm: ['Triceps', 'Shoulders'] },
-  { name: 'Arnold Press (Dumbbell)',        tt: 'Weight & Reps', eq: 'Dumbbell',      pm: 'Shoulders',  sm: [] },
-  { name: 'Bent Over Row (Dumbbell)',       tt: 'Weight & Reps', eq: 'Dumbbell',      pm: 'Upper Back', sm: [] },
-  { name: 'Romanian Deadlift (Dumbbell)',   tt: 'Weight & Reps', eq: 'Dumbbell',      pm: 'Hamstrings', sm: ['Glutes'] },
-  { name: 'Lateral Raise (Dumbbell)',       tt: 'Weight & Reps', eq: 'Dumbbell',      pm: 'Shoulders',  sm: [] },
-  { name: 'Chest Fly (Dumbbell)',           tt: 'Weight & Reps', eq: 'Dumbbell',      pm: 'Chest',      sm: [] },
-  { name: 'Overhead Dumbbell Lunge',        tt: 'Weight & Reps', eq: 'Dumbbell',      pm: 'Quadriceps', sm: [] },
-  // 19–30  Weight & Reps — Machine / Cable
-  { name: 'Lat Pulldown (Cable)',           tt: 'Weight & Reps', eq: 'Machine',       pm: 'Lats',       sm: [] },
-  { name: 'Seated Cable Row - Bar Grip',    tt: 'Weight & Reps', eq: 'Machine',       pm: 'Upper Back', sm: [] },
-  { name: 'Cable Fly Crossovers',           tt: 'Weight & Reps', eq: 'Machine',       pm: 'Chest',      sm: [] },
-  { name: 'Triceps Pushdown',               tt: 'Weight & Reps', eq: 'Machine',       pm: 'Triceps',    sm: [] },
-  { name: 'Bicep Curl (Cable)',             tt: 'Weight & Reps', eq: 'Machine',       pm: 'Biceps',     sm: [] },
-  { name: 'Leg Press (Machine)',            tt: 'Weight & Reps', eq: 'Machine',       pm: 'Quadriceps', sm: [] },
-  { name: 'Lying Leg Curl (Machine)',       tt: 'Weight & Reps', eq: 'Machine',       pm: 'Hamstrings', sm: [] },
-  { name: 'Leg Extension (Machine)',        tt: 'Weight & Reps', eq: 'Machine',       pm: 'Quadriceps', sm: [] },
-  { name: 'Standing Calf Raise (Machine)',  tt: 'Weight & Reps', eq: 'Machine',       pm: 'Calves',     sm: [] },
-  { name: 'Face Pull',                      tt: 'Weight & Reps', eq: 'Machine',       pm: 'Shoulders',  sm: [] },
-  { name: 'Lateral Raise (Cable)',          tt: 'Weight & Reps', eq: 'Machine',       pm: 'Shoulders',  sm: [] },
-  { name: 'Back Extension (Hyperextension)',tt: 'Weight & Reps', eq: 'Machine',       pm: 'Lower Back', sm: [] },
-  // 31–41  Reps only
-  { name: 'Pull Up',                        tt: 'Reps only',     eq: 'Machine',       pm: 'Lats',       sm: ['Upper Back'] },
-  { name: 'Push Up',                        tt: 'Reps only',     eq: null,            pm: 'Chest',      sm: ['Triceps', 'Shoulders'] },
-  { name: 'Chin Up',                        tt: 'Reps only',     eq: 'Machine',       pm: 'Lats',       sm: [] },
-  { name: 'Hanging Leg Raise',              tt: 'Reps only',     eq: null,            pm: 'Abdominals', sm: [] },
-  { name: 'Bicycle Crunch',                 tt: 'Reps only',     eq: null,            pm: 'Abdominals', sm: [] },
-  { name: 'Hip Thrust',                     tt: 'Reps only',     eq: null,            pm: 'Glutes',     sm: [] },
-  { name: 'Assisted Pistol Squats',         tt: 'Reps only',     eq: null,            pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
-  { name: 'Diamond Push Up',               tt: 'Reps only',     eq: null,            pm: 'Triceps',    sm: ['Chest'] },
-  { name: 'Chest Dip',                      tt: 'Reps only',     eq: 'Machine',       pm: 'Chest',      sm: ['Triceps'] },
-  { name: 'Floor Triceps Dip',              tt: 'Reps only',     eq: null,            pm: 'Triceps',    sm: [] },
-  { name: 'Ab Wheel',                       tt: 'Reps only',     eq: 'Other',         pm: 'Abdominals', sm: [] },
-  // 42–49  Time based
-  { name: 'Plank',                          tt: 'Time based',    eq: null,            pm: 'Abdominals', sm: [] },
-  { name: 'Running',                        tt: 'Time based',    eq: null,            pm: 'Cardio',     sm: [] },
-  { name: 'Jump Rope',                      tt: 'Time based',    eq: 'Other',         pm: 'Cardio',     sm: [] },
-  { name: 'Air Bike',                       tt: 'Time based',    eq: 'Machine',       pm: 'Cardio',     sm: [] },
-  { name: 'Aerobics',                       tt: 'Time based',    eq: null,            pm: 'Cardio',     sm: [] },
-  { name: 'Reverse Plank',                  tt: 'Time based',    eq: null,            pm: 'Abdominals', sm: [] },
-  { name: 'Ab Scissors',                    tt: 'Time based',    eq: null,            pm: 'Abdominals', sm: [] },
-  { name: 'Lateral Raise (Band)',           tt: 'Weight & Reps', eq: 'Resistance Band', pm: 'Shoulders', sm: [] },
+  // 0–10  WEIGHT_AND_REPS — Barbell
+  { name: 'Bench Press (Barbell)',          tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Chest',      sm: ['Triceps', 'Shoulders'] },
+  { name: 'Squat (Barbell)',                tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
+  { name: 'Deadlift (Barbell)',             tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Hamstrings', sm: ['Quadriceps', 'Lower Back', 'Glutes'] },
+  { name: 'Overhead Press (Barbell)',       tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Shoulders',  sm: ['Triceps'] },
+  { name: 'Bent Over Row (Barbell)',        tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Upper Back', sm: [] },
+  { name: 'Incline Bench Press (Barbell)',  tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Chest',      sm: [] },
+  { name: 'Romanian Deadlift (Barbell)',    tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Hamstrings', sm: ['Glutes'] },
+  { name: 'Bicep Curl (Barbell)',           tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Biceps',     sm: [] },
+  { name: 'Front Squat',                    tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
+  { name: 'Hack Squat',                     tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
+  { name: 'Hip Thrust (Barbell)',           tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Glutes',     sm: [] },
+  // 11–18  WEIGHT_AND_REPS — Dumbbell
+  { name: 'Shoulder Press (Dumbbell)',      tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Shoulders',  sm: [] },
+  { name: 'Bench Press (Dumbbell)',         tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Chest',      sm: ['Triceps', 'Shoulders'] },
+  { name: 'Arnold Press (Dumbbell)',        tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Shoulders',  sm: [] },
+  { name: 'Bent Over Row (Dumbbell)',       tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Upper Back', sm: [] },
+  { name: 'Romanian Deadlift (Dumbbell)',   tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Hamstrings', sm: ['Glutes'] },
+  { name: 'Lateral Raise (Dumbbell)',       tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Shoulders',  sm: [] },
+  { name: 'Chest Fly (Dumbbell)',           tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Chest',      sm: [] },
+  { name: 'Overhead Dumbbell Lunge',        tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Quadriceps', sm: [] },
+  // 19–30  WEIGHT_AND_REPS — Machine / Cable
+  { name: 'Lat Pulldown (Cable)',           tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Lats',       sm: [] },
+  { name: 'Seated Cable Row - Bar Grip',    tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Upper Back', sm: [] },
+  { name: 'Cable Fly Crossovers',           tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Chest',      sm: [] },
+  { name: 'Triceps Pushdown',               tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Triceps',    sm: [] },
+  { name: 'Bicep Curl (Cable)',             tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Biceps',     sm: [] },
+  { name: 'Leg Press (Machine)',            tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Quadriceps', sm: [] },
+  { name: 'Lying Leg Curl (Machine)',       tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Hamstrings', sm: [] },
+  { name: 'Leg Extension (Machine)',        tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Quadriceps', sm: [] },
+  { name: 'Standing Calf Raise (Machine)',  tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Calves',     sm: [] },
+  { name: 'Face Pull',                      tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Shoulders',  sm: [] },
+  { name: 'Lateral Raise (Cable)',          tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Shoulders',  sm: [] },
+  { name: 'Back Extension (Hyperextension)',tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Lower Back', sm: [] },
+  // 31–41  REPS_ONLY
+  { name: 'Pull Up',                        tt: 'REPS_ONLY',     eq: 'Machine',       pm: 'Lats',       sm: ['Upper Back'] },
+  { name: 'Push Up',                        tt: 'REPS_ONLY',     eq: null,            pm: 'Chest',      sm: ['Triceps', 'Shoulders'] },
+  { name: 'Chin Up',                        tt: 'REPS_ONLY',     eq: 'Machine',       pm: 'Lats',       sm: [] },
+  { name: 'Hanging Leg Raise',              tt: 'REPS_ONLY',     eq: null,            pm: 'Abdominals', sm: [] },
+  { name: 'Bicycle Crunch',                 tt: 'REPS_ONLY',     eq: null,            pm: 'Abdominals', sm: [] },
+  { name: 'Hip Thrust',                     tt: 'REPS_ONLY',     eq: null,            pm: 'Glutes',     sm: [] },
+  { name: 'Assisted Pistol Squats',         tt: 'REPS_ONLY',     eq: null,            pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
+  { name: 'Diamond Push Up',               tt: 'REPS_ONLY',     eq: null,            pm: 'Triceps',    sm: ['Chest'] },
+  { name: 'Chest Dip',                      tt: 'REPS_ONLY',     eq: 'Machine',       pm: 'Chest',      sm: ['Triceps'] },
+  { name: 'Floor Triceps Dip',              tt: 'REPS_ONLY',     eq: null,            pm: 'Triceps',    sm: [] },
+  { name: 'Ab Wheel',                       tt: 'REPS_ONLY',     eq: 'Other',         pm: 'Abdominals', sm: [] },
+  // 42–49  TIME_BASED
+  { name: 'Plank',                          tt: 'TIME_BASED',    eq: null,            pm: 'Abdominals', sm: [] },
+  { name: 'Running',                        tt: 'TIME_BASED',    eq: null,            pm: 'Cardio',     sm: [] },
+  { name: 'Jump Rope',                      tt: 'TIME_BASED',    eq: 'Other',         pm: 'Cardio',     sm: [] },
+  { name: 'Air Bike',                       tt: 'TIME_BASED',    eq: 'Machine',       pm: 'Cardio',     sm: [] },
+  { name: 'Aerobics',                       tt: 'TIME_BASED',    eq: null,            pm: 'Cardio',     sm: [] },
+  { name: 'Reverse Plank',                  tt: 'TIME_BASED',    eq: null,            pm: 'Abdominals', sm: [] },
+  { name: 'Ab Scissors',                    tt: 'TIME_BASED',    eq: null,            pm: 'Abdominals', sm: [] },
+  { name: 'Lateral Raise (Band)',           tt: 'WEIGHT_AND_REPS', eq: 'Resistance Band', pm: 'Shoulders', sm: [] },
 ];
 
 // Exercise indices per workout type
@@ -184,7 +184,7 @@ async function seedLookups(client) {
   for (const name of ['PRIVATE', 'PUBLIC', 'FRIENDS_ONLY'])
     vt[name] = await nameId(client, 'visibility_type', name);
 
-  for (const name of ['Weight & Reps', 'Reps only', 'Time based'])
+  for (const name of ['WEIGHT_AND_REPS', 'REPS_ONLY', 'TIME_BASED'])
     tt[name] = await nameId(client, 'tracking_types', name);
 
   for (const name of ['g', 'ml', 'pcs', 'cup', 'kg', 'cm'])
@@ -333,10 +333,10 @@ async function seedWorkouts(client, { vt }, exIds) {
       const numSets = order < 2 ? 4 : 3;
       for (let s = 1; s <= numSets; s++) {
         const setData = { log_exercise_id: leId, order: s, is_completed: true };
-        if (ex.tt === 'Weight & Reps') {
+        if (ex.tt === 'WEIGHT_AND_REPS') {
           setData.weight = getWeight(exIdx, wi, total);
           setData.reps   = 8 + (s === 1 ? 2 : 0);
-        } else if (ex.tt === 'Reps only') {
+        } else if (ex.tt === 'REPS_ONLY') {
           setData.reps   = 8 + wi + s;
           setData.weight = 0;
         } else {
@@ -397,8 +397,8 @@ async function seedTemplates(client, { vt }, exIds) {
 
       for (let s = 1; s <= 3; s++) {
         const setData = { template_exercise_id: teId, order: s };
-        if (ex.tt === 'Weight & Reps')      { setData.weight = WEIGHT_PROG[exIdx]?.base || 0; setData.reps = 8; }
-        else if (ex.tt === 'Reps only')     { setData.weight = 0; setData.reps = 10; }
+        if (ex.tt === 'WEIGHT_AND_REPS')      { setData.weight = WEIGHT_PROG[exIdx]?.base || 0; setData.reps = 8; }
+        else if (ex.tt === 'REPS_ONLY')     { setData.weight = 0; setData.reps = 10; }
         else                                { setData.duration = 60; }
         await insertRow(client, 'template_sets', setData);
       }
@@ -443,8 +443,8 @@ async function seedPublicTemplates(client, { vt }, exIds) {
 
       for (let s = 1; s <= 3; s++) {
         const setData = { template_exercise_id: teId, order: s };
-        if (ex.tt === 'Weight & Reps')      { setData.weight = WEIGHT_PROG[exIdx]?.base || 0; setData.reps = 8; }
-        else if (ex.tt === 'Reps only')     { setData.weight = 0; setData.reps = 10; }
+        if (ex.tt === 'WEIGHT_AND_REPS')      { setData.weight = WEIGHT_PROG[exIdx]?.base || 0; setData.reps = 8; }
+        else if (ex.tt === 'REPS_ONLY')     { setData.weight = 0; setData.reps = 10; }
         else                                { setData.duration = 60; }
         await insertRow(client, 'template_sets', setData);
       }
@@ -600,22 +600,35 @@ async function seedAchievements(client, exIds) {
   const achRows = await client.query(`SELECT id, name FROM achievements ORDER BY "order"`);
   const achMap = {};
   if (achRows.rows.length === 0) {
-    for (const [name, desc, type, thr, ord] of [
-      ['First Workout',    'Complete your first workout',             'GLOBAL_WORKOUTS', 1,     1],
-      ['10 Workouts',      'Complete 10 workouts',                    'GLOBAL_WORKOUTS', 10,    2],
-      ['25 Workouts',      'Complete 25 workouts',                    'GLOBAL_WORKOUTS', 25,    3],
-      ['100 Sets',         'Complete 100 sets across all workouts',   'GLOBAL_SETS',     100,   8],
-      ['500 Sets',         'Complete 500 sets across all workouts',   'GLOBAL_SETS',     500,   9],
-      ['1,000 kg Lifted',  'Lift a total of 1,000 kg',               'GLOBAL_WEIGHT',   1000,  12],
-      ['10,000 kg Lifted', 'Lift a total of 10,000 kg',              'GLOBAL_WEIGHT',   10000, 13],
-    ]) {
-      achMap[name] = await insertRow(client, 'achievements', { name, description: desc, type, threshold: thr, order: ord });
+    const definitions = [
+      ['First Workout',    'Complete your first workout',             'GLOBAL_WORKOUTS', 1,     1, null, null],
+      ['10 Workouts',      'Complete 10 workouts',                    'GLOBAL_WORKOUTS', 10,    2, null, null],
+      ['25 Workouts',      'Complete 25 workouts',                    'GLOBAL_WORKOUTS', 25,    3, null, null],
+      ['100 Sets',         'Complete 100 sets across all workouts',   'GLOBAL_SETS',     100,   8, null, null],
+      ['500 Sets',         'Complete 500 sets across all workouts',   'GLOBAL_SETS',     500,   9, null, null],
+      ['1,000 kg Lifted',  'Lift a total of 1,000 kg',               'GLOBAL_WEIGHT',   1000,  12, null, null],
+      ['10,000 kg Lifted', 'Lift a total of 10,000 kg',              'GLOBAL_WEIGHT',   10000, 13, null, null],
+      ['100 Hours',        'Train for a total of 100 hours',         'GLOBAL_TIME',     360000, 14, null, null],
+    ];
+
+    // Add exercise specific achievements if exIds are available
+    if (exIds && exIds.length > 0) {
+      definitions.push(['100kg Bench Press', 'Lift 100kg in Bench Press (Barbell)', 'EXERCISE_PERSONAL_RECORD', 100, 20, exIds[0], 'WEIGHT']);
+      definitions.push(['140kg Squat', 'Squat 140kg (Barbell)', 'EXERCISE_PERSONAL_RECORD', 140, 21, exIds[1], 'WEIGHT']);
+      definitions.push(['180kg Deadlift', 'Deadlift 180kg (Barbell)', 'EXERCISE_PERSONAL_RECORD', 180, 22, exIds[2], 'WEIGHT']);
+    }
+
+    for (const [name, desc, type, thr, ord, exId, metric] of definitions) {
+      achMap[name] = await insertRow(client, 'achievements', { 
+        name, description: desc, type, threshold: thr, order: ord, 
+        exercise_id: exId, tracking_metric: metric 
+      });
     }
   } else {
     for (const r of achRows.rows) achMap[r.name] = r.id;
   }
 
-  // Unlock achievements: 24 workouts, ~420 sets, ~20000 kg lifted
+  // Unlock achievements
   let unlocked = 0;
   for (const [name, value] of [
     ['First Workout',    1],
@@ -640,32 +653,54 @@ async function seedAchievements(client, exIds) {
 
   // Personal records for key exercises
   let recCount = 0;
-  for (const [idx, bestWeight, bestReps, est1rm, bestDuration] of [
-    [0,  72.5, 5,  81.4, null],
-    [1,  95,   5,  106.7,null],
-    [2,  97.5, 3,  104.2,null],
-    [3,  47.5, 5,  53.3, null],
-    [4,  70,   6,  81.7, null],
-    [5,  60,   6,  70.0, null],
-    [7,  35,   8,  46.7, null],
-    [19, 60,   10, 80.0, null],
-    [24, 100,  10, 133.3,null],
-    [42, null, null, null, 180],
-  ]) {
+  const records = [
+    // [exIdx, metric, value]
+    [0, 'WEIGHT', 72.5],
+    [0, '1RM', 81.4],
+    [1, 'WEIGHT', 95],
+    [1, '1RM', 106.7],
+    [2, 'WEIGHT', 97.5],
+    [2, '1RM', 104.2],
+    [3, 'WEIGHT', 47.5],
+    [4, 'WEIGHT', 70],
+    [7, 'WEIGHT', 35],
+    [19, 'WEIGHT', 60],
+    [24, 'WEIGHT', 100],
+    [42, 'DURATION', 180],
+  ];
+
+  for (const [idx, metric, value] of records) {
     const exId = exIds[idx];
     const ex = await client.query(
-      `SELECT id FROM user_exercise_records WHERE user_id=$1 AND exercise_id=$2`, [USER_ID, exId]
+      `SELECT id FROM user_exercise_records WHERE user_id=$1 AND exercise_id=$2 AND metric_type=$3`, [USER_ID, exId, metric]
     );
-    if (ex.rows.length) continue;
+    // Ignore existing records for this purpose
     await insertRow(client, 'user_exercise_records', {
-      user_id: USER_ID, exercise_id: exId,
-      best_weight: bestWeight, best_reps: bestReps,
-      estimated_1rm: est1rm, best_duration: bestDuration,
-      updated_at: daysAgo(1, 11),
+      user_id: USER_ID,
+      exercise_id: exId,
+      metric_type: metric,
+      value: value,
+      created_at: daysAgo(1, 11),
     });
     recCount++;
   }
   console.log(`  → ${recCount} exercise records`);
+
+  // Mark some sets as isPR in the most recent workouts
+  const recentWorkouts = await client.query(
+    `SELECT id FROM workouts WHERE user_id=$1 ORDER BY started_at DESC LIMIT 3`, [USER_ID]
+  );
+  for (const row of recentWorkouts.rows) {
+    const sets = await client.query(
+      `SELECT ls.id, le.exercise_id FROM log_sets ls 
+       JOIN log_exercises le ON ls.log_exercise_id = le.id 
+       WHERE le.workout_id = $1 LIMIT 2`, [row.id]
+    );
+    for (const set of sets.rows) {
+      await client.query(`UPDATE log_sets SET is_pr = true WHERE id = $1`, [set.id]);
+    }
+  }
+  console.log('  → Marked some sets as PRs in recent workouts');
 }
 
 // ─── Entry point ─────────────────────────────────────────────────────────────

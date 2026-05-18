@@ -60,7 +60,9 @@ export class WorkoutService {
       relations: {
         logExercises: {
           exercise: true,
-          sets: true,
+          sets: {
+            achievement: true,
+          },
         },
       },
       order: {
@@ -92,7 +94,9 @@ export class WorkoutService {
       relations: {
         logExercises: {
           exercise: true,
-          sets: true,
+          sets: {
+            achievement: true,
+          },
         },
       },
       order: {
@@ -131,7 +135,9 @@ export class WorkoutService {
       relations: {
         logExercises: {
           exercise: true,
-          sets: true,
+          sets: {
+            achievement: true,
+          },
         },
       },
       order: {
@@ -185,7 +191,7 @@ export class WorkoutService {
 
     const workout = this.workoutsRepository.create({
       userId,
-      name: `${original.name} (Copy)`,
+      name: original.name,
       description: original.description,
       status: WorkoutStatus.IN_PROGRESS,
     });

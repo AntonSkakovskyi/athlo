@@ -41,7 +41,17 @@ export class LogSetEntity implements ILogSet {
   @Column({ name: 'is_completed', default: false })
   isCompleted: boolean;
 
+  @Column({ name: 'is_pr', default: false })
+  isPR: boolean;
+
+  @Column({ name: 'achievement_id', nullable: true })
+  achievementId: number | null;
+
   @ManyToOne(() => LogExerciseEntity, (logExercise) => logExercise.sets, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'log_exercise_id' })
   logExercise: LogExerciseEntity;
+
+  @ManyToOne('AchievementEntity', { nullable: true })
+  @JoinColumn({ name: 'achievement_id' })
+  achievement: any;
 }

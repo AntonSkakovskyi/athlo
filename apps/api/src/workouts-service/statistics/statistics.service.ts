@@ -67,6 +67,16 @@ export class StatisticsService {
       .andWhere(dateFilter.clause, dateFilter.params)
       .getCount();
 
+    // Total duration seconds
+    const totalDurationResult = await this.workoutRepo
+      .createQueryBuilder('w')
+      .select('COALESCE(SUM(EXTRACT(EPOCH FROM (w.ended_at - w.started_at))), 0)', 'totalSeconds')
+      .where('w.user_id = :userId', { userId })
+      .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .andWhere('w.ended_at IS NOT NULL')
+      .andWhere(dateFilter.clause, dateFilter.params)
+      .getRawOne();
+
     // Total weight lifted (sum of weight*reps)
     const totalWeightResult = await this.logSetRepo
       .createQueryBuilder('ls')
@@ -148,52 +158,58 @@ export class StatisticsService {
   ): Promise<IExerciseProgress> {
     const dateFilter = this.buildDateFilter(from, to, 'w.started_at');
 
-    // Get tracking type for this exercise
-    const trackingTypeResult = await this.logExerciseRepo
+    const exercise = await this.exerciseRepo.findOne({
+      where: { id: exerciseId },
+      relations: ['trackingType'],
+    });
+    const trackingType = exercise?.trackingType?.name ?? 'WEIGHT_AND_REPS';
+
+    const loggedExercises = await this.logExerciseRepo
       .createQueryBuilder('le')
-      .innerJoinAndSelect('le.exercise', 'e')
-      .innerJoinAndSelect('e.trackingType', 'tt')
-      .where('le.exercise_id = :exerciseId', { exerciseId })
-      .limit(1)
-      .getOne();
-
-    const trackingType = trackingTypeResult?.exercise?.trackingType?.name ?? 'WEIGHT_AND_REPS';
-
-    const records = await this.logSetRepo
-      .createQueryBuilder('ls')
-      .select('w.id', 'workoutId')
-      .addSelect('w.started_at::date::text', 'date')
-      .addSelect('MAX(ls.weight)', 'heaviestWeight')
-      .addSelect('MAX(ls.weight * ls.reps)', 'bestSetVolume')
-      .addSelect('SUM(ls.weight * ls.reps)', 'totalVolume')
-      .addSelect('SUM(ls.reps)', 'totalReps')
-      .addSelect('MAX(ls.duration)', 'bestDuration')
-      .addSelect('MAX(ls.distance)', 'bestDistance')
-      .innerJoin('ls.logExercise', 'le')
-      .innerJoin('le.workout', 'w')
+      .innerJoinAndSelect('le.workout', 'w')
+      .leftJoinAndSelect('le.sets', 'ls')
+      .leftJoinAndSelect('ls.achievement', 'achievement')
       .where('w.user_id = :userId', { userId })
       .andWhere('le.exercise_id = :exerciseId', { exerciseId })
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
-      .andWhere('ls.is_completed = true')
       .andWhere(dateFilter.clause, dateFilter.params)
-      .groupBy('w.id')
-      .addGroupBy('w.started_at')
       .orderBy('w.started_at', 'ASC')
-      .getRawMany();
+      .addOrderBy('le.order', 'ASC')
+      .addOrderBy('ls.order', 'ASC')
+      .getMany();
+
+    const records = loggedExercises.map((le) => {
+      const completedSets = le.sets.filter((s) => s.isCompleted);
+
+      return {
+        date: le.workout.started_at.toISOString().split('T')[0],
+        workoutId: le.workoutId,
+        heaviestWeight: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.weight)) : null,
+        bestSetVolume: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.weight * s.reps)) : null,
+        totalVolume: completedSets.reduce((sum, s) => sum + s.weight * s.reps, 0),
+        totalReps: completedSets.reduce((sum, s) => sum + s.reps, 0),
+        bestDuration: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.duration)) : null,
+        bestDistance: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.distance)) : null,
+        sets: le.sets.map((s) => ({
+          id: s.id,
+          logExerciseId: s.logExerciseId,
+          order: s.order,
+          weight: s.weight,
+          reps: s.reps,
+          duration: s.duration,
+          distance: s.distance,
+          isCompleted: s.isCompleted,
+          isPR: s.isPR,
+          achievementId: s.achievementId,
+          achievement: s.achievement,
+        })),
+      };
+    });
 
     return {
       exerciseId,
       trackingType,
-      records: records.map((r) => ({
-        date: r.date,
-        workoutId: r.workoutId,
-        heaviestWeight: r.heaviestWeight != null ? parseFloat(r.heaviestWeight) : null,
-        bestSetVolume: r.bestSetVolume != null ? parseFloat(r.bestSetVolume) : null,
-        totalVolume: r.totalVolume != null ? parseFloat(r.totalVolume) : null,
-        totalReps: r.totalReps != null ? parseInt(r.totalReps, 10) : null,
-        bestDuration: r.bestDuration != null ? parseInt(r.bestDuration, 10) : null,
-        bestDistance: r.bestDistance != null ? parseFloat(r.bestDistance) : null,
-      })),
+      records,
     };
   }
 
@@ -370,6 +386,15 @@ export class StatisticsService {
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
       .getRawOne();
 
+    // Total duration seconds
+    const totalDurationResult = await this.workoutRepo
+      .createQueryBuilder('w')
+      .select('COALESCE(SUM(EXTRACT(EPOCH FROM (w.ended_at - w.started_at))), 0)', 'totalSeconds')
+      .where('w.user_id = :userId', { userId })
+      .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .andWhere('w.ended_at IS NOT NULL')
+      .getRawOne();
+
     // Current streak (consecutive days with completed workouts)
     const currentStreak = await this.calculateStreak(userId);
 
@@ -378,6 +403,7 @@ export class StatisticsService {
       totalExercisesPerformed: totalExercisesResult,
       totalSets,
       totalWeightLifted: parseFloat(totalWeightResult?.total ?? '0'),
+      totalDurationSeconds: parseFloat(totalDurationResult?.totalSeconds ?? '0'),
       currentStreak,
     };
   }
