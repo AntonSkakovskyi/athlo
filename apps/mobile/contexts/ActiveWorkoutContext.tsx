@@ -127,6 +127,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
           sets: [
             ...e.sets,
             {
+              id: Date.now() + Math.random(),
               order: e.sets.length + 1,
               isCompleted: false,
               placeholderWeight: lastSet?.weight ?? lastSet?.placeholderWeight,

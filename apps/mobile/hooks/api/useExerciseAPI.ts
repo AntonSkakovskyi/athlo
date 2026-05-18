@@ -6,7 +6,10 @@ import { exerciseKeys } from '@/api/queries/query-keys';
 
 export interface ExerciseWithRelations extends IExercise {
   equipment?: { id: number; name: string } | null;
+  trackingType?: { id: number; name: string } | null;
   exerciseMuscles?: { isPrimary: boolean; muscle: { id: number; name: string } }[];
+  totalSets?: number;
+  totalWorkouts?: number;
 }
 
 interface ExerciseFilters {

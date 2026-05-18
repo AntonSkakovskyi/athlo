@@ -11,7 +11,6 @@ export default function ProfileLayout() {
       <Stack.Screen name="calendar" />
       <Stack.Screen name="statistics" />
       <Stack.Screen name="exercise-progress" />
-      <Stack.Screen name="exercise-detail" />
       <Stack.Screen name="achievements" />
     </Stack>
   );

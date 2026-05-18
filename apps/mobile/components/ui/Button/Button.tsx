@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
 
 interface ButtonProps extends Omit<PressableProps, 'style'> {
   title: string;
@@ -16,7 +16,8 @@ const VARIANT_COLORS: Record<ButtonVariant, { bg: string; text: string; border?:
   primary: { bg: colors.primary, text: colors.black },
   secondary: { bg: colors.surfaceLight, text: colors.text },
   danger: { bg: colors.dangerLight, text: colors.danger },
-  ghost: { bg: 'transparent', text: colors.textSecondary, border: colors.border },
+  ghost: { bg: 'transparent', text: colors.textSecondary },
+  outline: { bg: 'transparent', text: colors.primary, border: colors.primary },
 };
 
 export function Button({

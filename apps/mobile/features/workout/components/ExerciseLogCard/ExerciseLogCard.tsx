@@ -30,6 +30,7 @@ interface ExerciseLogCardProps {
   onChangeExercise?: () => void;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
+  onPRPress?: (setIndex: number) => void;
 }
 
 export function ExerciseLogCard({
@@ -55,12 +56,13 @@ export function ExerciseLogCard({
   onChangeExercise,
   onMoveUp,
   onMoveDown,
+  onPRPress,
 }: ExerciseLogCardProps) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [isSetActionsVisible, setIsSetActionsVisible] = useState(false);
   const [selectedSetIndex, setSelectedSetIndex] = useState<number | null>(null);
 
-  // Set-level Time Picker
+// Set-level Time Picker
   const [setTimePickerVisible, setSetTimePickerVisible] = useState(false);
   const [timePickerSetIndex, setTimePickerSetIndex] = useState<number | null>(null);
   const [tempTimeValue, setTempTimeValue] = useState(0);
@@ -251,8 +253,7 @@ export function ExerciseLogCard({
           {mode === 'active' ? '✓' : ''}
         </Text>
       </View>
-
-      {sets.map((set, index) => (
+      {sets?.map((set, index) => (
         <LogSetRow
           key={set.id ?? `set-${index}`}
           set={set}
@@ -263,6 +264,7 @@ export function ExerciseLogCard({
           onToggleComplete={() => onToggleSetComplete?.(index)}
           onOpenMenu={() => handleOpenSetMenu(index)}
           onOpenTimePicker={() => handleOpenSetTimePicker(index, set.duration ?? 0)}
+          onPRPress={() => onPRPress?.(index)}
         />
       ))}
 

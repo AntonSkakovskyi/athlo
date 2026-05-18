@@ -15,6 +15,8 @@ export interface LogSetData {
   distance?: number;
   isCompleted: boolean;
   isPR?: boolean;
+  achievementId?: number | null;
+  achievement?: any | null;
   previousWeight?: number;
   previousReps?: number;
   previousDuration?: number;
@@ -34,6 +36,7 @@ interface LogSetRowProps {
   onToggleComplete?: () => void;
   onOpenMenu?: () => void;
   onOpenTimePicker?: () => void;
+  onPRPress?: () => void;
 }
 
 export function LogSetRow({
@@ -45,6 +48,7 @@ export function LogSetRow({
   onToggleComplete,
   onOpenMenu,
   onOpenTimePicker,
+  onPRPress,
 }: LogSetRowProps) {
   const isViewOnly = !isEditing && mode !== 'active';
   const showPrevious = mode === 'active' || (mode === 'summary' && isEditing);
@@ -189,6 +193,12 @@ export function LogSetRow({
             </Pressable>
           )}
 
+          {!isEditing && set.isPR && (
+            <Pressable onPress={onPRPress} style={styles.prTrophy}>
+              <Text style={styles.trophyIcon}>🏆</Text>
+            </Pressable>
+          )}
+
           {!isViewOnly && onOpenMenu && (
             <Pressable onPress={onOpenMenu} style={styles.menuBtn}>
               <Text style={styles.menuIcon}>⋮</Text>
@@ -283,7 +293,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: spacing.xs,
-    minWidth: 72,
+    minWidth: 100,
   },
   checkbox: {
     width: 32,
@@ -312,5 +322,14 @@ const styles = StyleSheet.create({
   menuIcon: {
     fontSize: fontSize.lg,
     color: colors.textMuted,
+  },
+  prTrophy: {
+    width: 28,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  trophyIcon: {
+    fontSize: fontSize.lg,
   },
 });

@@ -21,9 +21,12 @@ export function useExercisePickerScreen() {
   const isReplaceMode = !!params.replaceLogExerciseId;
 
   const [search, setSearch] = useState('');
-  const [selectedMuscleIds, setSelectedMuscleIds] = useState<number[]>([]);
-  const [selectedEquipmentIds, setSelectedEquipmentIds] = useState<number[]>([]);
-  const [selectedExercises, setSelectedExercises] = useState<Set<number>>(new Set());
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  const [selectedMuscleId, setSelectedMuscleId] = useState<number | null>(null);
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<number | null>(null);
+  const [selectedExercises, setSelectedExercises] = useState<Map<number, ExerciseWithRelations>>(new Map());
   const [isAdding, setIsAdding] = useState(false);
 
   const { exercises: activeExercises, addExercise, replaceExercise, workout: activeWorkout } = useActiveWorkout();
@@ -31,11 +34,21 @@ export function useExercisePickerScreen() {
 
   const filters = useMemo(() => {
     const f: Record<string, unknown> = {};
-    if (search.trim()) f.search = search.trim();
-    if (selectedMuscleIds.length > 0) f.muscleId = selectedMuscleIds[0];
-    if (selectedEquipmentIds.length > 0) f.equipmentId = selectedEquipmentIds[0];
+    if (debouncedSearch.trim()) f.search = debouncedSearch.trim();
+    if (selectedMuscleId) f.muscleId = selectedMuscleId;
+    if (selectedEquipmentId) f.equipmentId = selectedEquipmentId;
     return f;
-  }, [search, selectedMuscleIds, selectedEquipmentIds]);
+  }, [debouncedSearch, selectedMuscleId, selectedEquipmentId]);
+
+  const handleSearchChange = useCallback(
+    (text: string) => {
+      setSearch(text);
+      if (debounceTimer) clearTimeout(debounceTimer);
+      const timer = setTimeout(() => setDebouncedSearch(text.trim()), 300);
+      setDebounceTimer(timer);
+    },
+    [debounceTimer],
+  );
 
   const exercisesQuery = useInfiniteExercises(filters);
   const equipmentsQuery = useGetEquipments();
@@ -51,40 +64,45 @@ export function useExercisePickerScreen() {
   }, [exercisesQuery.data]);
 
   const toggleMuscle = useCallback((id: number) => {
-    setSelectedMuscleIds((prev) =>
-      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id],
-    );
+    setSelectedMuscleId((prev) => (prev === id ? null : id));
   }, []);
 
   const toggleEquipment = useCallback((id: number) => {
-    setSelectedEquipmentIds((prev) =>
-      prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id],
-    );
+    setSelectedEquipmentId((prev) => (prev === id ? null : id));
   }, []);
 
   const toggleExercise = useCallback((id: number) => {
+    // We need the full exercise object, so we look it up in the current list
+    const pages = exercisesQuery.data?.pages ?? [];
+    const allFetched = pages.flatMap(p => p.data);
+    const exercise = allFetched.find(ex => ex.id === id) || selectedExercises.get(id);
+    
+    if (!exercise) return;
+
     setSelectedExercises((prev) => {
+      const next = new Map(prev);
       if (isReplaceMode) {
-        const next = new Set<number>();
-        if (!prev.has(id)) next.add(id);
+        next.clear();
+        next.set(id, exercise);
         return next;
       }
-      const next = new Set(prev);
       if (next.has(id)) next.delete(id);
-      else next.add(id);
+      else next.set(id, exercise);
       return next;
     });
-  }, [isReplaceMode]);
+  }, [isReplaceMode, exercisesQuery.data, selectedExercises]);
 
-  const hasFilters = selectedMuscleIds.length > 0 || selectedEquipmentIds.length > 0;
+  const hasFilters = !!selectedMuscleId || !!selectedEquipmentId || !!debouncedSearch;
 
   const clearFilters = useCallback(() => {
-    setSelectedMuscleIds([]);
-    setSelectedEquipmentIds([]);
+    setSelectedMuscleId(null);
+    setSelectedEquipmentId(null);
+    setSearch('');
+    setDebouncedSearch('');
   }, []);
 
   const handleAdd = useCallback(async () => {
-    const selectedList = exerciseList.filter((ex: ExerciseWithRelations) => selectedExercises.has(ex.id));
+    const selectedList = Array.from(selectedExercises.values());
     if (selectedList.length === 0) return;
 
     setIsAdding(true);
@@ -270,9 +288,9 @@ export function useExercisePickerScreen() {
     templateId: params.templateId,
     isReplaceMode,
     search,
-    setSearch,
-    selectedMuscleIds,
-    selectedEquipmentIds,
+    setSearch: handleSearchChange,
+    selectedMuscleId,
+    selectedEquipmentId,
     selectedExercises,
     isAdding,
     exercisesQuery,

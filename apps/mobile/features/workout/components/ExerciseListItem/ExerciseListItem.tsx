@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
-import { RadioCircle } from '@/components/ui/RadioCircle/RadioCircle';
 import { Tag } from '@/components/ui/Tag/Tag';
+import { Ionicons } from '@expo/vector-icons';
 
 interface ExerciseListItemProps {
   name: string;
@@ -10,6 +10,8 @@ interface ExerciseListItemProps {
   muscles?: string;
   selected: boolean;
   onPress: () => void;
+  onRightIconPress?: () => void;
+  rightIconName?: keyof typeof Ionicons.glyphMap;
 }
 
 export function ExerciseListItem({
@@ -19,6 +21,8 @@ export function ExerciseListItem({
   muscles,
   selected,
   onPress,
+  onRightIconPress,
+  rightIconName = 'stats-chart',
 }: ExerciseListItemProps) {
   return (
     <Pressable
@@ -35,7 +39,17 @@ export function ExerciseListItem({
           {muscles ? <Text style={styles.muscleText}>{muscles}</Text> : null}
         </View>
       </View>
-      <RadioCircle selected={selected} size={24} />
+      
+      <Pressable 
+        style={styles.rightBtn} 
+        onPress={(e) => {
+          e.stopPropagation();
+          onRightIconPress?.();
+        }}
+        hitSlop={8}
+      >
+        <Ionicons name={rightIconName} size={20} color={colors.primary} />
+      </Pressable>
     </Pressable>
   );
 }
@@ -53,7 +67,7 @@ const styles = StyleSheet.create({
   },
   itemSelected: {
     borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: colors.primary + '10', // Consistent with picker filters
   },
   info: {
     flex: 1,
@@ -81,5 +95,11 @@ const styles = StyleSheet.create({
   muscleText: {
     fontSize: fontSize.sm,
     color: colors.textMuted,
+  },
+  rightBtn: {
+    padding: spacing.sm,
+    marginLeft: spacing.sm,
+    backgroundColor: colors.surfaceLight,
+    borderRadius: borderRadius.sm,
   },
 });

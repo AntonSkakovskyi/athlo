@@ -40,11 +40,11 @@ export const useGetExerciseRecords = () => {
   });
 };
 
-export const useGetExerciseRecord = (exerciseId: string) => {
+export const useGetExerciseRecordHistory = (exerciseId: string) => {
   return useQuery({
     queryKey: achievementKeys.recordByExercise(exerciseId),
     queryFn: async () => {
-      const response = await apiClient.get<IUserExerciseRecord | null>(
+      const response = await apiClient.get<IUserExerciseRecord[]>(
         apiRoutes.achievements.recordByExercise(exerciseId),
       );
       return response.data;

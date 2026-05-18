@@ -2,9 +2,11 @@ import { useState, useMemo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { IExerciseProgressRecord } from '@athlo/shared';
+import { TrackingType } from '@athlo/shared';
 import { useExerciseProgress } from '@/features/profile/hooks';
 import { getScopeRange } from '@/utils/date';
 import { useGetExerciseById } from '@/hooks/api';
+import { useGetExerciseRecordHistory } from '@/hooks/api/useAchievementAPI';
 
 type Scope = '3m' | '1y' | 'all';
 
@@ -60,9 +62,7 @@ export function formatMetricValue(value: number, metricName: string): string {
     return `${Math.round(value * 10) / 10} m`;
   }
   if (metricName.includes('Weight') || metricName.includes('Volume')) {
-    return value >= 1000
-      ? `${(value / 1000).toFixed(1)}t`
-      : `${Math.round(value * 10) / 10} kg`;
+    return `${Math.round(value * 10) / 10} kg`;
   }
   return String(Math.round(value));
 }
@@ -77,7 +77,6 @@ export function useExerciseDetailScreen() {
   }>();
 
   const exerciseId = params.exerciseId ?? '';
-  const trackingType = params.trackingType ?? 'WEIGHT_AND_REPS';
 
   const [periodLabel, setPeriodLabel] = useState('3 Months');
   const [metricIndex, setMetricIndex] = useState(0);
@@ -87,6 +86,9 @@ export function useExerciseDetailScreen() {
 
   const { data: exercise } = useGetExerciseById(exerciseId);
   const { data: progress, isLoading } = useExerciseProgress(exerciseId, from, to);
+  const { data: prHistory, isLoading: isLoadingPRs } = useGetExerciseRecordHistory(exerciseId);
+
+  const trackingType = (progress?.trackingType || exercise?.trackingType?.name || params.trackingType || 'WEIGHT_AND_REPS') as TrackingType;
 
   const metrics = useMemo(() => getMetricsForType(trackingType), [trackingType]);
   const currentMetric = metrics[metricIndex] ?? metrics[0];
@@ -112,10 +114,24 @@ export function useExerciseDetailScreen() {
     };
   }, [exercise]);
 
-  const historyRecords = useMemo(
-    () => [...(progress?.records ?? [])].reverse(),
-    [progress],
-  );
+  const historyRecords = useMemo(() => {
+    const records = progress?.records ?? [];
+    return [...records]
+      .reverse()
+      .map((record) => ({
+        ...record,
+        sets: (record.sets ?? []).map((s) => ({
+          ...s,
+          weight: s.weight != null ? Number(s.weight) : undefined,
+          reps: s.reps != null ? Number(s.reps) : undefined,
+          duration: s.duration != null ? Number(s.duration) : undefined,
+          distance: s.distance != null ? Number(s.distance) : undefined,
+          isPR: s.isPR,
+          achievementId: s.achievementId,
+          achievement: s.achievement,
+        })),
+      }));
+  }, [progress]);
 
   return {
     insets,
@@ -130,7 +146,8 @@ export function useExerciseDetailScreen() {
     to,
     exercise,
     progress,
-    isLoading,
+    prHistory,
+    isLoading: isLoading || isLoadingPRs,
     metrics,
     currentMetric,
     chartData,
@@ -138,5 +155,6 @@ export function useExerciseDetailScreen() {
     historyRecords,
     formatMetricValue,
     PERIOD_LABELS,
+    trackingType,
   };
 }

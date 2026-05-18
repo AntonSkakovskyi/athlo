@@ -58,16 +58,14 @@ export function useAchievementsScreen() {
   const getProgressForAchievement = useCallback((achievement: IAchievement): number => {
     if (achievement.type === AchievementType.EXERCISE_PERSONAL_RECORD && achievement.exerciseId) {
       if (!exerciseRecords) return 0;
-      const record = exerciseRecords.find((r) => r.exerciseId === achievement.exerciseId);
-      if (!record) return 0;
-      switch (achievement.trackingMetric) {
-        case 'WEIGHT': return record.bestWeight ?? 0;
-        case 'REPS': return record.bestReps ?? 0;
-        case 'ESTIMATED_1RM': return record.estimated1rm ?? 0;
-        case 'DURATION': return record.bestDuration ?? 0;
-        case 'DISTANCE': return record.bestDistance ?? 0;
-        default: return 0;
-      }
+      
+      const records = exerciseRecords.filter(
+        (r) => r.exerciseId === achievement.exerciseId && r.metricType === achievement.trackingMetric
+      );
+      
+      if (records.length === 0) return 0;
+      
+      return Math.max(...records.map(r => r.value));
     }
 
     if (!statisticsSummary) return 0;
@@ -78,6 +76,8 @@ export function useAchievementsScreen() {
         return statisticsSummary.totalSets;
       case AchievementType.GLOBAL_WEIGHT:
         return statisticsSummary.totalWeightLifted;
+      case AchievementType.GLOBAL_TIME:
+        return statisticsSummary.totalDurationSeconds || 0; // if it's there
       default:
         return 0;
     }

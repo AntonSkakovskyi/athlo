@@ -8,7 +8,7 @@ import { ExerciseLogCard, DurationPicker } from '@/features/workout/components';
 import { useWorkoutSummaryScreen } from '@/features/workout/hooks/useWorkoutSummaryScreen';
 import { getTrackingType } from '@/utils/workout';
 import { TrackingType, VisibilityType } from '@athlo/shared';
-import { BottomSheet } from '@/components/ui';
+import { BottomSheet, AchievementToast } from '@/components/ui';
 import { useState } from 'react';
 
 const FEELING_EMOJIS = ['😫', '😐', '😊', '😄', '🔥'];
@@ -59,11 +59,16 @@ export default function WorkoutSummaryScreen() {
     localDescription,
     setLocalDescription,
     lastPerformances,
+    newAchievement,
+    setNewAchievement,
   } = useWorkoutSummaryScreen();
 
   const [durationPickerVisible, setDurationPickerVisible] = useState(false);
   const [tempDuration, setTempDuration] = useState(0);
   const [isEditingName, setIsEditingName] = useState(false);
+
+  const [prAchievement, setPrAchievement] = useState<any>(null);
+  const [prVisible, setPrVisible] = useState(false);
 
   if (isLoading) {
     return <LoadingScreen paddingTop={insets.top} />;
@@ -77,6 +82,38 @@ export default function WorkoutSummaryScreen() {
       </View>
     );
   }
+
+  const handleOpenPR = (set: any, exerciseName: string, trackingType?: string) => {
+    if (set.achievement) {
+      setPrAchievement(set.achievement);
+    } else {
+      let recordDetails = '';
+      if (trackingType === 'WEIGHT_AND_REPS') {
+        if (set.weight != null && set.reps != null) {
+          recordDetails = `${set.weight}kg × ${set.reps} reps`;
+        } else if (set.weight != null) {
+          recordDetails = `${set.weight}kg`;
+        } else if (set.reps != null) {
+          recordDetails = `${set.reps} reps`;
+        }
+      } else if (trackingType === 'REPS_ONLY') {
+        if (set.reps != null) recordDetails = `${set.reps} reps`;
+      } else if (trackingType === 'TIME_BASED') {
+        const formatSecs = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+        const dur = set.duration ? formatSecs(set.duration) : '';
+        const dist = set.distance ? `${set.distance}m` : '';
+        recordDetails = [dur, dist].filter(Boolean).join(' ');
+      }
+
+      setPrAchievement({
+        name: 'Personal Record!',
+        description: recordDetails
+          ? `You've set a new personal record of ${recordDetails} for ${exerciseName}!`
+          : `You've set a new personal record for ${exerciseName}!`,
+      });
+    }
+    setPrVisible(true);
+  };
 
   const handleToggleEditing = () => {
     if (isEditing) {
@@ -143,10 +180,12 @@ export default function WorkoutSummaryScreen() {
       };
     });
 
+    const exName = ex.exercise?.name ?? `Exercise #${ex.order}`;
+
     return (
       <ExerciseLogCard
         key={ex.id}
-        exerciseName={ex.exercise?.name ?? `Exercise #${ex.order}`}
+        exerciseName={exName}
         trackingType={trackingType}
         mode="summary"
         isEditing={isEditing}
@@ -167,6 +206,7 @@ export default function WorkoutSummaryScreen() {
         onMoveUp={() => handleMoveExercise(ex.id, 'up')}
         onMoveDown={() => handleMoveExercise(ex.id, 'down')}
         onChangeExercise={() => handleChangeExercise(ex.id)}
+        onPRPress={(setIdx) => handleOpenPR(logSets[setIdx], exName, trackingType)}
       />
     );
   };
@@ -257,6 +297,23 @@ export default function WorkoutSummaryScreen() {
             <Button 
               title="Confirm" 
               onPress={handleConfirmDuration}
+              style={{ marginTop: 24 }}
+            />
+          </View>
+        </BottomSheet>
+
+        <BottomSheet
+          visible={prVisible}
+          onClose={() => setPrVisible(false)}
+          title={prAchievement?.name}
+          scrollable={false}
+        >
+          <View style={styles.prContent}>
+            <Text style={styles.trophyBigIcon}>🏆</Text>
+            <Text style={styles.prDescription}>{prAchievement?.description}</Text>
+            <Button 
+              title="Awesome!" 
+              onPress={() => setPrVisible(false)}
               style={{ marginTop: 24 }}
             />
           </View>
@@ -367,6 +424,13 @@ export default function WorkoutSummaryScreen() {
           />
         )}
       </ScrollView>
+
+      <AchievementToast
+        visible={!!newAchievement}
+        title={newAchievement?.title || ''}
+        description={newAchievement?.description}
+        onClose={() => setNewAchievement(null)}
+      />
     </View>
   );
 }
@@ -570,6 +634,21 @@ const styles = StyleSheet.create({
   addExerciseBtn: {
     marginTop: spacing.md,
     marginBottom: spacing.xl,
+  },
+  prContent: {
+    paddingBottom: 24,
+    alignItems: 'center',
+  },
+  trophyBigIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  prDescription: {
+    fontSize: fontSize.md,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    paddingHorizontal: 20,
   },
 });
 

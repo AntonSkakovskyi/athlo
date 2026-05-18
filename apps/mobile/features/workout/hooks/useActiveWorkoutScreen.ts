@@ -40,6 +40,7 @@ export function useActiveWorkoutScreen() {
   const [editName, setEditName] = useState<string | null>(null);
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [restTimerSeconds, setRestTimerSeconds] = useState(60);
+  const [newAchievement, setNewAchievement] = useState<{ title: string; description?: string } | null>(null);
 
   const updateWorkoutMutation = useUpdateWorkout();
   const deleteWorkout = useDeleteWorkout();
@@ -68,6 +69,7 @@ export function useActiveWorkoutScreen() {
       !lastPerfQuery.isSuccess &&
       !lastPerfQuery.isError);
 
+
   useEffect(() => {
     if (!isActive || !workout) return;
     const start = new Date(workout.started_at).getTime();
@@ -78,7 +80,6 @@ export function useActiveWorkoutScreen() {
   }, [isActive, workout]);
 
   useEffect(() => {
-    if (!workoutQuery.data || exercises.length > 0) return;
     if (exerciseIds.length > 0 && !lastPerfQuery.isSuccess && !lastPerfQuery.isError) return;
     if (workoutQuery.data.logExercises?.length) {
       for (const ex of workoutQuery.data.logExercises.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))) {
@@ -107,6 +108,9 @@ export function useActiveWorkoutScreen() {
                   duration: s.duration,
                   distance: s.distance,
                   isCompleted: s.isCompleted,
+                  isPR: s.isPR,
+                  achievementId: s.achievementId,
+                  achievement: s.achievement,
                   previousWeight: prevPerformanceSet?.weight,
                   previousReps: prevPerformanceSet?.reps,
                   previousDuration: prevPerformanceSet?.duration,
@@ -180,7 +184,17 @@ export function useActiveWorkoutScreen() {
       const ex = exercises[exerciseIndex];
       const set = ex?.sets[setIndex];
       if (ex?.logExerciseId && set?.id) {
-        apiClient.patch(`workouts/${workoutId}/exercises/${ex.logExerciseId}/sets/${set.id}`, data);
+        apiClient
+          .patch(`workouts/${workoutId}/exercises/${ex.logExerciseId}/sets/${set.id}`, data)
+          .then((response) => {
+            if (response.data) {
+              updateSetLocal(exerciseIndex, setIndex, {
+                isPR: response.data.isPR,
+                achievementId: response.data.achievementId,
+                achievement: response.data.achievement,
+              });
+            }
+          });
       }
     },
     [exercises, workoutId, updateSetLocal],
@@ -225,12 +239,60 @@ export function useActiveWorkoutScreen() {
       toggleSetCompleteLocal(exerciseIndex, setIndex);
 
       if (ex?.logExerciseId && set.id) {
-        apiClient.patch(`workouts/${workoutId}/exercises/${ex.logExerciseId}/sets/${set.id}`, {
-          isCompleted: newCompleted,
-        });
+        apiClient
+          .patch(`workouts/${workoutId}/exercises/${ex.logExerciseId}/sets/${set.id}`, {
+            isCompleted: newCompleted,
+          })
+          .then((response) => {
+            // Update with returned data (isPR, achievementId, achievement)
+            if (response.data) {
+              updateSetLocal(exerciseIndex, setIndex, {
+                isPR: response.data.isPR,
+                achievementId: response.data.achievementId,
+                achievement: response.data.achievement,
+              });
+
+              if (newCompleted && (response.data.isPR || response.data.achievement)) {
+                if (response.data.achievement) {
+                  setNewAchievement({
+                    title: response.data.achievement.name,
+                    description: response.data.achievement.description,
+                  });
+                } else if (response.data.isPR) {
+                  let recordDetails = '';
+                  if (ex.trackingType === 'WEIGHT_AND_REPS') {
+                    if (set.weight != null && set.reps != null) {
+                      recordDetails = `${set.weight}kg × ${set.reps} reps`;
+                    } else if (set.weight != null) {
+                      recordDetails = `${set.weight}kg`;
+                    } else if (set.reps != null) {
+                      recordDetails = `${set.reps} reps`;
+                    }
+                  } else if (ex.trackingType === 'REPS_ONLY') {
+                    if (set.reps != null) recordDetails = `${set.reps} reps`;
+                  } else if (ex.trackingType === 'TIME_BASED') {
+                    const formatSecs = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+                    const dur = set.duration ? formatSecs(set.duration) : '';
+                    const dist = set.distance ? `${set.distance}m` : '';
+                    recordDetails = [dur, dist].filter(Boolean).join(' ');
+                  }
+
+                  setNewAchievement({
+                    title: 'Personal Record!',
+                    description: recordDetails
+                      ? `You've set a new personal record of ${recordDetails} for ${ex.exerciseName}!`
+                      : `You've set a new personal record for ${ex.exerciseName}!`,
+                  });
+                }
+              }
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to update set completion status:', err);
+          });
       }
     },
-    [exercises, workoutId, toggleSetCompleteLocal],
+    [exercises, workoutId, toggleSetCompleteLocal, updateSetLocal],
   );
 
   const handleFinish = useCallback(async () => {
@@ -341,6 +403,8 @@ export function useActiveWorkoutScreen() {
     showRestTimer,
     setShowRestTimer,
     restTimerSeconds,
+    newAchievement,
+    setNewAchievement,
     isLoadingExercises,
     handleFinish,
     handleRestTimer,

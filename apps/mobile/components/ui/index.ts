@@ -22,3 +22,5 @@ export { Spinner } from './Spinner/Spinner';
 export { Tag } from './Tag/Tag';
 export { Typography } from './Typography/Typography';
 export { TimePicker } from './TimePicker/TimePicker';
+export { AchievementToast } from './AchievementToast/AchievementToast';
+

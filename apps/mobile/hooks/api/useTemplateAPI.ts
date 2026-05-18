@@ -25,6 +25,11 @@ export const useGetTemplateById = (id: string) => {
       return response.data;
     },
     enabled: !!id,
+    retry: (failureCount, error: any) => {
+      // Don't retry if the template is not found (404)
+      if (error?.response?.status === 404) return false;
+      return failureCount < 3;
+    },
   });
 };
 
@@ -139,7 +144,8 @@ export const useDeleteTemplate = () => {
 
   return useMutation({
     mutationFn: (id: string) => apiClient.delete(apiRoutes.templates.getById(id)),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
+      queryClient.removeQueries({ queryKey: templateKeys.byId(id) });
       queryClient.invalidateQueries({ queryKey: templateKeys.all });
     },
   });

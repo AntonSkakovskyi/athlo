@@ -1,15 +1,16 @@
 import { useState, useMemo, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import type { IFrequentExercise } from '@athlo/shared';
 import { colors, spacing } from '@/constants/theme';
-import { useFrequentExercises } from '@/features/profile/hooks';
+import { useInfiniteExercises } from '@/hooks/api/useExerciseAPI';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { Input } from '@/components/ui/Input/Input';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { ExerciseProgressListItem } from '@/features/profile/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
+import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
+import type { ExerciseWithRelations } from '@/hooks/api/useExerciseAPI';
 
 export default function ExerciseProgressScreen() {
   const insets = useSafeAreaInsets();
@@ -23,14 +24,14 @@ export default function ExerciseProgressScreen() {
     (text: string) => {
       setSearchQuery(text);
       if (debounceTimer) clearTimeout(debounceTimer);
-      const timer = setTimeout(() => setDebouncedSearch(text.length >= 2 ? text : ''), 300);
+      const timer = setTimeout(() => setDebouncedSearch(text.trim()), 300);
       setDebounceTimer(timer);
     },
     [debounceTimer],
   );
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useFrequentExercises(debouncedSearch || undefined);
+    useInfiniteExercises({ search: debouncedSearch || undefined });
 
   const exercises = useMemo(
     () => data?.pages.flatMap((p) => p.data) ?? [],
@@ -38,27 +39,21 @@ export default function ExerciseProgressScreen() {
   );
 
   const handleExercisePress = useCallback(
-    (exercise: IFrequentExercise) => {
+    (exercise: ExerciseWithRelations) => {
       router.push({
         pathname: '/(app)/(profile)/exercise-detail',
         params: {
-          exerciseId: String(exercise.exerciseId),
-          exerciseName: exercise.exerciseName,
-          trackingType: exercise.trackingType,
+          exerciseId: String(exercise.id),
+          exerciseName: exercise.name,
+          trackingType: exercise.trackingType?.name || '',
         },
       });
     },
     [router],
   );
 
-  const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
-
   return (
-    <FlatList
+    <InfiniteList
       style={styles.container}
       contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
@@ -76,10 +71,18 @@ export default function ExerciseProgressScreen() {
         </View>
       }
       data={exercises}
-      keyExtractor={(item) => String(item.exerciseId)}
+      keyExtractor={(item) => String(item.id)}
       renderItem={({ item }) => (
         <ExerciseProgressListItem
-          exercise={item}
+          exercise={{
+            exerciseId: item.id,
+            exerciseName: item.name,
+            equipmentName: item.equipment?.name || '',
+            trackingType: item.trackingType?.name || '',
+            totalSets: item.totalSets || 0,
+            totalWorkouts: item.totalWorkouts || 0,
+            primaryMuscles: item.exerciseMuscles?.filter(m => m.isPrimary).map(m => m.muscle.name) || []
+          }}
           onPress={() => handleExercisePress(item)}
         />
       )}
@@ -88,18 +91,14 @@ export default function ExerciseProgressScreen() {
           <Spinner style={styles.loader} />
         ) : (
           <EmptyState
-            title="Start working out to track your progress"
-            description="Exercises you perform will appear here sorted by frequency"
+            title="No exercises found"
+            description="Start working out or adjust your search to see progress"
           />
         )
       }
-      onEndReached={handleEndReached}
-      onEndReachedThreshold={0.3}
-      ListFooterComponent={
-        isFetchingNextPage ? (
-          <Spinner style={styles.loader} />
-        ) : null
-      }
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      onLoadMore={fetchNextPage}
     />
   );
 }
