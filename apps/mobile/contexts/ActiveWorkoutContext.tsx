@@ -63,21 +63,32 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
 
   const addExercise = useCallback(
     (exercise: Omit<ActiveExercise, 'order' | 'showNotes' | 'sets' | 'notes'> & { sets?: SetRowData[]; notes?: string }) => {
-      setState((prev) => ({
-        ...prev,
-        exercises: [
-          ...prev.exercises,
-          {
-            ...exercise,
-            order: prev.exercises.length + 1,
-            showNotes: false,
-            notes: exercise.notes ?? '',
-            sets: exercise.sets ?? [
-              { order: 1, isCompleted: false },
-            ],
-          },
-        ],
-      }));
+      setState((prev) => {
+        const newExercise = {
+          ...exercise,
+          order: prev.exercises.length + 1,
+          showNotes: false,
+          notes: exercise.notes ?? '',
+          sets: exercise.sets ?? [{ order: 1, isCompleted: false }],
+        };
+
+        // Prevent duplicate logExerciseId by replacing the existing one
+        const existingIndex = exercise.logExerciseId != null 
+          ? prev.exercises.findIndex(e => e.logExerciseId === exercise.logExerciseId)
+          : -1;
+
+        if (existingIndex >= 0) {
+          const updatedExercises = [...prev.exercises];
+          newExercise.order = prev.exercises[existingIndex].order;
+          updatedExercises[existingIndex] = newExercise;
+          return { ...prev, exercises: updatedExercises };
+        }
+
+        return {
+          ...prev,
+          exercises: [...prev.exercises, newExercise],
+        };
+      });
     },
     [],
   );

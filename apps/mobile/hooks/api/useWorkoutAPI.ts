@@ -144,7 +144,8 @@ export const useDeleteWorkout = () => {
 
   return useMutation({
     mutationFn: (id: string) => apiClient.delete(apiRoutes.workouts.getById(id)),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
+      queryClient.removeQueries({ queryKey: workoutKeys.byId(id) });
       queryClient.invalidateQueries({ queryKey: workoutKeys.all });
     },
   });

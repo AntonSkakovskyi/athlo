@@ -2,7 +2,13 @@ import { useState, useMemo } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { useGetWorkoutTemplates, useCreateWorkoutTemplate, useStartWorkoutFromTemplate } from '@/hooks/api';
+import { 
+  useGetMyTemplates, 
+  useGetPublicTemplates, 
+  useGetFriendsTemplates, 
+  useCreateTemplate, 
+  useStartFromTemplate 
+} from '@/hooks/api';
 import type { IWorkoutTemplate } from '@athlo/shared';
 import { VisibilityType } from '@athlo/shared';
 import TemplateCard from '../components/TemplateCard/TemplateCard';
@@ -17,23 +23,14 @@ export function useTemplatesScreen() {
   const [search, setSearch] = useState('');
   const [visibility, setVisibility] = useState<VisibilityType>(VisibilityType.PRIVATE);
 
-  const myTemplatesQuery = useGetWorkoutTemplates({ 
-    onlyMy: true,
-    search: search.trim() || undefined 
-  });
-  const publicTemplatesQuery = useGetWorkoutTemplates({ 
-    onlyPublic: true,
-    search: search.trim() || undefined 
-  });
-  const friendsTemplatesQuery = useGetWorkoutTemplates({ 
-    onlyFriends: true,
-    search: search.trim() || undefined 
-  });
+  const myTemplatesQuery = useGetMyTemplates();
+  const publicTemplatesQuery = useGetPublicTemplates();
+  const friendsTemplatesQuery = useGetFriendsTemplates();
 
   const activeQuery = activeTab === 0 ? myTemplatesQuery : activeTab === 1 ? publicTemplatesQuery : friendsTemplatesQuery;
 
-  const createTemplate = useCreateWorkoutTemplate();
-  const startFromTemplate = useStartWorkoutFromTemplate();
+  const createTemplate = useCreateTemplate();
+  const startFromTemplate = useStartFromTemplate();
 
   const handleCreate = () => {
     if (!newName.trim()) return;
@@ -41,15 +38,15 @@ export function useTemplatesScreen() {
       { 
         name: newName.trim(), 
         description: newDescription.trim() || undefined,
-        visibilityTypeId: visibility,
+        visibilityTypeId: visibility as unknown as number,
       },
       {
-        onSuccess: (tpl) => {
+        onSuccess: (tpl: IWorkoutTemplate) => {
           setNewName('');
           setNewDescription('');
           setVisibility(VisibilityType.PRIVATE);
           setShowCreate(false);
-          router.push(`/(app)/(workout)/template/${tpl.id}`);
+          router.push(`/(app)/(workout)/template/${tpl.id}` as any);
         },
       }
     );
@@ -68,36 +65,36 @@ export function useTemplatesScreen() {
       <TemplateCard
         name={item.name}
         description={item.description}
-        creatorName={creatorNickname}
+        author={creatorNickname}
         variant={variant}
-        onPress={() => router.push(`/(app)/(workout)/template/${item.id}`)}
+        onPress={() => router.push(`/(app)/(workout)/template/${item.id}` as any)}
         onStart={() => handleStartFromTemplate(item.id)}
       />
     </View>
   );
 
   const myGroups = useMemo(() => {
-    const templates = myTemplatesQuery.data?.pages.flatMap(p => p.items) ?? [];
+    const templates = (myTemplatesQuery.data as any) ?? [];
     return {
-      my: templates.filter(t => t.isCreator),
-      friends: templates.filter(t => !t.isCreator && t.visibilityTypeId === VisibilityType.FRIENDS_ONLY),
-      public: templates.filter(t => !t.isCreator && t.visibilityTypeId === VisibilityType.PUBLIC)
+      my: templates,
+      friends: [],
+      public: []
     };
   }, [myTemplatesQuery.data]);
 
   const publicGroups = useMemo(() => {
-    const templates = publicTemplatesQuery.data?.pages.flatMap(p => p.items) ?? [];
+    const templates = (publicTemplatesQuery.data as any) ?? [];
     return {
-      general: templates.filter(t => !t.creatorId),
-      public: templates.filter(t => t.creatorId)
+      general: templates.filter((t: any) => !t.creatorId),
+      public: templates.filter((t: any) => t.creatorId)
     };
   }, [publicTemplatesQuery.data]);
 
   const friendsGroups = useMemo(() => {
-    const templates = friendsTemplatesQuery.data?.pages.flatMap(p => p.items) ?? [];
+    const templates = (friendsTemplatesQuery.data as any) ?? [];
     // Group by friend
     const groups: Record<number, { friend: { id: number; nickname?: string; fullName: string }; templates: IWorkoutTemplate[] }> = {};
-    templates.forEach(t => {
+    templates.forEach((t: any) => {
       if (t.creatorId && t.creatorNickname) {
         if (!groups[t.creatorId]) {
           groups[t.creatorId] = { 

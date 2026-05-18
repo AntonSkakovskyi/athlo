@@ -12,11 +12,11 @@ export function Card({ style, padding, children, onPress, ...rest }: CardProps) 
   if (onPress) {
     return (
       <Pressable
-        style={[styles.card, padding !== undefined ? { padding } : undefined, style]}
+        style={[styles.card, padding !== undefined ? { padding } : undefined, style] as any}
         onPress={onPress}
         {...rest}
       >
-        {children}
+        {children as any}
       </Pressable>
     );
   }
@@ -26,7 +26,7 @@ export function Card({ style, padding, children, onPress, ...rest }: CardProps) 
       style={[styles.card, padding !== undefined ? { padding } : undefined, style]}
       {...rest}
     >
-      {children}
+      {children as React.ReactNode}
     </View>
   );
 }

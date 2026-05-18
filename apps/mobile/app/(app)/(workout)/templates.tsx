@@ -45,7 +45,7 @@ export default function TemplatesScreen() {
   } = useTemplatesScreen();
 
   const renderTabContent = () => {
-    if (activeQuery.isLoading && !publicTemplatesQuery.isFetchingNextPage) {
+    if (activeQuery.isLoading && !(publicTemplatesQuery as any).isFetchingNextPage) {
       return <Spinner size="large" style={styles.loader} />;
     }
 
@@ -72,17 +72,17 @@ export default function TemplatesScreen() {
             <View>
               {myGroups.my.length > 0 && (
                 <CollapsibleSection title="My Templates" count={myGroups.my.length} initiallyExpanded>
-                  {myGroups.my.map(t => renderTemplateItem(t, 'my'))}
+                  {myGroups.my.map((t: any) => renderTemplateItem(t as any, 'my'))}
                 </CollapsibleSection>
               )}
               {myGroups.friends.length > 0 && (
                 <CollapsibleSection title="Friends' Templates" count={myGroups.friends.length}>
-                  {myGroups.friends.map(s => renderTemplateItem(s.workoutTemplate!, 'saved', s.workoutTemplate?.creatorNickname))}
+                  {myGroups.friends.map((s: any) => renderTemplateItem(s.workoutTemplate! as any, 'saved', s.workoutTemplate?.creatorNickname))}
                 </CollapsibleSection>
               )}
               {myGroups.public.length > 0 && (
                 <CollapsibleSection title="Public & General" count={myGroups.public.length}>
-                  {myGroups.public.map(s => renderTemplateItem(s.workoutTemplate!, 'saved', s.workoutTemplate?.creatorNickname))}
+                  {myGroups.public.map((s: any) => renderTemplateItem(s.workoutTemplate! as any, 'saved', s.workoutTemplate?.creatorNickname))}
                 </CollapsibleSection>
               )}
             </View>
@@ -103,15 +103,15 @@ export default function TemplatesScreen() {
             <View>
               {publicGroups.general.length > 0 && (
                 <CollapsibleSection title="General" count={publicGroups.general.length} initiallyExpanded>
-                  {publicGroups.general.map(t => renderTemplateItem(t, 'public'))}
+                  {publicGroups.general.map((t: any) => renderTemplateItem(t as any, 'public'))}
                 </CollapsibleSection>
               )}
               {publicGroups.public.length > 0 && (
                 <CollapsibleSection title="Public Templates" count={publicGroups.public.length} initiallyExpanded>
-                  {publicGroups.public.map(t => renderTemplateItem(t, 'public', t.creatorNickname))}
+                  {publicGroups.public.map((t: any) => renderTemplateItem(t as any, 'public', t.creatorNickname))}
                 </CollapsibleSection>
               )}
-              {!hasContent && !publicTemplatesQuery.isFetchingNextPage && (
+              {!hasContent && !(publicTemplatesQuery as any).isFetchingNextPage && (
                 <EmptyState
                   title="No public templates found"
                   description="Try adjusting your search"
@@ -120,9 +120,9 @@ export default function TemplatesScreen() {
             </View>
           }
           contentContainerStyle={styles.list}
-          hasNextPage={publicTemplatesQuery.hasNextPage}
-          isFetchingNextPage={publicTemplatesQuery.isFetchingNextPage}
-          onLoadMore={() => publicTemplatesQuery.fetchNextPage()}
+          hasNextPage={(publicTemplatesQuery as any).hasNextPage}
+          isFetchingNextPage={(publicTemplatesQuery as any).isFetchingNextPage}
+          onLoadMore={() => (publicTemplatesQuery as any).fetchNextPage?.()}
         />
       );
     }

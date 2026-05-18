@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -69,7 +69,7 @@ export function useActiveWorkoutScreen() {
       !lastPerfQuery.isSuccess &&
       !lastPerfQuery.isError);
 
-
+//TODO виправити, бо тут піздєц
   useEffect(() => {
     if (!isActive || !workout) return;
     const start = new Date(workout.started_at).getTime();
@@ -79,10 +79,16 @@ export function useActiveWorkoutScreen() {
     return () => clearInterval(interval);
   }, [isActive, workout]);
 
+  const addedLogExerciseIds = useRef(new Set<number>());
+
   useEffect(() => {
     if (exerciseIds.length > 0 && !lastPerfQuery.isSuccess && !lastPerfQuery.isError) return;
-    if (workoutQuery.data.logExercises?.length) {
+    if (workoutQuery.data?.logExercises?.length) {
+      const existingIds = new Set(exercises.map((e) => e.logExerciseId));
       for (const ex of workoutQuery.data.logExercises.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))) {
+        if (existingIds.has(ex.id) || addedLogExerciseIds.current.has(ex.id)) continue;
+
+        addedLogExerciseIds.current.add(ex.id);
         const trackingType = getTrackingType(ex.exercise?.trackingTypeId);
         const prevSets = lastPerfQuery.data?.[ex.exerciseId]?.sets ?? [];
         
@@ -138,7 +144,7 @@ export function useActiveWorkoutScreen() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workoutQuery.data, lastPerfQuery.data, lastPerfQuery.isSuccess, lastPerfQuery.isError, exerciseIds]);
+  }, [workoutQuery.data, lastPerfQuery.data, lastPerfQuery.isSuccess, lastPerfQuery.isError, exerciseIds, exercises]);
 
   const updateExercise = useCallback(
     (index: number, data: Partial<{ notes: string; restTime: number; showNotes: boolean }>) => {
@@ -225,6 +231,7 @@ export function useActiveWorkoutScreen() {
     if (!ex) return;
     if (ex.logExerciseId) {
       apiClient.delete(`workouts/${workoutId}/exercises/${ex.logExerciseId}`);
+      addedLogExerciseIds.current.delete(ex.logExerciseId);
     }
     removeExercise(index);
   }, [exercises, workoutId, removeExercise]);
@@ -312,6 +319,7 @@ export function useActiveWorkoutScreen() {
         if (ex.logExerciseId) {
           try {
             await apiClient.delete(`workouts/${workoutId}/exercises/${ex.logExerciseId}`);
+            addedLogExerciseIds.current.delete(ex.logExerciseId);
           } catch (e) {
             console.error('Failed to prune empty exercise:', e);
           }

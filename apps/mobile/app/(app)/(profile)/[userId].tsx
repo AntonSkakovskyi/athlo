@@ -44,7 +44,7 @@ export default function UserProfileScreen() {
         <View style={styles.resourcesSection}>
           <CollapsibleSection title="Workout Templates" count={templates?.length ?? 0}>
             {templates?.map(t => (
-              <Card key={t.id} style={styles.resourceCard} onPress={() => router.push({ pathname: '/(app)/(workout)/template-detail', params: { id: String(t.id) } })}>
+              <Card key={t.id} style={styles.resourceCard} onPress={() => router.push({ pathname: `/(app)/(workout)/template/${t.id}`, params: { id: String(t.id) } })}>
                 <Text style={styles.resourceTitle}>{t.name}</Text>
                 {t.description && <Text style={styles.resourceDesc}>{t.description}</Text>}
               </Card>

@@ -8,8 +8,10 @@ import { useTemplateDetailScreen } from '@/features/workout/hooks/useTemplateDet
 import { ExerciseLogCard } from '@/features/workout/components';
 import { TemplateDetailHeader } from '@/features/workout/components/TemplateDetailHeader/TemplateDetailHeader';
 import { getTrackingType } from '@/utils/workout';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function TemplateDetailScreen() {
+  const { user } = useAuth();
   const {
     typedTemplate, exercises, isLoading, error,
     editName, setEditName, editDesc, setEditDesc,
@@ -22,6 +24,8 @@ export default function TemplateDetailScreen() {
     startFromTemplatePending, deleteTemplatePending,
     insets, router,
   } = useTemplateDetailScreen();
+
+  const isOwner = user?.id === typedTemplate?.creatorId;
 
   if (isLoading) {
     return (
@@ -46,9 +50,11 @@ export default function TemplateDetailScreen() {
         <Pressable onPress={() => router.back()}>
           <Text style={styles.backBtn}>← Back</Text>
         </Pressable>
-        <Pressable onPress={toggleEditing}>
-          <Text style={styles.editBtn}>{isEditing ? 'Done' : 'Edit'}</Text>
-        </Pressable>
+        {isOwner && (
+          <Pressable onPress={toggleEditing}>
+            <Text style={styles.editBtn}>{isEditing ? 'Done' : 'Edit'}</Text>
+          </Pressable>
+        )}
       </View>
 
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
@@ -58,8 +64,8 @@ export default function TemplateDetailScreen() {
           editName={editName}
           editDesc={editDesc}
           exerciseCount={exercises.length}
-          onEditName={() => setEditName(typedTemplate.name)}
-          onEditDesc={() => setEditDesc(typedTemplate.description ?? '')}
+          onEditName={isOwner ? () => setEditName(typedTemplate.name) : () => {}}
+          onEditDesc={isOwner ? () => setEditDesc(typedTemplate.description ?? '') : () => {}}
           onChangeEditName={setEditName}
           onChangeEditDesc={setEditDesc}
           onSaveName={handleSaveName}
@@ -67,7 +73,7 @@ export default function TemplateDetailScreen() {
         />
 
         {exercises.length === 0 ? (
-          <EmptyState title="No exercises yet" description="Add exercises to build your template" actionLabel="+ Add Exercise" onAction={handleAddExercise} />
+          <EmptyState title="No exercises yet" description="Add exercises to build your template" actionLabel={isOwner ? "+ Add Exercise" : undefined} onAction={isOwner ? handleAddExercise : undefined} />
         ) : (
           exercises.map((ex, idx) => (
             <ExerciseLogCard
@@ -79,25 +85,29 @@ export default function TemplateDetailScreen() {
               sets={(ex.templateSets ?? []).sort((a, b) => a.order - b.order).map(s => ({ ...s, isCompleted: false }))}
               showNotes={false}
               restTime={ex.restTime}
-              onUpdateSet={(setIdx, data) => handleUpdateSet(ex.id, setIdx, data)}
-              onAddSet={() => handleAddSet(ex.id)}
-              onDeleteSet={(setIdx) => handleDeleteSet(ex.id, setIdx)}
-              onRestTimer={() => handleUpdateRestTime(ex.id, ex.restTime ?? 0)}
-              onDeleteExercise={() => handleDeleteExercise(ex.id)}
-              onMoveUp={idx > 0 ? () => handleMoveExercise(idx, 'up') : undefined}
-              onMoveDown={idx < exercises.length - 1 ? () => handleMoveExercise(idx, 'down') : undefined}
+              onUpdateSet={isOwner ? (setIdx, data) => { handleUpdateSet(ex.id, setIdx, data); } : () => {}}
+              onAddSet={isOwner ? () => handleAddSet(ex.id) : undefined}
+              onDeleteSet={isOwner ? (setIdx) => handleDeleteSet(ex.id, setIdx) : undefined}
+              onRestTimer={isOwner ? () => handleUpdateRestTime(ex.id, ex.restTime ?? 0) : undefined}
+              onDeleteExercise={isOwner ? () => handleDeleteExercise(ex.id) : undefined}
+              onMoveUp={isOwner && idx > 0 ? () => handleMoveExercise(idx, 'up') : undefined}
+              onMoveDown={isOwner && idx < exercises.length - 1 ? () => handleMoveExercise(idx, 'down') : undefined}
             />
           ))
         )}
 
-        {exercises.length > 0 && isEditing && (
+        {exercises.length > 0 && isEditing && isOwner && (
           <Button title="+ Add Exercise" variant="ghost" onPress={handleAddExercise} style={styles.addExerciseBtn} />
         )}
       </ScrollView>
 
       <View style={styles.footer}>
         <Button title="▶ Start Workout" variant="primary" onPress={handleStart} isLoading={startFromTemplatePending} style={styles.footerButton} />
-        <Button title="Delete" variant="danger" onPress={handleDelete} isLoading={deleteTemplatePending} style={styles.deleteButton} />
+        {isOwner ? (
+          <Button title="Delete" variant="danger" onPress={handleDelete} isLoading={deleteTemplatePending} style={styles.deleteButton} />
+        ) : (
+          <Button title="Save Template" variant="secondary" onPress={() => {}} style={styles.deleteButton} />
+        )}
       </View>
 
       <BottomSheet
@@ -109,7 +119,7 @@ export default function TemplateDetailScreen() {
         <TimePicker 
           value={pickerValue} 
           onChange={setPickerValue}
-          showHours={false}
+          hideHours={true}
         />
         <Button 
           title="Save Rest Time" 

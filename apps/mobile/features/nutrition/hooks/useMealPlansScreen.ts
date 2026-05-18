@@ -53,7 +53,7 @@ export function useMealPlansScreen() {
         name: name.trim(),
         description: description.trim() || undefined,
         totalDays: isNaN(days) || days < 1 ? 7 : days,
-        visibilityTypeId: visibility,
+        visibilityTypeId: visibility as unknown as number,
       },
       {
         onSuccess: (newPlan) => {
