@@ -1,4 +1,5 @@
 export { Avatar } from './Avatar/Avatar';
+export { BarChartBlock } from './BarChartBlock/BarChartBlock';
 export { BottomSheet, BottomSheetItem } from './BottomSheet/BottomSheet';
 export { Button } from './Button/Button';
 export { Card } from './Card/Card';

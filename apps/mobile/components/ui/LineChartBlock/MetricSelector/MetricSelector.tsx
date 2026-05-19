@@ -25,6 +25,7 @@ export function MetricSelector({
           label={m}
           active={activeMetric === i}
           onPress={() => onMetricChange(i)}
+          borderRadius={spacing.md}
         />
       ))}
     </ScrollView>

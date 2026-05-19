@@ -47,7 +47,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           color={colors.textMuted}
         />
       </Pressable>
-      {isExpanded && <View style={styles.content}>{children}</View>}
+      {isExpanded && <View>{children}</View>}
     </View>
   );
 };
@@ -56,10 +56,10 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    marginBottom: spacing.md,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.border,
+    padding: spacing.sm,
   },
   header: {
     flexDirection: 'row',
@@ -86,8 +86,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: colors.primary,
-  },
-  content: {
-    paddingBottom: spacing.sm,
   },
 });

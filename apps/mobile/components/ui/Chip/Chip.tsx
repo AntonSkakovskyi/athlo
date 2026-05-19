@@ -4,13 +4,14 @@ import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants
 interface ChipProps {
   label: string;
   active?: boolean;
+  borderRadius?: number;
   onPress?: () => void;
 }
 
-export function Chip({ label, active = false, onPress }: ChipProps) {
+export function Chip({ label, active = false, borderRadius, onPress }: ChipProps) {
   return (
     <Pressable
-      style={[styles.chip, active && styles.chipActive]}
+      style={[styles.chip, active && styles.chipActive, { borderRadius }]}
       onPress={onPress}
     >
       <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>

@@ -13,6 +13,7 @@ import { MetricSelector } from './MetricSelector/MetricSelector';
 interface DataPoint {
   date: string;
   value: number;
+  label?: string;
 }
 
 interface LineChartBlockProps {
@@ -40,8 +41,7 @@ export function LineChartBlock({
   onPeriodChange,
   periods,
   formatValue = (v) => String(Math.round(v * 10) / 10),
-  formatDate = (d) =>
-    new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  formatDate,
   emptyText = 'No data available',
   metrics,
   activeMetric,
@@ -50,6 +50,15 @@ export function LineChartBlock({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [periodOpen, setPeriodOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
+
+  const displayFormatDate = useCallback((d: string) => {
+    if (formatDate) return formatDate(d);
+    const date = new Date(d);
+    if (period === '1 Year' || period === 'All Time') {
+      return date.toLocaleDateString('en-US', { month: 'short' });
+    }
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }, [formatDate, period]);
 
   const minVal = useMemo(() => {
     if (data.length === 0) return 0;
@@ -66,23 +75,27 @@ export function LineChartBlock({
     setContainerWidth(e.nativeEvent.layout.width);
   }, []);
 
+  const plotWidth = containerWidth > 0
+    ? containerWidth - CONTAINER_PADDING * 2 - Y_AXIS_WIDTH
+    : 0;
+
   const chartData: lineDataItem[] = useMemo(() => {
     if (data.length === 0) return [];
 
+    // Aim for one label every ~70 pixels
+    const maxLabels = plotWidth > 0 ? Math.floor(plotWidth / 70) : 5;
+    const skip = Math.max(1, Math.ceil(data.length / maxLabels));
+
     const shouldShowLabel = (i: number) => {
-      if (data.length <= 7) return true;
-      return i === 0 || i === Math.floor(data.length / 2) || i === data.length - 1;
+      if (data.length <= maxLabels && plotWidth > 0) return true;
+      return i % skip === 0 || i === data.length - 1;
     };
 
     return data.map((d, i) => ({
       value: d.value,
-      label: shouldShowLabel(i) ? formatDate(d.date) : '',
+      label: shouldShowLabel(i) ? (d.label ?? displayFormatDate(d.date)) : '',
     }));
-  }, [data, formatDate]);
-
-  const plotWidth = containerWidth > 0
-    ? containerWidth - CONTAINER_PADDING * 2 - Y_AXIS_WIDTH
-    : 0;
+  }, [data, displayFormatDate, plotWidth]);
 
   const dataSpacing = useMemo(() => {
     if (data.length <= 1 || plotWidth <= 0) return plotWidth;
@@ -98,7 +111,7 @@ export function LineChartBlock({
           {displayPoint && (
             <Text style={styles.headerValue}>
               {formatValue(displayPoint.value)}{' '}
-              <Text style={styles.headerDate}>· {formatDate(displayPoint.date)}</Text>
+              <Text style={styles.headerDate}>· {displayFormatDate(displayPoint.date)}</Text>
             </Text>
           )}
           <PeriodSelector
