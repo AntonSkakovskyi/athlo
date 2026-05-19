@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useState } from 'react';
+import { router, useRouter } from 'expo-router';
 import type { IWaterLog } from '@athlo/shared';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
@@ -51,9 +52,11 @@ export function WaterTracker({
     return now.getHours() * 3600 + now.getMinutes() * 60;
   });
 
-  const percent = waterGoal > 0 ? Math.min((totalWaterMl / waterGoal) * 100, 100) : 0;
+  const hasGoal = Boolean(waterGoal && waterGoal > 0);
+  const percent = hasGoal ? Math.min((totalWaterMl / waterGoal!) * 100, 100) : 0;
 
   const handleCustomAdd = () => {
+    if (!hasGoal) return;
     const ml = parseInt(customAmount, 10);
     if (ml > 0) {
       let isoTime: string | undefined;
@@ -86,6 +89,7 @@ export function WaterTracker({
   };
 
   const handleEditPress = (log: IWaterLog) => {
+    if (!hasGoal) return;
     setEditingLogId(log.id);
     setCustomAmount(String(log.amountMl));
     const d = new Date(log.consumedAt);
@@ -95,6 +99,7 @@ export function WaterTracker({
   };
 
   const handleQuickAdd = (ml: number) => {
+    if (!hasGoal) return;
     setCustomAmount(String(ml));
     setEditingLogId(null);
     setTimeModified(false);
@@ -127,7 +132,7 @@ export function WaterTracker({
       <View style={styles.header}>
         <Text style={styles.title}>💧 Water</Text>
         <Text style={styles.summary}>
-          {totalWaterMl} / {waterGoal} ml
+          {totalWaterMl} / {hasGoal ? waterGoal : '?'} ml
         </Text>
       </View>
 
@@ -136,74 +141,87 @@ export function WaterTracker({
         <View style={[styles.progressBarFill, { width: `${percent}%` }]} />
       </View>
 
-      {/* Quick Add Buttons */}
-      <View style={styles.quickAddRow}>
-        {QUICK_ADD_OPTIONS.map((ml) => (
-          <Button
-            key={ml}
-            title={`+${ml} ml`}
-            variant="secondary"
-            onPress={() => handleQuickAdd(ml)}
-            style={styles.quickAddBtn}
+      {!hasGoal ? (
+        <View style={styles.noGoalContainer}>
+          <Text style={styles.noGoalText}>Please set your water goal or update your body weight in settings to start tracking water.</Text>
+          <Button 
+            title="Update Metrics" 
+            onPress={() => router.push('/(app)/(profile)/statistics?tab=body_metrics')}
+            style={{ marginTop: spacing.md }}
           />
-        ))}
-        <Button
-          title={showCustom ? "Close" : "Custom"}
-          variant="ghost"
-          onPress={() => showCustom ? resetForm() : setShowCustom(true)}
-          style={styles.quickAddBtn}
-        />
-      </View>
-
-      {/* Custom Input */}
-      {showCustom && (
-        <View style={styles.customSection}>
-          <View style={styles.customRow}>
-            <Input
-              value={customAmount}
-              onChangeText={setCustomAmount}
-              keyboardType="number-pad"
-              placeholder="ml"
-              containerStyle={[styles.customInputContainer, noMargin]}
-              style={styles.customInputText}
-              autoFocus={!customAmount}
-            />
-            
-            <Pressable 
-              onPress={() => setTimePickerVisible(true)} 
-              style={styles.timePickerTrigger}
-            >
-              <Text style={styles.timePickerText}>{formatTimeLabel(selectedSeconds)}</Text>
-              <Text style={styles.timeIcon}>⏱️</Text>
-            </Pressable>
-
+        </View>
+      ) : (
+        <>
+          {/* Quick Add Buttons */}
+          <View style={styles.quickAddRow}>
+            {QUICK_ADD_OPTIONS.map((ml) => (
+              <Button
+                key={ml}
+                title={`+${ml} ml`}
+                variant="secondary"
+                onPress={() => handleQuickAdd(ml)}
+                style={styles.quickAddBtn}
+              />
+            ))}
             <Button
-              title={editingLogId !== null ? "Save" : "Add"}
-              variant="primary"
-              onPress={handleCustomAdd}
-              style={styles.customAddBtn}
+              title={showCustom ? "Close" : "Custom"}
+              variant="ghost"
+              onPress={() => showCustom ? resetForm() : setShowCustom(true)}
+              style={styles.quickAddBtn}
             />
           </View>
-        </View>
-      )}
 
-      <BottomSheet
-        visible={timePickerVisible}
-        onClose={() => setTimePickerVisible(false)}
-        title="Select Time"
-        scrollable={false}
-      >
-        <TimePicker 
-          value={selectedSeconds} 
-          onChange={handleTimeChange}
-          hideSeconds={true}
-        />
-        <Button 
-          title="Done" 
-          onPress={() => setTimePickerVisible(false)} 
-          style={styles.doneBtn}
-        />
-      </BottomSheet>
+          {/* Custom Input */}
+          {showCustom && (
+            <View style={styles.customSection}>
+              <View style={styles.customRow}>
+                <Input
+                  value={customAmount}
+                  onChangeText={setCustomAmount}
+                  keyboardType="number-pad"
+                  placeholder="ml"
+                  containerStyle={[styles.customInputContainer, noMargin]}
+                  style={styles.customInputText}
+                  autoFocus={!customAmount}
+                />
+                
+                <Pressable 
+                  onPress={() => setTimePickerVisible(true)} 
+                  style={styles.timePickerTrigger}
+                >
+                  <Text style={styles.timePickerText}>{formatTimeLabel(selectedSeconds)}</Text>
+                  <Text style={styles.timeIcon}>⏱️</Text>
+                </Pressable>
+
+                <Button
+                  title={editingLogId !== null ? "Save" : "Add"}
+                  variant="primary"
+                  onPress={handleCustomAdd}
+                  style={styles.customAddBtn}
+                />
+              </View>
+            </View>
+          )}
+
+          <BottomSheet
+            visible={timePickerVisible}
+            onClose={() => setTimePickerVisible(false)}
+            title="Select Time"
+            scrollable={false}
+          >
+            <TimePicker 
+              value={selectedSeconds} 
+              onChange={handleTimeChange}
+              hideSeconds={true}
+            />
+            <Button 
+              title="Done" 
+              onPress={() => setTimePickerVisible(false)} 
+              style={styles.doneBtn}
+            />
+          </BottomSheet>
+        </>
+      )}
 
       {/* Water Log List */}
       {waterLogs.length > 0 && (
@@ -337,5 +355,16 @@ const styles = StyleSheet.create({
   doneBtn: {
     marginTop: spacing.md,
     marginBottom: spacing.lg,
+  },
+  noGoalContainer: {
+    padding: spacing.md,
+    backgroundColor: colors.surfaceLight,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.md,
+  },
+  noGoalText: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    textAlign: 'center',
   },
 });

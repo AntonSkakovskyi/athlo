@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { VisibilityType } from '@athlo/shared';
+import { VisibilityType, type IMealPlan } from '@athlo/shared';
 import {
   useGetMyMealPlans,
   useCreateMealPlan,
@@ -9,22 +9,48 @@ import {
   useActivateMealPlan,
   useDeactivateMealPlan,
   useGetActiveMealPlan,
+  useGetPublicMealPlans,
+  useGetFriendsMealPlans,
+  useGetSavedMealPlans,
+  useSaveMealPlan,
+  useUnsaveMealPlan,
 } from '@/features/nutrition/hooks';
 
 export const VISIBILITY_LABELS: Record<number, string> = {
-  [VisibilityType.PRIVATE as unknown as number]: '🔒 Private',
-  [VisibilityType.PUBLIC as unknown as number]: '🌐 Public',
-  [VisibilityType.FRIENDS_ONLY as unknown as number]: '👥 Friends Only',
+  1: '🔒 Private',
+  2: '🌐 Public',
+  3: '👥 Friends Only',
+};
+
+const VISIBILITY_MAP: Record<VisibilityType, number> = {
+  [VisibilityType.PRIVATE]: 1,
+  [VisibilityType.PUBLIC]: 2,
+  [VisibilityType.FRIENDS_ONLY]: 3,
 };
 
 export function useMealPlansScreen() {
   const router = useRouter();
-  const { data: plans, isLoading } = useGetMyMealPlans();
-  const { data: activePlan } = useGetActiveMealPlan();
+  
+  // Tabs
+  const [activeTab, setActiveTab] = useState(0); // 0: My, 1: Public, 2: Friends
+  const [search, setSearch] = useState('');
+
+  // Queries
+  const myPlansQuery = useGetMyMealPlans();
+  const activePlanQuery = useGetActiveMealPlan();
+  const publicPlansQuery = useGetPublicMealPlans(search);
+  const friendsPlansQuery = useGetFriendsMealPlans();
+  const savedPlansQuery = useGetSavedMealPlans();
+
+  const activeQuery = activeTab === 0 ? myPlansQuery : activeTab === 1 ? publicPlansQuery : friendsPlansQuery;
+
+  // Mutations
   const createPlan = useCreateMealPlan();
   const deletePlan = useDeleteMealPlan();
   const activatePlan = useActivateMealPlan();
   const deactivatePlan = useDeactivateMealPlan();
+  const savePlan = useSaveMealPlan();
+  const unsavePlan = useUnsaveMealPlan();
 
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState('');
@@ -32,18 +58,36 @@ export function useMealPlansScreen() {
   const [totalDays, setTotalDays] = useState('7');
   const [visibility, setVisibility] = useState<VisibilityType>(VisibilityType.PRIVATE);
 
-  const activePlanId = activePlan?.mealPlanId;
+  const activePlanId = activePlanQuery.data?.mealPlanId;
 
-  const sortedPlans = useMemo(() => {
-    if (!plans) return [];
-    const list = [...plans];
-    list.sort((a, b) => {
-      if (a.id === activePlanId) return -1;
-      if (b.id === activePlanId) return 1;
-      return 0;
+  // Grouping for "My" tab
+  const myGroups = useMemo(() => {
+    const owned = myPlansQuery.data ?? [];
+    const saved = savedPlansQuery.data ?? [];
+    return {
+      owned,
+      saved,
+    };
+  }, [myPlansQuery.data, savedPlansQuery.data]);
+
+  // Grouping for "Friends" tab
+  const friendsGroups = useMemo(() => {
+    const plans = friendsPlansQuery.data ?? [];
+    const groups: Record<number, { friend: { id: number; nickname?: string }; plans: IMealPlan[] }> = {};
+    
+    plans.forEach(p => {
+      const creatorId = p.creatorId;
+      if (!groups[creatorId]) {
+        groups[creatorId] = { 
+          friend: { id: creatorId, nickname: (p as any).creatorNickname }, 
+          plans: [] 
+        };
+      }
+      groups[creatorId].plans.push(p);
     });
-    return list;
-  }, [plans, activePlanId]);
+    
+    return Object.values(groups);
+  }, [friendsPlansQuery.data]);
 
   const handleCreate = () => {
     if (!name.trim()) return;
@@ -53,7 +97,7 @@ export function useMealPlansScreen() {
         name: name.trim(),
         description: description.trim() || undefined,
         totalDays: isNaN(days) || days < 1 ? 7 : days,
-        visibilityTypeId: visibility as unknown as number,
+        visibilityTypeId: VISIBILITY_MAP[visibility],
       },
       {
         onSuccess: (newPlan) => {
@@ -64,6 +108,10 @@ export function useMealPlansScreen() {
           setShowCreate(false);
           router.push(`/(app)/(nutrition)/meal-plan/${newPlan.id}` as never);
         },
+        onError: (err) => {
+          Alert.alert('Error', 'Failed to create meal plan. Please try again.');
+          console.error('Create plan error:', err);
+        }
       },
     );
   };
@@ -83,12 +131,25 @@ export function useMealPlansScreen() {
     deactivatePlan.mutate();
   };
 
+  const handleSave = (id: number) => {
+    savePlan.mutate(String(id));
+  };
+
+  const handleUnsave = (id: number) => {
+    unsavePlan.mutate(String(id));
+  };
+
   return {
-    plans,
-    isLoading,
-    activePlan,
+    isLoading: activeQuery.isLoading || activePlanQuery.isLoading || savedPlansQuery.isLoading,
+    activePlan: activePlanQuery.data,
     activePlanId,
-    sortedPlans,
+    activeTab,
+    setActiveTab,
+    search,
+    setSearch,
+    myGroups,
+    publicPlans: publicPlansQuery.data ?? [],
+    friendsGroups,
     showCreate,
     setShowCreate,
     name,
@@ -103,6 +164,8 @@ export function useMealPlansScreen() {
     handleDelete,
     handleActivate,
     handleDeactivate,
+    handleSave,
+    handleUnsave,
     isCreatePending: createPlan.isPending,
     router,
   };

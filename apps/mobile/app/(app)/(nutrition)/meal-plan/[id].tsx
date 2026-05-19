@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { DayTabsRow } from '@/features/nutrition/components';
-import { PlanMealCard } from '@/features/nutrition/components';
-import { AddMealSheet } from '@/features/nutrition/components';
+import { MealCard } from '@/features/nutrition/components';
+import { MealFormSheet } from '@/features/nutrition/components';
+import { MealItemActionSheet } from '@/features/nutrition/components';
 import { DaySummaryFooter } from '@/features/nutrition/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { getVisibilityLabel, useMealPlanDetailScreen } from '@/features/nutrition/hooks/useMealPlanDetailScreen';
@@ -19,10 +20,12 @@ export default function MealPlanDetailScreen() {
   const {
     plan, isLoading, mealTypes, days, currentDay, currentDayMeals, dayMacros,
     selectedDayIndex, setSelectedDayIndex, showAddMeal, setShowAddMeal,
-    editingName, nameValue, setNameValue,
+    editingMeal, setEditingMeal, editingName, nameValue, setNameValue,
     handleActivate, handleAddDay, handleRemoveDay, handleAddMeal,
-    handleRemoveMeal, handleUpdatePlanMeal, handleRemoveItem, handleAddFoodToMeal,
-    handleSaveName, startEditName, isActivatePending,
+    handleRemoveMeal, handleEditMeal, handleConfirmEditMeal, handleRemoveItem, 
+    handleAddFoodToMeal, handleUpdateItem, handleSwapItem, handleEditMealItem,
+    handleSaveName, startEditName, isActive, isActivatePending,
+    editingMealItem, setEditingMealItem, isUpdateItemPending,
   } = useMealPlanDetailScreen(id);
 
   if (isLoading) {
@@ -47,7 +50,9 @@ export default function MealPlanDetailScreen() {
         <Pressable onPress={() => router.back()} hitSlop={12}>
           <Text style={styles.backBtn}>← Back</Text>
         </Pressable>
-        <Button title="▶ Activate" variant="primary" onPress={handleActivate} isLoading={isActivatePending} style={styles.activateBtn} />
+        {!isActive && (
+          <Button title="▶ Activate" variant="primary" onPress={handleActivate} isLoading={isActivatePending} style={styles.activateBtn} />
+        )}
       </View>
 
       <View style={styles.nameSection}>
@@ -78,9 +83,37 @@ export default function MealPlanDetailScreen() {
         ) : currentDayMeals.length === 0 ? (
           <EmptyState title="No meals for this day" description="Add a meal to start planning" actionLabel="+ Add Meal" onAction={() => setShowAddMeal(true)} />
         ) : (
-          currentDayMeals.map((meal) => (
-            <PlanMealCard key={meal.id} meal={meal} onAddFood={() => handleAddFoodToMeal(meal.id)} onRemoveMeal={() => handleRemoveMeal(meal.id)} onRemoveItem={handleRemoveItem} onUpdateTime={(mealId, time) => handleUpdatePlanMeal(mealId, { timeSuggestion: time })} />
-          ))
+          currentDayMeals.map((meal) => {
+            const displayMeal = {
+              ...meal,
+              name: meal.mealType?.name ?? `Meal #${meal.order}`,
+              consumedAt: new Date().toISOString(), // Mock for MealCard
+              items: meal.items?.map(item => ({
+                id: item.id,
+                foodName: item.food?.name ?? 'Unknown',
+                amount: item.amount,
+                unitName: item.unit?.name ?? 'g',
+                calories: item.food ? (item.food.calories * item.amount) / 100 : 0,
+                proteins: item.food ? (item.food.proteins * item.amount) / 100 : 0,
+                fats: item.food ? (item.food.fats * item.amount) / 100 : 0,
+                carbs: item.food ? (item.food.carbs * item.amount) / 100 : 0,
+              })) ?? [],
+            };
+            return (
+              <View key={meal.id}>
+                <MealCard 
+                  meal={displayMeal as any} 
+                  onAddItem={() => handleAddFoodToMeal(meal.id)} 
+                  onDelete={() => handleRemoveMeal(meal.id)} 
+                  onEditMeal={() => handleEditMeal(meal)}
+                  onEditItem={(itemId) => {
+                    const item = meal.items?.find(i => i.id === itemId);
+                    if (item) handleEditMealItem(meal.id, item);
+                  }}
+                />
+              </View>
+            );
+          })
         )}
         {currentDay && currentDayMeals.length > 0 && (
           <Button title="+ Add Meal" variant="secondary" onPress={() => setShowAddMeal(true)} style={styles.addMealBtn} />
@@ -92,11 +125,42 @@ export default function MealPlanDetailScreen() {
       )}
 
       {showAddMeal && (
-        <AddMealSheet mealTypes={mealTypes ?? []} onAdd={handleAddMeal} onClose={() => setShowAddMeal(false)} />
+        <MealFormSheet
+          title="Add Meal to Plan"
+          confirmLabel="Add"
+          mealTypes={mealTypes ?? []}
+          onConfirm={(data) => handleAddMeal(data.mealTypeId, data.timeSuggestion)}
+          onClose={() => setShowAddMeal(false)}
+          showNameInput={false}
+        />
       )}
+
+      {editingMeal && mealTypes && (
+        <MealFormSheet
+          title="Edit Meal"
+          confirmLabel="Save Changes"
+          mealTypes={mealTypes}
+          onConfirm={(data) => handleConfirmEditMeal(editingMeal.id, data)}
+          onClose={() => setEditingMeal(null)}
+          initialTypeId={editingMeal.mealTypeId}
+          initialTimeSuggestion={editingMeal.timeSuggestion ?? ''}
+          showNameInput={false}
+        />
+      )}
+
+      <MealItemActionSheet
+        visible={!!editingMealItem}
+        onClose={() => setEditingMealItem(null)}
+        item={editingMealItem?.item as any}
+        onUpdate={handleUpdateItem}
+        onDelete={() => editingMealItem && handleRemoveItem(editingMealItem.item.id)}
+        onSwap={handleSwapItem}
+        isUpdating={isUpdateItemPending}
+      />
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },

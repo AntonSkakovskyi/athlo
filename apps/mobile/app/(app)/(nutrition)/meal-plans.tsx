@@ -1,13 +1,18 @@
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button/Button';
 import { Tag } from '@/components/ui/Tag/Tag';
 import { Input } from '@/components/ui/Input/Input';
+import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
+import { CollapsibleSection } from '@/components/ui/CollapsibleSection/CollapsibleSection';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useMealPlansScreen, VISIBILITY_LABELS } from '@/features/nutrition/hooks/useMealPlansScreen';
-import { VisibilityType } from '@athlo/shared';
+import { VisibilityType, type IMealPlan } from '@athlo/shared';
+
+const TABS = ['My', 'Public', 'Friends'];
 
 const VISIBILITY_OPTIONS = [
   { value: VisibilityType.PUBLIC, label: 'Public', icon: '🌍' },
@@ -18,26 +23,186 @@ const VISIBILITY_OPTIONS = [
 export default function MealPlansScreen() {
   const insets = useSafeAreaInsets();
   const {
-    isLoading, activePlanId, sortedPlans, showCreate, setShowCreate,
+    isLoading, activePlanId, activeTab, setActiveTab, search, setSearch,
+    myGroups, publicPlans, friendsGroups,
+    showCreate, setShowCreate,
     name, setName, description, setDescription, totalDays, setTotalDays,
     visibility, setVisibility,
-    handleCreate, handleDelete, handleActivate, handleDeactivate, isCreatePending, router,
+    handleCreate, handleDelete, handleActivate, handleDeactivate,
+    handleSave, handleUnsave, isCreatePending, router,
   } = useMealPlansScreen();
 
-  if (isLoading) {
+  const renderPlanItem = (plan: IMealPlan, variant: 'my' | 'public' | 'saved', creatorNickname?: string) => {
+    const isActive = plan.id === activePlanId;
+    const isOwned = variant === 'my';
+    
     return (
-      <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <Spinner size="large" />
+      <View key={plan.id} style={[styles.planCard, isActive && styles.planCardActive]}>
+        <Pressable onPress={() => router.push(`/(app)/(nutrition)/meal-plan/${plan.id}` as never)}>
+          <View style={styles.planHeader}>
+            <View style={styles.planTitleRow}>
+              <Text style={styles.planName} numberOfLines={1}>{plan.name}</Text>
+              {isActive && <Tag label="Active" color="primary"/>}
+            </View>
+            <Text style={styles.visibilityBadge}>
+              {VISIBILITY_LABELS[plan.visibilityTypeId] ?? '🔒'}
+            </Text>
+          </View>
+          
+          {plan.description ? (
+            <Text style={styles.planDesc} numberOfLines={2}>{plan.description}</Text>
+          ) : null}
+          <Text style={styles.planMeta}>{plan.totalDays} day(s)</Text>
+        </Pressable>
+
+        <View style={styles.actionRow}>
+          {!isActive && variant !== 'saved' && (
+            <Button 
+              title="Activate" 
+              variant="primary" 
+              onPress={() => handleActivate(plan.id)} 
+              style={styles.actionBtn} 
+            />
+          )}
+          {isActive && (
+            <Button 
+              title="Deactivate" 
+              variant="danger" 
+              onPress={handleDeactivate} 
+              style={styles.actionBtn} 
+            />
+          )}
+          
+          {variant === 'public' && (
+            <Button 
+              title="Save" 
+              variant="secondary" 
+              onPress={() => handleSave(plan.id)} 
+              style={styles.actionBtn} 
+            />
+          )}
+          
+          {variant === 'saved' && (
+            <>
+              {!isActive && (
+                <Button 
+                  title="Activate" 
+                  variant="primary" 
+                  onPress={() => handleActivate(plan.id)} 
+                  style={styles.actionBtn} 
+                />
+              )}
+              <Button 
+                title="Unsave" 
+                variant="ghost" 
+                onPress={() => handleUnsave(plan.id)} 
+                style={styles.actionBtn} 
+              />
+            </>
+          )}
+
+          {isOwned && (
+            <>
+              <Button title="🗑️" variant="danger" onPress={() => handleDelete(plan.id)} style={styles.iconBtn} />
+            </>
+          )}
+        </View>
       </View>
     );
-  }
+  };
+
+  const renderTabContent = () => {
+    if (isLoading) {
+      return <Spinner size="large" style={styles.loader} />;
+    }
+
+    if (activeTab === 0) {
+      const hasContent = myGroups.owned.length > 0 || myGroups.saved.length > 0;
+      if (!hasContent && !showCreate) {
+        return (
+          <EmptyState 
+            title="No meal plans yet" 
+            description="Create your first plan or save from public" 
+            actionLabel="+ Create Plan"
+            onAction={() => setShowCreate(true)}
+          />
+        );
+      }
+
+      return (
+        <InfiniteList
+          data={[]}
+          renderItem={() => null}
+          ListHeaderComponent={
+            <View>
+              {myGroups.owned.length > 0 && (
+                <CollapsibleSection title="My Plans" count={myGroups.owned.length} initiallyExpanded>
+                  {myGroups.owned.map(p => renderPlanItem(p, 'my'))}
+                </CollapsibleSection>
+              )}
+              {myGroups.saved.length > 0 && (
+                <CollapsibleSection title="Saved Plans" count={myGroups.saved.length} initiallyExpanded>
+                  {myGroups.saved.map(p => renderPlanItem(p, 'saved', (p as any).creatorNickname))}
+                </CollapsibleSection>
+              )}
+            </View>
+          }
+          contentContainerStyle={styles.list}
+        />
+      );
+    }
+
+    if (activeTab === 1) {
+      return (
+        <InfiniteList
+          data={publicPlans}
+          renderItem={({ item }) => renderPlanItem(item, 'public', (item as any).creatorNickname)}
+          keyExtractor={(item) => String(item.id)}
+          ListEmptyComponent={
+            <EmptyState title="No public plans" description="Try searching for something else" />
+          }
+          contentContainerStyle={styles.list}
+        />
+      );
+    }
+
+    if (activeTab === 2) {
+      if (friendsGroups.length === 0) {
+        return (
+          <EmptyState 
+            title="No friend plans" 
+            description="Your friends haven't shared any meal plans yet" 
+          />
+        );
+      }
+
+      return (
+        <InfiniteList
+          data={[]}
+          renderItem={() => null}
+          ListHeaderComponent={
+            <View>
+              {friendsGroups.map(group => (
+                <CollapsibleSection 
+                  key={group.friend.id} 
+                  title={group.friend.nickname || 'Friend'} 
+                  count={group.plans.length}
+                >
+                  {group.plans.map(p => renderPlanItem(p, 'public', group.friend.nickname))}
+                </CollapsibleSection>
+              ))}
+            </View>
+          }
+          contentContainerStyle={styles.list}
+        />
+      );
+    }
+
+    return null;
+  };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingTop: insets.top + spacing.sm, paddingBottom: 100 }}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={[styles.container, { paddingTop: insets.top + spacing.sm }]}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()}>
           <Text style={styles.backBtn}>← Back</Text>
@@ -47,6 +212,21 @@ export default function MealPlansScreen() {
           <Text style={styles.createHeaderBtn}>{showCreate ? 'Cancel' : '+ Create'}</Text>
         </Pressable>
       </View>
+
+      <View style={styles.segmentWrap}>
+        <SegmentControl segments={TABS} activeIndex={activeTab} onSelect={setActiveTab} />
+      </View>
+
+      {activeTab === 1 && (
+        <View style={styles.searchWrap}>
+          <Input 
+            placeholder="Search public plans..." 
+            value={search} 
+            onChangeText={setSearch} 
+            style={styles.searchInput}
+          />
+        </View>
+      )}
 
       {showCreate && (
         <View style={styles.createCard}>
@@ -74,58 +254,24 @@ export default function MealPlansScreen() {
         </View>
       )}
 
-      {activePlanId && sortedPlans.length > 0 && sortedPlans[0].id === activePlanId && (
-        <View style={styles.activeBanner}>
-          <View style={styles.activeBannerTop}>
-            <Tag label="Active" color="primary" />
-            <Button title="Deactivate" variant="danger" onPress={handleDeactivate} />
-          </View>
-          <Pressable onPress={() => router.push(`/(app)/(nutrition)/meal-plan/${activePlanId}` as never)}>
-            <Text style={styles.activePlanName}>{sortedPlans[0].name}</Text>
-            {sortedPlans[0].description ? <Text style={styles.activePlanDesc} numberOfLines={2}>{sortedPlans[0].description}</Text> : null}
-            <Text style={styles.activePlanMeta}>{sortedPlans[0].totalDays} day(s) · {VISIBILITY_LABELS[sortedPlans[0].visibilityTypeId] ?? '🔒 Private'}</Text>
-          </Pressable>
-        </View>
-      )}
-
-      {sortedPlans.length === 0 && !showCreate ? (
-        <EmptyState title="No meal plans yet" description="Create your first plan to organize your nutrition" actionLabel="Create your first plan" onAction={() => setShowCreate(true)} />
-      ) : (
-        sortedPlans
-          .filter((plan) => plan.id !== activePlanId)
-          .map((plan) => (
-            <View key={plan.id} style={styles.planCard}>
-              <Pressable onPress={() => router.push(`/(app)/(nutrition)/meal-plan/${plan.id}` as never)}>
-                <View style={styles.planHeader}>
-                  <Text style={styles.planName} numberOfLines={1}>{plan.name}</Text>
-                  <Text style={styles.visibilityBadge}>{VISIBILITY_LABELS[plan.visibilityTypeId] ?? '🔒'}</Text>
-                </View>
-                {plan.description ? <Text style={styles.planDesc} numberOfLines={2}>{plan.description}</Text> : null}
-                <Text style={styles.planMeta}>{plan.totalDays} day(s)</Text>
-              </Pressable>
-              <View style={styles.actionRow}>
-                <Button title="Activate" variant="primary" onPress={() => handleActivate(plan.id)} style={styles.actionBtn} />
-                <Button title="✏️" variant="ghost" onPress={() => router.push(`/(app)/(nutrition)/meal-plan/${plan.id}` as never)} style={styles.iconBtn} />
-                <Button title="🗑️" variant="danger" onPress={() => handleDelete(plan.id)} style={styles.iconBtn} />
-              </View>
-            </View>
-          ))
-      )}
-    </ScrollView>
+      {renderTabContent()}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: spacing.lg },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg },
+  container: { flex: 1, backgroundColor: colors.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, marginBottom: spacing.lg },
   backBtn: { fontSize: fontSize.md, color: colors.primary, fontWeight: fontWeight.semibold },
   screenTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text },
   createHeaderBtn: { fontSize: fontSize.md, color: colors.primary, fontWeight: fontWeight.semibold },
-  createCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.lg, marginBottom: spacing.lg, borderWidth: 1, borderColor: colors.border },
+  segmentWrap: { paddingHorizontal: spacing.lg, marginBottom: spacing.md },
+  searchWrap: { paddingHorizontal: spacing.lg, marginBottom: spacing.sm },
+  searchInput: { marginBottom: 0 },
+  createCard: { marginHorizontal: spacing.lg, backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.lg, marginBottom: spacing.lg, borderWidth: 1, borderColor: colors.border },
   createBtn: { marginTop: spacing.md },
-  sectionLabel: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: colors.textSecondary, marginBottom: spacing.sm },
-  visibilityRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
+  sectionLabel: { fontSize: fontSize.xs, fontWeight: fontWeight.semibold, color: colors.textSecondary, marginBottom: spacing.xs, textTransform: 'uppercase' },
+  visibilityRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md, marginTop: spacing.xs },
   visibilityBtn: {
     flex: 1,
     flexDirection: 'row',
@@ -142,14 +288,14 @@ const styles = StyleSheet.create({
   visibilityIcon: { fontSize: fontSize.md },
   visibilityLabel: { fontSize: fontSize.xs, color: colors.textSecondary, fontWeight: fontWeight.medium },
   visibilityLabelActive: { color: colors.primary, fontWeight: fontWeight.bold },
-  activeBanner: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.lg, marginBottom: spacing.lg, borderWidth: 1.5, borderColor: colors.primary },
-  activeBannerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
-  activePlanName: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.text },
-  activePlanDesc: { fontSize: fontSize.md, color: colors.textSecondary, marginTop: spacing.xs },
-  activePlanMeta: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.xs },
+  list: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
+  loader: { marginTop: 40 },
   planCard: { backgroundColor: colors.surface, borderRadius: borderRadius.lg, padding: spacing.lg, marginBottom: spacing.sm, borderWidth: 1, borderColor: colors.border },
-  planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  planName: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold, color: colors.text, flex: 1, marginRight: spacing.sm },
+  planCardActive: { borderColor: colors.primary, borderWidth: 1.5 },
+  planHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
+  planTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flex: 1 },
+  planName: { fontSize: fontSize.lg, fontWeight: fontWeight.bold, color: colors.text, flexShrink: 1 },
+  planAuthor: { fontSize: fontSize.xs, color: colors.primary, fontWeight: fontWeight.medium, marginBottom: 4 },
   visibilityBadge: { fontSize: fontSize.sm, color: colors.textMuted },
   planDesc: { fontSize: fontSize.md, color: colors.textSecondary, marginTop: spacing.xs },
   planMeta: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.xs },

@@ -19,25 +19,50 @@ export default function FoodPickerScreen() {
     showCreateForm, setShowCreateForm, newFoodName, setNewFoodName, newFoodBrand, setNewFoodBrand,
     newFoodCalories, setNewFoodCalories, newFoodProteins, setNewFoodProteins,
     newFoodFats, setNewFoodFats, newFoodCarbs, setNewFoodCarbs,
-    foodsQuery, createFood, addLogMealItem, addPlanMealItem,
-    foodList, calculatedMacros, handleSelectFood, handleAddFood, handleCreateFood, resetCreateForm,
+    newFoodServingAmount, setNewFoodServingAmount, newFoodServingUnitId, setNewFoodServingUnitId,
+    units, foodsQuery, createFood, addLogMealItem, addPlanMealItem,
+    foodList, calculatedMacros, handleSelectFood, handleAddFood, handleCreateFood,
+    handleDeleteFood, handleAddCustomUnit, resetCreateForm, isCreator,
+    params, deleteFood,
   } = useFoodPickerScreen({ insets, router });
 
-  const renderFoodItem = ({ item }: { item: IFood }) => (
-    <Pressable
-      style={[styles.foodItem, selectedFood?.id === item.id && styles.foodItemSelected]}
-      onPress={() => handleSelectFood(item)}
-    >
-      <View style={styles.foodInfo}>
-        <Text style={styles.foodName} numberOfLines={1}>{item.name}</Text>
-        {item.brand ? <Text style={styles.foodBrand} numberOfLines={1}>{item.brand}</Text> : null}
-        <View style={styles.macroRow}>
-          <Text style={styles.calorieText}>{item.calories} kcal</Text>
-          <Text style={styles.macroText}>P: {item.proteins}g · F: {item.fats}g · C: {item.carbs}g</Text>
+  const renderFoodItem = ({ item }: { item: IFood }) => {
+    // Determine the "serving" to display in the list
+    const firstUnit = item.units?.[0];
+    const unitName = firstUnit?.unit?.name || 'g';
+    const factor = Number(firstUnit?.conversionFactor || 1);
+    
+    let displayAmount = 100;
+    let macroFactor = 1; // since DB stores per 100g
+
+    if (!['g', 'ml'].includes(unitName.toLowerCase())) {
+      displayAmount = 1;
+      macroFactor = factor / 100;
+    }
+
+    const cals = Math.round(item.calories * macroFactor);
+    const prot = Math.round(item.proteins * macroFactor * 10) / 10;
+    const fats = Math.round(item.fats * macroFactor * 10) / 10;
+    const carbs = Math.round(item.carbs * macroFactor * 10) / 10;
+
+    return (
+      <Pressable
+        style={[styles.foodItem, selectedFood?.id === item.id && styles.foodItemSelected]}
+        onPress={() => handleSelectFood(item)}
+      >
+        <View style={styles.foodInfo}>
+          <Text style={styles.foodName} numberOfLines={1}>{item.name}</Text>
+          <Text style={styles.foodBrand} numberOfLines={1}>
+            {item.brand ? `${item.brand} · ` : ''}{displayAmount}{unitName}
+          </Text>
+          <View style={styles.macroRow}>
+            <Text style={styles.calorieText}>{cals} kcal</Text>
+            <Text style={styles.macroText}>P: {prot}g · F: {fats}g · C: {carbs}g</Text>
+          </View>
         </View>
-      </View>
-    </Pressable>
-  );
+      </Pressable>
+    );
+  };
 
   return (
     <KeyboardAvoidingView
@@ -48,7 +73,7 @@ export default function FoodPickerScreen() {
         <Pressable onPress={() => router.back()}>
           <Text style={styles.cancelBtn}>Cancel</Text>
         </Pressable>
-        <Text style={styles.title}>Add Food</Text>
+        <Text style={styles.title}>{params.swapItemId ? 'Swap Food' : 'Add Food'}</Text>
         <Pressable onPress={() => setShowCreateForm(true)}>
           <Text style={styles.createBtn}>+ Create</Text>
         </Pressable>
@@ -92,7 +117,10 @@ export default function FoodPickerScreen() {
           calculatedMacros={calculatedMacros}
           onClose={() => setSelectedFood(null)}
           onAdd={handleAddFood}
+          onDelete={handleDeleteFood}
+          isCreator={isCreator}
           isPending={addLogMealItem.isPending || addPlanMealItem.isPending}
+          isDeleting={deleteFood.isPending}
           bottomPadding={insets.bottom + spacing.md}
         />
       )}
@@ -112,6 +140,11 @@ export default function FoodPickerScreen() {
         setNewFoodFats={setNewFoodFats}
         newFoodCarbs={newFoodCarbs}
         setNewFoodCarbs={setNewFoodCarbs}
+        newFoodServingAmount={newFoodServingAmount}
+        setNewFoodServingAmount={setNewFoodServingAmount}
+        newFoodServingUnitId={newFoodServingUnitId}
+        setNewFoodServingUnitId={setNewFoodServingUnitId}
+        units={units}
         onSave={handleCreateFood}
         onCancel={() => { setShowCreateForm(false); resetCreateForm(); }}
         isPending={createFood.isPending}

@@ -6,6 +6,7 @@ interface ActivePlanBannerProps {
   userMealPlan: IUserMealPlan;
   planName?: string;
   onPress: () => void;
+  onApplyToday?: () => void;
 }
 
 export function ActivePlanBanner({ userMealPlan, planName, onPress }: ActivePlanBannerProps) {
@@ -14,21 +15,30 @@ export function ActivePlanBanner({ userMealPlan, planName, onPress }: ActivePlan
   const daysDiff = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
   return (
-    <Pressable style={styles.container} onPress={onPress}>
-      <View style={styles.left}>
-        <Text style={styles.icon}>📋</Text>
-        <View>
-          <Text style={styles.planName}>{planName ?? 'Active Meal Plan'}</Text>
-          <Text style={styles.dayInfo}>Day {daysDiff}</Text>
+    <View style={styles.outerContainer}>
+      <Pressable style={styles.container} onPress={onPress}>
+        <View style={styles.left}>
+          <Text style={styles.icon}>📋</Text>
+          <View>
+            <Text style={styles.planName}>{planName ?? 'Active Meal Plan'}</Text>
+            <Text style={styles.dayInfo}>Day {daysDiff}</Text>
+          </View>
         </View>
-      </View>
-      <Text style={styles.chevron}>›</Text>
-    </Pressable>
+        <Text style={styles.chevron}>›</Text>
+      </Pressable>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  outerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
   container: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -37,7 +47,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderWidth: 1,
     borderColor: colors.primary,
-    marginBottom: spacing.lg,
   },
   left: {
     flexDirection: 'row',
@@ -61,5 +70,21 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.primary,
     fontWeight: '300',
+  },
+  applyBtn: {
+    backgroundColor: colors.surface,
+    paddingVertical: 12,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.lg,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    minWidth: 90,
+  },
+  applyBtnText: {
+    color: colors.primary,
+    fontWeight: 'bold',
+    fontSize: 12,
   },
 });

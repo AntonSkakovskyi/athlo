@@ -1,28 +1,32 @@
+import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { DateSelector } from '@/features/nutrition/components';
 import { DailyMacrosSummary } from '@/features/nutrition/components';
-import { MealCard } from '@/features/nutrition/components';
+import { MealCard, MealFormSheet, MealItemActionSheet } from '@/features/nutrition/components';
 import { WaterTracker } from '@/features/nutrition/components';
 import { ActivePlanBanner } from '@/features/nutrition/components';
-import { LogMealSheet } from '@/features/nutrition/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useNutritionHomeScreen } from '@/features/nutrition/hooks/useNutritionHomeScreen';
 
 export default function NutritionScreen() {
   const insets = useSafeAreaInsets();
+  const [activeTab, setActiveTab] = useState<'meals' | 'water'>('meals');
+  
   const {
     date, isToday, summary, isLoading, mealTypes, activePlan, activePlanDetails,
     planDayMeals, meals, waterLogs, selectedMealTypeId, setSelectedMealTypeId,
-    showAddMealSheet, setShowAddMealSheet,
-    handlePrevDay, handleNextDay, handleAddMeal, handleConfirmAddMeal,
-    handleDeleteMeal, handleDeleteMealItem,
+    showAddMealSheet, setShowAddMealSheet, editingMeal, setEditingMeal,
+    handlePrevDay, handleNextDay, handleDateSelect, handleAddMeal, handleConfirmAddMeal,
+    handleDeleteMeal, handleEditMeal, handleConfirmEditMeal, handleDeleteMealItem,
+    handleEditMealItem, handleUpdateMealItem, handleSwapMealItem,
     handleAddWater, handleUpdateWater, handleDeleteWater, handleAddFoodToMeal,
-    isCreateMealPending, router,
+    isCreateMealPending, isUpdateItemPending,
+    editingMealItem, setEditingMealItem, router,
   } = useNutritionHomeScreen();
 
   return (
@@ -44,7 +48,14 @@ export default function NutritionScreen() {
           </View>
         </View>
 
-        <DateSelector date={date} onPrev={handlePrevDay} onNext={handleNextDay} isToday={isToday} />
+        <DateSelector 
+          date={date} 
+          onPrev={handlePrevDay} 
+          onNext={handleNextDay} 
+          isToday={isToday} 
+          onDateSelect={handleDateSelect}
+          maximumDate={new Date()}
+        />
 
         {activePlan?.isActive && (
           <ActivePlanBanner
@@ -65,49 +76,101 @@ export default function NutritionScreen() {
               carbs={summary?.totalCarbs ?? 0}
             />
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Meals</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-                {mealTypes?.map((type) => (
-                  <Chip
-                    key={type.id}
-                    label={type.name}
-                    active={selectedMealTypeId === type.id}
-                    onPress={() => setSelectedMealTypeId(selectedMealTypeId === type.id ? null : type.id)}
-                  />
-                ))}
-              </ScrollView>
-
-              <Button title="+ Add Meal" variant="secondary" onPress={handleAddMeal} isLoading={isCreateMealPending} style={styles.addMealBtn} />
-
-              {meals.length === 0 ? (
-                <EmptyState title="No meals logged" description="Add your first meal to start tracking" />
-              ) : (
-                meals.map((meal) => (
-                  <MealCard
-                    key={meal.id}
-                    meal={meal}
-                    onAddItem={handleAddFoodToMeal}
-                    onDelete={handleDeleteMeal}
-                    onDeleteItem={handleDeleteMealItem}
-                  />
-                ))
-              )}
+            <View style={styles.tabContainer}>
+              <Pressable 
+                style={[styles.tab, activeTab === 'meals' && styles.tabActive]} 
+                onPress={() => setActiveTab('meals')}
+              >
+                <Text style={[styles.tabText, activeTab === 'meals' && styles.tabTextActive]}>🥘 Meals</Text>
+              </Pressable>
+              <Pressable 
+                style={[styles.tab, activeTab === 'water' && styles.tabActive]} 
+                onPress={() => setActiveTab('water')}
+              >
+                <Text style={[styles.tabText, activeTab === 'water' && styles.tabTextActive]}>💧 Water</Text>
+              </Pressable>
             </View>
 
-            <WaterTracker waterLogs={waterLogs} totalWaterMl={summary?.totalWaterMl ?? 0} date={date} onAddWater={handleAddWater} onUpdateWater={handleUpdateWater} onDeleteWater={handleDeleteWater} />
+            {activeTab === 'meals' ? (
+              <View style={styles.section}>
+                <View style={styles.chipRow}>
+                  {mealTypes?.map((type) => (
+                    <Chip
+                      key={type.id}
+                      label={type.name}
+                      active={selectedMealTypeId === type.id}
+                      onPress={() => setSelectedMealTypeId(selectedMealTypeId === type.id ? null : type.id)}
+                      borderRadius={borderRadius.md}
+                    />
+                  ))}
+                </View>
+
+                <Button title="+ Add Meal" variant="secondary" onPress={handleAddMeal} isLoading={isCreateMealPending} style={styles.addMealBtn} />
+
+                {meals.length === 0 ? (
+                  <EmptyState title="No meals logged" description="Add your first meal to start tracking" />
+                ) : (
+                  meals.map((meal) => (
+                    <MealCard
+                      key={meal.id}
+                      meal={meal}
+                      onAddItem={handleAddFoodToMeal}
+                      onDelete={handleDeleteMeal}
+                      onEditMeal={handleEditMeal}
+                      onEditItem={(itemId) => handleEditMealItem(meal.id, itemId)}
+                    />
+                  ))
+                )}
+              </View>
+            ) : (
+              <WaterTracker 
+                waterLogs={waterLogs} 
+                totalWaterMl={summary?.totalWaterMl ?? 0} 
+                waterGoal={summary?.waterGoal ?? undefined}
+                date={date} 
+                onAddWater={handleAddWater} 
+                onUpdateWater={handleUpdateWater} 
+                onDeleteWater={handleDeleteWater} 
+              />
+            )}
           </>
         )}
       </ScrollView>
 
       {showAddMealSheet && mealTypes && (
-        <LogMealSheet
+        <MealFormSheet
+          title="Add Meal"
+          confirmLabel="Add"
           mealTypes={mealTypes}
           planDayMeals={planDayMeals}
-          onConfirm={handleConfirmAddMeal}
+          defaultHasTime={true}
+          onConfirm={(data) => handleConfirmAddMeal(data.mealTypeId, data.items ?? [], data.name, data.consumedAt)}
           onClose={() => setShowAddMealSheet(false)}
         />
       )}
+
+      {editingMeal && mealTypes && (
+        <MealFormSheet
+          title="Edit Meal"
+          confirmLabel="Save Changes"
+          mealTypes={mealTypes}
+          onConfirm={(data) => handleConfirmEditMeal(editingMeal.id, data)}
+          onClose={() => setEditingMeal(null)}
+          initialName={editingMeal.name ?? ''}
+          initialTypeId={editingMeal.mealTypeId}
+          initialDate={editingMeal.consumedAt}
+        />
+      )}
+
+      <MealItemActionSheet
+        visible={!!editingMealItem}
+        item={editingMealItem?.item ?? null}
+        onClose={() => setEditingMealItem(null)}
+        onUpdate={(amount, unitId) => handleUpdateMealItem(editingMealItem!.item.id, amount, unitId)}
+        onDelete={() => handleDeleteMealItem(editingMealItem!.item.id)}
+        onSwap={() => handleSwapMealItem(editingMealItem!.mealId, editingMealItem!.item.id)}
+        isUpdating={isUpdateItemPending}
+      />
     </>
   );
 }
@@ -120,8 +183,39 @@ const styles = StyleSheet.create({
   mealPlansBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.surface, borderRadius: borderRadius.md, borderWidth: 1, borderColor: colors.border },
   mealPlansBtnText: { fontSize: 13, fontWeight: '600', color: colors.text },
   loader: { marginVertical: 40 },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xs,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    borderRadius: borderRadius.md,
+  },
+  tabActive: {
+    backgroundColor: colors.surfaceLight,
+  },
+  tabText: {
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.medium,
+    color: colors.textSecondary,
+  },
+  tabTextActive: {
+    color: colors.primary,
+    fontWeight: fontWeight.bold,
+  },
   section: { marginBottom: spacing.xl },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
-  chipRow: { gap: spacing.sm, marginBottom: spacing.md },
+  chipRow: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    marginBottom: spacing.md,
+    justifyContent: 'space-between',
+  },
   addMealBtn: { marginBottom: spacing.lg },
 });

@@ -12,7 +12,9 @@ import {
   useRemovePlanMeal,
   useUpdatePlanMeal,
   useRemovePlanMealItem,
+  useUpdatePlanMealItem,
   useGetMealTypes,
+  useGetActiveMealPlan,
 } from '@/features/nutrition/hooks';
 
 export interface MealPlanWithRelations extends IMealPlan {
@@ -58,8 +60,9 @@ export function getVisibilityLabel(id: number): string {
 export function useMealPlanDetailScreen(id: string) {
   const router = useRouter();
 
-  const { data: plan, isLoading } = useGetMealPlanById(id);
+  const { data: plan, isLoading: isPlanLoading } = useGetMealPlanById(id);
   const { data: mealTypes } = useGetMealTypes();
+  const { data: activePlan, isLoading: isActivePlanLoading } = useGetActiveMealPlan();
   const updatePlan = useUpdateMealPlan();
   const activatePlan = useActivateMealPlan();
   const addDay = useAddPlanDay();
@@ -68,11 +71,15 @@ export function useMealPlanDetailScreen(id: string) {
   const removeMeal = useRemovePlanMeal();
   const updateMeal = useUpdatePlanMeal();
   const removeItem = useRemovePlanMealItem();
+  const updateItem = useUpdatePlanMealItem();
 
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const [showAddMeal, setShowAddMeal] = useState(false);
+  const [editingMeal, setEditingMeal] = useState<PlanMealWithItems | null>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
+
+  const [editingMealItem, setEditingMealItem] = useState<{ mealId: number; item: PlanMealItemWithRelations } | null>(null);
 
   const days = useMemo(() => {
     const rawDays = (plan as MealPlanWithRelations | undefined)?.days;
@@ -137,7 +144,7 @@ export function useMealPlanDetailScreen(id: string) {
     addMeal.mutate({
       planId: id,
       dayId: String(currentDay.id),
-      data: { mealTypeId, order, timeSuggestion },
+      data: { mealTypeId, order, timeSuggestion: timeSuggestion || null },
     });
     setShowAddMeal(false);
   };
@@ -153,12 +160,51 @@ export function useMealPlanDetailScreen(id: string) {
     ]);
   };
 
-  const handleUpdatePlanMeal = (mealId: number, data: { timeSuggestion?: string; mealTypeId?: number; order?: number }) => {
-    updateMeal.mutate({ planId: id, mealId: String(mealId), data });
+  const handleEditMeal = (meal: PlanMealWithItems) => {
+    setEditingMeal(meal);
+  };
+
+  const handleConfirmEditMeal = async (mealId: number, data: { timeSuggestion?: string; mealTypeId?: number }) => {
+    await updateMeal.mutateAsync({ 
+      planId: id, 
+      mealId: String(mealId), 
+      data: { ...data, timeSuggestion: data.timeSuggestion || null } 
+    });
+    setEditingMeal(null);
   };
 
   const handleRemoveItem = (itemId: number) => {
     removeItem.mutate({ planId: id, itemId: String(itemId) });
+    setEditingMealItem(null);
+  };
+
+  const handleUpdateItem = async (amount: number, unitId: number) => {
+    if (!editingMealItem) return;
+    await updateItem.mutateAsync({
+      planId: id,
+      itemId: String(editingMealItem.item.id),
+      data: { amount, unitId },
+    });
+    setEditingMealItem(null);
+  };
+
+  const handleSwapItem = () => {
+    if (!editingMealItem) return;
+    const mealId = editingMealItem.mealId;
+    setEditingMealItem(null);
+    router.push({
+      pathname: '/(app)/(nutrition)/food-picker',
+      params: { 
+        planMealId: String(mealId), 
+        planId: id, 
+        mode: 'planMeal', 
+        swapItemId: String(editingMealItem.item.id) 
+      },
+    } as never);
+  };
+
+  const handleEditMealItem = (mealId: number, item: PlanMealItemWithRelations) => {
+    setEditingMealItem({ mealId, item });
   };
 
   const handleAddFoodToMeal = (mealId: number) => {
@@ -180,9 +226,11 @@ export function useMealPlanDetailScreen(id: string) {
     setEditingName(true);
   };
 
+  const isActive = activePlan?.mealPlanId === Number(id);
+
   return {
     plan,
-    isLoading,
+    isLoading: isPlanLoading || isActivePlanLoading,
     mealTypes,
     days,
     currentDay,
@@ -192,6 +240,8 @@ export function useMealPlanDetailScreen(id: string) {
     setSelectedDayIndex,
     showAddMeal,
     setShowAddMeal,
+    editingMeal,
+    setEditingMeal,
     editingName,
     nameValue,
     setNameValue,
@@ -200,11 +250,19 @@ export function useMealPlanDetailScreen(id: string) {
     handleRemoveDay,
     handleAddMeal,
     handleRemoveMeal,
-    handleUpdatePlanMeal,
+    handleEditMeal,
+    handleConfirmEditMeal,
     handleRemoveItem,
+    handleUpdateItem,
+    handleSwapItem,
+    handleEditMealItem,
     handleAddFoodToMeal,
     handleSaveName,
     startEditName,
+    isActive,
     isActivatePending: activatePlan.isPending,
+    editingMealItem,
+    setEditingMealItem,
+    isUpdateItemPending: updateItem.isPending,
   };
 }

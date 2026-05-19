@@ -1,21 +1,72 @@
 import { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, Modal, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
+import { Input } from '@/components/ui/Input/Input';
+import { BottomSheet, TimePicker } from '@/components/ui';
 import type { IMealType } from '@athlo/shared';
 import type { PlanMealWithItems, SelectedPlanItem } from '@/features/nutrition/hooks/useNutritionHomeScreen';
 
-interface LogMealSheetProps {
+interface MealFormSheetProps {
+  title: string;
+  confirmLabel: string;
   mealTypes: IMealType[];
-  planDayMeals: PlanMealWithItems[];
-  onConfirm: (mealTypeId: number, items: SelectedPlanItem[]) => Promise<void>;
   onClose: () => void;
+  onConfirm: (data: { 
+    mealTypeId: number; 
+    name?: string; 
+    consumedAt?: string; 
+    timeSuggestion?: string;
+    items?: SelectedPlanItem[];
+  }) => Promise<void> | void;
+  
+  // Initial values for editing
+  initialName?: string;
+  initialTypeId?: number | null;
+  initialDate?: Date | string | null; // Date object or ISO string
+  initialTimeSuggestion?: string; // HH:mm string
+  defaultHasTime?: boolean;
+  
+  // For plan suggestions (LogMeal mode)
+  planDayMeals?: PlanMealWithItems[];
+  
+  showNameInput?: boolean;
+  isLoading?: boolean;
 }
 
-export function LogMealSheet({ mealTypes, planDayMeals, onConfirm, onClose }: LogMealSheetProps) {
-  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(null);
+export function MealFormSheet({
+  title,
+  confirmLabel,
+  mealTypes,
+  onClose,
+  onConfirm,
+  initialName = '',
+  initialTypeId = null,
+  initialDate = null,
+  initialTimeSuggestion = '',
+  defaultHasTime = false,
+  planDayMeals = [],
+  showNameInput = true,
+  isLoading = false,
+}: MealFormSheetProps) {
+  const [selectedTypeId, setSelectedTypeId] = useState<number | null>(initialTypeId);
+  const [mealName, setMealName] = useState(initialName);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(new Set());
-  const [isConfirming, setIsConfirming] = useState(false);
+  
+  const [timePickerVisible, setTimePickerVisible] = useState(false);
+  const [hasTime, setHasTime] = useState(!!initialDate || !!initialTimeSuggestion || defaultHasTime);
+  const [selectedSeconds, setSelectedSeconds] = useState(() => {
+    if (initialDate) {
+      const date = new Date(initialDate);
+      return date.getHours() * 3600 + date.getMinutes() * 60;
+    }
+    if (initialTimeSuggestion) {
+      const [h, m] = initialTimeSuggestion.split(':').map(Number);
+      return (h || 0) * 3600 + (m || 0) * 60;
+    }
+    const now = new Date();
+    return now.getHours() * 3600 + now.getMinutes() * 60;
+  });
 
   const planMeal = useMemo(
     () => planDayMeals.find((m) => m.mealTypeId === selectedTypeId) ?? null,
@@ -46,29 +97,97 @@ export function LogMealSheet({ mealTypes, planDayMeals, onConfirm, onClose }: Lo
 
   const handleConfirm = async () => {
     if (!selectedTypeId) return;
+    
+    let timeStr: string | undefined;
+    let consumedAt: string | undefined;
+
+    if (hasTime) {
+      const h = Math.floor(selectedSeconds / 3600);
+      const m = Math.floor((selectedSeconds % 3600) / 60);
+      timeStr = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+
+      if (initialDate) {
+        const date = new Date(initialDate);
+        date.setHours(h, m, 0, 0);
+        consumedAt = date.toISOString();
+      } else {
+        const now = new Date();
+        now.setHours(h, m, 0, 0);
+        consumedAt = now.toISOString();
+      }
+    }
+
     const items: SelectedPlanItem[] = (planMeal?.items ?? [])
       .filter((i) => selectedItemIds.has(i.id))
       .map((i) => ({
         foodId: i.foodId,
         unitId: i.unitId,
-        amount: i.amount,
+        amount: Number(i.amount),
         foodName: i.food?.name ?? '',
       }));
-    setIsConfirming(true);
-    try {
-      await onConfirm(selectedTypeId, items);
-    } finally {
-      setIsConfirming(false);
-    }
+
+    await onConfirm({
+      mealTypeId: selectedTypeId,
+      name: mealName.trim() || undefined,
+      consumedAt,
+      timeSuggestion: timeStr,
+      items,
+    });
+  };
+
+  const formatTimeLabel = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   };
 
   return (
     <Modal visible transparent animationType="slide">
-      <View style={styles.overlay}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.overlay}
+      >
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={styles.sheet}>
           <View style={styles.handle} />
-          <Text style={styles.title}>Add Meal</Text>
+          <View style={styles.headerRow}>
+            <Text style={styles.title}>{title}</Text>
+            <View style={styles.timeControls}>
+              {hasTime ? (
+                <View style={styles.timePickerContainer}>
+                  <Pressable 
+                    style={styles.timePickerTrigger} 
+                    onPress={() => setTimePickerVisible(true)}
+                  >
+                    <Text style={styles.timePickerText}>{formatTimeLabel(selectedSeconds)}</Text>
+                  </Pressable>
+                  <Pressable hitSlop={12} onPress={() => setHasTime(false)} style={styles.clearTimeBtn}>
+                    <Text style={styles.clearTimeText}>✕</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable 
+                  style={styles.addTimeBtn} 
+                  onPress={() => {
+                    setHasTime(true);
+                    setTimePickerVisible(true);
+                  }}
+                >
+                  <Text style={styles.addTimeText}>+ Time</Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+
+          {showNameInput && (
+            <Input
+              label="Meal Name"
+              placeholder="e.g. Breakfast at Home"
+              value={mealName}
+              onChangeText={setMealName}
+              containerStyle={styles.nameInputContainer}
+            />
+          )}
 
           <Text style={styles.label}>Meal Type</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.typeRow}>
@@ -95,10 +214,6 @@ export function LogMealSheet({ mealTypes, planDayMeals, onConfirm, onClose }: Lo
                   </Pressable>
                 )}
               </View>
-
-              {planMeal.timeSuggestion && (
-                <Text style={styles.timeSuggestion}>Suggested time: {planMeal.timeSuggestion}</Text>
-              )}
 
               <ScrollView style={styles.itemList} showsVerticalScrollIndicator={false}>
                 {(planMeal.items ?? []).map((item) => {
@@ -136,16 +251,34 @@ export function LogMealSheet({ mealTypes, planDayMeals, onConfirm, onClose }: Lo
           <View style={styles.actions}>
             <Button title="Cancel" variant="ghost" onPress={onClose} style={styles.actionBtn} />
             <Button
-              title="Add Meal"
+              title={confirmLabel}
               variant="primary"
               onPress={handleConfirm}
               disabled={!selectedTypeId}
-              isLoading={isConfirming}
+              isLoading={isLoading}
               style={styles.actionBtn}
             />
           </View>
         </View>
-      </View>
+
+        <BottomSheet
+          visible={timePickerVisible}
+          onClose={() => setTimePickerVisible(false)}
+          title="Select Meal Time"
+          scrollable={false}
+        >
+          <TimePicker 
+            value={selectedSeconds} 
+            onChange={setSelectedSeconds}
+            hideSeconds={true}
+          />
+          <Button 
+            title="Done" 
+            onPress={() => setTimePickerVisible(false)} 
+            style={{ marginTop: spacing.md, marginBottom: spacing.lg }}
+          />
+        </BottomSheet>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -165,7 +298,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: borderRadius.xl,
     padding: spacing['2xl'],
     paddingBottom: 40,
-    maxHeight: '80%',
+    maxHeight: '85%',
   },
   handle: {
     width: 40,
@@ -175,10 +308,64 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: spacing.lg,
   },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
   title: {
     fontSize: fontSize.xl,
     fontWeight: fontWeight.bold,
     color: colors.text,
+  },
+  timeControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  timePickerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceLight,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingRight: spacing.xs,
+  },
+  timePickerTrigger: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  timePickerText: {
+    fontSize: fontSize.md,
+    color: colors.text,
+    fontWeight: fontWeight.medium,
+  },
+  clearTimeBtn: {
+    padding: spacing.xs,
+    marginLeft: spacing.xxs,
+  },
+  clearTimeText: {
+    fontSize: 10,
+    color: colors.textMuted,
+    fontWeight: fontWeight.bold,
+  },
+  addTimeBtn: {
+    backgroundColor: colors.surfaceLight,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+  },
+  addTimeText: {
+    fontSize: fontSize.sm,
+    color: colors.primary,
+    fontWeight: fontWeight.semibold,
+  },
+  nameInputContainer: {
     marginBottom: spacing.lg,
   },
   label: {
@@ -194,7 +381,7 @@ const styles = StyleSheet.create({
   typeChip: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
+    borderRadius: borderRadius.md,
     backgroundColor: colors.surfaceLight,
     borderWidth: 1,
     borderColor: colors.border,
@@ -222,13 +409,8 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontWeight: fontWeight.medium,
   },
-  timeSuggestion: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginBottom: spacing.sm,
-  },
   itemList: {
-    maxHeight: 220,
+    maxHeight: 200,
     marginBottom: spacing.md,
   },
   itemRow: {

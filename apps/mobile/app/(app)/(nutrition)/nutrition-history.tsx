@@ -194,14 +194,16 @@ const styles = StyleSheet.create({
   scopeWrapper: { paddingHorizontal: spacing.lg, marginBottom: spacing.lg },
   loader: { marginTop: 60 },
   tabsRow: { flexGrow: 0, flexShrink: 0, marginBottom: spacing.md },
-  tabRowContent: { paddingHorizontal: spacing.lg, gap: spacing.xs },
+  tabRowContent: { paddingHorizontal: spacing.lg, gap: spacing.xs, flex: 1 },
   tab: {
+    flex: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
   tabText: {
+    textAlign: 'center',
     fontSize: fontSize.sm,
     fontWeight: fontWeight.medium,
     color: colors.textSecondary,

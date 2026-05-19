@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
-import type { IFood } from '@athlo/shared';
+import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
+import type { IFood, IUnit } from '@athlo/shared';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
@@ -13,7 +13,10 @@ interface FoodDetailPanelProps {
   calculatedMacros: { calories: number; proteins: number; fats: number; carbs: number } | null;
   onClose: () => void;
   onAdd: () => void;
+  onDelete?: () => void;
+  isCreator?: boolean;
   isPending: boolean;
+  isDeleting?: boolean;
   bottomPadding: number;
 }
 
@@ -26,52 +29,84 @@ export function FoodDetailPanel({
   calculatedMacros,
   onClose,
   onAdd,
+  onDelete,
+  isCreator,
   isPending,
+  isDeleting,
   bottomPadding,
 }: FoodDetailPanelProps) {
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Food',
+      'Are you sure you want to delete this food item? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: onDelete }
+      ]
+    );
+  };
+
+  const foodUnits = selectedFood.units ?? [];
+
   return (
     <View style={[styles.amountSheet, { paddingBottom: bottomPadding }]}>
       <View style={styles.amountSheetHeader}>
-        <Text style={styles.amountFoodName} numberOfLines={1}>
-          {selectedFood.name}
-        </Text>
-        <Pressable onPress={onClose}>
+        <View style={styles.titleRow}>
+          <Text style={styles.amountFoodName} numberOfLines={1}>
+            {selectedFood.name}
+          </Text>
+          {isCreator && (
+            <Pressable onPress={handleDelete} style={styles.deleteBtn} disabled={isDeleting}>
+              <Text style={styles.deleteBtnText}>{isDeleting ? '...' : 'Delete'}</Text>
+            </Pressable>
+          )}
+        </View>
+        <Pressable onPress={onClose} style={styles.closeBtn}>
           <Text style={styles.amountClose}>✕</Text>
         </Pressable>
       </View>
 
-      <View style={styles.amountInputRow}>
-        <View style={styles.amountInputWrap}>
+      <View style={styles.selectorContainer}>
+        <View style={styles.amountInputSection}>
+          <Text style={styles.inputLabel}>Amount</Text>
           <Input
-            label="Amount"
             value={amount}
             onChangeText={setAmount}
             keyboardType="numeric"
             style={styles.amountInput}
+            placeholder="100"
           />
         </View>
-        <View style={styles.unitWrap}>
-          <Text style={styles.unitLabel}>Unit</Text>
-          <View style={styles.unitSelector}>
-            <Pressable
-              style={[styles.unitOption, unitId === 1 && styles.unitOptionActive]}
-              onPress={() => setUnitId(1)}
-            >
-              <Text style={[styles.unitOptionText, unitId === 1 && styles.unitOptionTextActive]}>g</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.unitOption, unitId === 2 && styles.unitOptionActive]}
-              onPress={() => setUnitId(2)}
-            >
-              <Text style={[styles.unitOptionText, unitId === 2 && styles.unitOptionTextActive]}>ml</Text>
-            </Pressable>
-            <Pressable
-              style={[styles.unitOption, unitId === 3 && styles.unitOptionActive]}
-              onPress={() => setUnitId(3)}
-            >
-              <Text style={[styles.unitOptionText, unitId === 3 && styles.unitOptionTextActive]}>pcs</Text>
-            </Pressable>
-          </View>
+        
+        <View style={styles.unitSelectorSection}>
+          <Text style={styles.inputLabel}>Unit</Text>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false} 
+            contentContainerStyle={styles.unitList}
+            decelerationRate="fast"
+          >
+            {foodUnits.length > 0 ? (
+              foodUnits.map((u) => (
+                <Pressable
+                  key={u.unitId}
+                  style={[styles.unitChip, unitId === u.unitId && styles.unitChipActive]}
+                  onPress={() => setUnitId(u.unitId)}
+                >
+                  <Text style={[styles.unitChipText, unitId === u.unitId && styles.unitChipTextActive]}>
+                    {u.unit?.name ?? String(u.unitId)}
+                  </Text>
+                </Pressable>
+              ))
+            ) : (
+              <Pressable
+                style={[styles.unitChip, unitId === 1 && styles.unitChipActive]}
+                onPress={() => setUnitId(1)}
+              >
+                <Text style={[styles.unitChipText, unitId === 1 && styles.unitChipTextActive]}>g</Text>
+              </Pressable>
+            )}
+          </ScrollView>
         </View>
       </View>
 
@@ -133,56 +168,102 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.md,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: spacing.md,
+  },
   amountFoodName: {
     fontSize: fontSize.lg,
     fontWeight: fontWeight.semibold,
     color: colors.text,
-    flex: 1,
-    marginRight: spacing.md,
+    maxWidth: '70%',
+  },
+  deleteBtn: {
+    backgroundColor: colors.dangerLight,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.danger,
+  },
+  deleteBtnText: {
+    color: colors.danger,
+    fontSize: fontSize.xs,
+    fontWeight: fontWeight.bold,
+  },
+  closeBtn: {
+    padding: spacing.xs,
   },
   amountClose: {
     fontSize: fontSize.xl,
     color: colors.textMuted,
   },
-  amountInputRow: {
+  selectorContainer: {
     flexDirection: 'row',
-    gap: spacing.md,
+    backgroundColor: colors.surfaceLight,
+    borderRadius: borderRadius.lg,
+    padding: spacing.sm,
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  amountInputWrap: {
+  amountInputSection: {
     flex: 1,
+  },
+  unitSelectorSection: {
+    flex: 2,
+    borderLeftWidth: 1,
+    borderLeftColor: colors.border,
+    paddingLeft: spacing.sm,
+  },
+  inputLabel: {
+    fontSize: 10,
+    fontWeight: fontWeight.bold,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    marginBottom: 4,
+    marginLeft: 4,
   },
   amountInput: {
     marginBottom: 0,
+    height: 44,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    paddingHorizontal: 8,
+    fontSize: fontSize.lg,
   },
-  unitWrap: {
-    width: 120,
+  unitList: {
+    gap: spacing.xs,
+    paddingVertical: 2,
   },
-  unitLabel: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-    marginBottom: spacing.xs,
-    color: colors.textSecondary,
-  },
-  unitSelector: {
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceLight,
+  unitChip: {
+    height: 40,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    overflow: 'hidden',
-  },
-  unitOption: {
-    flex: 1,
-    paddingVertical: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 44,
   },
-  unitOptionActive: {
+  unitChipActive: {
     backgroundColor: colors.primary,
+    borderColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  unitOptionText: {
-    fontSize: fontSize.md,
+  unitChipText: {
+    fontSize: fontSize.sm,
     color: colors.textSecondary,
     fontWeight: fontWeight.medium,
   },
-  unitOptionTextActive: {
+  unitChipTextActive: {
     color: colors.black,
     fontWeight: fontWeight.bold,
   },

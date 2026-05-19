@@ -5,6 +5,7 @@ import {
   useGetDailySummary,
   useCreateLogMeal,
   useDeleteLogMeal,
+  useUpdateLogMeal,
   useAddLogMealItem,
   useDeleteLogMealItem,
   useAddWaterLog,
@@ -13,7 +14,9 @@ import {
   useGetActiveMealPlan,
   useGetMealPlanById,
   useUpdateWaterLog,
+  useUpdateLogMealItem,
   type LogMealWithItems,
+  type LogMealItemApi,
 } from '@/features/nutrition/hooks';
 import type { MealItemDisplay } from '@/features/nutrition/components/MealCard/MealCard';
 
@@ -67,6 +70,8 @@ export function useNutritionHomeScreen() {
 
   const createMeal = useCreateLogMeal();
   const deleteMeal = useDeleteLogMeal();
+  const updateMeal = useUpdateLogMeal();
+  const updateMealItem = useUpdateLogMealItem();
   const addMealItem = useAddLogMealItem();
   const deleteMealItem = useDeleteLogMealItem();
   const addWater = useAddWaterLog();
@@ -75,6 +80,8 @@ export function useNutritionHomeScreen() {
 
   const [selectedMealTypeId, setSelectedMealTypeId] = useState<number | null>(null);
   const [showAddMealSheet, setShowAddMealSheet] = useState(false);
+  const [editingMeal, setEditingMeal] = useState<LogMealWithItems | null>(null);
+  const [editingMealItem, setEditingMealItem] = useState<{ mealId: number; item: LogMealItemApi } | null>(null);
 
   const handlePrevDay = useCallback(() => {
     const d = new Date(date + 'T00:00:00');
@@ -89,14 +96,23 @@ export function useNutritionHomeScreen() {
     setDate(getDateString(d));
   }, [date, isToday]);
 
+  const handleDateSelect = useCallback((d: Date) => {
+    setDate(getDateString(d));
+  }, []);
+
   const handleAddMeal = useCallback(() => {
     setShowAddMealSheet(true);
   }, []);
 
   const handleConfirmAddMeal = useCallback(
-    async (mealTypeId: number, items: SelectedPlanItem[]) => {
+    async (mealTypeId: number, items: SelectedPlanItem[], name?: string, consumedAt?: string) => {
       const mealTypeName = mealTypes?.find((t) => t.id === mealTypeId)?.name;
-      const meal = await createMeal.mutateAsync({ mealTypeId, name: mealTypeName });
+      const meal = await createMeal.mutateAsync({ 
+        mealTypeId, 
+        name: name || mealTypeName,
+        consumedAt,
+        dayLogDate: date
+      });
       if (items.length > 0) {
         await Promise.all(
           items.map((item) =>
@@ -122,11 +138,60 @@ export function useNutritionHomeScreen() {
     [deleteMeal],
   );
 
+  const handleEditMeal = useCallback(
+    (meal: LogMealWithItems) => {
+      setEditingMeal(meal);
+    },
+    [],
+  );
+
+  const handleConfirmEditMeal = useCallback(
+    async (mealId: number, data: { mealTypeId?: number; name?: string; consumedAt?: string }) => {
+      await updateMeal.mutateAsync({ id: String(mealId), data });
+      setEditingMeal(null);
+    },
+    [updateMeal],
+  );
+
   const handleDeleteMealItem = useCallback(
     (itemId: number) => {
       deleteMealItem.mutate(String(itemId));
+      setEditingMealItem(null);
     },
     [deleteMealItem],
+  );
+
+  const handleEditMealItem = useCallback(
+    (mealId: number, itemId: number) => {
+      const meal = (summary?.meals as LogMealWithItems[] | undefined)?.find((m) => m.id === mealId);
+      const item = meal?.items?.find((i) => i.id === itemId);
+      if (item) {
+        setEditingMealItem({ mealId, item });
+      }
+    },
+    [summary],
+  );
+
+  const handleUpdateMealItem = useCallback(
+    async (itemId: number, amount: number, unitId: number) => {
+      await updateMealItem.mutateAsync({
+        itemId: String(itemId),
+        data: { amount, unitId },
+      });
+      setEditingMealItem(null);
+    },
+    [updateMealItem],
+  );
+
+  const handleSwapMealItem = useCallback(
+    (mealId: number, itemId: number) => {
+      setEditingMealItem(null);
+      router.push({
+        pathname: '/(app)/(nutrition)/food-picker',
+        params: { mealId: String(mealId), swapItemId: String(itemId), mode: 'logMeal' },
+      } as never);
+    },
+    [router],
   );
 
   const handleAddWater = useCallback(
@@ -159,6 +224,56 @@ export function useNutritionHomeScreen() {
     },
     [router],
   );
+
+  const handleApplyPlanDay = useCallback(async () => {
+    if (!planDayMeals.length) return;
+    
+    Alert.alert(
+      'Apply Today\'s Plan?',
+      'This will log all meals from your active plan for this date.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Apply',
+          onPress: async () => {
+            for (const planMeal of planDayMeals) {
+              const mealTypeName = mealTypes?.find(t => t.id === planMeal.mealTypeId)?.name;
+              
+              let consumedAt = new Date(date + 'T00:00:00');
+              if (planMeal.timeSuggestion) {
+                const [h, m] = planMeal.timeSuggestion.split(':').map(Number);
+                consumedAt.setHours(h, m, 0, 0);
+              } else {
+                const defaultHours: Record<number, number> = { 1: 8, 2: 13, 3: 19, 4: 16 }; 
+                consumedAt.setHours(defaultHours[planMeal.mealTypeId] || 12, 0, 0, 0);
+              }
+
+              const meal = await createMeal.mutateAsync({
+                mealTypeId: planMeal.mealTypeId,
+                name: mealTypeName,
+                consumedAt: consumedAt.toISOString(),
+              });
+
+              if (planMeal.items?.length) {
+                await Promise.all(
+                  planMeal.items.map(item =>
+                    addMealItem.mutateAsync({
+                      mealId: String(meal.id),
+                      data: {
+                        foodId: item.foodId,
+                        unitId: item.unitId,
+                        amount: item.amount,
+                      }
+                    })
+                  )
+                );
+              }
+            }
+          }
+        }
+      ]
+    );
+  }, [planDayMeals, mealTypes, date, createMeal, addMealItem]);
 
   // Which plan day matches the currently viewed date
   const activePlanCurrentDay = useMemo(() => {
@@ -221,17 +336,29 @@ export function useNutritionHomeScreen() {
     setSelectedMealTypeId,
     showAddMealSheet,
     setShowAddMealSheet,
+    editingMeal,
+    setEditingMeal,
     handlePrevDay,
     handleNextDay,
+    handleDateSelect,
     handleAddMeal,
     handleConfirmAddMeal,
     handleDeleteMeal,
+    handleEditMeal,
+    handleConfirmEditMeal,
     handleDeleteMealItem,
+    handleEditMealItem,
+    handleUpdateMealItem,
+    handleSwapMealItem,
     handleAddWater,
     handleUpdateWater,
     handleDeleteWater,
     handleAddFoodToMeal,
+    handleApplyPlanDay,
     isCreateMealPending: createMeal.isPending,
+    isUpdateItemPending: updateMealItem.isPending,
+    editingMealItem,
+    setEditingMealItem,
     router,
   };
 }
