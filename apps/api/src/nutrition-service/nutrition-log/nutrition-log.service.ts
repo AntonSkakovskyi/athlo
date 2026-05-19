@@ -4,11 +4,14 @@ import { Repository, Between } from 'typeorm';
 import { LogMealEntity } from '../entities/log-meal.entity';
 import { LogMealItemEntity } from '../entities/log-meal-item.entity';
 import { WaterLogEntity } from '../entities/water-log.entity';
+import { UserEntity } from '../../user-service/user/entities/user.entity';
+import { BodyMetricEntity } from '../../user-service/body-metrics/entities/body-metric.entity';
 import { CreateLogMealDto } from '../dto/nutrition-log/create-log-meal.dto';
 import { CreateLogMealItemDto } from '../dto/nutrition-log/create-log-meal-item.dto';
 import { CreateWaterLogDto } from '../dto/nutrition-log/create-water-log.dto';
 import { UpdateWaterLogDto } from '../dto/nutrition-log/update-water-log.dto';
 import { UpdateLogMealDto } from '../dto/nutrition-log/update-log-meal.dto';
+import { UpdateLogMealItemDto } from '../dto/nutrition-log/update-log-meal-item.dto';
 
 @Injectable()
 export class NutritionLogService {
@@ -19,6 +22,10 @@ export class NutritionLogService {
     private readonly logMealItemRepository: Repository<LogMealItemEntity>,
     @InjectRepository(WaterLogEntity)
     private readonly waterLogRepository: Repository<WaterLogEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(BodyMetricEntity)
+    private readonly bodyMetricRepository: Repository<BodyMetricEntity>,
   ) {}
 
   // ─── Log Meals ────────────────────────────────────
@@ -29,6 +36,8 @@ export class NutritionLogService {
       mealTypeId: dto.mealTypeId,
       name: dto.name,
       originalPlanMealId: dto.originalPlanMealId,
+      ...(dto.consumedAt ? { consumedAt: new Date(dto.consumedAt) } : {}),
+      ...(dto.dayLogDate ? { dayLogDate: new Date(dto.dayLogDate) } : {}),
     });
     return this.logMealRepository.save(meal);
   }
@@ -38,7 +47,7 @@ export class NutritionLogService {
       where: { userId, dayLogDate: new Date(date) },
       relations: {
         mealType: true,
-        items: { food: true, unit: true },
+        items: { food: { units: true }, unit: true },
       },
       order: { consumedAt: 'ASC' },
     });
@@ -49,7 +58,7 @@ export class NutritionLogService {
       where: { id },
       relations: {
         mealType: true,
-        items: { food: true, unit: true },
+        items: { food: { units: true }, unit: true },
       },
     });
 
@@ -86,6 +95,23 @@ export class NutritionLogService {
       amount: dto.amount,
       calculatedWeightG: dto.calculatedWeightG,
     });
+    return this.logMealItemRepository.save(item);
+  }
+
+  async updateMealItem(itemId: number, userId: number, dto: UpdateLogMealItemDto) {
+    const item = await this.logMealItemRepository.findOne({
+      where: { id: itemId },
+      relations: { logMeal: true },
+    });
+    if (!item) {
+      throw new NotFoundException(`Log meal item with ID ${itemId} not found`);
+    }
+    if (item.logMeal.userId !== userId) {
+      throw new ForbiddenException('You do not have access to this meal item');
+    }
+    if (dto.unitId !== undefined) item.unitId = dto.unitId;
+    if (dto.amount !== undefined) item.amount = dto.amount;
+    if (dto.calculatedWeightG !== undefined) item.calculatedWeightG = dto.calculatedWeightG;
     return this.logMealItemRepository.save(item);
   }
 
@@ -152,6 +178,23 @@ export class NutritionLogService {
   async getDailySummary(userId: number, date: string) {
     const meals = await this.getMealsByDate(userId, date);
     const waterLogs = await this.getWaterLogsByDate(userId, date);
+    const user = await this.userRepository.findOne({ 
+      where: { id: userId },
+      relations: ['settings']
+    });
+
+    let calculatedWaterGoal: number | null = user?.settings?.waterGoal ?? null;
+
+    if (!calculatedWaterGoal) {
+      const latestWeight = await this.bodyMetricRepository.findOne({
+        where: { userId, metricType: { name: 'Body Weight' } },
+        order: { recordedAt: 'DESC' },
+        relations: ['metricType'],
+      });
+      if (latestWeight) {
+        calculatedWaterGoal = Math.round(Number(latestWeight.value) * 35);
+      }
+    }
 
     let totalCalories = 0;
     let totalProteins = 0;
@@ -177,6 +220,7 @@ export class NutritionLogService {
       totalFats: Math.round(totalFats * 100) / 100,
       totalCarbs: Math.round(totalCarbs * 100) / 100,
       totalWaterMl,
+      waterGoal: calculatedWaterGoal,
       mealsCount: meals.length,
       meals,
       waterLogs,

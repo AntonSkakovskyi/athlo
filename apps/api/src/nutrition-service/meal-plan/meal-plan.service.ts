@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { MealPlanEntity } from '../entities/meal-plan.entity';
@@ -12,6 +12,7 @@ import { CreatePlanDayDto } from '../dto/meal-plan/create-plan-day.dto';
 import { CreatePlanMealDto } from '../dto/meal-plan/create-plan-meal.dto';
 import { CreatePlanMealItemDto } from '../dto/meal-plan/create-plan-meal-item.dto';
 import { UpdatePlanMealDto } from '../dto/meal-plan/update-plan-meal.dto';
+import { UpdatePlanMealItemDto } from '../dto/meal-plan/update-plan-meal-item.dto';
 import { FriendService } from '../../user-service/friends/friend.service';
 import { In } from 'typeorm';
 
@@ -34,14 +35,28 @@ export class MealPlanService {
   // ─── Meal Plans ───────────────────────────────────
 
   async create(userId: number, dto: CreateMealPlanDto) {
+    const totalDays = dto.totalDays ?? 1;
     const plan = this.mealPlanRepository.create({
       creatorId: userId,
       name: dto.name,
       description: dto.description,
       visibilityTypeId: dto.visibilityTypeId ?? 1,
-      totalDays: dto.totalDays ?? 1,
+      totalDays,
     });
-    return this.mealPlanRepository.save(plan);
+    
+    const savedPlan = await this.mealPlanRepository.save(plan);
+
+    // Automatically create days
+    const days = [];
+    for (let i = 1; i <= totalDays; i++) {
+      days.push(this.planDayRepository.create({
+        mealPlanId: savedPlan.id,
+        dayNumber: i,
+      }));
+    }
+    await this.planDayRepository.save(days);
+
+    return savedPlan;
   }
 
   async findMyPlans(userId: number) {
@@ -49,6 +64,69 @@ export class MealPlanService {
       where: { creatorId: userId },
       order: { id: 'DESC' },
     });
+  }
+
+  async findPublicPlans(userId: number, page: number = 1, limit: number = 10, search?: string) {
+    const query = this.mealPlanRepository.createQueryBuilder('p')
+      .leftJoinAndSelect('p.creator', 'creator')
+      .where('p.visibilityTypeId = :public', { public: 2 }) // PUBLIC
+      .andWhere('p.creatorId != :userId', { userId });
+
+    if (search) {
+      query.andWhere('p.name ILIKE :search', { search: `%${search}%` });
+    }
+
+    const [items, total] = await query
+      .orderBy('p.id', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      items: items.map(p => ({
+        ...p,
+        creatorNickname: p.creator?.nickname,
+        creator: undefined,
+      })),
+      total,
+      page,
+      limit,
+    };
+  }
+
+  async findFriendsPlans(userId: number) {
+    const friendIds = await this.friendService.getFriendIds(userId);
+    if (friendIds.length === 0) return [];
+
+    return this.mealPlanRepository.find({
+      where: {
+        creatorId: In(friendIds),
+        visibilityTypeId: In([2, 3]), // PUBLIC or FRIENDS_ONLY
+      },
+      relations: { creator: true },
+      order: { id: 'DESC' },
+    }).then(plans => plans.map(p => ({
+      ...p,
+      creatorNickname: p.creator?.nickname,
+      creator: undefined,
+    })));
+  }
+
+  async findSavedPlans(userId: number) {
+    const saved = await this.userMealPlanRepository.find({
+      where: { userId },
+      relations: {
+        mealPlan: { creator: true },
+      },
+    });
+
+    return saved
+      .filter(s => s.mealPlan.creatorId !== userId)
+      .map(s => ({
+        ...s.mealPlan,
+        creatorNickname: s.mealPlan.creator?.nickname,
+        creator: undefined,
+      }));
   }
 
   async findMealPlansForUser(currentUserId: number, targetUserId: number) {
@@ -79,7 +157,10 @@ export class MealPlanService {
         days: {
           meals: {
             mealType: true,
-            items: { food: true, unit: true },
+            items: { 
+              food: { units: true }, 
+              unit: true 
+            },
           },
         },
       },
@@ -150,6 +231,20 @@ export class MealPlanService {
       throw new NotFoundException(`Plan day with ID ${dayId} not found`);
     }
     await this.planDayRepository.remove(day);
+
+    // Reorder remaining days to ensure they are contiguous (1, 2, 3...)
+    const remainingDays = await this.planDayRepository.find({
+      where: { mealPlanId: planId },
+      order: { dayNumber: 'ASC' },
+    });
+
+    for (let i = 0; i < remainingDays.length; i++) {
+      remainingDays[i].dayNumber = i + 1;
+    }
+    await this.planDayRepository.save(remainingDays);
+
+    // Update totalDays count in the main meal plan record
+    await this.mealPlanRepository.update(planId, { totalDays: remainingDays.length });
   }
 
   // ─── Plan Meals ───────────────────────────────────
@@ -196,6 +291,18 @@ export class MealPlanService {
       unitId: dto.unitId,
       amount: dto.amount,
     });
+    return this.planMealItemRepository.save(item);
+  }
+
+  async updateMealItem(planId: number, itemId: number, userId: number, dto: UpdatePlanMealItemDto) {
+    await this.assertOwner(planId, userId);
+    const item = await this.planMealItemRepository.findOne({ where: { id: itemId } });
+    if (!item) {
+      throw new NotFoundException(`Plan meal item with ID ${itemId} not found`);
+    }
+    if (dto.foodId !== undefined) item.foodId = dto.foodId;
+    if (dto.unitId !== undefined) item.unitId = dto.unitId;
+    if (dto.amount !== undefined) item.amount = dto.amount;
     return this.planMealItemRepository.save(item);
   }
 
@@ -257,6 +364,44 @@ export class MealPlanService {
       },
     });
     return userPlan;
+  }
+
+  async savePlan(planId: number, userId: number) {
+    const plan = await this.mealPlanRepository.findOne({ where: { id: planId } });
+    if (!plan) {
+      throw new NotFoundException(`Meal plan with ID ${planId} not found`);
+    }
+
+    if (plan.creatorId === userId) {
+      throw new BadRequestException('You cannot save your own meal plan');
+    }
+
+    const existing = await this.userMealPlanRepository.findOne({
+      where: { userId, mealPlanId: planId },
+    });
+
+    if (existing) {
+      return existing;
+    }
+
+    const userPlan = this.userMealPlanRepository.create({
+      userId,
+      mealPlanId: planId,
+      isActive: false,
+    });
+    return this.userMealPlanRepository.save(userPlan);
+  }
+
+  async unsavePlan(planId: number, userId: number) {
+    const userPlan = await this.userMealPlanRepository.findOne({
+      where: { userId, mealPlanId: planId },
+    });
+
+    if (!userPlan) {
+      throw new NotFoundException('Saved meal plan not found');
+    }
+
+    await this.userMealPlanRepository.remove(userPlan);
   }
 
   // ─── Helpers ──────────────────────────────────────

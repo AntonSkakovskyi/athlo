@@ -11,6 +11,7 @@ DROP TABLE IF EXISTS "plan_meal_items" CASCADE;
 DROP TABLE IF EXISTS "plan_meals" CASCADE;
 DROP TABLE IF EXISTS "plan_days" CASCADE;
 DROP TABLE IF EXISTS "meal_plans" CASCADE;
+DROP TABLE IF EXISTS "food_units" CASCADE;
 
 -- 2. Видалення соціальних функцій, досягнень та рекордів
 DROP TABLE IF EXISTS "user_friends" CASCADE;
@@ -42,7 +43,8 @@ DROP TABLE IF EXISTS "foods" CASCADE;
 DROP TABLE IF EXISTS "meal_types" CASCADE;
 DROP TABLE IF EXISTS "units" CASCADE;
 
--- 6. Видалення користувачів
+-- 6. Видалення користувачів та їх налаштувань
+DROP TABLE IF EXISTS "settings" CASCADE;
 DROP TABLE IF EXISTS "users" CASCADE;
 
 -- 7. Видалення кастомних типів (якщо вони залишилися після міграцій)

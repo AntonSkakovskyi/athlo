@@ -7,6 +7,7 @@ import { CreateLogMealItemDto } from '../dto/nutrition-log/create-log-meal-item.
 import { CreateWaterLogDto } from '../dto/nutrition-log/create-water-log.dto';
 import { UpdateWaterLogDto } from '../dto/nutrition-log/update-water-log.dto';
 import { UpdateLogMealDto } from '../dto/nutrition-log/update-log-meal.dto';
+import { UpdateLogMealItemDto } from '../dto/nutrition-log/update-log-meal-item.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Nutrition Log')
@@ -93,6 +94,17 @@ export class NutritionLogController {
     @Body() dto: CreateLogMealItemDto,
   ) {
     return this.nutritionLogService.addMealItem(mealId, userId, dto);
+  }
+
+  @Patch('meal-items/:itemId')
+  @ApiOperation({ summary: 'Update a food item in a logged meal' })
+  @ApiResponse({ status: 200, description: 'Item updated' })
+  updateMealItem(
+    @Param('itemId', ParseIntPipe) itemId: number,
+    @CurrentUser('id') userId: number,
+    @Body() dto: UpdateLogMealItemDto,
+  ) {
+    return this.nutritionLogService.updateMealItem(itemId, userId, dto);
   }
 
   @Delete('meal-items/:itemId')

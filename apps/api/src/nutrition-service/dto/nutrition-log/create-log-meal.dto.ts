@@ -1,4 +1,4 @@
-import { IsOptional, IsInt, IsString } from 'class-validator';
+import { IsOptional, IsInt, IsString, IsDateString } from 'class-validator';
 
 export class CreateLogMealDto {
   @IsOptional()
@@ -12,4 +12,12 @@ export class CreateLogMealDto {
   @IsOptional()
   @IsInt()
   originalPlanMealId?: number;
+
+  @IsOptional()
+  @IsDateString()
+  consumedAt?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dayLogDate?: string;
 }

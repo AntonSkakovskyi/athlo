@@ -23,4 +23,8 @@ export class CreateFoodDto {
   @IsNumber()
   @Min(0)
   carbs: number;
+
+  @IsOptional()
+  @IsNumber()
+  creatorId?: number;
 }

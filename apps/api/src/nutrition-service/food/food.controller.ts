@@ -1,8 +1,10 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { FoodService } from './food.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateFoodDto } from '../dto/food/create-food.dto';
 import { UpdateFoodDto } from '../dto/food/update-food.dto';
+import { AddFoodUnitDto } from '../dto/food/add-food-unit.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Foods')
@@ -15,8 +17,8 @@ export class FoodController {
   @Post()
   @ApiOperation({ summary: 'Create a food item' })
   @ApiResponse({ status: 201, description: 'Food created' })
-  create(@Body() dto: CreateFoodDto) {
-    return this.foodService.create(dto);
+  create(@Body() dto: CreateFoodDto, @CurrentUser('id') userId: number) {
+    return this.foodService.create({ ...dto, creatorId: userId });
   }
 
   @Get()
@@ -53,7 +55,18 @@ export class FoodController {
   @ApiOperation({ summary: 'Delete a food item' })
   @ApiResponse({ status: 200, description: 'Food deleted' })
   @ApiResponse({ status: 404, description: 'Food not found' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.foodService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+    return this.foodService.remove(id, userId);
+  }
+
+  @Post(':id/units')
+  @ApiOperation({ summary: 'Add a unit conversion to a food item' })
+  @ApiResponse({ status: 201, description: 'Unit added' })
+  addUnit(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+    @Body() dto: AddFoodUnitDto,
+  ) {
+    return this.foodService.addUnit(id, userId, dto);
   }
 }

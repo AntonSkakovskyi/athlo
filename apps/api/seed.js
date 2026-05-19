@@ -51,7 +51,20 @@ async function seedUsersAndFriends(client) {
   if (!frCheck.rows.length) {
     await insertRow(client, 'user_friends', { user_id: USER_ID, friend_id: FRIEND_ID, status: 'ACCEPTED' });
   }
-  console.log('  → Users and friendship ready');
+
+  // Ensure settings exist for USER_ID
+  const sCheck = await client.query(`SELECT id FROM settings WHERE user_id=$1`, [USER_ID]);
+  if (!sCheck.rows.length) {
+    await insertRow(client, 'settings', { user_id: USER_ID, water_goal: 2500 });
+  }
+
+  // Ensure settings exist for FRIEND_ID
+  const fsCheck = await client.query(`SELECT id FROM settings WHERE user_id=$1`, [FRIEND_ID]);
+  if (!fsCheck.rows.length) {
+    await insertRow(client, 'settings', { user_id: FRIEND_ID, water_goal: 2000 });
+  }
+
+  console.log('  → Users, friendship, and settings ready');
 }
 
 // ─── Exercise definitions ───────────────────────────────────────────────────
@@ -460,11 +473,34 @@ async function seedNutrition(client, { mealTypes, units, vt }) {
   const foodIds = {};
   for (const f of FOODS) {
     const s = await client.query(`SELECT id FROM foods WHERE name=$1 LIMIT 1`, [f.name]);
-    if (s.rows.length) { foodIds[f.name] = s.rows[0].id; continue; }
-    foodIds[f.name] = await insertRow(client, 'foods', {
-      name: f.name, brand: f.brand,
-      calories: f.calories, proteins: f.proteins, fats: f.fats, carbs: f.carbs,
-    });
+    if (s.rows.length) { 
+      foodIds[f.name] = s.rows[0].id; 
+    } else {
+      foodIds[f.name] = await insertRow(client, 'foods', {
+        name: f.name, brand: f.brand,
+        calories: f.calories, proteins: f.proteins, fats: f.fats, carbs: f.carbs,
+        creator_id: null,
+      });
+    }
+    
+    // Seed units for this food
+    if (f.units) {
+      for (const u of f.units) {
+        const uId = units[u.u];
+        if (!uId) continue;
+        const exists = await client.query(
+          `SELECT id FROM food_units WHERE food_id=$1 AND unit_id=$2 LIMIT 1`,
+          [foodIds[f.name], uId]
+        );
+        if (!exists.rows.length) {
+          await insertRow(client, 'food_units', {
+            food_id: foodIds[f.name],
+            unit_id: uId,
+            conversion_factor: u.f,
+          });
+        }
+      }
+    }
   }
   console.log(`  → ${Object.keys(foodIds).length} foods ready`);
 
