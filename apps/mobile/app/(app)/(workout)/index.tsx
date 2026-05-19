@@ -77,9 +77,7 @@ export default function WorkoutsScreen() {
         )}
       </View>
 
-      <View style={styles.sectionHeaderContainer}>
-        <SectionHeader title="Recent Workouts" />
-      </View>
+      <SectionHeader title="Recent Workouts" />
     </View>
   );
 
@@ -129,9 +127,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: spacing['3xl'],
-  },
-  sectionHeaderContainer: {
-    marginBottom: spacing.md,
   },
   templateList: {
     paddingRight: 16,
