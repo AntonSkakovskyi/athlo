@@ -16,6 +16,7 @@ interface CalendarGridProps {
   monthName: string;
   year: number;
   daysOfWeek: string[];
+  maximumDate?: Date;
 }
 
 export function CalendarGrid({
@@ -32,6 +33,7 @@ export function CalendarGrid({
   monthName,
   year,
   daysOfWeek,
+  maximumDate,
 }: CalendarGridProps) {
   return (
     <View style={styles.calendarCard}>
@@ -72,6 +74,13 @@ export function CalendarGrid({
           const date = new Date(currentMonth.year, currentMonth.month, day);
           const key = toDateKey(date);
           const hasWorkout = !!workoutsByDate[key];
+          
+          let isDisabled = false;
+          if (maximumDate) {
+            const max = new Date(maximumDate.getFullYear(), maximumDate.getMonth(), maximumDate.getDate());
+            if (date > max) isDisabled = true;
+          }
+
           const isToday =
             date.getDate() === today.getDate() &&
             date.getMonth() === today.getMonth() &&
@@ -81,8 +90,8 @@ export function CalendarGrid({
           return (
             <Pressable
               key={key}
-              style={styles.dayCell}
-              onPress={() => onSelectDate(date)}
+              style={[styles.dayCell, isDisabled && styles.dayCellDisabled]}
+              onPress={() => !isDisabled && onSelectDate(date)}
             >
               <View
                 style={[
@@ -90,6 +99,7 @@ export function CalendarGrid({
                   isToday && styles.dayCircleToday,
                   isSelected && styles.dayCircleSelected,
                   hasWorkout && !isSelected && styles.dayCircleHasWorkout,
+                  isDisabled && styles.dayCircleDisabled,
                 ]}
               >
                 <Text
@@ -97,6 +107,7 @@ export function CalendarGrid({
                     styles.dayText,
                     isToday && !isSelected && styles.dayTextToday,
                     isSelected && styles.dayTextSelected,
+                    isDisabled && styles.dayTextDisabled,
                   ]}
                 >
                   {day}
@@ -206,6 +217,12 @@ const styles = StyleSheet.create({
   dayTextSelected: {
     color: colors.black,
     fontWeight: fontWeight.bold,
+  },
+  dayTextDisabled: {
+    color: colors.textMuted,
+  },
+  dayCellDisabled: {
+    opacity: 0.3,
   },
   workoutDot: {
     width: 5,

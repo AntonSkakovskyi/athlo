@@ -1,12 +1,13 @@
-import { View, Text, StyleSheet, Pressable, FlatList } from 'react-native';
-import { useRef } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { NavCard } from '@/components/ui/NavCard/NavCard';
+import { BarChartBlock } from '@/components/ui/BarChartBlock/BarChartBlock';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
 import { WorkoutHistoryList } from '@/features/workout/components';
 import { useProfileScreen } from '@/features/profile/hooks/useProfileScreen';
+import { usePerformanceChart } from '@/features/profile/hooks/usePerformanceChart';
 
 export default function ProfileScreen() {
   const {
@@ -20,6 +21,18 @@ export default function ProfileScreen() {
     displayedWorkouts,
     handleLoadMore,
   } = useProfileScreen();
+
+  const {
+    perfPeriod,
+    setPerfPeriod,
+    perfMetricIndex,
+    setPerfMetricIndex,
+    aggregatedData,
+    currentPerfMetric,
+    formatPerformanceValue,
+    PERIOD_LABELS,
+    PERFORMANCE_METRICS,
+  } = usePerformanceChart();
 
   if (profileLoading) {
     return <LoadingScreen />;
@@ -54,11 +67,26 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
+        <BarChartBlock
+          metricLabel={currentPerfMetric}
+          data={aggregatedData}
+          period={perfPeriod}
+          onPeriodChange={setPerfPeriod}
+          periods={PERIOD_LABELS}
+          formatValue={formatPerformanceValue}
+          emptyText="No workouts in this period"
+          metrics={PERFORMANCE_METRICS}
+          activeMetric={perfMetricIndex}
+          onMetricChange={setPerfMetricIndex}
+        />
+      </View>
+
+      <View style={styles.section}>
         <View style={styles.navGrid}>
           <View style={styles.navRow}>
             <NavCard variant="compact" icon="📅" title="Calendar" description="Training calendar" onPress={() => router.push('/(app)/(profile)/calendar')} />
             <View style={styles.navGap} />
-            <NavCard variant="compact" icon="📊" title="Statistics" description="Workout stats" onPress={() => router.push('/(app)/(profile)/statistics')} />
+            <NavCard variant="compact" icon="📈" title="Metrics" description="Workout stats" onPress={() => router.push('/(app)/(profile)/statistics')} />
           </View>
           <View style={styles.navRowGap} />
           <View style={styles.navRow}>

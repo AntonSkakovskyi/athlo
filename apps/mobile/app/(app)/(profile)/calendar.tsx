@@ -57,6 +57,7 @@ export default function CalendarScreen() {
         monthName={MONTH_NAMES[currentMonth.month]}
         year={currentMonth.year}
         daysOfWeek={DAYS_OF_WEEK}
+        maximumDate={new Date()}
       />
 
       {/* Selected Day Panel */}

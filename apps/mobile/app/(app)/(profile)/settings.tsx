@@ -1,43 +1,99 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Modal, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { SettingsRow } from '../../../features/profile/components/SettingsRow/SettingsRow';
 import { useSettingsScreen } from '@/features/profile/hooks/useSettingsScreen';
+import { Input } from '@/components/ui/Input/Input';
+import { Button } from '@/components/ui/Button/Button';
+import { useGetUserProfile, useUpdateUserProfile } from '@/hooks/api/useUserAPI';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SettingsScreen() {
   const { insets, router, handleLogout, handleDeleteAccount } = useSettingsScreen();
+  const { user: authUser } = useAuth();
+  const { data: user } = useGetUserProfile(authUser?.id ? String(authUser.id) : '');
+  const updateProfile = useUpdateUserProfile();
+  
+  const [waterGoalModalVisible, setWaterGoalModalVisible] = useState(false);
+  const [waterGoalInput, setWaterGoalInput] = useState('');
+
+  useEffect(() => {
+    if (user?.waterGoal) {
+      setWaterGoalInput(String(user.waterGoal));
+    }
+  }, [user?.waterGoal, waterGoalModalVisible]);
+
+  const handleSaveWaterGoal = async () => {
+    const parsed = parseInt(waterGoalInput, 10);
+    const goalToSave = (isNaN(parsed) || parsed <= 0) ? null : parsed;
+    await updateProfile.mutateAsync({ waterGoal: goalToSave });
+    setWaterGoalModalVisible(false);
+  };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 40 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.header}>
-        <Text style={styles.backBtn} onPress={() => router.back()}>← Back</Text>
-        <Text style={styles.screenTitle}>Settings</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>General</Text>
-        <View style={styles.card}>
-          <SettingsRow label="Units" value="Metric" />
-          <View style={styles.divider} />
-          <SettingsRow label="Notifications" value="On" />
-          <View style={styles.divider} />
-          <SettingsRow label="Theme" value="Dark" />
+    <>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 40 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <Text style={styles.backBtn} onPress={() => router.back()}>← Back</Text>
+          <Text style={styles.screenTitle}>Settings</Text>
+          <View style={styles.headerSpacer} />
         </View>
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
-        <View style={styles.card}>
-          <SettingsRow label="Log Out" variant="danger" onPress={handleLogout} />
-          <View style={styles.divider} />
-          <SettingsRow label="Delete Account" variant="danger" onPress={handleDeleteAccount} />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>General</Text>
+          <View style={styles.card}>
+            <SettingsRow 
+              label="Water Goal" 
+              value={user?.waterGoal ? `${user.waterGoal} ml` : 'Auto'} 
+              onPress={() => setWaterGoalModalVisible(true)} 
+            />
+            <View style={styles.divider} />
+            <SettingsRow label="Units" value="Metric" />
+            <View style={styles.divider} />
+            <SettingsRow label="Notifications" value="On" />
+            <View style={styles.divider} />
+            <SettingsRow label="Theme" value="Dark" />
+          </View>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account</Text>
+          <View style={styles.card}>
+            <SettingsRow label="Log Out" variant="danger" onPress={handleLogout} />
+            <View style={styles.divider} />
+            <SettingsRow label="Delete Account" variant="danger" onPress={handleDeleteAccount} />
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Water Goal Edit Modal */}
+      <Modal visible={waterGoalModalVisible} transparent animationType="fade">
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setWaterGoalModalVisible(false)} />
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Daily Water Goal (ml)</Text>
+            <Text style={styles.modalDesc}>
+              Leave empty or enter 0 to calculate automatically based on your body weight.
+            </Text>
+            <Input
+              value={waterGoalInput}
+              onChangeText={setWaterGoalInput}
+              keyboardType="number-pad"
+              placeholder="e.g. 2500"
+              autoFocus
+            />
+            <View style={styles.modalActions}>
+              <Button title="Cancel" variant="ghost" onPress={() => setWaterGoalModalVisible(false)} style={{ flex: 1 }} />
+              <Button title="Save" variant="primary" onPress={handleSaveWaterGoal} isLoading={updateProfile.isPending} style={{ flex: 1 }} />
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
   );
 }
 
@@ -73,4 +129,35 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   divider: { height: 1, backgroundColor: colors.border, marginLeft: spacing.lg },
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: colors.overlay,
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+  },
+  modalTitle: {
+    fontSize: fontSize.lg,
+    fontWeight: fontWeight.bold,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  modalDesc: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    marginBottom: spacing.lg,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
 });
