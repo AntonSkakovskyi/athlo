@@ -1,3 +1,5 @@
+import type { IFoodUnit } from './food-unit.interface';
+
 export interface IFood {
   id: number;
   name: string;
@@ -6,4 +8,6 @@ export interface IFood {
   proteins: number;
   fats: number;
   carbs: number;
+  creatorId: number | null;
+  units?: IFoodUnit[];
 }

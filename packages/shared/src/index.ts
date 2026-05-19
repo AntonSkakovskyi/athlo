@@ -19,6 +19,7 @@ export type {
 	IMetricType,
 	IBodyMetric,
 	IFood,
+	IFoodUnit,
 	IMealType,
 	IMealPlan,
 	IPlanDay,
@@ -43,6 +44,7 @@ export type {
 	IUserExerciseRecord,
 	IFrequentExercise,
 	IPaginatedResponse,
+	IUserSettings,
 } from './interfaces/index.js';
 
 export { TrackingType, WorkoutStatus, VisibilityType, FriendRequestStatus, AchievementType, TrackingMetric } from './enums/index.js';

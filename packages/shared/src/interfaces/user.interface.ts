@@ -3,4 +3,5 @@ export interface IUser {
   fullName: string;
   nickname: string;
   email: string;
+  waterGoal?: number | null;
 }
