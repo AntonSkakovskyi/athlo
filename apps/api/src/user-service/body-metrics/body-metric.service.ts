@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BodyMetricEntity } from './entities/body-metric.entity';
 import { MetricTypeEntity } from './entities/metric-type.entity';
+import { UnitEntity } from './entities/unit.entity';
 import { CreateBodyMetricDto } from './dto/create-body-metric.dto';
 import { UpdateBodyMetricDto } from './dto/update-body-metric.dto';
 
@@ -13,10 +14,16 @@ export class BodyMetricService {
     private readonly bodyMetricRepository: Repository<BodyMetricEntity>,
     @InjectRepository(MetricTypeEntity)
     private readonly metricTypeRepository: Repository<MetricTypeEntity>,
+    @InjectRepository(UnitEntity)
+    private readonly unitRepository: Repository<UnitEntity>,
   ) {}
 
   async getMetricTypes() {
-    return this.metricTypeRepository.find({ relations: { unit: true } });
+    return this.metricTypeRepository.find({ relations: ['unit'] });
+  }
+
+  async getUnits() {
+    return this.unitRepository.find();
   }
 
   async create(userId: number, dto: CreateBodyMetricDto) {

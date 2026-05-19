@@ -1,6 +1,7 @@
 import { IUser } from "@athlo/shared";
 import { WorkoutEntity } from "../../../workouts-service/entities/workout.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { UserSettingEntity } from "./user-setting.entity";
 
 @Entity({ name: 'users' })
 export class UserEntity implements IUser {
@@ -21,4 +22,7 @@ export class UserEntity implements IUser {
 
   @OneToMany(() => WorkoutEntity, workout => workout.user)
   workouts: WorkoutEntity[];
+
+  @OneToOne(() => UserSettingEntity, setting => setting.user)
+  settings: UserSettingEntity;
 }

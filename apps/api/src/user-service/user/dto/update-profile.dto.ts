@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MinLength } from 'class-validator';
+import { IsOptional, IsString, MinLength, IsInt } from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -10,4 +10,8 @@ export class UpdateProfileDto {
   @IsString()
   @MinLength(2)
   nickname?: string;
+
+  @IsOptional()
+  @IsInt()
+  waterGoal?: number | null;
 }

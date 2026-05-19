@@ -20,6 +20,13 @@ export class BodyMetricController {
     return this.bodyMetricService.getMetricTypes();
   }
 
+  @Get('units')
+  @ApiOperation({ summary: 'Get all available units' })
+  @ApiResponse({ status: 200, description: 'List of units' })
+  getUnits() {
+    return this.bodyMetricService.getUnits();
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create a body metric entry' })
   @ApiResponse({ status: 201, description: 'Body metric created' })
