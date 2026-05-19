@@ -98,3 +98,18 @@ export const useDeleteFood = () => {
     },
   });
 };
+
+export const useAddFoodUnit = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ foodId, data }: { foodId: string; data: { unitId: number; conversionFactor: number } }) => {
+      const response = await apiClient.post(apiRoutes.foods.addUnit(foodId), data);
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: foodKeys.byId(variables.foodId) });
+      queryClient.invalidateQueries({ queryKey: foodKeys.all });
+    },
+  });
+};

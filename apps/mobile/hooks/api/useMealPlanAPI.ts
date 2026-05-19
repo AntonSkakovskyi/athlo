@@ -48,6 +48,38 @@ export const useGetActiveMealPlan = () => {
   });
 };
 
+export const useGetPublicMealPlans = (search?: string) => {
+  return useQuery({
+    queryKey: mealPlanKeys.public(search),
+    queryFn: async () => {
+      const response = await apiClient.get<{ items: IMealPlan[] }>(apiRoutes.mealPlans.getPublic, {
+        params: { search },
+      });
+      return response.data.items;
+    },
+  });
+};
+
+export const useGetFriendsMealPlans = () => {
+  return useQuery({
+    queryKey: mealPlanKeys.friends,
+    queryFn: async () => {
+      const response = await apiClient.get<IMealPlan[]>(apiRoutes.mealPlans.getFriends);
+      return response.data;
+    },
+  });
+};
+
+export const useGetSavedMealPlans = () => {
+  return useQuery({
+    queryKey: mealPlanKeys.saved,
+    queryFn: async () => {
+      const response = await apiClient.get<IMealPlan[]>(apiRoutes.mealPlans.getSaved);
+      return response.data;
+    },
+  });
+};
+
 // ─── Mutations ──────────────────────────────────────
 
 interface CreateMealPlanData {
@@ -95,6 +127,33 @@ export const useDeleteMealPlan = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: mealPlanKeys.all });
+    },
+  });
+};
+
+export const useSaveMealPlan = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiClient.post<IMealPlan>(apiRoutes.mealPlans.save(id));
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mealPlanKeys.saved });
+    },
+  });
+};
+
+export const useUnsaveMealPlan = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await apiClient.delete(apiRoutes.mealPlans.unsave(id));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: mealPlanKeys.saved });
     },
   });
 };
@@ -225,6 +284,28 @@ export const useUpdatePlanMeal = () => {
   return useMutation({
     mutationFn: async ({ planId, mealId, data }: { planId: string; mealId: string; data: UpdatePlanMealData }) => {
       const response = await apiClient.patch(apiRoutes.mealPlans.meal(planId, mealId), data);
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: mealPlanKeys.byId(variables.planId) });
+    },
+  });
+};
+
+export const useUpdatePlanMealItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      planId,
+      itemId,
+      data,
+    }: {
+      planId: string;
+      itemId: string;
+      data: { amount: number; unitId: number };
+    }) => {
+      const response = await apiClient.patch(apiRoutes.mealPlans.mealItem(planId, itemId), data);
       return response.data;
     },
     onSuccess: (_data, variables) => {

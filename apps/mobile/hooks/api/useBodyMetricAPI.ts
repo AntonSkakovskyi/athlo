@@ -6,6 +6,16 @@ import { bodyMetricKeys } from '@/api/queries/query-keys';
 
 // ─── Queries ────────────────────────────────────────
 
+export const useGetUnits = () => {
+  return useQuery({
+    queryKey: ['units'],
+    queryFn: async () => {
+      const response = await apiClient.get<IUnit[]>(apiRoutes.bodyMetrics.units);
+      return response.data;
+    },
+  });
+};
+
 export const useGetMetricTypes = () => {
   return useQuery({
     queryKey: bodyMetricKeys.metricTypes,

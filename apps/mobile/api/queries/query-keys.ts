@@ -58,6 +58,9 @@ export const mealPlanKeys = {
   all: ['meal-plans'] as const,
   byId: (id: string) => ['meal-plans', id] as const,
   byUserId: (userId: string) => ['meal-plans', { userId }] as const,
+  public: (search?: string) => ['meal-plans', 'public', { search }] as const,
+  friends: ['meal-plans', 'friends'] as const,
+  saved: ['meal-plans', 'saved'] as const,
   active: ['meal-plans', 'active'] as const,
 };
 

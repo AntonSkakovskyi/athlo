@@ -13,7 +13,20 @@ export interface LogMealItemApi {
   unitId: number;
   amount: number;
   calculatedWeightG: number | null;
-  food?: { id: number; name: string; calories: number; proteins: number; fats: number; carbs: number; brand: string | null };
+  food?: { 
+    id: number; 
+    name: string; 
+    calories: number; 
+    proteins: number; 
+    fats: number; 
+    carbs: number; 
+    brand: string | null;
+    units?: Array<{
+      unitId: number;
+      conversionFactor: number;
+      unit?: { id: number; name: string };
+    }>;
+  };
   unit?: { id: number; name: string };
 }
 
@@ -31,6 +44,7 @@ interface DailySummary {
   totalFats: number;
   totalCarbs: number;
   totalWaterMl: number;
+  waterGoal?: number | null;
   mealsCount: number;
   meals: LogMealWithItems[];
   waterLogs: IWaterLog[];
@@ -92,6 +106,8 @@ interface CreateLogMealData {
   mealTypeId?: number;
   name?: string;
   originalPlanMealId?: number;
+  consumedAt?: string;
+  dayLogDate?: string;
 }
 
 export const useCreateLogMeal = () => {
@@ -170,6 +186,25 @@ export const useDeleteLogMealItem = () => {
   return useMutation({
     mutationFn: async (itemId: string) => {
       await apiClient.delete(apiRoutes.nutritionLog.mealItem(itemId));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['nutrition-log'] });
+    },
+  });
+};
+
+interface UpdateLogMealItemData {
+  unitId?: number;
+  amount?: number;
+}
+
+export const useUpdateLogMealItem = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ itemId, data }: { itemId: string; data: UpdateLogMealItemData }) => {
+      const response = await apiClient.patch(apiRoutes.nutritionLog.mealItem(itemId), data);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['nutrition-log'] });
