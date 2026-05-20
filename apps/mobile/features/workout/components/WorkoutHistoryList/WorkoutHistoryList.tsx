@@ -1,11 +1,12 @@
 import React, { useCallback, forwardRef } from 'react';
 import { Alert, View, FlatList } from 'react-native';
+import { confirmDestructive, showErrorAlert } from '@/utils/alerts';
 import { useRouter } from 'expo-router';
 import type { IWorkoutWithRelations } from '@athlo/shared';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { WorkoutHistoryCard } from '@/features/workout/components/WorkoutHistoryCard/WorkoutHistoryCard';
-import { formatDuration, formatDate, computeVolume } from '@/utils/workout';
+import { formatDurationRange, formatDate, computeVolume } from '@/utils/workout';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import {
   useCopyWorkout,
@@ -51,7 +52,7 @@ export const WorkoutHistoryList = ({
         });
         router.push(`/(app)/(workout)/template/${template.id}`);
       } catch {
-        Alert.alert('Error', 'Failed to save as template. Please try again.');
+        showErrorAlert('Failed to save as template. Please try again.');
       }
     },
     [createTemplateFromWorkout, router],
@@ -68,7 +69,7 @@ export const WorkoutHistoryList = ({
         startWorkout(newWorkout, []);
         router.push('/(app)/(workout)/active-workout');
       } catch {
-        Alert.alert('Error', 'Failed to copy workout. Please try again.');
+        showErrorAlert('Failed to copy workout. Please try again.');
       }
     },
     [isActive, copyWorkout, startWorkout, router],
@@ -76,14 +77,7 @@ export const WorkoutHistoryList = ({
 
   const handleDelete = useCallback(
     (w: IWorkoutWithRelations) => {
-      Alert.alert('Delete Workout', 'This cannot be undone.', [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => deleteWorkout.mutate(String(w.id)),
-        },
-      ]);
+      confirmDestructive('Delete Workout', 'This cannot be undone.', () => deleteWorkout.mutate(String(w.id)));
     },
     [deleteWorkout],
   );
@@ -129,7 +123,7 @@ export const WorkoutHistoryList = ({
           <WorkoutHistoryCard
             name={w.name}
             date={formatDate(w.started_at)}
-            duration={formatDuration(w.started_at, w.ended_at)}
+            duration={formatDurationRange(w.started_at, w.ended_at)}
             volume={computeVolume(w)}
             exerciseCount={w.logExercises?.length ?? 0}
             sets={exerciseSets}

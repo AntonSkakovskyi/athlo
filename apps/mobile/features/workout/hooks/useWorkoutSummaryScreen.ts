@@ -1,7 +1,8 @@
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { formatDuration, getTrackingType } from '@/utils/workout';
+import { formatDurationRange, getTrackingType } from '@/utils/workout';
+import { formatSeconds } from '@/utils/time';
 import { 
   useGetWorkoutById, 
   useUpdateWorkout, 
@@ -12,7 +13,7 @@ import {
   useDeleteLogExercise,
   useGetBatchLastPerformance
 } from '@/hooks/api';
-import { Alert } from 'react-native';
+import { confirmDestructive } from '@/utils/alerts';
 import { VisibilityType } from '@athlo/shared';
 
 export function useWorkoutSummaryScreen() {
@@ -159,8 +160,7 @@ export function useWorkoutSummaryScreen() {
             } else if (trackingType === 'REPS_ONLY') {
               if (set.reps != null) recordDetails = `${set.reps} reps`;
             } else if (trackingType === 'TIME_BASED') {
-              const formatSecs = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
-              const dur = set.duration ? formatSecs(set.duration) : '';
+              const dur = set.duration ? formatSeconds(set.duration) : '';
               const dist = set.distance ? `${set.distance}m` : '';
               recordDetails = [dur, dist].filter(Boolean).join(' ');
             }
@@ -201,19 +201,7 @@ export function useWorkoutSummaryScreen() {
     const set = ex?.sets?.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))[setIndex];
     if (!set) return;
 
-    Alert.alert('Delete Set', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => {
-          deleteLogSet.mutate({
-            exerciseId: String(exerciseId),
-            setId: String(set.id)
-          });
-        }
-      }
-    ]);
+    confirmDestructive('Delete Set', 'Are you sure?', () => deleteLogSet.mutate({ exerciseId: String(exerciseId), setId: String(set.id) }));
   }, [exercises, deleteLogSet]);
 
   const handleUpdateExercise = useCallback((exerciseId: number, data: any) => {
@@ -224,16 +212,7 @@ export function useWorkoutSummaryScreen() {
   }, [updateLogExercise]);
 
   const handleDeleteExercise = useCallback((exerciseId: number) => {
-    Alert.alert('Delete Exercise', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => {
-          deleteLogExercise.mutate(String(exerciseId));
-        }
-      }
-    ]);
+    confirmDestructive('Delete Exercise', 'Are you sure?', () => deleteLogExercise.mutate(String(exerciseId)));
   }, [deleteLogExercise]);
 
   const handleMoveExercise = useCallback(async (exerciseId: number, direction: 'up' | 'down') => {
@@ -335,7 +314,7 @@ export function useWorkoutSummaryScreen() {
     [exercises],
   );
 
-  const duration = workout ? formatDuration(workout.started_at, workout.ended_at) : '—';
+  const duration = workout ? formatDurationRange(workout.started_at, workout.ended_at) : '—';
 
   return {
     workout,

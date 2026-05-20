@@ -1,12 +1,13 @@
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useState } from 'react';
-import { router, useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import type { IWaterLog } from '@athlo/shared';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
-import { Input } from '@/components/ui/Input/Input';
-import { BottomSheet, TimePicker } from '@/components/ui';
+import { ProgressBar } from '@/components/ui';
 import { WaterLogEntry } from './WaterLogEntry';
+import { WaterQuickAdd } from './WaterQuickAdd/WaterQuickAdd';
+import { WaterFormSection } from './WaterFormSection/WaterFormSection';
 
 interface WaterTrackerProps {
   waterLogs: IWaterLog[];
@@ -18,8 +19,6 @@ interface WaterTrackerProps {
   onDeleteWater: (id: number) => void;
 }
 
-const QUICK_ADD_OPTIONS = [150, 250, 500];
-
 function buildConsumedAt(date: string, hour?: string, minute?: string): string {
   const base = new Date(date + 'T00:00:00');
   const now = new Date();
@@ -28,8 +27,6 @@ function buildConsumedAt(date: string, hour?: string, minute?: string): string {
   base.setHours(isNaN(h) || h > 23 ? now.getHours() : h, isNaN(m) || m > 59 ? now.getMinutes() : m, 0, 0);
   return base.toISOString();
 }
-
-const noMargin = { marginBottom: 0 };
 
 export function WaterTracker({
   waterLogs,
@@ -136,9 +133,8 @@ export function WaterTracker({
         </Text>
       </View>
 
-      {/* Progress Bar */}
-      <View style={styles.progressBarBg}>
-        <View style={[styles.progressBarFill, { width: `${percent}%` }]} />
+      <View style={styles.progressBarWrapper}>
+        <ProgressBar progress={percent} color={colors.info} height={8} />
       </View>
 
       {!hasGoal ? (
@@ -152,74 +148,27 @@ export function WaterTracker({
         </View>
       ) : (
         <>
-          {/* Quick Add Buttons */}
-          <View style={styles.quickAddRow}>
-            {QUICK_ADD_OPTIONS.map((ml) => (
-              <Button
-                key={ml}
-                title={`+${ml} ml`}
-                variant="secondary"
-                onPress={() => handleQuickAdd(ml)}
-                style={styles.quickAddBtn}
-              />
-            ))}
-            <Button
-              title={showCustom ? "Close" : "Custom"}
-              variant="ghost"
-              onPress={() => showCustom ? resetForm() : setShowCustom(true)}
-              style={styles.quickAddBtn}
-            />
-          </View>
+          <WaterQuickAdd
+            showCustom={showCustom}
+            onQuickAdd={handleQuickAdd}
+            onToggleCustom={() => (showCustom ? resetForm() : setShowCustom(true))}
+          />
 
-          {/* Custom Input */}
           {showCustom && (
-            <View style={styles.customSection}>
-              <View style={styles.customRow}>
-                <Input
-                  value={customAmount}
-                  onChangeText={setCustomAmount}
-                  keyboardType="number-pad"
-                  placeholder="ml"
-                  containerStyle={[styles.customInputContainer, noMargin]}
-                  style={styles.customInputText}
-                  autoFocus={!customAmount}
-                />
-                
-                <Pressable 
-                  onPress={() => setTimePickerVisible(true)} 
-                  style={styles.timePickerTrigger}
-                >
-                  <Text style={styles.timePickerText}>{formatTimeLabel(selectedSeconds)}</Text>
-                  <Text style={styles.timeIcon}>⏱️</Text>
-                </Pressable>
-
-                <Button
-                  title={editingLogId !== null ? "Save" : "Add"}
-                  variant="primary"
-                  onPress={handleCustomAdd}
-                  style={styles.customAddBtn}
-                />
-              </View>
-            </View>
+            <WaterFormSection
+              customAmount={customAmount}
+              setCustomAmount={setCustomAmount}
+              editingLogId={editingLogId}
+              timeLabel={formatTimeLabel(selectedSeconds)}
+              timePickerVisible={timePickerVisible}
+              setTimePickerVisible={setTimePickerVisible}
+              onTimeChange={handleTimeChange}
+              selectedSeconds={selectedSeconds}
+              onAdd={handleCustomAdd}
+              onDelete={handleDelete}
+              onCancel={resetForm}
+            />
           )}
-
-          <BottomSheet
-            visible={timePickerVisible}
-            onClose={() => setTimePickerVisible(false)}
-            title="Select Time"
-            scrollable={false}
-          >
-            <TimePicker 
-              value={selectedSeconds} 
-              onChange={handleTimeChange}
-              hideSeconds={true}
-            />
-            <Button 
-              title="Done" 
-              onPress={() => setTimePickerVisible(false)} 
-              style={styles.doneBtn}
-            />
-          </BottomSheet>
         </>
       )}
 
@@ -266,95 +215,14 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     fontWeight: fontWeight.medium,
   },
-  progressBarBg: {
-    height: 8,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.xs,
-    overflow: 'hidden',
+  progressBarWrapper: {
     marginBottom: spacing.lg,
-  },
-  progressBarFill: {
-    height: '100%',
-    backgroundColor: colors.info,
-    borderRadius: borderRadius.xs,
-  },
-  quickAddRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  quickAddBtn: {
-    flex: 1,
-    paddingVertical: spacing.xs,
-  },
-  customSection: {
-    marginTop: spacing.md,
-  },
-  customRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    alignItems: 'center',
-  },
-  customInputContainer: {
-    flex: 1,
-  },
-  customInputText: {
-    padding: spacing.sm,
-    fontSize: fontSize.md,
-    textAlign: 'center',
-  },
-  timePickerTrigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.sm,
-    gap: spacing.xs,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  timePickerText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  timeIcon: {
-    fontSize: fontSize.md,
-  },
-  customTimeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  customTimePartContainer: {
-    width: 44,
-  },
-  timeSeparator: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  customAddBtn: {
-    flexShrink: 0,
-  },
-  deleteBtn: {
-    flexShrink: 0,
-    paddingHorizontal: spacing.sm,
-  },
-  timeHint: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
   },
   logList: {
     marginTop: spacing.lg,
     borderTopWidth: 1,
     borderTopColor: colors.border,
     paddingTop: spacing.md,
-  },
-  doneBtn: {
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
   },
   noGoalContainer: {
     padding: spacing.md,

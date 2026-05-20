@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Chip } from '@/components/ui/Chip/Chip';
@@ -13,9 +14,12 @@ import { ActivePlanBanner } from '@/features/nutrition/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { useNutritionHomeScreen } from '@/features/nutrition/hooks/useNutritionHomeScreen';
 
+const TAB_LABELS = ['🥘 Meals', '💧 Water'];
+
 export default function NutritionScreen() {
   const insets = useSafeAreaInsets();
-  const [activeTab, setActiveTab] = useState<'meals' | 'water'>('meals');
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const activeTab = activeTabIndex === 0 ? 'meals' : 'water';
   
   const {
     date, isToday, summary, isLoading, mealTypes, activePlan, activePlanDetails,
@@ -76,20 +80,12 @@ export default function NutritionScreen() {
               carbs={summary?.totalCarbs ?? 0}
             />
 
-            <View style={styles.tabContainer}>
-              <Pressable 
-                style={[styles.tab, activeTab === 'meals' && styles.tabActive]} 
-                onPress={() => setActiveTab('meals')}
-              >
-                <Text style={[styles.tabText, activeTab === 'meals' && styles.tabTextActive]}>🥘 Meals</Text>
-              </Pressable>
-              <Pressable 
-                style={[styles.tab, activeTab === 'water' && styles.tabActive]} 
-                onPress={() => setActiveTab('water')}
-              >
-                <Text style={[styles.tabText, activeTab === 'water' && styles.tabTextActive]}>💧 Water</Text>
-              </Pressable>
-            </View>
+            <SegmentControl
+              segments={TAB_LABELS}
+              activeIndex={activeTabIndex}
+              onSelect={setActiveTabIndex}
+              style={styles.tabContainer}
+            />
 
             {activeTab === 'meals' ? (
               <View style={styles.section}>
@@ -184,31 +180,7 @@ const styles = StyleSheet.create({
   mealPlansBtnText: { fontSize: 13, fontWeight: '600', color: colors.text },
   loader: { marginVertical: 40 },
   tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.xs,
     marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    borderRadius: borderRadius.md,
-  },
-  tabActive: {
-    backgroundColor: colors.surfaceLight,
-  },
-  tabText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-  },
-  tabTextActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
   },
   section: { marginBottom: spacing.xl },
   chipRow: { 

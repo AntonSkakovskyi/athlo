@@ -1,11 +1,12 @@
-import { View, Text, ScrollView, StyleSheet, Pressable, TextInput } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { View, Text, StyleSheet } from 'react-native';
+import { colors, spacing, fontSize } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
-import { StatsBar, ExerciseLogCard, RestTimerOverlay } from '@/features/workout/components';
+import { WorkoutHeaderBar } from './active-workout/components/WorkoutHeaderBar/WorkoutHeaderBar';
+import { ExerciseListSection } from './active-workout/components/ExerciseListSection/ExerciseListSection';
+import { StatsBar, RestTimerOverlay } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { BottomSheet, AchievementToast } from '@/components/ui';
-import { formatElapsed } from '@/utils/workout';
+import { formatHMS, formatSeconds } from '@/utils/time';
 import { useActiveWorkoutScreen } from '@/features/workout/hooks/useActiveWorkoutScreen';
 import { useState } from 'react';
 
@@ -76,8 +77,7 @@ export default function ActiveWorkoutScreen() {
       } else if (ex.trackingType === 'REPS_ONLY') {
         if (set.reps != null) recordDetails = `${set.reps} reps`;
       } else if (ex.trackingType === 'TIME_BASED') {
-        const formatSecs = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
-        const dur = set.duration ? formatSecs(set.duration) : '';
+        const dur = set.duration ? formatSeconds(set.duration) : '';
         const dist = set.distance ? `${set.distance}m` : '';
         recordDetails = [dur, dist].filter(Boolean).join(' ');
       }
@@ -94,100 +94,40 @@ export default function ActiveWorkoutScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.sm }]}>
-      <View style={styles.topBar}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.backBtn}>← Back</Text>
-        </Pressable>
-        {editName !== null ? (
-          <TextInput
-            style={styles.nameInput}
-            value={editName}
-            onChangeText={setEditName}
-            onBlur={handleSaveName}
-            onSubmitEditing={handleSaveName}
-            autoFocus
-            selectionColor={colors.primary}
-          />
-        ) : (
-          <Pressable onPress={() => setEditName(workout.name)} style={styles.nameWrap}>
-            <Text style={styles.workoutName} numberOfLines={1}>
-              {workout.name}
-            </Text>
-          </Pressable>
-        )}
-        <Pressable style={styles.finishBtn} onPress={handleFinish}>
-          <Text style={styles.finishText}>✅ Finish</Text>
-        </Pressable>
-      </View>
+      <WorkoutHeaderBar
+        workoutName={workout.name}
+        editName={editName}
+        onBack={() => router.back()}
+        onEditNameStart={() => setEditName(workout.name)}
+        onEditNameChange={setEditName}
+        onEditNameSave={handleSaveName}
+        onFinish={handleFinish}
+      />
 
       <View style={styles.statsWrap}>
         <StatsBar
-          duration={formatElapsed(elapsed)}
+          duration={formatHMS(elapsed)}
           volume={totalVolume}
           completedSets={completedSets}
           totalSets={totalSets}
         />
       </View>
 
-      <ScrollView
-        style={styles.scrollArea}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {isLoadingExercises ? (
-          <Spinner style={{ marginTop: spacing['5xl'] }} />
-        ) : exercises.length === 0 ? (
-          <EmptyState
-            title="No exercises yet"
-            description="Add an exercise to begin"
-            actionLabel="+ Add Exercise"
-            onAction={handleAddExercise}
-          />
-        ) : (
-          exercises.map((ex, exIdx) => (
-            <ExerciseLogCard
-              key={ex.logExerciseId ?? `local-${exIdx}`}
-              exerciseName={ex.exerciseName}
-              trackingType={ex.trackingType}
-              mode="active"
-              sets={ex.sets}
-              notes={ex.notes}
-              showNotes={ex.showNotes}
-              restTime={ex.restTime}
-              onToggleNotes={() => updateExercise(exIdx, { showNotes: !ex.showNotes })}
-              onNotesChange={(text) => updateExercise(exIdx, { notes: text })}
-              onUpdateSet={(setIdx, data) => updateSet(exIdx, setIdx, data)}
-              onDeleteSet={(setIdx) => deleteSet(exIdx, setIdx)}
-              onToggleSetComplete={(setIdx) => toggleSetComplete(exIdx, setIdx)}
-              onAddSet={() => addSet(exIdx)}
-              onRestTimer={ex.restTime > 0 ? () => handleRestTimer(ex.restTime) : undefined}
-              onDeleteExercise={() => deleteExercise(exIdx)}
-              onMoveUp={exIdx > 0 ? () => moveExercise(exIdx, 'up') : undefined}
-              onMoveDown={exIdx < exercises.length - 1 ? () => moveExercise(exIdx, 'down') : undefined}
-              onChangeExercise={() => {
-                router.push({
-                  pathname: '/(app)/(workout)/exercise-picker',
-                  params: { 
-                    workoutId: String(workout.id), 
-                    replaceLogExerciseId: String(ex.logExerciseId),
-                    replaceOrder: String(exIdx + 1)
-                  }
-                });
-              }}
-              onPRPress={(setIdx) => handleOpenPR(exIdx, setIdx)}
-            />
-          ))
-        )}
-
-        {exercises.length > 0 && (
-          <Button
-            title="+ Add Exercise"
-            variant="ghost"
-            onPress={handleAddExercise}
-            style={styles.addExerciseBtn}
-          />
-        )}
-      </ScrollView>
+      <ExerciseListSection
+        exercises={exercises}
+        isLoadingExercises={isLoadingExercises}
+        workoutId={String(workout.id)}
+        onAddExercise={handleAddExercise}
+        onUpdateExercise={updateExercise}
+        onUpdateSet={updateSet}
+        onDeleteSet={deleteSet}
+        onToggleSetComplete={toggleSetComplete}
+        onAddSet={addSet}
+        onRestTimer={handleRestTimer}
+        onDeleteExercise={deleteExercise}
+        onMoveExercise={moveExercise}
+        onPRPress={handleOpenPR}
+      />
 
       <View style={styles.footer}>
         <Button
@@ -248,61 +188,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.background,
   },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  backBtn: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-  },
-  nameWrap: {
-    flex: 1,
-  },
-  workoutName: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  nameInput: {
-    flex: 1,
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    textAlign: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-    paddingVertical: spacing.xs,
-  },
-  finishBtn: {
-    backgroundColor: colors.primaryLight,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-  },
-  finishText: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-    fontSize: fontSize.md,
-  },
   statsWrap: {
     paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  scrollArea: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  addExerciseBtn: {
-    marginTop: spacing.md,
     marginBottom: spacing.lg,
   },
   footer: {

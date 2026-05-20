@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { confirmDestructive } from '@/utils/alerts';
 import type { IMealPlan } from '@athlo/shared';
 import {
   useGetMealPlanById,
@@ -16,6 +16,7 @@ import {
   useGetMealTypes,
   useGetActiveMealPlan,
 } from '@/features/nutrition/hooks';
+import { calcItemMacros, sumMacros } from '@/features/nutrition/utils/macros';
 
 export interface MealPlanWithRelations extends IMealPlan {
   days?: PlanDayWithMeals[];
@@ -46,15 +47,6 @@ export interface PlanMealItemWithRelations {
   amount: number;
   food?: { id: number; name: string; calories: number; proteins: number; fats: number; carbs: number };
   unit?: { id: number; name: string };
-}
-
-export function getVisibilityLabel(id: number): string {
-  switch (id) {
-    case 1: return '🔒 Private';
-    case 2: return '🌐 Public';
-    case 3: return '👥 Friends Only';
-    default: return '🔒 Private';
-  }
 }
 
 export function useMealPlanDetailScreen(id: string) {
@@ -95,22 +87,10 @@ export function useMealPlanDetailScreen(id: string) {
   }, [currentDay]);
 
   const dayMacros = useMemo(() => {
-    let calories = 0;
-    let proteins = 0;
-    let fats = 0;
-    let carbs = 0;
-    for (const meal of currentDayMeals) {
-      for (const item of meal.items ?? []) {
-        if (item.food) {
-          const factor = item.amount / 100;
-          calories += item.food.calories * factor;
-          proteins += item.food.proteins * factor;
-          fats += item.food.fats * factor;
-          carbs += item.food.carbs * factor;
-        }
-      }
-    }
-    return { calories, proteins, fats, carbs };
+    const all = currentDayMeals.flatMap(
+      (meal) => meal.items?.map((item) => calcItemMacros(item.food, item.amount)) ?? [],
+    );
+    return sumMacros(all);
   }, [currentDayMeals]);
 
   const handleActivate = () => {
@@ -123,19 +103,12 @@ export function useMealPlanDetailScreen(id: string) {
   };
 
   const handleRemoveDay = (dayId: number) => {
-    Alert.alert('Delete Day?', 'All meals in this day will be removed.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => {
-          removeDay.mutate({ planId: id, dayId: String(dayId) });
-          if (selectedDayIndex > 0 && selectedDayIndex >= days.length - 1) {
-            setSelectedDayIndex(selectedDayIndex - 1);
-          }
-        },
-      },
-    ]);
+    confirmDestructive('Delete Day?', 'All meals in this day will be removed.', () => {
+      removeDay.mutate({ planId: id, dayId: String(dayId) });
+      if (selectedDayIndex > 0 && selectedDayIndex >= days.length - 1) {
+        setSelectedDayIndex(selectedDayIndex - 1);
+      }
+    });
   };
 
   const handleAddMeal = (mealTypeId: number, timeSuggestion?: string) => {
@@ -150,14 +123,7 @@ export function useMealPlanDetailScreen(id: string) {
   };
 
   const handleRemoveMeal = (mealId: number) => {
-    Alert.alert('Delete Meal?', 'All items in this meal will be removed.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => removeMeal.mutate({ planId: id, mealId: String(mealId) }),
-      },
-    ]);
+    confirmDestructive('Delete Meal?', 'All items in this meal will be removed.', () => removeMeal.mutate({ planId: id, mealId: String(mealId) }));
   };
 
   const handleEditMeal = (meal: PlanMealWithItems) => {

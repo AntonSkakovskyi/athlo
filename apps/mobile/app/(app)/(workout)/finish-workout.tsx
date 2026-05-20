@@ -9,23 +9,11 @@ import {
 import { colors, borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
 import { useFinishWorkoutScreen } from '@/features/workout/hooks/useFinishWorkoutScreen';
-import { VisibilityType } from '@athlo/shared';
+import { FEELING_OPTIONS } from '@/utils/icons';
 
 const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const FEELING_OPTIONS = [
-  { value: 1, emoji: '😫', label: 'Terrible' },
-  { value: 2, emoji: '😐', label: 'Bad' },
-  { value: 3, emoji: '😊', label: 'OK' },
-  { value: 4, emoji: '😄', label: 'Good' },
-  { value: 5, emoji: '🔥', label: 'Great' },
-];
-
-const VISIBILITY_OPTIONS = [
-  { value: VisibilityType.PUBLIC, label: 'Public', icon: '🌍' },
-  { value: VisibilityType.FRIENDS_ONLY, label: 'Friends', icon: '👥' },
-  { value: VisibilityType.PRIVATE, label: 'Private', icon: '🔒' },
-];
 
 function SummaryItem({ icon, value, label }: { icon: string; value: string; label: string }) {
   return (
@@ -90,20 +78,8 @@ export default function FinishWorkoutScreen() {
           numberOfLines={3}
         />
 
-        <Text style={styles.sectionLabel}>Visibility</Text>
-        <View style={styles.visibilityRow}>
-          {VISIBILITY_OPTIONS.map((opt) => (
-            <Pressable
-              key={opt.value}
-              style={[styles.visibilityBtn, visibility === opt.value && styles.visibilityBtnActive]}
-              onPress={() => setVisibility(opt.value)}
-            >
-              <Text style={styles.visibilityIcon}>{opt.icon}</Text>
-              <Text style={[styles.visibilityLabel, visibility === opt.value && styles.visibilityLabelActive]}>
-                {opt.label}
-              </Text>
-            </Pressable>
-          ))}
+        <View style={styles.visibilityWrap}>
+          <VisibilitySelector value={visibility} onChange={setVisibility} />
         </View>
 
         <Text style={styles.sectionLabel}>Rate of Perceived Exertion (RPE)</Text>
@@ -247,38 +223,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  visibilityRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
+  visibilityWrap: {
     marginBottom: spacing.xl,
-  },
-  visibilityBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  visibilityBtnActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  visibilityIcon: {
-    fontSize: fontSize.md,
-  },
-  visibilityLabel: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    fontWeight: fontWeight.medium,
-  },
-  visibilityLabelActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
   },
   rpeRow: {
     flexDirection: 'row',

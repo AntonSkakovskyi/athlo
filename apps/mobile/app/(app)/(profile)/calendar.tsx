@@ -5,7 +5,7 @@ import { WorkoutHistoryCard } from '@/features/workout/components';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
-import { formatDuration, formatDate, computeVolume } from '@/utils/workout';
+import { formatDurationRange, formatDate, computeVolume } from '@/utils/workout';
 import { formatFullDate } from '@/utils/date';
 import { CalendarGrid } from '../../../features/profile/components/CalendarGrid/CalendarGrid';
 import { DAYS_OF_WEEK, MONTH_NAMES, MONTH_SHORT, useCalendarScreen } from '@/features/profile/hooks/useCalendarScreen';
@@ -71,7 +71,7 @@ export default function CalendarScreen() {
               key={w.id}
               name={w.name}
               date={formatDate(w.started_at)}
-              duration={formatDuration(w.started_at, w.ended_at)}
+              duration={formatDurationRange(w.started_at, w.ended_at)}
               volume={computeVolume(w)}
               exerciseCount={w.logExercises?.length ?? 0}
               sets={w.logExercises?.map((e: NonNullable<IWorkoutWithRelations['logExercises']>[0]) => ({

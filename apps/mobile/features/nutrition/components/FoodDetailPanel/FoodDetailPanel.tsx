@@ -1,8 +1,10 @@
-import { View, Text, StyleSheet, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { confirmDestructive } from '@/utils/alerts';
 import type { IFood, IUnit } from '@athlo/shared';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
+import { MacroBreakdown } from './MacroBreakdown/MacroBreakdown';
 
 interface FoodDetailPanelProps {
   selectedFood: IFood;
@@ -36,14 +38,7 @@ export function FoodDetailPanel({
   bottomPadding,
 }: FoodDetailPanelProps) {
   const handleDelete = () => {
-    Alert.alert(
-      'Delete Food',
-      'Are you sure you want to delete this food item? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: onDelete }
-      ]
-    );
+    if (onDelete) confirmDestructive('Delete Food', 'Are you sure you want to delete this food item? This action cannot be undone.', onDelete);
   };
 
   const foodUnits = selectedFood.units ?? [];
@@ -111,30 +106,12 @@ export function FoodDetailPanel({
       </View>
 
       {calculatedMacros && (
-        <View style={styles.macroPreview}>
-          <View style={styles.macroPreviewItem}>
-            <Text style={styles.macroPreviewValue}>{calculatedMacros.calories}</Text>
-            <Text style={styles.macroPreviewLabel}>kcal</Text>
-          </View>
-          <View style={styles.macroPreviewItem}>
-            <Text style={[styles.macroPreviewValue, { color: colors.info }]}>
-              {calculatedMacros.proteins}g
-            </Text>
-            <Text style={styles.macroPreviewLabel}>Protein</Text>
-          </View>
-          <View style={styles.macroPreviewItem}>
-            <Text style={[styles.macroPreviewValue, { color: colors.warning }]}>
-              {calculatedMacros.fats}g
-            </Text>
-            <Text style={styles.macroPreviewLabel}>Fats</Text>
-          </View>
-          <View style={styles.macroPreviewItem}>
-            <Text style={[styles.macroPreviewValue, { color: colors.success }]}>
-              {calculatedMacros.carbs}g
-            </Text>
-            <Text style={styles.macroPreviewLabel}>Carbs</Text>
-          </View>
-        </View>
+        <MacroBreakdown
+          calories={calculatedMacros.calories}
+          proteins={calculatedMacros.proteins}
+          fats={calculatedMacros.fats}
+          carbs={calculatedMacros.carbs}
+        />
       )}
 
       <Button
@@ -266,26 +243,6 @@ const styles = StyleSheet.create({
   unitChipTextActive: {
     color: colors.black,
     fontWeight: fontWeight.bold,
-  },
-  macroPreview: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: spacing.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: 4,
-  },
-  macroPreviewItem: {
-    alignItems: 'center',
-  },
-  macroPreviewValue: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  macroPreviewLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: spacing.xxs,
   },
   addFoodBtn: {
     marginTop: spacing.md,

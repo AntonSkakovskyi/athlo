@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { confirmDestructive, showErrorAlert } from '@/utils/alerts';
 import { VisibilityType, type IMealPlan } from '@athlo/shared';
 import {
   useGetMyMealPlans,
@@ -15,18 +15,7 @@ import {
   useSaveMealPlan,
   useUnsaveMealPlan,
 } from '@/features/nutrition/hooks';
-
-export const VISIBILITY_LABELS: Record<number, string> = {
-  1: '🔒 Private',
-  2: '🌐 Public',
-  3: '👥 Friends Only',
-};
-
-const VISIBILITY_MAP: Record<VisibilityType, number> = {
-  [VisibilityType.PRIVATE]: 1,
-  [VisibilityType.PUBLIC]: 2,
-  [VisibilityType.FRIENDS_ONLY]: 3,
-};
+import { VISIBILITY_ENUM_TO_ID } from '@/utils/visibility';
 
 export function useMealPlansScreen() {
   const router = useRouter();
@@ -97,7 +86,7 @@ export function useMealPlansScreen() {
         name: name.trim(),
         description: description.trim() || undefined,
         totalDays: isNaN(days) || days < 1 ? 7 : days,
-        visibilityTypeId: VISIBILITY_MAP[visibility],
+        visibilityTypeId: VISIBILITY_ENUM_TO_ID[visibility],
       },
       {
         onSuccess: (newPlan) => {
@@ -109,7 +98,7 @@ export function useMealPlansScreen() {
           router.push(`/(app)/(nutrition)/meal-plan/${newPlan.id}` as never);
         },
         onError: (err) => {
-          Alert.alert('Error', 'Failed to create meal plan. Please try again.');
+          showErrorAlert('Failed to create meal plan. Please try again.');
           console.error('Create plan error:', err);
         }
       },
@@ -117,10 +106,7 @@ export function useMealPlansScreen() {
   };
 
   const handleDelete = (id: number) => {
-    Alert.alert('Delete meal plan?', 'This action cannot be undone.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deletePlan.mutate(String(id)) },
-    ]);
+    confirmDestructive('Delete meal plan?', 'This action cannot be undone.', () => deletePlan.mutate(String(id)));
   };
 
   const handleActivate = (id: number) => {

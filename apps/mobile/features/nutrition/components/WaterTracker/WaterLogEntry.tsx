@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { IWaterLog } from '@athlo/shared';
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { formatClockTime } from '@/utils/time';
 
 interface WaterLogEntryProps {
   log: IWaterLog;
@@ -9,15 +10,11 @@ interface WaterLogEntryProps {
   isEditing?: boolean;
 }
 
-function formatTime(date: Date | string): string {
-  return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-}
-
 export function WaterLogEntry({ log, onEdit, onDelete, isEditing }: WaterLogEntryProps) {
   return (
     <View style={[styles.logRow, isEditing && styles.editingRow]}>
       <Text style={styles.logAmount}>{log.amountMl} ml</Text>
-      <Text style={styles.logTime}>{formatTime(log.consumedAt)}</Text>
+      <Text style={styles.logTime}>{formatClockTime(log.consumedAt)}</Text>
       
       {!isEditing && (
         <>

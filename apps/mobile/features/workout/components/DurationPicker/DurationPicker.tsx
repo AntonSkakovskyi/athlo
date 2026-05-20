@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { formatDurationSecs } from '@/utils/time';
 
 interface DurationPickerProps {
   value: number; // seconds
@@ -33,12 +34,6 @@ export function DurationPicker({ value, onChange }: DurationPickerProps) {
     }
   }, []);
 
-  const formatDuration = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    if (h > 0) return `${h}h ${m}m`;
-    return `${m}m`;
-  };
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (!isInitialScrollDone) return;
@@ -76,7 +71,7 @@ export function DurationPicker({ value, onChange }: DurationPickerProps) {
         onPress={() => handleItemPress(index)}
       >
         <Text style={[styles.itemText, isSelected && styles.selectedItemText]}>
-          {formatDuration(item)}
+          {formatDurationSecs(item)}
         </Text>
       </Pressable>
     );

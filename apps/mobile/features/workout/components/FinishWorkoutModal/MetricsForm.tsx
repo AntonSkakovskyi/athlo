@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
 import { colors, borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
+import { FEELING_OPTIONS } from '@/utils/icons';
 
 interface MetricsFormProps {
   rpe: number | undefined;
@@ -15,13 +16,6 @@ interface MetricsFormProps {
 }
 
 const RPE_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const FEELING_OPTIONS = [
-  { value: 1, emoji: '😫', label: 'Terrible' },
-  { value: 2, emoji: '😐', label: 'Bad' },
-  { value: 3, emoji: '😊', label: 'OK' },
-  { value: 4, emoji: '😄', label: 'Good' },
-  { value: 5, emoji: '🔥', label: 'Great' },
-];
 
 export function MetricsForm({
   rpe,

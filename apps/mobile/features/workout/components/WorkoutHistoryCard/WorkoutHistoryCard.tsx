@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
 import { colors, borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
+import { ICONS } from '@/utils/icons';
 import { SetSummaryList } from './SetSummaryList';
+import { StatBadge } from './StatBadge/StatBadge';
+import { MenuItem } from './MenuItem/MenuItem';
 
 export interface ExerciseSetSummary {
   exerciseName: string;
@@ -109,7 +112,7 @@ export function WorkoutHistoryCard({
               {onDelete && (
                 <>
                   <View style={styles.menuDivider} />
-                  <MenuItem icon="🗑" label="Delete Workout" danger onPress={() => closeAndRun(onDelete)} />
+                  <MenuItem icon={ICONS.delete} label="Delete Workout" danger onPress={() => closeAndRun(onDelete)} />
                 </>
               )}
 
@@ -122,37 +125,6 @@ export function WorkoutHistoryCard({
         </Modal>
       )}
     </>
-  );
-}
-
-function StatBadge({ icon, label }: { icon: string; label: string }) {
-  return (
-    <View style={styles.statBadge}>
-      <Text style={styles.statIcon}>{icon}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-    </View>
-  );
-}
-
-function MenuItem({
-  icon,
-  label,
-  danger,
-  onPress,
-}: {
-  icon: string;
-  label: string;
-  danger?: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
-      onPress={onPress}
-    >
-      <Text style={styles.menuItemIcon}>{icon}</Text>
-      <Text style={[styles.menuItemLabel, danger && styles.menuItemDanger]}>{label}</Text>
-    </Pressable>
   );
 }
 
@@ -205,23 +177,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     flexWrap: 'wrap',
   },
-  statBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    gap: spacing.xs,
-  },
-  statIcon: {
-    fontSize: 11,
-  },
-  statLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-    fontWeight: fontWeight.medium,
-  },
   divider: {
     height: 1,
     backgroundColor: colors.border,
@@ -250,28 +205,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.xs,
     alignSelf: 'center',
     marginBottom: spacing.lg,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    gap: 14,
-  },
-  menuItemPressed: {
-    opacity: 0.6,
-  },
-  menuItemIcon: {
-    fontSize: fontSize.xl,
-    width: 24,
-    textAlign: 'center',
-  },
-  menuItemLabel: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  menuItemDanger: {
-    color: colors.danger,
   },
   menuDivider: {
     height: 1,

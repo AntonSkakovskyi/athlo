@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { TrackingType } from '@athlo/shared';
 import { LogSetRow, LogSetData, ExerciseLogMode } from './LogSetRow/LogSetRow';
+import { ExerciseHeader } from './ExerciseHeader/ExerciseHeader';
 import { Input } from '@/components/ui/Input/Input';
 import { BottomSheet, BottomSheetItem, TimePicker, Button } from '@/components/ui';
 import { useState } from 'react';
@@ -92,37 +93,18 @@ export function ExerciseLogCard({
 
   return (
     <View style={styles.card}>
-      <View style={styles.header}>
-        <View style={styles.nameWrap}>
-          <Text style={styles.exerciseName} numberOfLines={1}>{exerciseName}</Text>
-          <View style={styles.subtitleRow}>
-            {isViewOnly && notes ? (
-              <Text style={styles.notesText}>{notes}</Text>
-            ) : null}
-            {restTime !== undefined && restTime > 0 && (
-              <Text style={styles.restTimeText}>⏱️ {restTime}s</Text>
-            )}
-          </View>
-        </View>
-
-        <View style={styles.headerActions}>
-          {canEditNotes && (
-            <Pressable style={styles.iconBtn} onPress={onToggleNotes}>
-              <Text style={styles.iconText}>📝</Text>
-            </Pressable>
-          )}
-          {onRestTimer && (mode === 'active' || isEditing) && (
-            <Pressable style={styles.iconBtn} onPress={onRestTimer}>
-              <Text style={styles.iconText}>⏱️</Text>
-            </Pressable>
-          )}
-          {isEditing && (
-            <Pressable style={styles.iconBtn} onPress={() => setMenuVisible(true)}>
-              <Text style={styles.iconText}>⋮</Text>
-            </Pressable>
-          )}
-        </View>
-      </View>
+      <ExerciseHeader
+        exerciseName={exerciseName}
+        notes={notes}
+        restTime={restTime}
+        isViewOnly={isViewOnly}
+        canEditNotes={!!canEditNotes}
+        showRestTimer={!!onRestTimer && (mode === 'active' || isEditing)}
+        showMenu={isEditing}
+        onToggleNotes={onToggleNotes}
+        onRestTimer={onRestTimer}
+        onMenuOpen={() => setMenuVisible(true)}
+      />
 
       <BottomSheet
         visible={menuVisible}
@@ -302,52 +284,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.sm,
-  },
-  nameWrap: {
-    flex: 1,
-  },
-  exerciseName: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.primary,
-  },
-  subtitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.xxs,
-  },
-  notesText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-  },
-  restTimeText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    fontWeight: fontWeight.medium,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-    marginLeft: spacing.sm,
-  },
-  iconBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.surfaceLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconText: {
-    fontSize: fontSize.lg,
   },
   notesInput: {
     backgroundColor: colors.surfaceLight,

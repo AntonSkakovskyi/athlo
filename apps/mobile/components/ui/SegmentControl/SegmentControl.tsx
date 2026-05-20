@@ -1,15 +1,17 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { colors, borderRadius } from '@/constants/theme';
 
 interface SegmentControlProps {
   segments: string[];
   activeIndex: number;
   onSelect: (index: number) => void;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function SegmentControl({ segments, activeIndex, onSelect }: SegmentControlProps) {
+export function SegmentControl({ segments, activeIndex, onSelect, style }: SegmentControlProps) {
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       {segments.map((seg, i) => (
         <Pressable
           key={seg}

@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { colors, borderRadius, spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
@@ -7,16 +7,10 @@ import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection/CollapsibleSection';
+import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
 import { useTemplatesScreen } from '@/features/workout/hooks/useTemplatesScreen';
-import { VisibilityType } from '@athlo/shared';
 
 const TABS = ['My', 'Public', 'Friends'];
-
-const VISIBILITY_OPTIONS = [
-  { value: VisibilityType.PUBLIC, label: 'Public', icon: '🌍' },
-  { value: VisibilityType.FRIENDS_ONLY, label: 'Friends', icon: '👥' },
-  { value: VisibilityType.PRIVATE, label: 'Private', icon: '🔒' },
-];
 
 export default function TemplatesScreen() {
   const {
@@ -201,21 +195,7 @@ export default function TemplatesScreen() {
             placeholder="Optional description"
           />
 
-          <Text style={styles.sectionLabel}>Visibility</Text>
-          <View style={styles.visibilityRow}>
-            {VISIBILITY_OPTIONS.map((opt) => (
-              <Pressable
-                key={opt.value}
-                style={[styles.visibilityBtn, visibility === opt.value && styles.visibilityBtnActive]}
-                onPress={() => setVisibility(opt.value)}
-              >
-                <Text style={styles.visibilityIcon}>{opt.icon}</Text>
-                <Text style={[styles.visibilityLabel, visibility === opt.value && styles.visibilityLabelActive]}>
-                  {opt.label}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <VisibilitySelector value={visibility} onChange={setVisibility} />
 
           <View style={styles.createButtons}>
             <Button
@@ -287,51 +267,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  sectionLabel: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-  },
-  visibilityRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-    marginTop: spacing.xs,
-  },
-  visibilityBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xxs,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  visibilityBtnActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  visibilityIcon: {
-    fontSize: fontSize.md,
-  },
-  visibilityLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-    fontWeight: fontWeight.medium,
-  },
-  visibilityLabelActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
   createButtons: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 4,
+    marginTop: spacing.md,
   },
   formButton: { flex: 1 },
   list: {

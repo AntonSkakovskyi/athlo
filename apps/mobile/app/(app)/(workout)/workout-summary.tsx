@@ -1,23 +1,19 @@
-import { View, Text, ScrollView, StyleSheet, TextInput, Pressable, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TextInput, Pressable } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
-import { MetricCard } from '@/components/ui/MetricCard/MetricCard';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
+import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
 import { ExerciseLogCard, DurationPicker } from '@/features/workout/components';
 import { useWorkoutSummaryScreen } from '@/features/workout/hooks/useWorkoutSummaryScreen';
+import { FeelingSection } from './workout-summary/components/FeelingSection/FeelingSection';
+import { MetricsRow } from './workout-summary/components/MetricsRow/MetricsRow';
 import { getTrackingType } from '@/utils/workout';
-import { TrackingType, VisibilityType } from '@athlo/shared';
+import { formatSeconds } from '@/utils/time';
+import { VISIBILITY_ENUM_TO_ID, getVisibilityIcon } from '@/utils/visibility';
 import { BottomSheet, AchievementToast } from '@/components/ui';
 import { useState } from 'react';
 
-const FEELING_EMOJIS = ['😫', '😐', '😊', '😄', '🔥'];
-
-const VISIBILITY_OPTIONS = [
-  { value: VisibilityType.PUBLIC, label: 'Public', icon: '🌍' },
-  { value: VisibilityType.FRIENDS_ONLY, label: 'Friends', icon: '👥' },
-  { value: VisibilityType.PRIVATE, label: 'Private', icon: '🔒' },
-];
 
 export default function WorkoutSummaryScreen() {
   const {
@@ -99,8 +95,7 @@ export default function WorkoutSummaryScreen() {
       } else if (trackingType === 'REPS_ONLY') {
         if (set.reps != null) recordDetails = `${set.reps} reps`;
       } else if (trackingType === 'TIME_BASED') {
-        const formatSecs = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
-        const dur = set.duration ? formatSecs(set.duration) : '';
+        const dur = set.duration ? formatSeconds(set.duration) : '';
         const dist = set.distance ? `${set.distance}m` : '';
         recordDetails = [dur, dist].filter(Boolean).join(' ');
       }
@@ -256,32 +251,14 @@ export default function WorkoutSummaryScreen() {
           })}
         </Text>
 
-        <View style={styles.metricsGrid}>
-          <View style={styles.metricsRow}>
-            <Pressable 
-              style={styles.metricItem} 
-              onPress={() => isEditing && handleOpenDurationPicker()}
-              disabled={!isEditing}
-            >
-              <MetricCard
-                icon="⏱️"
-                value={isEditing ? displayDuration : duration}
-                label="Duration"
-              />
-            </Pressable>
-            <View style={styles.metricItem}>
-              <MetricCard icon="🏋️" value={`${totalVolume.toLocaleString()} kg`} label="Volume" />
-            </View>
-          </View>
-          <View style={styles.metricsRow}>
-            <View style={styles.metricItem}>
-              <MetricCard icon="💪" value={String(exercises.length)} label="Exercises" />
-            </View>
-            <View style={styles.metricItem}>
-              <MetricCard icon="✅" value={String(completedSets)} label="Sets" />
-            </View>
-          </View>
-        </View>
+        <MetricsRow
+          displayDuration={isEditing ? displayDuration : duration}
+          totalVolume={totalVolume}
+          exercisesCount={exercises.length}
+          completedSets={completedSets}
+          isEditing={isEditing}
+          onOpenDurationPicker={handleOpenDurationPicker}
+        />
 
         <BottomSheet
           visible={durationPickerVisible}
@@ -324,7 +301,7 @@ export default function WorkoutSummaryScreen() {
             <View style={styles.optionalItem}>
               <Text style={styles.optionalLabel}>Visibility</Text>
               <Text style={styles.optionalValue}>
-                {VISIBILITY_OPTIONS.find((o) => o.value === localVisibility)?.icon}
+                {getVisibilityIcon(VISIBILITY_ENUM_TO_ID[localVisibility])}
               </Text>
             </View>
           )}
@@ -342,22 +319,12 @@ export default function WorkoutSummaryScreen() {
               <Text style={styles.optionalValue}>{workout.rpe ?? '—'}/10</Text>
             )}
           </View>
-          <View style={styles.optionalItem}>
-            <Text style={styles.optionalLabel}>Feeling</Text>
-            {isEditing ? (
-              <View style={styles.feelingRow}>
-                {FEELING_EMOJIS.map((emoji, idx) => (
-                  <Pressable key={idx} onPress={() => setLocalFeeling(idx + 1)}>
-                    <Text style={[styles.emoji, localFeeling === idx + 1 && styles.selectedEmoji]}>{emoji}</Text>
-                  </Pressable>
-                ))}
-              </View>
-            ) : (
-              <Text style={styles.optionalValueLarge}>
-                {FEELING_EMOJIS[workout.feelingScore! - 1] ?? '😐'}
-              </Text>
-            )}
-          </View>
+          <FeelingSection
+            isEditing={isEditing}
+            localFeeling={localFeeling}
+            workoutFeelingScore={workout.feelingScore}
+            onFeelingChange={setLocalFeeling}
+          />
           <View style={styles.optionalItem}>
             <Text style={styles.optionalLabel}>Calories</Text>
             {isEditing ? (
@@ -376,21 +343,7 @@ export default function WorkoutSummaryScreen() {
 
         {isEditing && (
           <View style={styles.visibilitySection}>
-            <Text style={styles.sectionTitle}>Visibility</Text>
-            <View style={styles.visibilityRow}>
-              {VISIBILITY_OPTIONS.map((opt) => (
-                <Pressable
-                  key={opt.value}
-                  style={[styles.visibilityBtn, localVisibility === opt.value && styles.visibilityBtnActive]}
-                  onPress={() => setLocalVisibility(opt.value)}
-                >
-                  <Text style={styles.visibilityIcon}>{opt.icon}</Text>
-                  <Text style={[styles.visibilityLabel, localVisibility === opt.value && styles.visibilityLabelActive]}>
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
+            <VisibilitySelector value={localVisibility} onChange={setLocalVisibility} />
           </View>
         )}
 
@@ -491,17 +444,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     marginBottom: 20,
   },
-  metricsGrid: {
-    gap: 12,
-    marginBottom: 20,
-  },
-  metricsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  metricItem: {
-    flex: 1,
-  },
   optionalMetrics: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -529,9 +471,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.text,
   },
-  optionalValueLarge: {
-    fontSize: 24,
-  },
   metricInput: {
     fontSize: fontSize.md,
     fontWeight: '600',
@@ -543,63 +482,6 @@ const styles = StyleSheet.create({
   },
   visibilitySection: {
     marginBottom: 20,
-  },
-  visibilityRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  visibilityBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  visibilityBtnActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  visibilityIcon: {
-    fontSize: fontSize.md,
-  },
-  visibilityLabel: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    fontWeight: fontWeight.medium,
-  },
-  visibilityLabelActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
-  visibilitySummary: {
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'flex-start',
-  },
-  visibilitySummaryText: {
-    fontSize: fontSize.sm,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  feelingRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  emoji: {
-    fontSize: 20,
-    opacity: 0.5,
-  },
-  selectedEmoji: {
-    opacity: 1,
-    transform: [{ scale: 1.2 }],
   },
   descriptionSection: {
     marginBottom: 20,

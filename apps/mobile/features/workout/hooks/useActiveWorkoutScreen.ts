@@ -3,7 +3,9 @@ import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
-import { formatElapsed, getTrackingType } from '@/utils/workout';
+import { getTrackingType } from '@/utils/workout';
+import { formatHMS, formatSeconds } from '@/utils/time';
+import { showErrorAlert } from '@/utils/alerts';
 import apiClient from '@/api/api-client';
 import {
   useDeleteWorkout,
@@ -178,7 +180,7 @@ export function useActiveWorkoutScreen() {
         const setIndex = ex.sets.length; // The index after addSetLocal
         updateSetLocal(exerciseIndex, setIndex, { id: response.data.id });
       } catch {
-        Alert.alert('Error', 'Failed to add set. Please check your connection.');
+        showErrorAlert('Failed to add set. Please check your connection.');
       }
     },
     [exercises, workoutId, addSetLocal, updateSetLocal],
@@ -278,8 +280,7 @@ export function useActiveWorkoutScreen() {
                   } else if (ex.trackingType === 'REPS_ONLY') {
                     if (set.reps != null) recordDetails = `${set.reps} reps`;
                   } else if (ex.trackingType === 'TIME_BASED') {
-                    const formatSecs = (sec: number) => `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
-                    const dur = set.duration ? formatSecs(set.duration) : '';
+                    const dur = set.duration ? formatSeconds(set.duration) : '';
                     const dist = set.distance ? `${set.distance}m` : '';
                     recordDetails = [dur, dist].filter(Boolean).join(' ');
                   }
@@ -339,7 +340,7 @@ export function useActiveWorkoutScreen() {
     router.push({
       pathname: '/(app)/(workout)/finish-workout',
       params: {
-        duration: formatElapsed(elapsed),
+        duration: formatHMS(elapsed),
         volume: String(totalVolume),
         completedSets: String(completedSets),
         totalSets: String(totalSets),

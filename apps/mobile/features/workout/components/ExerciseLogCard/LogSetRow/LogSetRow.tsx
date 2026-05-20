@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
-import { NumericInput } from '@/components/ui';
 import { TrackingType } from '@athlo/shared';
+import { formatSeconds } from '@/utils/time';
+import { SetInputGroup } from './SetInputGroup/SetInputGroup';
 
 export type ExerciseLogMode = 'active' | 'summary' | 'template';
 
@@ -64,15 +65,9 @@ export function LogSetRow({
     if (trackingType === TrackingType.REPS_ONLY) {
       return set.previousReps ? `${set.previousReps}` : '—';
     }
-    const dur = set.previousDuration ? formatDuration(set.previousDuration) : '';
+    const dur = set.previousDuration ? formatSeconds(set.previousDuration) : '';
     const dist = set.previousDistance ? `${set.previousDistance}m` : '';
     return dur || dist ? `${dur} ${dist}`.trim() : '—';
-  };
-
-  const formatValue = (val?: number, unit: string = '') => {
-    if (val == null) return '—';
-    if (unit === 'time') return formatDuration(val);
-    return `${val}${unit}`;
   };
 
   const handleToggleComplete = () => {
@@ -112,75 +107,13 @@ export function LogSetRow({
           <Text style={styles.previous}>{formatPrevious()}</Text>
         )}
 
-        {trackingType === TrackingType.WEIGHT_AND_REPS && (
-          <>
-            <View style={styles.inputWrap}>
-              {isViewOnly ? (
-                <Text style={styles.valueText}>{formatValue(set.weight, 'kg')}</Text>
-              ) : (
-                <NumericInput
-                  placeholder={set.placeholderWeight != null ? String(set.placeholderWeight) : 'kg'}
-                  value={set.weight != null ? String(set.weight) : ''}
-                  onChangeText={(t) => onUpdate({ weight: t ? Number(t) : undefined })}
-                />
-              )}
-            </View>
-            <View style={styles.inputWrap}>
-              {isViewOnly ? (
-                <Text style={styles.valueText}>{formatValue(set.reps)}</Text>
-              ) : (
-                <NumericInput
-                  placeholder={set.placeholderReps != null ? String(set.placeholderReps) : 'reps'}
-                  value={set.reps != null ? String(set.reps) : ''}
-                  onChangeText={(t) => onUpdate({ reps: t ? Number(t) : undefined })}
-                />
-              )}
-            </View>
-          </>
-        )}
-
-        {trackingType === TrackingType.REPS_ONLY && (
-          <View style={styles.inputWrapWide}>
-            {isViewOnly ? (
-              <Text style={styles.valueText}>{formatValue(set.reps)}</Text>
-            ) : (
-              <NumericInput
-                wide
-                placeholder={set.placeholderReps != null ? String(set.placeholderReps) : 'reps'}
-                value={set.reps != null ? String(set.reps) : ''}
-                onChangeText={(t) => onUpdate({ reps: t ? Number(t) : undefined })}
-              />
-            )}
-          </View>
-        )}
-
-        {trackingType === TrackingType.TIME_BASED && (
-          <>
-            <View style={styles.inputWrap}>
-              {isViewOnly ? (
-                <Text style={styles.valueText}>{formatValue(set.duration, 'time')}</Text>
-              ) : (
-                <Pressable onPress={onOpenTimePicker} style={styles.timePickerBtn}>
-                  <Text style={[styles.timeText, !set.duration && styles.timePlaceholder]}>
-                    {set.duration ? formatDuration(set.duration) : '0:00'}
-                  </Text>
-                  <Text style={styles.timeIcon}>⏱️</Text>
-                </Pressable>
-              )}
-            </View>
-            <View style={styles.inputWrap}>
-              {isViewOnly ? (
-                <Text style={styles.valueText}>{formatValue(set.distance, 'm')}</Text>
-              ) : (
-                <NumericInput
-                  placeholder={set.placeholderDistance != null ? String(set.placeholderDistance) : 'm'}
-                  value={set.distance != null ? String(set.distance) : ''}
-                  onChangeText={(t) => onUpdate({ distance: t ? Number(t) : undefined })}
-                />
-              )}
-            </View>
-          </>
-        )}
+        <SetInputGroup
+          trackingType={trackingType}
+          isViewOnly={isViewOnly}
+          set={set}
+          onUpdate={onUpdate}
+          onOpenTimePicker={onOpenTimePicker}
+        />
 
         {/* Fixed-width Action Slot to prevent shifting */}
         <View style={styles.actionSlot}>
@@ -210,11 +143,6 @@ export function LogSetRow({
   );
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -250,43 +178,6 @@ const styles = StyleSheet.create({
     fontSize: fontSize.sm,
     color: colors.textMuted,
     textAlign: 'center',
-  },
-  inputWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  inputWrapWide: {
-    flex: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  valueText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  timePickerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.sm,
-    gap: spacing.xs,
-    minWidth: 80,
-    justifyContent: 'center',
-  },
-  timeText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  timePlaceholder: {
-    color: colors.textMuted,
-  },
-  timeIcon: {
-    fontSize: fontSize.md,
   },
   actionSlot: {
     flexDirection: 'row',

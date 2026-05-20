@@ -1,16 +1,22 @@
-import { View, Text, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
+import { View, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
-import { DayTabsRow } from '@/features/nutrition/components';
-import { MealCard } from '@/features/nutrition/components';
-import { MealFormSheet } from '@/features/nutrition/components';
-import { MealItemActionSheet } from '@/features/nutrition/components';
-import { DaySummaryFooter } from '@/features/nutrition/components';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { Typography } from '@/components/ui/Typography/Typography';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
-import { getVisibilityLabel, useMealPlanDetailScreen } from '@/features/nutrition/hooks/useMealPlanDetailScreen';
+import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import {
+  DayTabsRow,
+  MealCard,
+  MealFormSheet,
+  MealItemActionSheet,
+  DaySummaryFooter,
+} from '@/features/nutrition/components';
+import { calcItemMacros } from '@/features/nutrition/utils/macros';
+import { getVisibilityLabel } from '@/utils/visibility';
+import { useMealPlanDetailScreen } from '@/features/nutrition/hooks/useMealPlanDetailScreen';
 
 export default function MealPlanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -22,7 +28,7 @@ export default function MealPlanDetailScreen() {
     selectedDayIndex, setSelectedDayIndex, showAddMeal, setShowAddMeal,
     editingMeal, setEditingMeal, editingName, nameValue, setNameValue,
     handleActivate, handleAddDay, handleRemoveDay, handleAddMeal,
-    handleRemoveMeal, handleEditMeal, handleConfirmEditMeal, handleRemoveItem, 
+    handleRemoveMeal, handleEditMeal, handleConfirmEditMeal, handleRemoveItem,
     handleAddFoodToMeal, handleUpdateItem, handleSwapItem, handleEditMealItem,
     handleSaveName, startEditName, isActive, isActivatePending,
     editingMealItem, setEditingMealItem, isUpdateItemPending,
@@ -39,21 +45,28 @@ export default function MealPlanDetailScreen() {
   if (!plan) {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
-        <Text style={styles.errorText}>Plan not found</Text>
+        <Typography variant="body" color={colors.textSecondary}>Plan not found</Typography>
       </View>
     );
   }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} hitSlop={12}>
-          <Text style={styles.backBtn}>← Back</Text>
-        </Pressable>
-        {!isActive && (
-          <Button title="▶ Activate" variant="primary" onPress={handleActivate} isLoading={isActivatePending} style={styles.activateBtn} />
-        )}
-      </View>
+      <ScreenHeader
+        title=""
+        onBack={() => router.back()}
+        rightAction={
+          !isActive ? (
+            <Button
+              title="▶ Activate"
+              variant="primary"
+              onPress={handleActivate}
+              isLoading={isActivatePending}
+              style={styles.activateBtn}
+            />
+          ) : undefined
+        }
+      />
 
       <View style={styles.nameSection}>
         {editingName ? (
@@ -68,11 +81,15 @@ export default function MealPlanDetailScreen() {
           />
         ) : (
           <Pressable onPress={startEditName}>
-            <Text style={styles.planName}>{plan.name}</Text>
+            <Typography variant="h2">{plan.name}</Typography>
           </Pressable>
         )}
-        {plan.description ? <Text style={styles.planDesc}>{plan.description}</Text> : null}
-        <Text style={styles.planMeta}>{plan.totalDays} days · {getVisibilityLabel(plan.visibilityTypeId)}</Text>
+        {plan.description ? (
+          <Typography variant="bodySmall" style={styles.planDesc}>{plan.description}</Typography>
+        ) : null}
+        <Typography variant="caption" style={styles.planMeta}>
+          {plan.totalDays} days · {getVisibilityLabel(plan.visibilityTypeId)}
+        </Typography>
       </View>
 
       <DayTabsRow days={days} selectedIndex={selectedDayIndex} onSelect={setSelectedDayIndex} onAddDay={handleAddDay} onRemoveDay={handleRemoveDay} />
@@ -87,24 +104,24 @@ export default function MealPlanDetailScreen() {
             const displayMeal = {
               ...meal,
               name: meal.mealType?.name ?? `Meal #${meal.order}`,
-              consumedAt: new Date().toISOString(), // Mock for MealCard
-              items: meal.items?.map(item => ({
-                id: item.id,
-                foodName: item.food?.name ?? 'Unknown',
-                amount: item.amount,
-                unitName: item.unit?.name ?? 'g',
-                calories: item.food ? (item.food.calories * item.amount) / 100 : 0,
-                proteins: item.food ? (item.food.proteins * item.amount) / 100 : 0,
-                fats: item.food ? (item.food.fats * item.amount) / 100 : 0,
-                carbs: item.food ? (item.food.carbs * item.amount) / 100 : 0,
-              })) ?? [],
+              consumedAt: new Date().toISOString(),
+              items: meal.items?.map((item) => {
+                const m = calcItemMacros(item.food, item.amount);
+                return {
+                  id: item.id,
+                  foodName: item.food?.name ?? 'Unknown',
+                  amount: item.amount,
+                  unitName: item.unit?.name ?? 'g',
+                  ...m,
+                };
+              }) ?? [],
             };
             return (
               <View key={meal.id}>
-                <MealCard 
-                  meal={displayMeal as any} 
-                  onAddItem={() => handleAddFoodToMeal(meal.id)} 
-                  onDelete={() => handleRemoveMeal(meal.id)} 
+                <MealCard
+                  meal={displayMeal as any}
+                  onAddItem={() => handleAddFoodToMeal(meal.id)}
+                  onDelete={() => handleRemoveMeal(meal.id)}
                   onEditMeal={() => handleEditMeal(meal)}
                   onEditItem={(itemId) => {
                     const item = meal.items?.find(i => i.id === itemId);
@@ -161,19 +178,21 @@ export default function MealPlanDetailScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
-  errorText: { color: colors.textSecondary, fontSize: fontSize.md },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.md },
-  backBtn: { color: colors.primary, fontSize: fontSize.md, fontWeight: fontWeight.semibold },
   activateBtn: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   nameSection: { paddingHorizontal: spacing.lg, marginBottom: spacing.lg },
-  planName: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, color: colors.text },
-  nameInput: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, color: colors.text, borderBottomWidth: 1, borderBottomColor: colors.primary, paddingVertical: spacing.xs },
-  planDesc: { fontSize: fontSize.sm, color: colors.textSecondary, marginTop: spacing.xs },
-  planMeta: { fontSize: fontSize.xs, color: colors.textMuted, marginTop: spacing.xs },
+  nameInput: {
+    fontSize: fontSize['2xl'],
+    fontWeight: fontWeight.bold,
+    color: colors.text,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.primary,
+    paddingVertical: spacing.xs,
+  },
+  planDesc: { marginTop: spacing.xs },
+  planMeta: { marginTop: spacing.xs },
   dayContent: { flex: 1 },
   dayContentInner: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
   addMealBtn: { marginTop: spacing.md },

@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { NumericInput } from '@/components/ui';
 import { TrackingType } from '@athlo/shared';
+import { formatSeconds } from '@/utils/time';
 
 export interface SetRowData {
   id?: number;
@@ -36,7 +37,7 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
       return set.previousReps ? `${set.previousReps}` : '—';
     }
     // TIME_BASED
-    const dur = set.previousDuration ? formatDuration(set.previousDuration) : '';
+    const dur = set.previousDuration ? formatSeconds(set.previousDuration) : '';
     const dist = set.previousDistance ? `${set.previousDistance}m` : '';
     return dur || dist ? `${dur} ${dist}`.trim() : '—';
   };
@@ -95,11 +96,6 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
   );
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 const styles = StyleSheet.create({
   row: {

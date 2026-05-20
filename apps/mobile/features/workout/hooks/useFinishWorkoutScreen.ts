@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { confirmDestructive } from '@/utils/alerts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
@@ -57,24 +57,12 @@ export function useFinishWorkoutScreen() {
 
   const handleDiscard = useCallback(() => {
     if (!workout) return;
-    Alert.alert(
+    confirmDestructive(
       'Discard Workout',
       'All progress will be lost. This cannot be undone.',
-      [
-        { text: 'Keep', style: 'cancel' },
-        {
-          text: 'Discard',
-          style: 'destructive',
-          onPress: () => {
-            deleteWorkout.mutate(String(workout.id), {
-              onSuccess: () => {
-                endWorkout();
-                router.replace('/(app)/(workout)');
-              },
-            });
-          },
-        },
-      ],
+      () => deleteWorkout.mutate(String(workout.id), { onSuccess: () => { endWorkout(); router.replace('/(app)/(workout)'); } }),
+      'Discard',
+      'Keep',
     );
   }, [workout, deleteWorkout, endWorkout, router]);
 

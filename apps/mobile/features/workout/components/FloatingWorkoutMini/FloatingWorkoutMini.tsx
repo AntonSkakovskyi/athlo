@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { useRouter, useSegments } from 'expo-router';
 import { colors, fontSize, fontWeight, spacing, borderRadius } from '@/constants/theme';
+import { ICONS } from '@/utils/icons';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { useDeleteWorkout } from '@/hooks/api';
 
@@ -81,7 +82,7 @@ export function FloatingWorkoutMini() {
       </View>
 
       <Pressable style={[styles.miniCircleBtn, styles.miniCircleBtnDanger]} onPress={handleDelete}>
-        <Text style={styles.miniCircleIcon}>🗑</Text>
+        <Text style={styles.miniCircleIcon}>{ICONS.delete}</Text>
       </Pressable>
     </View>
   );

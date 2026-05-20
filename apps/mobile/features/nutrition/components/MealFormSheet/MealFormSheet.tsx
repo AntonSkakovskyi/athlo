@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
-import { BottomSheet, TimePicker } from '@/components/ui';
 import type { IMealType } from '@athlo/shared';
 import type { PlanMealWithItems, SelectedPlanItem } from '@/features/nutrition/hooks/useNutritionHomeScreen';
+import { MealTypeChips } from './MealTypeChips/MealTypeChips';
+import { PlanItemPicker } from './PlanItemPicker/PlanItemPicker';
+import { TimePickerSection } from './TimePickerSection/TimePickerSection';
 
 interface MealFormSheetProps {
   title: string;
@@ -135,12 +137,6 @@ export function MealFormSheet({
     });
   };
 
-  const formatTimeLabel = (seconds: number) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-  };
-
   return (
     <Modal visible transparent animationType="slide">
       <KeyboardAvoidingView 
@@ -152,31 +148,16 @@ export function MealFormSheet({
           <View style={styles.handle} />
           <View style={styles.headerRow}>
             <Text style={styles.title}>{title}</Text>
-            <View style={styles.timeControls}>
-              {hasTime ? (
-                <View style={styles.timePickerContainer}>
-                  <Pressable 
-                    style={styles.timePickerTrigger} 
-                    onPress={() => setTimePickerVisible(true)}
-                  >
-                    <Text style={styles.timePickerText}>{formatTimeLabel(selectedSeconds)}</Text>
-                  </Pressable>
-                  <Pressable hitSlop={12} onPress={() => setHasTime(false)} style={styles.clearTimeBtn}>
-                    <Text style={styles.clearTimeText}>✕</Text>
-                  </Pressable>
-                </View>
-              ) : (
-                <Pressable 
-                  style={styles.addTimeBtn} 
-                  onPress={() => {
-                    setHasTime(true);
-                    setTimePickerVisible(true);
-                  }}
-                >
-                  <Text style={styles.addTimeText}>+ Time</Text>
-                </Pressable>
-              )}
-            </View>
+            <TimePickerSection
+              hasTime={hasTime}
+              selectedSeconds={selectedSeconds}
+              timePickerVisible={timePickerVisible}
+              onAddTime={() => { setHasTime(true); setTimePickerVisible(true); }}
+              onClearTime={() => setHasTime(false)}
+              onOpenPicker={() => setTimePickerVisible(true)}
+              onClosePicker={() => setTimePickerVisible(false)}
+              onTimeChange={setSelectedSeconds}
+            />
           </View>
 
           {showNameInput && (
@@ -189,59 +170,19 @@ export function MealFormSheet({
             />
           )}
 
-          <Text style={styles.label}>Meal Type</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.typeRow}>
-            {mealTypes.map((type) => (
-              <Pressable
-                key={type.id}
-                style={[styles.typeChip, selectedTypeId === type.id && styles.typeChipActive]}
-                onPress={() => handleSelectType(type.id)}
-              >
-                <Text style={[styles.typeChipText, selectedTypeId === type.id && styles.typeChipTextActive]}>
-                  {type.name}
-                </Text>
-              </Pressable>
-            ))}
-          </ScrollView>
+          <MealTypeChips
+            mealTypes={mealTypes}
+            selectedTypeId={selectedTypeId}
+            onSelectType={handleSelectType}
+          />
 
           {planMeal && (
-            <>
-              <View style={styles.planHeader}>
-                <Text style={styles.label}>From your plan</Text>
-                {(planMeal.items?.length ?? 0) > 0 && (
-                  <Pressable onPress={selectAll}>
-                    <Text style={styles.selectAll}>Select all</Text>
-                  </Pressable>
-                )}
-              </View>
-
-              <ScrollView style={styles.itemList} showsVerticalScrollIndicator={false}>
-                {(planMeal.items ?? []).map((item) => {
-                  const checked = selectedItemIds.has(item.id);
-                  return (
-                    <Pressable key={item.id} style={styles.itemRow} onPress={() => toggleItem(item.id)}>
-                      <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
-                        {checked && <Text style={styles.checkmark}>✓</Text>}
-                      </View>
-                      <View style={styles.itemInfo}>
-                        <Text style={styles.itemName}>{item.food?.name ?? 'Unknown food'}</Text>
-                        <Text style={styles.itemDetail}>
-                          {item.amount} {item.unit?.name ?? 'g'}
-                        </Text>
-                      </View>
-                      {item.food && (
-                        <Text style={styles.itemCal}>
-                          {Math.round((item.food.calories * item.amount) / 100)} kcal
-                        </Text>
-                      )}
-                    </Pressable>
-                  );
-                })}
-                {(planMeal.items?.length ?? 0) === 0 && (
-                  <Text style={styles.emptyPlan}>No items in this plan meal</Text>
-                )}
-              </ScrollView>
-            </>
+            <PlanItemPicker
+              planMeal={planMeal}
+              selectedItemIds={selectedItemIds}
+              onToggleItem={toggleItem}
+              onSelectAll={selectAll}
+            />
           )}
 
           {selectedTypeId && !planMeal && planDayMeals.length > 0 && (
@@ -261,23 +202,6 @@ export function MealFormSheet({
           </View>
         </View>
 
-        <BottomSheet
-          visible={timePickerVisible}
-          onClose={() => setTimePickerVisible(false)}
-          title="Select Meal Time"
-          scrollable={false}
-        >
-          <TimePicker 
-            value={selectedSeconds} 
-            onChange={setSelectedSeconds}
-            hideSeconds={true}
-          />
-          <Button 
-            title="Done" 
-            onPress={() => setTimePickerVisible(false)} 
-            style={{ marginTop: spacing.md, marginBottom: spacing.lg }}
-          />
-        </BottomSheet>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -319,148 +243,8 @@ const styles = StyleSheet.create({
     fontWeight: fontWeight.bold,
     color: colors.text,
   },
-  timeControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  timePickerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingRight: spacing.xs,
-  },
-  timePickerTrigger: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  timePickerText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  clearTimeBtn: {
-    padding: spacing.xs,
-    marginLeft: spacing.xxs,
-  },
-  clearTimeText: {
-    fontSize: 10,
-    color: colors.textMuted,
-    fontWeight: fontWeight.bold,
-  },
-  addTimeBtn: {
-    backgroundColor: colors.surfaceLight,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.sm,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderStyle: 'dashed',
-  },
-  addTimeText: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-  },
   nameInputContainer: {
     marginBottom: spacing.lg,
-  },
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  typeRow: {
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  typeChip: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  typeChipActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  typeChipText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  typeChipTextActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-  },
-  planHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  selectAll: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: fontWeight.medium,
-  },
-  itemList: {
-    maxHeight: 200,
-    marginBottom: spacing.md,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: spacing.sm,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  checkmark: {
-    fontSize: 12,
-    color: colors.black,
-    fontWeight: fontWeight.bold,
-  },
-  itemInfo: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: fontSize.sm,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  itemDetail: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: 1,
-  },
-  itemCal: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-  },
-  emptyPlan: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    paddingVertical: spacing.lg,
   },
   noPlanMeal: {
     fontSize: fontSize.sm,

@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { confirmDestructive, showErrorAlert } from '@/utils/alerts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { useDeleteTemplate, useDeleteTemplateExercise, useGetTemplateById, useStartFromTemplate, useUpdateTemplate, useUpdateTemplateExercise } from '@/hooks/api';
@@ -54,7 +55,7 @@ export function useTemplateDetailScreen() {
       // Invalidate query to refresh data
       queryClient.invalidateQueries({ queryKey: templateKeys.byId(id) });
     } catch {
-      Alert.alert('Error', 'Failed to update set.');
+      showErrorAlert('Failed to update set.');
     }
   }, [exercises, id, queryClient]);
 
@@ -67,7 +68,7 @@ export function useTemplateDetailScreen() {
       await apiClient.post(`templates/${id}/exercises/${exerciseEntryId}/sets`, { order: newOrder });
       queryClient.invalidateQueries({ queryKey: templateKeys.byId(id) });
     } catch {
-      Alert.alert('Error', 'Failed to add set.');
+      showErrorAlert('Failed to add set.');
     }
   }, [exercises, id, queryClient]);
 
@@ -80,7 +81,7 @@ export function useTemplateDetailScreen() {
       await apiClient.delete(`templates/${id}/exercises/${exerciseEntryId}/sets/${set.id}`);
       queryClient.invalidateQueries({ queryKey: templateKeys.byId(id) });
     } catch {
-      Alert.alert('Error', 'Failed to delete set.');
+      showErrorAlert('Failed to delete set.');
     }
   }, [exercises, id, queryClient]);
 
@@ -135,14 +136,7 @@ export function useTemplateDetailScreen() {
   }, [editDesc, updateTemplate, id]);
 
   const handleDelete = useCallback(() => {
-    Alert.alert('Delete Template', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => deleteTemplate.mutate(id, { onSuccess: () => router.back() }),
-      },
-    ]);
+    confirmDestructive('Delete Template', 'Are you sure?', () => deleteTemplate.mutate(id, { onSuccess: () => router.back() }));
   }, [deleteTemplate, id, router]);
 
   const handleStart = useCallback(() => {
@@ -162,14 +156,7 @@ export function useTemplateDetailScreen() {
 
   const handleDeleteExercise = useCallback(
     (exerciseEntryId: number) => {
-      Alert.alert('Remove Exercise', 'Remove this exercise from the template?', [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: () => deleteExercise.mutate(String(exerciseEntryId)),
-        },
-      ]);
+      confirmDestructive('Remove Exercise', 'Remove this exercise from the template?', () => deleteExercise.mutate(String(exerciseEntryId)), 'Remove');
     },
     [deleteExercise],
   );

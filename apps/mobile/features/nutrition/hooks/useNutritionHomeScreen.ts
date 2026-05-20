@@ -1,6 +1,8 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { getDateString } from '@/utils/date';
+import { confirmDestructive } from '@/utils/alerts';
 import {
   useGetDailySummary,
   useCreateLogMeal,
@@ -19,6 +21,7 @@ import {
   type LogMealItemApi,
 } from '@/features/nutrition/hooks';
 import type { MealItemDisplay } from '@/features/nutrition/components/MealCard/MealCard';
+import { calcItemMacros } from '@/features/nutrition/utils/macros';
 
 export interface SelectedPlanItem {
   foodId: number;
@@ -45,13 +48,6 @@ export interface PlanMealWithItems {
   timeSuggestion: string | null;
   mealType?: { id: number; name: string };
   items?: PlanMealItemWithRelations[];
-}
-
-export function getDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 export function useNutritionHomeScreen() {
@@ -130,10 +126,7 @@ export function useNutritionHomeScreen() {
 
   const handleDeleteMeal = useCallback(
     (id: number) => {
-      Alert.alert('Delete meal?', 'This will remove the meal and all its items.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: () => deleteMeal.mutate(String(id)) },
-      ]);
+      confirmDestructive('Delete meal?', 'This will remove the meal and all its items.', () => deleteMeal.mutate(String(id)));
     },
     [deleteMeal],
   );
@@ -303,16 +296,14 @@ export function useNutritionHomeScreen() {
       ...meal,
       items: (meal.items ?? []).map(
         (item): MealItemDisplay & { proteins: number; fats: number; carbs: number } => {
-          const multiplier = Number(item.calculatedWeightG ?? item.amount) / 100;
+          const weightG = Number(item.calculatedWeightG ?? item.amount);
+          const macros = calcItemMacros(item.food, weightG);
           return {
             id: item.id,
             foodName: item.food?.name ?? 'Unknown food',
             amount: item.amount,
             unitName: item.unit?.name ?? '',
-            calories: item.food ? item.food.calories * multiplier : 0,
-            proteins: item.food ? item.food.proteins * multiplier : 0,
-            fats: item.food ? item.food.fats * multiplier : 0,
-            carbs: item.food ? item.food.carbs * multiplier : 0,
+            ...macros,
           };
         },
       ),
