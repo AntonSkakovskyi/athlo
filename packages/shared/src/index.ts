@@ -3,6 +3,7 @@ export type {
 	IExercise,
 	IMuscle,
 	IEquipment,
+	IExerciseCategory,
 	ILogExercise,
 	ILogExerciseWithSets,
 	ILogSet,

@@ -6,4 +6,7 @@ export interface IExercise {
   trackingTypeId?: number | null;
   userId?: number | null;
   visibilityTypeId?: number;
+  imageUrl?: string | null;
+  gifUrl?: string | null;
+  instructions?: string | null;
 }

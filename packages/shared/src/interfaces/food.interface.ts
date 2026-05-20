@@ -9,5 +9,11 @@ export interface IFood {
   fats: number;
   carbs: number;
   creatorId: number | null;
+  imageUrl?: string | null;
+  barcode?: string | null;
+  servingSizeG?: number | null;
+  fiber?: number | null;
+  sugar?: number | null;
+  sodiumMg?: number | null;
   units?: IFoodUnit[];
 }

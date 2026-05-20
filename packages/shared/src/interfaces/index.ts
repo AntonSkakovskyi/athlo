@@ -2,6 +2,7 @@ export type { IWorkout } from './workout.interface.js';
 export type { IExercise } from './exercise.interface.js';
 export type { IMuscle } from './muscle.interface.js';
 export type { IEquipment } from './equipment.interface.js';
+export type { IExerciseCategory } from './exercise-category.interface.js';
 export type { ILogExercise } from './log-exercise.interface.js';
 export type { ILogExerciseWithSets } from './log-exercise-with-sets.interface.js';
 export type { ILogSet } from './log-set.interface.js';
