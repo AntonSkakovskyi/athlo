@@ -6,7 +6,7 @@ raw `pg`) so it mirrors `apps/api/seed.js` and runs without booting Nest.
 
 ## Prerequisites
 
-1. The schema in `apps/api/athlo-db-without-nutrition.sql` must already be
+1. The schema in `apps/api/athlo-db.sql` must already be
    applied — the ETL relies on the new media columns (`image_url`, `gif_url`,
    `instructions`, `barcode`, `serving_size_g`, `fiber`, `sugar`, `sodium_mg`,
    muscle SVGs) and the partial unique indexes `idx_exercises_system_name`,
