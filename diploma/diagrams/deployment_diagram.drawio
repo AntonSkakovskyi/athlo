@@ -1,0 +1,70 @@
+<mxfile host="Electron">
+  <diagram id="4uZObDJz1W6ZnlRknSUy" name="Page-1">
+    <mxGraphModel dx="1290" dy="937" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="client_container" parent="1" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f5f5f5;fontStyle=1;dashed=1;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" value="Client Side" vertex="1">
+          <mxGeometry height="260" width="300" x="80" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-13" connectable="0" parent="client_container" style="group" value="" vertex="1">
+          <mxGeometry height="160" width="240" x="40" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-8" parent="R6xP_Ih7w7CyQwsqER3u-13" style="verticalAlign=top;align=center;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;span style=&quot;font-weight: 700; text-wrap-mode: nowrap;&quot;&gt;«device»&lt;/span&gt;&lt;br style=&quot;font-weight: 700; text-wrap-mode: nowrap;&quot;&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;font-weight: 700; text-wrap-mode: nowrap; background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Mobile Device (iOS/Android)&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="160" width="240" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-12" parent="R6xP_Ih7w7CyQwsqER3u-13" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=top;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;span style=&quot;text-wrap-mode: nowrap;&quot;&gt;«artifact»&lt;/span&gt;&lt;br style=&quot;text-wrap-mode: nowrap;&quot;&gt;&lt;span style=&quot;text-wrap-mode: nowrap;&quot;&gt;Athlo Mobile App&lt;/span&gt;&lt;br style=&quot;text-wrap-mode: nowrap;&quot;&gt;&lt;span style=&quot;text-wrap-mode: nowrap;&quot;&gt;(React Native / Expo)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="160" x="30" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cloud_container" parent="client_container" style="swimlane;whiteSpace=wrap;html=1;startSize=30;fillColor=#f5f5f5;fontStyle=1;dashed=1;" value="Cloud Infrastructure" vertex="1">
+          <mxGeometry height="440" width="340" x="410" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-7" connectable="0" parent="client_container" style="group" value="" vertex="1">
+          <mxGeometry height="150" width="240" x="455" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-4" parent="R6xP_Ih7w7CyQwsqER3u-7" style="verticalAlign=top;align=center;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;span style=&quot;font-weight: 700; text-wrap-mode: nowrap;&quot;&gt;«execution environment»&lt;/span&gt;&lt;br style=&quot;padding: 0px; margin: 0px; font-weight: 700; text-wrap-mode: nowrap;&quot;&gt;&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;font-weight: 700; text-wrap-mode: nowrap; background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Render.com&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="150" width="240" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-6" parent="R6xP_Ih7w7CyQwsqER3u-7" style="shape=module;align=center;spacingLeft=20;align=center;verticalAlign=top;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="&lt;span style=&quot;text-wrap-mode: nowrap;&quot;&gt;«artifact»&lt;/span&gt;&lt;br style=&quot;text-wrap-mode: nowrap;&quot;&gt;&lt;span style=&quot;text-wrap-mode: nowrap;&quot;&gt;Athlo API&lt;/span&gt;&lt;br style=&quot;text-wrap-mode: nowrap;&quot;&gt;&lt;span style=&quot;text-wrap-mode: nowrap;&quot;&gt;(NestJS)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="65" width="150" x="45" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-14" connectable="0" parent="client_container" style="group" value="" vertex="1">
+          <mxGeometry height="170" width="215" x="467.5" y="256" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-2" parent="R6xP_Ih7w7CyQwsqER3u-14" style="verticalAlign=top;align=center;spacingTop=8;spacingLeft=2;spacingRight=12;shape=cube;size=10;direction=south;fontStyle=4;html=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;span style=&quot;font-weight: 700; text-wrap-mode: nowrap;&quot;&gt;«execution environment»&lt;/span&gt;&lt;br style=&quot;padding: 0px; margin: 0px; font-weight: 700; text-wrap-mode: nowrap;&quot;&gt;&lt;span style=&quot;font-weight: 700; text-wrap-mode: nowrap;&quot;&gt;Supabase&lt;/span&gt;" vertex="1">
+          <mxGeometry height="170" width="215" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-3" parent="R6xP_Ih7w7CyQwsqER3u-14" style="shape=datastore;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="«artifact»&lt;br&gt;PostgreSQL DB" vertex="1">
+          <mxGeometry height="80" width="130" x="42.5" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="edge2" edge="1" parent="client_container" source="R6xP_Ih7w7CyQwsqER3u-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="R6xP_Ih7w7CyQwsqER3u-3" value="TCP 5432">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="710" y="156" />
+              <mxPoint x="710" y="355" />
+              <mxPoint x="640" y="355" />
+            </Array>
+            <mxPoint x="545" y="250" as="sourcePoint" />
+            <mxPoint x="545" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge1" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0;entryDx=0;entryDy=15;entryPerimeter=0;" value="HTTPS / REST">
+          <mxGeometry relative="1" x="-0.037" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="310" y="234" />
+            </Array>
+            <mxPoint x="310" y="234" as="sourcePoint" />
+            <mxPoint x="580" y="234" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;" value="" vertex="1">
+          <mxGeometry height="520" width="790" x="50" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="R6xP_Ih7w7CyQwsqER3u-16" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontStyle=1;fontSize=19;" value="Athlo" vertex="1">
+          <mxGeometry height="30" width="100" x="50" y="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

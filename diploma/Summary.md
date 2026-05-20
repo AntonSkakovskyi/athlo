@@ -1,0 +1,112 @@
+# SUMMARY
+
+## General Characteristics of the Qualification Work
+
+The subject of this qualification thesis is the creation of the Athlo mobile application, which combines workout tracking and nutrition control within a single software environment. The premise for this development was the excessive specialization of existing fitness tools: some focus on logging physical exercises, others on counting calories and macronutrients. As a result, the user has to work with several programs in parallel, while the data accumulated in them remains separate and does not allow the overall picture of progress to be assessed.
+
+A study of the theoretical basis showed that training and diet form a single cycle in which the result depends on the consistency of both components. Recovery after strength training requires a sufficient intake of protein, while prolonged high-intensity work relies on a reserve of carbohydrates, so tracking these parameters separately limits the benefit of each. On this basis, the advantage of a solution that brings both areas into a shared interface with the ability to analyze their mutual influence is substantiated.
+
+The study took into account the basic principles of sports science that shaped the system requirements. The principle of progressive overload established the need to store the load history of each exercise, periodization - to support cycle planning, and the calculation of total daily energy expenditure (TDEE) and macronutrient proportions - to automate the determination of the user's nutritional targets.
+
+The market review covered five popular applications - MyFitnessPal, FitNotes, Strong, Hevy, and Yazio - compared by functional criteria in a comparison table. The comparison revealed a persistent gap between two categories of products: training applications do not handle nutrition, while calorie trackers barely cover strength training. Among the common weaknesses are the lack of integration between the two areas, the prevalence of paid restrictions under the freemium model, and incomplete coverage of both mobile platforms.
+
+The conclusion of the review part was the justification of a custom development that eliminates the listed gaps. The proposed application combines detailed workout logging with a nutrition journal, provides analytics for both areas, and does not hide key features behind a mandatory subscription, which distinguishes it from the reviewed analogues.
+
+## Purpose and Objectives of the Qualification Work
+
+The qualification thesis aims to build a cross-platform mobile application that supports personal planning of workouts and nutrition and provides the user with a unified tool for organizing physical fitness. The object of research is the process of personal planning of workouts and nutrition using mobile technologies, and the subject is a mobile application that automates the formation of individual workout and nutrition plans based on the user's parameters.
+
+Achieving the goal breaks down into the following tasks:
+
+- To study the subject area of mobile fitness applications and outline the needs of the target audience.
+- To compare existing software analogues and assess their strengths and weaknesses.
+- To compile a specification of functional and non-functional requirements.
+- To justify the selection of development technologies and tools.
+- To design the system architecture and the database schema.
+- To program the application in accordance with the formed requirements.
+- To verify the finished software through testing and confirm its compliance with the requirements.
+
+The role of input data is performed by the requirements specification with a list of functional and non-functional provisions, a description of interaction scenarios and environment constraints, as well as the technical documentation of the selected technologies. The result of the work is the source code of the mobile client for iOS and Android, the server code in the form of a REST API, an explanatory note with justification of the decisions, and instructions for deploying the server part and installing the client.
+
+TypeScript was chosen as the single language for both parts of the system, which makes it possible to share types and data-exchange contracts between the client and the server without duplicating definitions. The client part was built on React Native with the Expo platform for the sake of native builds for both mobile platforms from a single codebase and compatibility with the server code, which Flutter and Kotlin Multiplatform do not offer. The server part was implemented on NestJS on top of Node.js, which, unlike the minimalist Express.js and Fastify, provides a ready-made modular structure with built-in validation and dependency injection. The database is the relational DBMS PostgreSQL with the ACID transactional model, which naturally fits a subject area with complex relationships and safeguards composite operations such as finishing a workout with a recalculation of records and achievements.
+
+## Relevance, Problem Statement, and Practical Significance of the Qualification Work
+
+The justification for creating the Athlo application stems from the inseparability of training and nutrition as two parts of a common process that existing programs serve only fragmentarily. A user oriented toward a specific result needs not the separate logging of sets or calories, but an environment where it is possible to trace how loads and diet affect one another.
+
+The essence of the problem comes down to the narrow specialization of market solutions. Training applications describe exercises, sets, and working weight in detail but lack nutrition-tracking tools, whereas calorie trackers with a rich food database poorly reflect physical activity. The picture is complemented by the paid restrictions of the freemium model and the incomplete support of both platforms, which together form a demand for a custom application with a clear structure, secure processing of personal data, and the combination of both areas.
+
+The applied value of the work is manifested in the design and implementation of a system that brings together a mobile client, a server REST API divided into domains, and a relational database. The finished product allows the user to register, keep a structured workout log with automatic recording of personal records, fill in a nutrition journal with the counting of calories and macronutrients, create and activate plans of both types, monitor progress, and interact with other users through friends and template sharing. The combination of these capabilities in a shared interface forms a holistic view of the user's fitness process.
+
+## Main Content and Results of the Qualification Work
+
+### Analysis of Audience Needs and Requirements Definition
+
+The initial study of the topic focused on how the audience uses digital services for training and nutrition. It was found that separate tracking of the two areas satisfies the user only partially, because the real benefit appears with the joint analysis of training and diet. It follows that the application must not merely record individual entries but also compute derived indicators - personal records, daily calorie totals, and target nutrient norms.
+
+Examination of the subject area made it possible to distinguish two user roles. An unregistered user is limited to the functions of creating an account and logging in, whereas a registered user, after successful authentication, gains the full set of capabilities. The mandatory nature of authentication is due to the fact that the data is stored centrally and synchronized between devices over the network.
+
+### System Requirements Specification
+
+The formed requirements specification covers six system features. Authentication and profile are responsible for creating an account with password hashing, issuing an access token, and managing anthropometric indicators. Workout logging provides for creating sessions, adding exercises from the catalog, recording set parameters according to the exercise's tracking type, and automatically updating records. Nutrition tracking includes a meal journal, management of the food database, recording of water intake, and the formation of a daily summary.
+
+Three more features complement the basic functionality. The exercise catalog supplies a structured library with filters by muscle group, equipment, and tracking type, and with support for the user's own entries. Statistics and achievements bring together activity indicators, dynamics for individual exercises and anthropometry, as well as the automatic awarding of achievements. The social module organizes friend requests and the sharing of workout templates according to the set visibility level.
+
+Alongside the functional ones, non-functional requirements were outlined. Performance indicators set the limits for the application's startup time and the server API's response, which is critical during an active workout. Security provisions stipulate storing passwords only as bcrypt hashes, a secure exchange channel, verification of the JWT token on each request, and control of record ownership. The quality attributes include cross-platform capability, usability, scalability, and reliability.
+
+### System Architecture and Data Model
+
+The system is based on a client-server model with a separation of the interface, business-logic, and database layers. The orientation toward two mobile platforms makes such a division appropriate: the client is limited to displaying data and interacting with the user, while processing is concentrated on the server. Exchange takes place through a REST API over HTTPS, and each protected request is accompanied by a token in the JSON Web Token format, by which the server establishes the identity and rights without storing session state.
+
+The server code is arranged in three layers. Controllers receive HTTP requests, route them, and perform initial validation. Services hold the business logic - calorie calculation, record detection, achievement awarding. Repositories communicate with the database through object-relational mapping by means of TypeORM. The dependence of each layer only on the lower one increases testability and simplifies the replacement of components.
+
+The server part is divided into four independent domains. The user module handles registration, authentication, profile, anthropometry, and social connections. The exercise catalog module serves the library of exercises, equipment, and muscle groups. The workout module is responsible for sessions, templates, records, achievements, and statistics. The nutrition module covers products, meals, water intake, and diet planning. The separation of modules directly supports scalability, because the extension of one of them does not affect the rest.
+
+Deployment is organized on three physical levels. The client level is a mobile device running iOS or Android with a React Native and Expo build, which is prepared and distributed through the Expo Application Services (EAS) cloud service. The application level is a Node.js process with the NestJS server on the Render cloud platform, which automatically redeploys after a repository update. The data level is the managed Supabase database based on PostgreSQL with connection pooling, backups, and SSL channel protection.
+
+The database was designed as an OLTP (Online Transaction Processing) system, intended for short, frequent operations of creating, reading, updating, and deleting records. The schema entities are grouped into six areas: user management, exercise catalog, workout tracking, records and achievements, the nutrition journal, and diet planning. The schema is brought to the third normal form with the separation of reference tables for enumerated values.
+
+The interface was developed using the low-fidelity wireframe method, with navigation through a bottom tab bar (workouts, nutrition, profile) and a dark color scheme with green accents, which corresponds to the non-functional requirements and the typical design of fitness products.
+
+### Implementation, Deployment, and Testing
+
+The server part was built on Node.js in TypeScript with the NestJS framework. The code is arranged in a Turborepo monorepo of three packages - the server application, the mobile client, and a shared types library, in which interfaces and enumerations available to both sides are concentrated. The domain model is described by TypeORM entities, each of which corresponds to a separate table, and the relationships are defined by decorators with cascading deletion of nested records.
+
+The core logic of the workout module is carried by the services for processing sets and achievements. Saving a set triggers a full recalculation of the exercise's personal records, comparing the maximum weight, repetitions, load volume, estimated one-repetition maximum, and best time against previous values. Finishing a workout separately checks the unlocking of global achievements by the number of workouts, sets, total weight, and time. In the nutrition module, the key operation is the aggregation of calories and macronutrients across all meals of the day, and the activation of a diet plan keeps exactly one plan active per user.
+
+The mobile client was implemented in TypeScript on React Native in the Expo environment. Routing is handled by Expo Router with a file-based convention, which itself builds the screen tree and type-safe route parameters. Server state is managed by TanStack Query, caching responses, tracking loading statuses, and invalidating the cache after changes, while local state is held by React contexts. Communication with the server goes through a single Axios-based client with interceptors that attach the authorization token.
+
+The application's compliance with the requirements was verified by comprehensive testing of both architecture levels. Twenty-two functional cases were prepared with positive, boundary, and negative scenarios by module, nine categories of interface checks, eight integration scenarios of the full path, and five security checks. The server modules are additionally covered by automated unit tests on Jest, where TypeORM repositories were replaced with mocks to isolate the business logic, and the readiness of the root route is controlled by an end-to-end check on Supertest.
+
+On the first run, twenty of twenty-two functional test cases passed, and the detected defects of various severities were eliminated. These included a state race during the rapid addition of sets, an erroneous retention of the record flag after a set was deleted, and incomplete deactivation of the previous diet plan. The interface check revealed layout overlaps in certain components, which were subsequently fixed. The integration scenarios and security tests were carried out in full, and the coverage of functional requirements by tests reached one hundred percent.
+
+### Economic Assessment of the Project
+
+The economic part covered the calculation of development costs and the forecast of the financial result from commercialization. The approximate project duration was set at 2.5 months, and the team's work format was chosen as fully remote, which removes the costs of rent and utilities. The estimate was compiled from equipment depreciation, labor costs, mandatory contributions, general production, administrative, and selling costs.
+
+Expert evaluation of the environments confirmed the viability of the concept. The total impact of external factors equals +0.56 points, which indicates generally favorable conditions amid noticeable competitive pressure, while the internal potential is estimated at 4.38 points, attesting to the readiness of the team and the technological base. The product development strategy on the existing market with accompanying services was chosen, since the segment of fitness-application users is already formed and awaits a higher-quality integrated solution.
+
+The calculations showed that the production and operating costs amount to UAH 717,953.33. At a profitability of 22%, the price of the product including value-added tax equals UAH 1,051,083.67. The expected gross profit is UAH 139,949.73, and the net profit after administrative costs, selling costs, and income tax is UAH 44,382.28. The obtained values indicate the development's capacity for self-sufficiency and further scaling.
+
+## Conclusions
+
+The result of the qualification thesis was the creation of the cross-platform mobile application Athlo for the personal planning of workouts and nutrition. The course of work covered the study of the subject area, the comparison of existing digital products, the identification of their advantages and limitations, and the justification of the need for a custom solution that brings both areas into a shared environment.
+
+The finished application supports the entire cycle of the user's work: registration and authentication, maintaining a profile and anthropometry, structured workout logging with automatic record detection, a nutrition journal with the counting of calories and macronutrients, the compilation and activation of plans of both types, viewing statistics and achievements, and social interaction through friends and template sharing.
+
+The implementation rests on a client-server architecture with a three-layer server and a modular division of the code by means of NestJS. The server part is split into four domains, and data access is enclosed in TypeORM repositories on top of PostgreSQL in the Supabase environment. The client is built on React Native with Expo, routing through Expo Router, and management of server state by means of TanStack Query, while a shared types package keeps the exchange contracts consistent.
+
+Particular complexity was presented by the logic of automatic record detection, the aggregation of the daily nutrition summary, and the activation of diet plans. The finished software underwent functional, interface, and integration testing as well as security checks, after which the detected defects were eliminated, and stability was confirmed by a regression run.
+
+The economic part attested to the project's profitability: production and operating costs - UAH 717,953.33, the price at a profitability of 22% - UAH 1,051,083.67, the expected net profit - UAH 44,382.28, which indicates the product's suitability for commercial use and development.
+
+The created solution will be useful to users who seek to organize training and nutrition within a single application. Further development envisages integration with wearable devices, personalized recommendations based on machine learning, and deeper progress analytics.
+
+## List of Graphical Material of the Qualification Work
+
+- The list of system use cases is illustrated by a use-case diagram, which gathers the actions available to the user - from registration and workout logging to keeping a nutrition journal and viewing progress.
+- The internal structure of the application is revealed by a component diagram depicting the client, the four server modules, the database, and the communication channels between them.
+- The placement of components on physical nodes is presented in a deployment diagram: the user's mobile device, the server node on the Render platform, and the managed Supabase database.
+- The course of the key processes - from logging into the system to finishing a workout and compiling a diet - is reproduced by activity diagrams.
+- The structure of the store is shown by an entity-relationship diagram covering the tables of the six thematic groups and the references between them.
+- The layout of the main screens and the logic of transitions between them are demonstrated by low-fidelity interface mockups.

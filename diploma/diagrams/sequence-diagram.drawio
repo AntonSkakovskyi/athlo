@@ -1,0 +1,506 @@
+<mxfile host="Electron">
+  <diagram id="athlo-sequence-v2" name="Athlo – Sequence Diagram v2">
+    <mxGraphModel dx="2533" dy="1937" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="3800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ALT_plan_act" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=9;fontStyle=2;" value="opt  [previous plan active → deactivated]" vertex="1">
+          <mxGeometry height="65" width="615" x="151" y="1629" as="geometry" />
+        </mxCell>
+        <mxCell id="ALT_food" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=9;fontStyle=2;" value="alt  [food found]  /  [not found → create custom]" vertex="1">
+          <mxGeometry height="122" width="611" x="151" y="1074" as="geometry" />
+        </mxCell>
+        <mxCell id="P_user" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#000000;strokeColor=#000000;fontStyle=1;fontSize=10;" value="User" vertex="1">
+          <mxGeometry height="60" width="30" x="186" y="5" as="geometry" />
+        </mxCell>
+        <mxCell id="P_auth" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;fontStyle=1;fontSize=10;" value="Auth Module" vertex="1">
+          <mxGeometry height="33" width="86.5" x="283.75" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="P_wkt" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;fontStyle=1;fontSize=10;fillColor=#d5e8d4;strokeColor=#82b366;" value="Workout Module" vertex="1">
+          <mxGeometry height="38" width="93" x="428.5" y="24.5" as="geometry" />
+        </mxCell>
+        <mxCell id="P_excat" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;fontStyle=1;fontSize=10;fillColor=#f8cecc;strokeColor=#b85450;" value="Exercise Catalog" vertex="1">
+          <mxGeometry height="42" width="97" x="560.5" y="22.5" as="geometry" />
+        </mxCell>
+        <mxCell id="P_nutr" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;fontStyle=1;fontSize=10;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Nutrition Module" vertex="1">
+          <mxGeometry height="40" width="96" x="693" y="23.5" as="geometry" />
+        </mxCell>
+        <mxCell id="P_stat" parent="1" style="rounded=0;whiteSpace=wrap;html=1;align=center;fontStyle=1;fontSize=10;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Statistics Module" vertex="1">
+          <mxGeometry height="33" width="115" x="834.5" y="27" as="geometry" />
+        </mxCell>
+        <mxCell id="LL_user" edge="1" parent="1" style="endArrow=none;dashed=1;strokeColor=#aaaaaa;" value="">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="75" as="sourcePoint" />
+            <mxPoint x="201" y="2046" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LL_auth" edge="1" parent="1" source="P_auth" style="endArrow=none;dashed=1;strokeColor=#aaaaaa;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" value="">
+          <mxGeometry as="geometry">
+            <mxPoint x="327" y="75" as="sourcePoint" />
+            <mxPoint x="327" y="2022" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LL_wkt" edge="1" parent="1" source="P_wkt" style="endArrow=none;dashed=1;strokeColor=#aaaaaa;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" value="">
+          <mxGeometry as="geometry">
+            <mxPoint x="475" y="75" as="sourcePoint" />
+            <mxPoint x="475" y="2024" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LL_excat" edge="1" parent="1" source="P_excat" style="endArrow=none;dashed=1;strokeColor=#aaaaaa;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" value="">
+          <mxGeometry as="geometry">
+            <mxPoint x="609" y="75" as="sourcePoint" />
+            <mxPoint x="624" y="2022" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LL_nutr" edge="1" parent="1" source="P_nutr" style="endArrow=none;dashed=1;strokeColor=#aaaaaa;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" value="">
+          <mxGeometry as="geometry">
+            <mxPoint x="741" y="75" as="sourcePoint" />
+            <mxPoint x="741" y="2023" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LL_stat" edge="1" parent="1" source="P_stat" style="endArrow=none;dashed=1;strokeColor=#aaaaaa;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" value="">
+          <mxGeometry as="geometry">
+            <mxPoint x="893" y="75" as="sourcePoint" />
+            <mxPoint x="893" y="2030" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_auth_reg" parent="1" style="rounded=0;fillColor=#ffffff;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="56" width="12" x="321" y="108" as="geometry" />
+        </mxCell>
+        <mxCell id="M_reg" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_auth_reg" value="Register\&#xa;Login">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="122" as="sourcePoint" />
+            <mxPoint x="375" y="118" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_reg_r" edge="1" parent="1" source="ACT_auth_reg" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="JWT token\&#xa;User profile">
+          <mxGeometry as="geometry">
+            <mxPoint x="387" y="142" as="sourcePoint" />
+            <mxPoint x="202" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_wkt_t1" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="38" width="12" x="469" y="249" as="geometry" />
+        </mxCell>
+        <mxCell id="M_t1" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" value="Create template">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="264" as="sourcePoint" />
+            <mxPoint x="469" y="261.50000000000034" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_t1r" edge="1" parent="1" source="ACT_wkt_t1" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Empty template created">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="279" as="sourcePoint" />
+            <mxPoint x="201" y="279" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_excat_t1" parent="1" style="rounded=0;fillColor=#f8cecc;strokeColor=#b85450;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="603" y="297" as="geometry" />
+        </mxCell>
+        <mxCell id="M_t2" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_excat_t1" value="Search / browse exercises">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="307" as="sourcePoint" />
+            <mxPoint x="755" y="307" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_t2r" edge="1" parent="1" source="ACT_excat_t1" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Exercise list">
+          <mxGeometry as="geometry">
+            <mxPoint x="767" y="325" as="sourcePoint" />
+            <mxPoint x="201" y="325" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LOOP_t1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=9;fontStyle=2;" value="loop  [for each exercise]" vertex="1">
+          <mxGeometry height="130" width="418" x="84" y="339" as="geometry" />
+        </mxCell>
+        <mxCell id="ACT_wkt_t2" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="469" y="354" as="geometry" />
+        </mxCell>
+        <mxCell id="M_t3" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_wkt_t2" value="Add exercise to template">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="364" as="sourcePoint" />
+            <mxPoint x="565" y="364" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_t3r" edge="1" parent="1" source="ACT_wkt_t2" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Exercise added">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="382" as="sourcePoint" />
+            <mxPoint x="201" y="382" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_wkt_t3" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="469" y="397" as="geometry" />
+        </mxCell>
+        <mxCell id="M_t4" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_wkt_t3" value="Set target sets">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="407" as="sourcePoint" />
+            <mxPoint x="565" y="407" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_t4r" edge="1" parent="1" source="ACT_wkt_t3" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Template updated">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="425" as="sourcePoint" />
+            <mxPoint x="201" y="425" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_wkt_t4" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="469" y="484" as="geometry" />
+        </mxCell>
+        <mxCell id="M_t5" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_wkt_t4" value="Save &amp; set visibility">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="494" as="sourcePoint" />
+            <mxPoint x="565" y="494" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_t5r" edge="1" parent="1" source="ACT_wkt_t4" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Template saved">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="512" as="sourcePoint" />
+            <mxPoint x="201" y="512" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ALT_wkt_start" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=9;fontStyle=2;" value="alt  [from template]  /  [blank]" vertex="1">
+          <mxGeometry height="98" width="414" x="78" y="615" as="geometry" />
+        </mxCell>
+        <mxCell id="ACT_wkt_s1a" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="469" y="627" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ws1a" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_wkt_s1a" value="Start workout from template">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="637" as="sourcePoint" />
+            <mxPoint x="565" y="637" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_ws1ar" edge="1" parent="1" source="ACT_wkt_s1a" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Workout created">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="655" as="sourcePoint" />
+            <mxPoint x="201" y="655" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_wkt_s1b" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="469" y="672" as="geometry" />
+        </mxCell>
+        <mxCell id="M_ws1b" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_wkt_s1b" value="Start blank workout">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="682" as="sourcePoint" />
+            <mxPoint x="565" y="682" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_ws1br" edge="1" parent="1" source="ACT_wkt_s1b" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Workout created">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="700" as="sourcePoint" />
+            <mxPoint x="201" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_excat_w1" parent="1" style="rounded=0;fillColor=#f8cecc;strokeColor=#b85450;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="603" y="717" as="geometry" />
+        </mxCell>
+        <mxCell id="M_wex1" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_excat_w1" value="Browse / search exercises">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="727" as="sourcePoint" />
+            <mxPoint x="755" y="727" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_wex1r" edge="1" parent="1" source="ACT_excat_w1" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Exercise list">
+          <mxGeometry as="geometry">
+            <mxPoint x="767" y="745" as="sourcePoint" />
+            <mxPoint x="201" y="745" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_wkt_s2" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="469" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="M_wadd" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_wkt_s2" value="Add exercise to workout">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="770" as="sourcePoint" />
+            <mxPoint x="565" y="770" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_waddr" edge="1" parent="1" source="ACT_wkt_s2" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Exercise added">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="788" as="sourcePoint" />
+            <mxPoint x="201" y="788" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LOOP_sets" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=9;fontStyle=2;" value="loop  [for each set]" vertex="1">
+          <mxGeometry height="56" width="414" x="78" y="805" as="geometry" />
+        </mxCell>
+        <mxCell id="ACT_wkt_s3" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="469" y="817" as="geometry" />
+        </mxCell>
+        <mxCell id="M_wset" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_wkt_s3" value="Log set ">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="827" as="sourcePoint" />
+            <mxPoint x="565" y="827" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_wsetr" edge="1" parent="1" source="ACT_wkt_s3" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Set saved &amp; PR check">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="845" as="sourcePoint" />
+            <mxPoint x="201" y="845" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_wkt_s4" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="469" y="883" as="geometry" />
+        </mxCell>
+        <mxCell id="M_wend" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_wkt_s4" value="Complete workout">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="893" as="sourcePoint" />
+            <mxPoint x="565" y="893" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_wendr" edge="1" parent="1" source="ACT_wkt_s4" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Workout summary">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="911" as="sourcePoint" />
+            <mxPoint x="201" y="911" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ALT_discard" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=9;fontStyle=2;" value="opt  [user discards workout]" vertex="1">
+          <mxGeometry height="49" width="417" x="79" y="936" as="geometry" />
+        </mxCell>
+        <mxCell id="M_discard" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="1amEwO8yUXltyQwUxFv8-14" value="Delete workout">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="951" as="sourcePoint" />
+            <mxPoint x="565" y="951" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_discardr" edge="1" parent="1" source="1amEwO8yUXltyQwUxFv8-14" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Workout deleted">
+          <mxGeometry as="geometry">
+            <mxPoint x="577" y="969" as="sourcePoint" />
+            <mxPoint x="201" y="969" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_nutr_n1" parent="1" style="rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="735" y="1084" as="geometry" />
+        </mxCell>
+        <mxCell id="M_n1" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0.007;entryY=0.391;entryDx=0;entryDy=0;entryPerimeter=0;" target="ACT_nutr_n1" value="Search food">
+          <mxGeometry as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="201" y="1097" as="sourcePoint" />
+            <mxPoint x="945" y="1097" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ALT_food_div" edge="1" parent="1" source="ALT_food" style="endArrow=none;dashed=1;strokeColor=#555555;fontSize=9;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="ALT_food" value="[not found]">
+          <mxGeometry as="geometry">
+            <mxPoint x="151" y="1234" as="sourcePoint" />
+            <mxPoint x="851" y="1234" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_n1r_ok" edge="1" parent="1" source="ACT_nutr_n1" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Food results">
+          <mxGeometry as="geometry">
+            <mxPoint x="945.0000000000005" y="1113.2499999999998" as="sourcePoint" />
+            <mxPoint x="201" y="1113" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_nutr_n1b" parent="1" style="rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="735" y="1153" as="geometry" />
+        </mxCell>
+        <mxCell id="M_n1b" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_nutr_n1b" value="Create custom food entry">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="1163" as="sourcePoint" />
+            <mxPoint x="945" y="1163" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_n1br" edge="1" parent="1" source="ACT_nutr_n1b" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Food created">
+          <mxGeometry as="geometry">
+            <mxPoint x="957" y="1181" as="sourcePoint" />
+            <mxPoint x="201" y="1181" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LOOP_meals" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=9;fontStyle=2;" value="loop  [for each meal item]" vertex="1">
+          <mxGeometry height="64" width="615" x="148" y="1209" as="geometry" />
+        </mxCell>
+        <mxCell id="ACT_nutr_n2" parent="1" style="rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="735" y="1229" as="geometry" />
+        </mxCell>
+        <mxCell id="M_n2" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_nutr_n2" value="Log meal">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="1239" as="sourcePoint" />
+            <mxPoint x="945" y="1239" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_n2r" edge="1" parent="1" source="ACT_nutr_n2" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Meal logged">
+          <mxGeometry as="geometry">
+            <mxPoint x="957" y="1257" as="sourcePoint" />
+            <mxPoint x="201" y="1257" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_nutr_n3" parent="1" style="rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="735" y="1295" as="geometry" />
+        </mxCell>
+        <mxCell id="M_n3" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_nutr_n3" value="Log water">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="1305" as="sourcePoint" />
+            <mxPoint x="945" y="1305" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_n3r" edge="1" parent="1" source="ACT_nutr_n3" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Water logged">
+          <mxGeometry as="geometry">
+            <mxPoint x="957" y="1323" as="sourcePoint" />
+            <mxPoint x="201" y="1323" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_nutr_p1" parent="1" style="rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="735" y="1390" as="geometry" />
+        </mxCell>
+        <mxCell id="M_p1" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_nutr_p1" value="Create meal plan">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="1400" as="sourcePoint" />
+            <mxPoint x="945" y="1400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_p1r" edge="1" parent="1" source="ACT_nutr_p1" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Plan created ">
+          <mxGeometry as="geometry">
+            <mxPoint x="957" y="1418" as="sourcePoint" />
+            <mxPoint x="201" y="1418" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LOOP_days" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=9;fontStyle=2;" value="loop  [for each day]" vertex="1">
+          <mxGeometry height="176" width="623" x="151" y="1435" as="geometry" />
+        </mxCell>
+        <mxCell id="ACT_nutr_p2" parent="1" style="rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="735" y="1450" as="geometry" />
+        </mxCell>
+        <mxCell id="M_p2" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_nutr_p2" value="Add day to plan">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="1460" as="sourcePoint" />
+            <mxPoint x="945" y="1460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_p2r" edge="1" parent="1" source="ACT_nutr_p2" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Day added">
+          <mxGeometry as="geometry">
+            <mxPoint x="957" y="1478" as="sourcePoint" />
+            <mxPoint x="201" y="1478" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LOOP_plan_meals" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#555555;align=left;verticalAlign=top;spacingLeft=6;spacingTop=4;fontSize=9;fontStyle=2;" value="loop  [for each meal]" vertex="1">
+          <mxGeometry height="103" width="590" x="171" y="1495" as="geometry" />
+        </mxCell>
+        <mxCell id="ACT_nutr_p3" parent="1" style="rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="735" y="1510" as="geometry" />
+        </mxCell>
+        <mxCell id="M_p3" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_nutr_p3" value="Add meal to day">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="1520" as="sourcePoint" />
+            <mxPoint x="945" y="1520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_p3r" edge="1" parent="1" source="ACT_nutr_p3" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Meal slot added">
+          <mxGeometry as="geometry">
+            <mxPoint x="957" y="1538" as="sourcePoint" />
+            <mxPoint x="201" y="1538" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_nutr_p4" parent="1" style="rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="735" y="1553" as="geometry" />
+        </mxCell>
+        <mxCell id="M_p4" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_nutr_p4" value="Add food items to meal">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="1563" as="sourcePoint" />
+            <mxPoint x="945" y="1563" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_p4r" edge="1" parent="1" source="ACT_nutr_p4" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Meal updated">
+          <mxGeometry as="geometry">
+            <mxPoint x="957" y="1581" as="sourcePoint" />
+            <mxPoint x="201" y="1581" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_nutr_p5" parent="1" style="rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="735" y="1648" as="geometry" />
+        </mxCell>
+        <mxCell id="M_p5" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_nutr_p5" value="Activate plan">
+          <mxGeometry as="geometry">
+            <mxPoint x="201" y="1658" as="sourcePoint" />
+            <mxPoint x="945" y="1658" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_p5r" edge="1" parent="1" source="ACT_nutr_p5" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Plan activated (previous deactivated)">
+          <mxGeometry as="geometry">
+            <mxPoint x="957" y="1691" as="sourcePoint" />
+            <mxPoint x="202" y="1671" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_stat_s1" parent="1" style="rounded=0;fillColor=#e1d5e7;strokeColor=#9673a6;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="886" y="1750" as="geometry" />
+        </mxCell>
+        <mxCell id="M_s1" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_stat_s1" value="Get workout history">
+          <mxGeometry as="geometry">
+            <mxPoint x="202" y="1764" as="sourcePoint" />
+            <mxPoint x="1134" y="1760" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_s1r" edge="1" parent="1" source="ACT_stat_s1" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Workout list">
+          <mxGeometry as="geometry">
+            <mxPoint x="1146" y="1778" as="sourcePoint" />
+            <mxPoint x="200" y="1778" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_stat_s2" parent="1" style="rounded=0;fillColor=#e1d5e7;strokeColor=#9673a6;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="886" y="1807" as="geometry" />
+        </mxCell>
+        <mxCell id="M_s2" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_stat_s2" value="Get exercise progress">
+          <mxGeometry as="geometry">
+            <mxPoint x="200" y="1817" as="sourcePoint" />
+            <mxPoint x="1134" y="1817" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_s2r" edge="1" parent="1" source="ACT_stat_s2" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Progress chart data + personal records">
+          <mxGeometry as="geometry">
+            <mxPoint x="1146" y="1835" as="sourcePoint" />
+            <mxPoint x="200" y="1835" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_stat_s3" parent="1" style="rounded=0;fillColor=#e1d5e7;strokeColor=#9673a6;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="886" y="1868" as="geometry" />
+        </mxCell>
+        <mxCell id="M_s3" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_stat_s3" value="Get body metrics">
+          <mxGeometry as="geometry">
+            <mxPoint x="200" y="1878" as="sourcePoint" />
+            <mxPoint x="1134" y="1878" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_s3r" edge="1" parent="1" source="ACT_stat_s3" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Metrics timeline">
+          <mxGeometry as="geometry">
+            <mxPoint x="1146" y="1896" as="sourcePoint" />
+            <mxPoint x="200" y="1896" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ACT_stat_s4" parent="1" style="rounded=0;fillColor=#e1d5e7;strokeColor=#9673a6;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="886" y="1926" as="geometry" />
+        </mxCell>
+        <mxCell id="M_s4" edge="1" parent="1" style="endArrow=block;endFill=1;fontSize=10;strokeColor=#000000;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" target="ACT_stat_s4" value="Get nutrition overview">
+          <mxGeometry as="geometry">
+            <mxPoint x="200" y="1935" as="sourcePoint" />
+            <mxPoint x="1134" y="1935" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="M_s4r" edge="1" parent="1" source="ACT_stat_s4" style="endArrow=open;endFill=0;dashed=1;fontSize=10;strokeColor=#000000;exitX=0;exitY=0.75;exitDx=0;exitDy=0;" value="Nutrition chart + weekly averages">
+          <mxGeometry as="geometry">
+            <mxPoint x="1146" y="1953" as="sourcePoint" />
+            <mxPoint x="200" y="1953" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="1amEwO8yUXltyQwUxFv8-1" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=91;height=27;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="&lt;span style=&quot;font-size: 11px; font-weight: 700; text-align: left;&quot;&gt;View Statistics&lt;/span&gt;" vertex="1">
+          <mxGeometry height="253" width="855" x="69" y="1732" as="geometry" />
+        </mxCell>
+        <mxCell id="1amEwO8yUXltyQwUxFv8-2" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=99;height=42;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="&lt;span style=&quot;font-size: 11px; font-weight: 700; text-align: left;&quot;&gt;Create &amp;amp; Activate Meal Plan&lt;/span&gt;" vertex="1">
+          <mxGeometry height="323" width="720" x="70" y="1386" as="geometry" />
+        </mxCell>
+        <mxCell id="1amEwO8yUXltyQwUxFv8-5" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=99;height=42;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="&lt;span style=&quot;font-size: 11px; font-weight: 700; text-align: left;&quot;&gt;Log Nutrition (Meals &amp;amp; Water)&lt;/span&gt;" vertex="1">
+          <mxGeometry height="332" width="714" x="66" y="1020" as="geometry" />
+        </mxCell>
+        <mxCell id="1amEwO8yUXltyQwUxFv8-6" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=76;height=33;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" value="&lt;span style=&quot;font-size: 11px; font-weight: 700; text-align: left;&quot;&gt;Start &amp;amp; Log Workout&lt;/span&gt;" vertex="1">
+          <mxGeometry height="429" width="573" x="70" y="574" as="geometry" />
+        </mxCell>
+        <mxCell id="1amEwO8yUXltyQwUxFv8-7" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=99;height=42;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontColor=#333333;" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); font-size: 11px;&quot;&gt;&lt;b&gt;Create workout template&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="309" width="568" x="70" y="232" as="geometry" />
+        </mxCell>
+        <mxCell id="1amEwO8yUXltyQwUxFv8-8" parent="1" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=60;height=22;fillColor=#f5f5f5;strokeColor=#666666;align=center;fontColor=#333333;" value="&lt;div style=&quot;&quot;&gt;&lt;span style=&quot;font-size: 11px;&quot;&gt;&lt;b&gt;Auth&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="82" width="343" x="70" y="89" as="geometry" />
+        </mxCell>
+        <mxCell id="1amEwO8yUXltyQwUxFv8-14" parent="1" style="rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" value="" vertex="1">
+          <mxGeometry height="35" width="12" x="469" y="943" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
