@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: athlo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: athlo
+      POSTGRES_PASSWORD: athlo
+      POSTGRES_DB: athlo
+    ports:
+      - "5432:5432"
+    volumes:
+      - athlo-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U athlo -d athlo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: athlo-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://athlo:athlo@postgres:5432/athlo
+      DATABASE_SSL: "false"
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      PORT: "4000"
+    ports:
+      - "4000:4000"
+
+volumes:
+  athlo-postgres-data:
