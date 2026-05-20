@@ -28,6 +28,24 @@ export class FoodEntity implements IFood {
   @Column({ name: 'creator_id', type: 'int', nullable: true })
   creatorId: number | null;
 
+  @Column({ name: 'image_url', type: 'varchar', length: 512, nullable: true })
+  imageUrl: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  barcode: string | null;
+
+  @Column({ name: 'serving_size_g', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  servingSizeG: number | null;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, default: 0 })
+  fiber: number | null;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true, default: 0 })
+  sugar: number | null;
+
+  @Column({ name: 'sodium_mg', type: 'decimal', precision: 10, scale: 2, nullable: true, default: 0 })
+  sodiumMg: number | null;
+
   @OneToMany(() => FoodUnitEntity, (unit) => unit.food, { cascade: true })
   units: FoodUnitEntity[];
 }
