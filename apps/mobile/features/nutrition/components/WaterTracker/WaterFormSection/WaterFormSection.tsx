@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { BottomSheet, TimePicker } from '@/components/ui';
@@ -33,6 +36,9 @@ export function WaterFormSection({
   onDelete,
   onCancel,
 }: WaterFormSectionProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <>
       <View style={styles.customSection}>
@@ -85,47 +91,49 @@ export function WaterFormSection({
   );
 }
 
-const styles = StyleSheet.create({
-  customSection: {
-    marginTop: spacing.md,
-  },
-  customRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    alignItems: 'center',
-  },
-  customInputContainer: {
-    flex: 1,
-  },
-  customInputText: {
-    padding: spacing.sm,
-    fontSize: fontSize.md,
-    textAlign: 'center',
-  },
-  timePickerTrigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.sm,
-    gap: spacing.xs,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  timePickerText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  timeIcon: {
-    fontSize: fontSize.md,
-  },
-  customAddBtn: {
-    flexShrink: 0,
-  },
-  doneBtn: {
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    customSection: {
+      marginTop: spacing.md,
+    },
+    customRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      alignItems: 'center',
+    },
+    customInputContainer: {
+      flex: 1,
+    },
+    customInputText: {
+      padding: spacing.sm,
+      fontSize: fontSize.md,
+      textAlign: 'center',
+    },
+    timePickerTrigger: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.surfaceLight,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.sm,
+      gap: spacing.xs,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    timePickerText: {
+      fontSize: fontSize.md,
+      color: c.text,
+      fontWeight: fontWeight.medium,
+    },
+    timeIcon: {
+      fontSize: fontSize.md,
+    },
+    customAddBtn: {
+      flexShrink: 0,
+    },
+    doneBtn: {
+      marginTop: spacing.md,
+      marginBottom: spacing.lg,
+    },
+  });
+}

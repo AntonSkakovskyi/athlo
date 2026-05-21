@@ -42,7 +42,6 @@ function makeStyles(_c: ColorPalette) {
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xxs,
       borderRadius: borderRadius.full,
-      alignSelf: 'flex-start',
     },
     badgeSm: {
       paddingHorizontal: spacing.xs,

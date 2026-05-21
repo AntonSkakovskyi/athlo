@@ -1,7 +1,11 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { IAchievement, IUserAchievement } from '@athlo/shared';
-import { colors, borderRadius } from '@/constants/theme';
+import { borderRadius, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
+import { Badge } from '@/components/ui/Badge/Badge';
 
 interface AchievementCardProps {
   achievement: IAchievement;
@@ -18,6 +22,8 @@ export function AchievementCard({
   exerciseName,
   currentProgress,
 }: AchievementCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const progressPercent =
     achievement.threshold > 0
       ? Math.min((currentProgress / achievement.threshold) * 100, 100)
@@ -33,11 +39,7 @@ export function AchievementCard({
           <Text style={[styles.name, !isUnlocked && styles.nameLocked]} numberOfLines={1}>
             {achievement.name}
           </Text>
-          {exerciseName && (
-            <View style={styles.exerciseBadge}>
-              <Text style={styles.exerciseBadgeText}>{exerciseName}</Text>
-            </View>
-          )}
+          {exerciseName && <Badge label={exerciseName} variant="default" size="sm" />}
         </View>
         <Text style={styles.desc} numberOfLines={2}>
           {achievement.description}
@@ -67,89 +69,80 @@ export function AchievementCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 12,
-  },
-  cardUnlocked: {
-    borderColor: colors.primary,
-  },
-  iconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.surfaceLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 14,
-  },
-  iconContainerUnlocked: {
-    backgroundColor: colors.primaryLight,
-  },
-  icon: {
-    fontSize: 22,
-  },
-  content: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 2,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    flexShrink: 1,
-  },
-  nameLocked: {
-    color: colors.textSecondary,
-  },
-  exerciseBadge: {
-    backgroundColor: colors.surfaceLight,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-  },
-  exerciseBadgeText: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  desc: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 3,
-  },
-  unlockedInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginTop: 8,
-  },
-  unlockedDate: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '500',
-  },
-  unlockedValue: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  progressSection: {
-    marginTop: 10,
-  },
-  progressText: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 4,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: spacing.md,
+    },
+    cardUnlocked: {
+      borderColor: c.primary,
+    },
+    iconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: borderRadius['2xl'],
+      backgroundColor: c.surfaceLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 14,
+    },
+    iconContainerUnlocked: {
+      backgroundColor: c.primaryLight,
+    },
+    icon: {
+      fontSize: 22,
+    },
+    content: {
+      flex: 1,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginBottom: 2,
+    },
+    name: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: c.text,
+      flexShrink: 1,
+    },
+    nameLocked: {
+      color: c.textSecondary,
+    },
+    desc: {
+      fontSize: 13,
+      color: c.textMuted,
+      marginTop: 3,
+    },
+    unlockedInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      marginTop: spacing.sm,
+    },
+    unlockedDate: {
+      fontSize: 12,
+      color: c.primary,
+      fontWeight: '500',
+    },
+    unlockedValue: {
+      fontSize: 12,
+      color: c.textSecondary,
+    },
+    progressSection: {
+      marginTop: 10,
+    },
+    progressText: {
+      fontSize: 11,
+      color: c.textMuted,
+      marginTop: spacing.xs,
+    },
+  });
+}

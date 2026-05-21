@@ -1,7 +1,11 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { IFrequentExercise } from '@athlo/shared';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { borderRadius, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Tag } from '@/components/ui/Tag/Tag';
+import { Badge } from '@/components/ui/Badge/Badge';
 
 interface ExerciseProgressListItemProps {
   exercise: IFrequentExercise;
@@ -9,15 +13,14 @@ interface ExerciseProgressListItemProps {
 }
 
 export function ExerciseProgressListItem({ exercise, onPress }: ExerciseProgressListItemProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.topRow}>
         <Text style={styles.name} numberOfLines={1}>{exercise.exerciseName}</Text>
-        {exercise.equipmentName && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{exercise.equipmentName}</Text>
-          </View>
-        )}
+        {exercise.equipmentName && <Badge label={exercise.equipmentName} variant="default" size="sm" />}
       </View>
 
       {exercise.primaryMuscles.length > 0 && (
@@ -35,45 +38,37 @@ export function ExerciseProgressListItem({ exercise, onPress }: ExerciseProgress
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 10,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    flex: 1,
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.surfaceLight,
-  },
-  badgeText: {
-    fontSize: 11,
-    color: colors.textSecondary,
-  },
-  muscleRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 8,
-  },
-  stats: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 8,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: 14,
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: 10,
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    name: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: c.text,
+      flex: 1,
+    },
+    muscleRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginTop: spacing.sm,
+    },
+    stats: {
+      fontSize: 13,
+      color: c.textMuted,
+      marginTop: spacing.sm,
+    },
+  });
+}

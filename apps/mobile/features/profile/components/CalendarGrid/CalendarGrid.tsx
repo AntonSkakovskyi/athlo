@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { toDateKey } from '@/utils/date';
 
 interface CalendarGridProps {
@@ -35,6 +38,9 @@ export function CalendarGrid({
   daysOfWeek,
   maximumDate,
 }: CalendarGridProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.calendarCard}>
       {/* Month Navigation */}
@@ -122,114 +128,116 @@ export function CalendarGrid({
   );
 }
 
-const styles = StyleSheet.create({
-  calendarCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing['2xl'],
-  },
-  monthNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-  },
-  arrowBtn: {
-    paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.xs,
-  },
-  monthArrow: {
-    fontSize: fontSize['3xl'],
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-    paddingHorizontal: spacing.sm,
-  },
-  monthYearRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  pickerChip: {
-    backgroundColor: colors.surfaceLight,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  pickerChipText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
-  },
-  weekRow: {
-    flexDirection: 'row',
-    marginBottom: spacing.sm,
-  },
-  weekCell: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  weekDayText: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.textMuted,
-  },
-  dayGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  dayCell: {
-    width: '14.28%',
-    aspectRatio: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dayCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: borderRadius.lg,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dayCircleToday: {
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-  },
-  dayCircleSelected: {
-    backgroundColor: colors.primary,
-  },
-  dayCircleHasWorkout: {
-    backgroundColor: colors.primaryLight,
-  },
-  dayText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  dayTextToday: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
-  dayTextSelected: {
-    color: colors.black,
-    fontWeight: fontWeight.bold,
-  },
-  dayTextDisabled: {
-    color: colors.textMuted,
-  },
-  dayCellDisabled: {
-    opacity: 0.3,
-  },
-  workoutDot: {
-    width: 5,
-    height: 5,
-    borderRadius: borderRadius.xs,
-    backgroundColor: colors.primary,
-    position: 'absolute',
-    bottom: spacing.xs,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    calendarCard: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.xl,
+      padding: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: spacing['2xl'],
+    },
+    monthNav: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.lg,
+    },
+    arrowBtn: {
+      paddingHorizontal: spacing.xs,
+      paddingVertical: spacing.xs,
+    },
+    monthArrow: {
+      fontSize: fontSize['3xl'],
+      color: c.primary,
+      fontWeight: fontWeight.semibold,
+      paddingHorizontal: spacing.sm,
+    },
+    monthYearRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    pickerChip: {
+      backgroundColor: c.surfaceLight,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    pickerChipText: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.text,
+    },
+    weekRow: {
+      flexDirection: 'row',
+      marginBottom: spacing.sm,
+    },
+    weekCell: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    weekDayText: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+    },
+    dayGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    dayCell: {
+      width: '14.28%',
+      aspectRatio: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    dayCircle: {
+      width: 34,
+      height: 34,
+      borderRadius: borderRadius.lg,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    dayCircleToday: {
+      borderWidth: 1.5,
+      borderColor: c.primary,
+    },
+    dayCircleSelected: {
+      backgroundColor: c.primary,
+    },
+    dayCircleHasWorkout: {
+      backgroundColor: c.primaryLight,
+    },
+    dayText: {
+      fontSize: fontSize.md,
+      color: c.text,
+      fontWeight: fontWeight.medium,
+    },
+    dayTextToday: {
+      color: c.primary,
+      fontWeight: fontWeight.bold,
+    },
+    dayTextSelected: {
+      color: c.black,
+      fontWeight: fontWeight.bold,
+    },
+    dayTextDisabled: {
+      color: c.textMuted,
+    },
+    dayCellDisabled: {
+      opacity: 0.3,
+    },
+    workoutDot: {
+      width: 5,
+      height: 5,
+      borderRadius: borderRadius.xs,
+      backgroundColor: c.primary,
+      position: 'absolute',
+      bottom: spacing.xs,
+    },
+  });
+}

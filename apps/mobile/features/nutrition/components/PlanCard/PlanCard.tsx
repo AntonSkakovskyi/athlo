@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import { Button } from '@/components/ui/Button/Button';
 import { Tag } from '@/components/ui/Tag/Tag';
 import { Typography } from '@/components/ui/Typography/Typography';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { borderRadius, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { getVisibilityLabel } from '@/utils/visibility';
 import type { IMealPlan } from '@athlo/shared';
 
@@ -31,6 +34,8 @@ export function PlanCard({
   onUnsave,
   onDelete,
 }: PlanCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const isOwned = variant === 'my';
 
   return (
@@ -87,52 +92,54 @@ export function PlanCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  cardActive: {
-    borderColor: colors.primary,
-    borderWidth: 1.5,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    flex: 1,
-  },
-  name: {
-    flexShrink: 1,
-  },
-  desc: {
-    marginTop: spacing.xs,
-  },
-  meta: {
-    marginTop: spacing.xs,
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.md,
-    gap: spacing.sm,
-  },
-  actionBtn: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-  },
-  iconBtn: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.sm,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    cardActive: {
+      borderColor: c.primary,
+      borderWidth: 1.5,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 2,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      flex: 1,
+    },
+    name: {
+      flexShrink: 1,
+    },
+    desc: {
+      marginTop: spacing.xs,
+    },
+    meta: {
+      marginTop: spacing.xs,
+    },
+    actions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: spacing.md,
+      gap: spacing.sm,
+    },
+    actionBtn: {
+      flex: 1,
+      paddingVertical: spacing.sm,
+    },
+    iconBtn: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+  });
+}

@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import type { PlanMealWithItems } from '@/features/nutrition/hooks/useNutritionHomeScreen';
 
 interface PlanItemPickerProps {
@@ -15,6 +18,9 @@ export function PlanItemPicker({
   onToggleItem,
   onSelectAll,
 }: PlanItemPickerProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <>
       <View style={styles.planHeader}>
@@ -56,75 +62,77 @@ export function PlanItemPicker({
   );
 }
 
-const styles = StyleSheet.create({
-  planHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  selectAll: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: fontWeight.medium,
-  },
-  itemList: {
-    maxHeight: 200,
-    marginBottom: spacing.md,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: spacing.sm,
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 2,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkboxChecked: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  checkmark: {
-    fontSize: 12,
-    color: colors.black,
-    fontWeight: fontWeight.bold,
-  },
-  itemInfo: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: fontSize.sm,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  itemDetail: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: 1,
-  },
-  itemCal: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-  },
-  emptyPlan: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    paddingVertical: spacing.lg,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    planHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.xs,
+    },
+    label: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.medium,
+      color: c.textSecondary,
+      marginBottom: spacing.sm,
+    },
+    selectAll: {
+      fontSize: fontSize.sm,
+      color: c.primary,
+      fontWeight: fontWeight.medium,
+    },
+    itemList: {
+      maxHeight: 200,
+      marginBottom: spacing.md,
+    },
+    itemRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: c.border,
+      gap: spacing.sm,
+    },
+    checkbox: {
+      width: 20,
+      height: 20,
+      borderRadius: 4,
+      borderWidth: 2,
+      borderColor: c.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkboxChecked: {
+      backgroundColor: c.primary,
+      borderColor: c.primary,
+    },
+    checkmark: {
+      fontSize: 12,
+      color: c.black,
+      fontWeight: fontWeight.bold,
+    },
+    itemInfo: {
+      flex: 1,
+    },
+    itemName: {
+      fontSize: fontSize.sm,
+      color: c.text,
+      fontWeight: fontWeight.medium,
+    },
+    itemDetail: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: 1,
+    },
+    itemCal: {
+      fontSize: fontSize.xs,
+      color: c.textSecondary,
+    },
+    emptyPlan: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+      paddingVertical: spacing.lg,
+    },
+  });
+}

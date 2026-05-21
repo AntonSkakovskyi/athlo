@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { BottomSheet, TimePicker } from '@/components/ui';
 
@@ -24,6 +27,9 @@ export function TimePickerSection({
   onClosePicker,
   onTimeChange,
 }: TimePickerSectionProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const formatTimeLabel = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -70,55 +76,57 @@ export function TimePickerSection({
   );
 }
 
-const styles = StyleSheet.create({
-  timeControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  timePickerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingRight: spacing.xs,
-  },
-  timePickerTrigger: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  timePickerText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  clearTimeBtn: {
-    padding: spacing.xs,
-    marginLeft: spacing.xxs,
-  },
-  clearTimeText: {
-    fontSize: 10,
-    color: colors.textMuted,
-    fontWeight: fontWeight.bold,
-  },
-  addTimeBtn: {
-    backgroundColor: colors.surfaceLight,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.sm,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    borderStyle: 'dashed',
-  },
-  addTimeText: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-  },
-  doneBtn: {
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    timeControls: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    timePickerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.sm,
+      borderWidth: 1,
+      borderColor: c.border,
+      paddingRight: spacing.xs,
+    },
+    timePickerTrigger: {
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+    },
+    timePickerText: {
+      fontSize: fontSize.md,
+      color: c.text,
+      fontWeight: fontWeight.medium,
+    },
+    clearTimeBtn: {
+      padding: spacing.xs,
+      marginLeft: spacing.xxs,
+    },
+    clearTimeText: {
+      fontSize: 10,
+      color: c.textMuted,
+      fontWeight: fontWeight.bold,
+    },
+    addTimeBtn: {
+      backgroundColor: c.surfaceLight,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      borderRadius: borderRadius.sm,
+      borderWidth: 1,
+      borderColor: c.primary,
+      borderStyle: 'dashed',
+    },
+    addTimeText: {
+      fontSize: fontSize.sm,
+      color: c.primary,
+      fontWeight: fontWeight.semibold,
+    },
+    doneBtn: {
+      marginTop: spacing.md,
+      marginBottom: spacing.lg,
+    },
+  });
+}

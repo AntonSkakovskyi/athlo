@@ -1,8 +1,10 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { router } from 'expo-router';
 import type { IWaterLog } from '@athlo/shared';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { ProgressBar } from '@/components/ui';
 import { WaterLogEntry } from './WaterLogEntry';
@@ -37,6 +39,8 @@ export function WaterTracker({
   onUpdateWater,
   onDeleteWater,
 }: WaterTrackerProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [showCustom, setShowCustom] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
   const [editingLogId, setEditingLogId] = useState<number | null>(null);
@@ -140,10 +144,10 @@ export function WaterTracker({
       {!hasGoal ? (
         <View style={styles.noGoalContainer}>
           <Text style={styles.noGoalText}>Please set your water goal or update your body weight in settings to start tracking water.</Text>
-          <Button 
-            title="Update Metrics" 
+          <Button
+            title="Update Metrics"
             onPress={() => router.push('/(app)/(profile)/statistics?tab=body_metrics')}
-            style={{ marginTop: spacing.md }}
+            style={styles.updateMetricsBtn}
           />
         </View>
       ) : (
@@ -190,49 +194,54 @@ export function WaterTracker({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  title: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  summary: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    fontWeight: fontWeight.medium,
-  },
-  progressBarWrapper: {
-    marginBottom: spacing.lg,
-  },
-  logList: {
-    marginTop: spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.md,
-  },
-  noGoalContainer: {
-    padding: spacing.md,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.md,
-    marginBottom: spacing.md,
-  },
-  noGoalText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.xl,
+      padding: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: spacing.xl,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    title: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    summary: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+      fontWeight: fontWeight.medium,
+    },
+    progressBarWrapper: {
+      marginBottom: spacing.lg,
+    },
+    logList: {
+      marginTop: spacing.lg,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+      paddingTop: spacing.md,
+    },
+    noGoalContainer: {
+      padding: spacing.md,
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.md,
+      marginBottom: spacing.md,
+    },
+    noGoalText: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+    },
+    updateMetricsBtn: {
+      marginTop: spacing.md,
+    },
+  });
+}

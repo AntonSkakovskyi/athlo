@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface MacroBreakdownProps {
   calories: number;
@@ -9,6 +12,9 @@ interface MacroBreakdownProps {
 }
 
 export function MacroBreakdown({ calories, proteins, fats, carbs }: MacroBreakdownProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.macroPreview}>
       <View style={styles.macroPreviewItem}>
@@ -31,25 +37,27 @@ export function MacroBreakdown({ calories, proteins, fats, carbs }: MacroBreakdo
   );
 }
 
-const styles = StyleSheet.create({
-  macroPreview: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: spacing.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: 4,
-  },
-  macroPreviewItem: {
-    alignItems: 'center',
-  },
-  macroPreviewValue: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  macroPreviewLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: spacing.xxs,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    macroPreview: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: spacing.md,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: 4,
+    },
+    macroPreviewItem: {
+      alignItems: 'center',
+    },
+    macroPreviewValue: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    macroPreviewLabel: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: spacing.xxs,
+    },
+  });
+}

@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, ScrollView } from 'react-native';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import type { IUnit } from '@athlo/shared';
@@ -56,6 +59,9 @@ export function CreateFoodModal({
   isPending,
   topPadding,
 }: CreateFoodModalProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
       <View style={[styles.createContainer, { paddingTop: topPadding }]}>
@@ -135,57 +141,62 @@ export function CreateFoodModal({
             disabled={!newFoodName.trim() || !newFoodCalories || !newFoodServingAmount}
             style={styles.createSaveBtn}
           />
-          <View style={{ height: 100 }} />
+          <View style={styles.bottomSpacer} />
         </ScrollView>
       </View>
     </Modal>
   );
 }
 
-const styles = StyleSheet.create({
-  createContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  createHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  cancelBtn: {
-    fontSize: fontSize.md,
-    color: colors.danger,
-    fontWeight: fontWeight.semibold,
-    width: 60,
-  },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  headerSpacer: {
-    width: 60,
-  },
-  createForm: {
-    paddingHorizontal: spacing.lg,
-  },
-  createSectionTitle: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  macroInputRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  macroInputCol: {
-    flex: 1,
-  },
-  createSaveBtn: {
-    marginTop: spacing.lg,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    createContainer: {
+      flex: 1,
+      backgroundColor: c.background,
+    },
+    createHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.lg,
+    },
+    cancelBtn: {
+      fontSize: fontSize.md,
+      color: c.danger,
+      fontWeight: fontWeight.semibold,
+      width: 60,
+    },
+    title: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    headerSpacer: {
+      width: 60,
+    },
+    createForm: {
+      paddingHorizontal: spacing.lg,
+    },
+    createSectionTitle: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.textSecondary,
+      marginTop: spacing.sm,
+      marginBottom: spacing.md,
+    },
+    macroInputRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    macroInputCol: {
+      flex: 1,
+    },
+    createSaveBtn: {
+      marginTop: spacing.lg,
+    },
+    bottomSpacer: {
+      height: 100,
+    },
+  });
+}

@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { ScrollView, Pressable, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import type { IMealType } from '@athlo/shared';
 
 interface MealTypeChipsProps {
@@ -9,6 +12,9 @@ interface MealTypeChipsProps {
 }
 
 export function MealTypeChips({ mealTypes, selectedTypeId, onSelectType }: MealTypeChipsProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <>
       <Text style={styles.label}>Meal Type</Text>
@@ -33,35 +39,37 @@ export function MealTypeChips({ mealTypes, selectedTypeId, onSelectType }: MealT
   );
 }
 
-const styles = StyleSheet.create({
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  typeRow: {
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  typeChip: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  typeChipActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  typeChipText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  typeChipTextActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    label: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.medium,
+      color: c.textSecondary,
+      marginBottom: spacing.sm,
+    },
+    typeRow: {
+      gap: spacing.sm,
+      marginBottom: spacing.lg,
+    },
+    typeChip: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.md,
+      backgroundColor: c.surfaceLight,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    typeChipActive: {
+      backgroundColor: c.primaryLight,
+      borderColor: c.primary,
+    },
+    typeChipText: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+    },
+    typeChipTextActive: {
+      color: c.primary,
+      fontWeight: fontWeight.semibold,
+    },
+  });
+}

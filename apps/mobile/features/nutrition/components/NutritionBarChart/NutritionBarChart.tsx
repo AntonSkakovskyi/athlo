@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
+import { borderRadius, spacing, fontSize } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface DataPoint {
   date: string;
@@ -15,6 +17,8 @@ interface NutritionBarChartProps {
 }
 
 export function NutritionBarChart({ data, color, unit }: NutritionBarChartProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   if (data.length === 0) return null;
@@ -118,84 +122,86 @@ function formatValueFull(value: number, unit: string): string {
   return `${Math.round(value)} ${unit}`;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  detailPanel: {
-    height: 44,
-    marginTop: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.xs,
-  },
-  detailDate: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  detailValue: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-  },
-  detailHint: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    flex: 1,
-    textAlign: 'center',
-  },
-  yAxis: {
-    position: 'absolute',
-    left: spacing.sm,
-    top: spacing.lg,
-    bottom: spacing['3xl'],
-    justifyContent: 'space-between',
-    zIndex: 1,
-  },
-  yLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-  },
-  chartArea: {
-    marginLeft: 40,
-    position: 'relative',
-  },
-  gridLine: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.border,
-  },
-  barsContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  barWrapper: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    height: '100%',
-  },
-  bar: {
-    width: '70%',
-    borderRadius: 3,
-    minWidth: 4,
-  },
-  xAxis: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginLeft: 40,
-    marginTop: spacing.sm,
-  },
-  xLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    detailPanel: {
+      height: 44,
+      marginTop: spacing.sm,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.xs,
+    },
+    detailDate: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+    },
+    detailValue: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+    },
+    detailHint: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      flex: 1,
+      textAlign: 'center',
+    },
+    yAxis: {
+      position: 'absolute',
+      left: spacing.sm,
+      top: spacing.lg,
+      bottom: spacing['3xl'],
+      justifyContent: 'space-between',
+      zIndex: 1,
+    },
+    yLabel: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+    },
+    chartArea: {
+      marginLeft: 40,
+      position: 'relative',
+    },
+    gridLine: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: c.border,
+    },
+    barsContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: 2,
+    },
+    barWrapper: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      height: '100%',
+    },
+    bar: {
+      width: '70%',
+      borderRadius: 3,
+      minWidth: 4,
+    },
+    xAxis: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginLeft: 40,
+      marginTop: spacing.sm,
+    },
+    xLabel: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+    },
+  });
+}

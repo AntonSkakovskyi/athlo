@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { IWaterLog } from '@athlo/shared';
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { formatClockTime } from '@/utils/time';
 
 interface WaterLogEntryProps {
@@ -11,11 +14,14 @@ interface WaterLogEntryProps {
 }
 
 export function WaterLogEntry({ log, onEdit, onDelete, isEditing }: WaterLogEntryProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={[styles.logRow, isEditing && styles.editingRow]}>
       <Text style={styles.logAmount}>{log.amountMl} ml</Text>
       <Text style={styles.logTime}>{formatClockTime(log.consumedAt)}</Text>
-      
+
       {!isEditing && (
         <>
           <Pressable onPress={onEdit} hitSlop={8} style={styles.iconBtn}>
@@ -30,40 +36,42 @@ export function WaterLogEntry({ log, onEdit, onDelete, isEditing }: WaterLogEntr
   );
 }
 
-const styles = StyleSheet.create({
-  logRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.xs,
-    gap: spacing.sm,
-  },
-  editingRow: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-    paddingHorizontal: spacing.sm,
-    marginHorizontal: -spacing.sm,
-  },
-  logAmount: {
-    flex: 1,
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  logTime: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-  },
-  iconBtn: {
-    padding: spacing.xs,
-    minWidth: 28,
-    alignItems: 'center',
-  },
-  editIcon: {
-    fontSize: fontSize.sm,
-  },
-  deleteIcon: {
-    fontSize: fontSize.md,
-    color: colors.danger,
-    fontWeight: fontWeight.bold,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    logRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.xs,
+      gap: spacing.sm,
+    },
+    editingRow: {
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.sm,
+      paddingHorizontal: spacing.sm,
+      marginHorizontal: -spacing.sm,
+    },
+    logAmount: {
+      flex: 1,
+      fontSize: fontSize.md,
+      color: c.text,
+      fontWeight: fontWeight.medium,
+    },
+    logTime: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+    },
+    iconBtn: {
+      padding: spacing.xs,
+      minWidth: 28,
+      alignItems: 'center',
+    },
+    editIcon: {
+      fontSize: fontSize.sm,
+    },
+    deleteIcon: {
+      fontSize: fontSize.md,
+      color: c.danger,
+      fontWeight: fontWeight.bold,
+    },
+  });
+}

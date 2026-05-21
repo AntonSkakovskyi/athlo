@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { BottomSheet } from '@/components/ui/BottomSheet/BottomSheet';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import type { LogMealItemApi } from '@/hooks/api/useNutritionLogAPI';
@@ -46,6 +48,8 @@ export function MealItemActionSheet({
   onSwap,
   isUpdating,
 }: MealItemActionSheetProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [amount, setAmount] = useState('');
   const [unitId, setUnitId] = useState<number>(1);
 
@@ -59,7 +63,7 @@ export function MealItemActionSheet({
   const calculatedMacros = useMemo(() => {
     if (!item?.food) return null;
     const numericAmount = parseFloat(amount) || 0;
-    
+
     let factor = 1;
     if (item.food.units) {
       const selectedUnit = item.food.units.find(u => u.unitId === unitId);
@@ -69,8 +73,8 @@ export function MealItemActionSheet({
     }
 
     const totalGrams = numericAmount * factor;
-    const multiplier = totalGrams / 100; 
-    
+    const multiplier = totalGrams / 100;
+
     return {
       calories: Math.round(item.food.calories * multiplier),
       proteins: Math.round(item.food.proteins * multiplier * 10) / 10,
@@ -128,13 +132,13 @@ export function MealItemActionSheet({
             disabled={!hasChanges || !amount || parseFloat(amount) <= 0}
             style={styles.saveBtn}
           />
-          
+
           <View style={styles.secondaryActions}>
             <Pressable style={styles.actionItem} onPress={onSwap}>
               <Text style={styles.actionIcon}>🔄</Text>
               <Text style={styles.actionText}>Change Product</Text>
             </Pressable>
-            
+
             <Pressable style={[styles.actionItem, styles.deleteItem]} onPress={onDelete}>
               <Text style={[styles.actionIcon, { color: colors.danger }]}>🗑️</Text>
               <Text style={[styles.actionText, { color: colors.danger }]}>Delete from Meal</Text>
@@ -147,6 +151,8 @@ export function MealItemActionSheet({
 }
 
 function MacroBox({ label, value, color }: { label: string; value: number; color: string }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.macroBox}>
       <Text style={[styles.macroValue, { color }]}>{value}</Text>
@@ -155,111 +161,113 @@ function MacroBox({ label, value, color }: { label: string; value: number; color
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    paddingBottom: spacing.lg,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  foodName: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  brandName: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginTop: 4,
-  },
-  macroRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  macroBox: {
-    alignItems: 'center',
-  },
-  macroValue: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-  },
-  macroLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  inputSection: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  inputWrap: {
-    flex: 1,
-  },
-  unitWrap: {
-    width: 100,
-  },
-  unitLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-  },
-  unitSelector: {
-    height: 48,
-    justifyContent: 'center',
-  },
-  unitBadge: {
-    backgroundColor: colors.surfaceLight,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 8,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-  },
-  unitBadgeActive: {
-    backgroundColor: colors.primaryLight,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  unitTextActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-    fontSize: fontSize.md,
-  },
-  actions: {
-    gap: spacing.lg,
-  },
-  saveBtn: {
-    width: '100%',
-  },
-  secondaryActions: {
-    gap: spacing.xs,
-  },
-  actionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surfaceLight,
-    gap: spacing.md,
-  },
-  deleteItem: {
-    marginTop: spacing.sm,
-    backgroundColor: colors.dangerLight,
-  },
-  actionIcon: {
-    fontSize: 20,
-  },
-  actionText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-    color: colors.text,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      paddingBottom: spacing.lg,
+    },
+    header: {
+      alignItems: 'center',
+      marginBottom: spacing.xl,
+    },
+    foodName: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      textAlign: 'center',
+    },
+    brandName: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      marginTop: 4,
+    },
+    macroRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.lg,
+      paddingVertical: spacing.md,
+      marginBottom: spacing.xl,
+    },
+    macroBox: {
+      alignItems: 'center',
+    },
+    macroValue: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.bold,
+    },
+    macroLabel: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: 2,
+    },
+    inputSection: {
+      flexDirection: 'row',
+      gap: spacing.md,
+      marginBottom: spacing.xl,
+    },
+    inputWrap: {
+      flex: 1,
+    },
+    unitWrap: {
+      width: 100,
+    },
+    unitLabel: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.medium,
+      color: c.textSecondary,
+      marginBottom: spacing.xs,
+    },
+    unitSelector: {
+      height: 48,
+      justifyContent: 'center',
+    },
+    unitBadge: {
+      backgroundColor: c.surfaceLight,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 8,
+      borderRadius: borderRadius.md,
+      alignItems: 'center',
+    },
+    unitBadgeActive: {
+      backgroundColor: c.primaryLight,
+      borderWidth: 1,
+      borderColor: c.primary,
+    },
+    unitTextActive: {
+      color: c.primary,
+      fontWeight: fontWeight.bold,
+      fontSize: fontSize.md,
+    },
+    actions: {
+      gap: spacing.lg,
+    },
+    saveBtn: {
+      width: '100%',
+    },
+    secondaryActions: {
+      gap: spacing.xs,
+    },
+    actionItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.md,
+      backgroundColor: c.surfaceLight,
+      gap: spacing.md,
+    },
+    deleteItem: {
+      marginTop: spacing.sm,
+      backgroundColor: c.dangerLight,
+    },
+    actionIcon: {
+      fontSize: 20,
+    },
+    actionText: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.medium,
+      color: c.text,
+    },
+  });
+}

@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { ILogMeal } from '@athlo/shared';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 
 export interface MealItemDisplay {
@@ -25,8 +28,11 @@ interface MealCardProps {
 }
 
 export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, onEditTime, onDeleteItem }: MealCardProps) {
-  const mealTime = meal.timeSuggestion 
-    ? meal.timeSuggestion 
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const mealTime = meal.timeSuggestion
+    ? meal.timeSuggestion
     : new Date(meal.consumedAt).toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
@@ -67,12 +73,12 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
 
       <View style={styles.itemsList}>
         {items.map((item) => (
-          <Pressable 
-            key={item.id} 
+          <Pressable
+            key={item.id}
             style={({ pressed }) => [
               styles.itemRow,
               pressed && styles.itemRowPressed,
-            ]} 
+            ]}
             onPress={() => onEditItem?.(item.id)}
             disabled={!onEditItem}
           >
@@ -112,6 +118,8 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
 }
 
 function MacroSummaryItem({ label, value, color }: { label: string; value: number; color: string }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.macroItem}>
       <Text style={[styles.macroLabel, { color }]}>{label}</Text>
@@ -129,149 +137,150 @@ function getMealIcon(name: string | null): string {
   return '🍽️';
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.md,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surfaceLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  mealIcon: {
-    fontSize: 24,
-  },
-  mealName: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  mealTime: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  actionBtn: {
-    padding: 4,
-  },
-  editBtnIcon: {
-    fontSize: 16,
-    opacity: 0.8,
-  },
-  deleteBtnIcon: {
-    fontSize: 16,
-    color: colors.danger,
-    opacity: 0.8,
-  },
-  itemsList: {
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.xs,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
-    borderRadius: borderRadius.md,
-  },
-  itemRowPressed: {
-    backgroundColor: colors.surfaceLight,
-  },
-  itemInfo: {
-    flex: 1,
-    marginRight: spacing.md,
-  },
-  itemName: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-    marginBottom: 2,
-  },
-  itemAmount: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-  },
-  itemCal: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: spacing.sm,
-    paddingTop: spacing.md,
-    paddingHorizontal: spacing.xs,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    borderStyle: 'dashed',
-  },
-  totalCalContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 4,
-  },
-  totalCalLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    fontWeight: fontWeight.medium,
-  },
-  totalCalValue: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  macroSummary: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  macroItem: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 2,
-  },
-  macroLabel: {
-    fontSize: 10,
-    fontWeight: fontWeight.bold,
-  },
-  macroValue: {
-    fontSize: 11,
-    color: colors.textSecondary,
-    fontWeight: fontWeight.medium,
-  },
-  addItemBtn: {
-    marginTop: spacing.lg,
-  },
-});
-
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: spacing.md,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: spacing.md,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    iconContainer: {
+      width: 44,
+      height: 44,
+      borderRadius: borderRadius.md,
+      backgroundColor: c.surfaceLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    mealIcon: {
+      fontSize: 24,
+    },
+    mealName: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    mealTime: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: 2,
+    },
+    headerRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    actionBtn: {
+      padding: 4,
+    },
+    editBtnIcon: {
+      fontSize: 16,
+      opacity: 0.8,
+    },
+    deleteBtnIcon: {
+      fontSize: 16,
+      color: c.danger,
+      opacity: 0.8,
+    },
+    itemsList: {
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+      paddingTop: spacing.xs,
+    },
+    itemRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.xs,
+      borderRadius: borderRadius.md,
+    },
+    itemRowPressed: {
+      backgroundColor: c.surfaceLight,
+    },
+    itemInfo: {
+      flex: 1,
+      marginRight: spacing.md,
+    },
+    itemName: {
+      fontSize: fontSize.md,
+      color: c.text,
+      fontWeight: fontWeight.medium,
+      marginBottom: 2,
+    },
+    itemAmount: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+    },
+    itemCal: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textSecondary,
+    },
+    summaryRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: spacing.sm,
+      paddingTop: spacing.md,
+      paddingHorizontal: spacing.xs,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+      borderStyle: 'dashed',
+    },
+    totalCalContainer: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      gap: 4,
+    },
+    totalCalLabel: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      fontWeight: fontWeight.medium,
+    },
+    totalCalValue: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    macroSummary: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    macroItem: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      gap: 2,
+    },
+    macroLabel: {
+      fontSize: 10,
+      fontWeight: fontWeight.bold,
+    },
+    macroValue: {
+      fontSize: 11,
+      color: c.textSecondary,
+      fontWeight: fontWeight.medium,
+    },
+    addItemBtn: {
+      marginTop: spacing.lg,
+    },
+  });
+}

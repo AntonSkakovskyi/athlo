@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { DatePicker } from '@/components/ui/DatePicker/DatePicker';
@@ -32,6 +35,8 @@ export function BodyMetricsTab() {
     createMetricPending,
     PERIOD_LABELS,
   } = useBodyMetricsTab();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   if (metricTypesLoading) {
     return <Spinner style={styles.loader} />;
@@ -150,116 +155,118 @@ export function BodyMetricsTab() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loader: {
-    marginVertical: spacing['4xl'],
-  },
-  selectorWrap: {
-    marginBottom: spacing.lg,
-  },
-  filterBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
-  },
-  filterBtnText: {
-    fontSize: 16,
-    color: colors.text,
-    fontWeight: '500',
-    flex: 1,
-  },
-  chartSection: {
-    marginBottom: spacing.xl,
-  },
-  noDataChart: {
-    height: 200,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  noDataText: {
-    color: colors.textMuted,
-    fontSize: fontSize.sm,
-  },
-  section: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    marginBottom: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  sectionTitle: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    marginBottom: spacing.md,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  formRow: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing.md,
-    alignItems: 'flex-start',
-  },
-  formCol: {
-    flex: 1,
-  },
-  noMargin: {
-    marginBottom: 0,
-  },
-  addBtn: {
-    marginTop: spacing.xs,
-  },
-  historySection: {
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.xl,
-  },
-  historyRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  historyValue: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  historyDate: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  deleteBtn: {
-    fontSize: 18,
-    color: colors.danger,
-    padding: spacing.xs,
-  },
-  emptyHistory: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    paddingVertical: spacing.md,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    loader: {
+      marginVertical: spacing['4xl'],
+    },
+    selectorWrap: {
+      marginBottom: spacing.lg,
+    },
+    filterBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: borderRadius.md,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 12,
+    },
+    filterBtnText: {
+      fontSize: 16,
+      color: c.text,
+      fontWeight: '500',
+      flex: 1,
+    },
+    chartSection: {
+      marginBottom: spacing.xl,
+    },
+    noDataChart: {
+      height: 200,
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: spacing.xl,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    noDataText: {
+      color: c.textMuted,
+      fontSize: fontSize.sm,
+    },
+    section: {
+      backgroundColor: c.surface,
+      padding: spacing.lg,
+      borderRadius: borderRadius.lg,
+      marginBottom: spacing.xl,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    sectionTitle: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      marginBottom: spacing.md,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    formRow: {
+      flexDirection: 'row',
+      gap: spacing.md,
+      marginBottom: spacing.md,
+      alignItems: 'flex-start',
+    },
+    formCol: {
+      flex: 1,
+    },
+    noMargin: {
+      marginBottom: 0,
+    },
+    addBtn: {
+      marginTop: spacing.xs,
+    },
+    historySection: {
+      backgroundColor: c.surface,
+      padding: spacing.lg,
+      borderRadius: borderRadius.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: spacing.xl,
+    },
+    historyRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: c.borderLight,
+    },
+    historyValue: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    historyDate: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: 2,
+    },
+    deleteBtn: {
+      fontSize: 18,
+      color: c.danger,
+      padding: spacing.xs,
+    },
+    emptyHistory: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+      paddingVertical: spacing.md,
+    },
+  });
+}

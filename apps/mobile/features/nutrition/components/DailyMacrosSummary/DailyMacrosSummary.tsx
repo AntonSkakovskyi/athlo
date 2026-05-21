@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface DailyMacrosSummaryProps {
   calories: number;
@@ -12,16 +15,16 @@ interface DailyMacrosSummaryProps {
   carbGoal?: number;
 }
 
-function getMacroColor(percent: number, baseColor: string): string {
-  if (percent > 150) return colors.danger;
-  if (percent > 100) return colors.warning;
+function getMacroColor(percent: number, baseColor: string, c: ColorPalette): string {
+  if (percent > 150) return c.danger;
+  if (percent > 100) return c.warning;
   return baseColor;
 }
 
-function getCalorieRingColor(percent: number): string {
-  if (percent > 150) return colors.danger;
-  if (percent > 100) return colors.warning;
-  return colors.primary;
+function getCalorieRingColor(percent: number, c: ColorPalette): string {
+  if (percent > 150) return c.danger;
+  if (percent > 100) return c.warning;
+  return c.primary;
 }
 
 export function DailyMacrosSummary({
@@ -34,16 +37,19 @@ export function DailyMacrosSummary({
   fatGoal,
   carbGoal,
 }: DailyMacrosSummaryProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   // If calorieGoal is not passed but macros are, calculate it.
   const finalCalorieGoal = calorieGoal ?? (
-    (proteinGoal || fatGoal || carbGoal) 
+    (proteinGoal || fatGoal || carbGoal)
       ? Math.round((proteinGoal ?? 0) * 4 + (fatGoal ?? 0) * 9 + (carbGoal ?? 0) * 4)
       : undefined
   );
 
   const hasGoals = finalCalorieGoal !== undefined;
   const caloriePercent = finalCalorieGoal && finalCalorieGoal > 0 ? (calories / finalCalorieGoal) * 100 : 0;
-  const ringColor = hasGoals ? getCalorieRingColor(caloriePercent) : colors.surfaceLight;
+  const ringColor = hasGoals ? getCalorieRingColor(caloriePercent, colors) : colors.surfaceLight;
 
   return (
     <View style={styles.container}>
@@ -85,10 +91,12 @@ interface MacroBarProps {
 }
 
 function MacroBar({ label, value, goal, color, unit }: MacroBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const hasGoal = goal !== undefined && goal > 0;
   const percent = hasGoal ? (value / goal) * 100 : 0;
   const displayPercent = Math.min(percent, 100);
-  const activeColor = hasGoal ? getMacroColor(percent, color) : colors.text;
+  const activeColor = hasGoal ? getMacroColor(percent, color, colors) : colors.text;
 
   return (
     <View style={styles.macroItem}>
@@ -115,86 +123,88 @@ function MacroBar({ label, value, goal, color, unit }: MacroBarProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.xl,
-  },
-  ringSection: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  ringOuter: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 6,
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  ringInner: {
-    alignItems: 'center',
-  },
-  calorieValue: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  calorieLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: spacing.xxs,
-  },
-  ringProgress: {
-    position: 'absolute',
-    bottom: -8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: borderRadius.sm,
-  },
-  ringPercent: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-    color: colors.black,
-  },
-  macrosRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  macroItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  macroLabel: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginBottom: spacing.xs,
-  },
-  macroValue: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    marginBottom: spacing.xs,
-  },
-  macroBarBg: {
-    width: '100%',
-    height: 4,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  macroBarFill: {
-    height: '100%',
-    borderRadius: 2,
-  },
-  macroGoal: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.xl,
+      padding: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: spacing.xl,
+    },
+    ringSection: {
+      alignItems: 'center',
+      marginBottom: spacing.xl,
+    },
+    ringOuter: {
+      width: 120,
+      height: 120,
+      borderRadius: 60,
+      borderWidth: 6,
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'relative',
+    },
+    ringInner: {
+      alignItems: 'center',
+    },
+    calorieValue: {
+      fontSize: fontSize['2xl'],
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    calorieLabel: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: spacing.xxs,
+    },
+    ringProgress: {
+      position: 'absolute',
+      bottom: -8,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: borderRadius.sm,
+    },
+    ringPercent: {
+      fontSize: fontSize.xs,
+      fontWeight: fontWeight.semibold,
+      color: c.black,
+    },
+    macrosRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: spacing.md,
+    },
+    macroItem: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    macroLabel: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      marginBottom: spacing.xs,
+    },
+    macroValue: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.bold,
+      marginBottom: spacing.xs,
+    },
+    macroBarBg: {
+      width: '100%',
+      height: 4,
+      backgroundColor: c.surfaceLight,
+      borderRadius: 2,
+      overflow: 'hidden',
+    },
+    macroBarFill: {
+      height: '100%',
+      borderRadius: 2,
+    },
+    macroGoal: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: spacing.xs,
+    },
+  });
+}

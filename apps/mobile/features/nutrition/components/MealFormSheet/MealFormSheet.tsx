@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, KeyboardAvoidingView, Platform } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import type { IMealType } from '@athlo/shared';
@@ -14,24 +16,24 @@ interface MealFormSheetProps {
   confirmLabel: string;
   mealTypes: IMealType[];
   onClose: () => void;
-  onConfirm: (data: { 
-    mealTypeId: number; 
-    name?: string; 
-    consumedAt?: string; 
+  onConfirm: (data: {
+    mealTypeId: number;
+    name?: string;
+    consumedAt?: string;
     timeSuggestion?: string;
     items?: SelectedPlanItem[];
   }) => Promise<void> | void;
-  
+
   // Initial values for editing
   initialName?: string;
   initialTypeId?: number | null;
   initialDate?: Date | string | null; // Date object or ISO string
   initialTimeSuggestion?: string; // HH:mm string
   defaultHasTime?: boolean;
-  
+
   // For plan suggestions (LogMeal mode)
   planDayMeals?: PlanMealWithItems[];
-  
+
   showNameInput?: boolean;
   isLoading?: boolean;
 }
@@ -51,10 +53,12 @@ export function MealFormSheet({
   showNameInput = true,
   isLoading = false,
 }: MealFormSheetProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [selectedTypeId, setSelectedTypeId] = useState<number | null>(initialTypeId);
   const [mealName, setMealName] = useState(initialName);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(new Set());
-  
+
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [hasTime, setHasTime] = useState(!!initialDate || !!initialTimeSuggestion || defaultHasTime);
   const [selectedSeconds, setSelectedSeconds] = useState(() => {
@@ -99,7 +103,7 @@ export function MealFormSheet({
 
   const handleConfirm = async () => {
     if (!selectedTypeId) return;
-    
+
     let timeStr: string | undefined;
     let consumedAt: string | undefined;
 
@@ -139,7 +143,7 @@ export function MealFormSheet({
 
   return (
     <Modal visible transparent animationType="slide">
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.overlay}
       >
@@ -207,57 +211,59 @@ export function MealFormSheet({
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.overlay,
-  },
-  sheet: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    padding: spacing['2xl'],
-    paddingBottom: 40,
-    maxHeight: '85%',
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.borderLight,
-    alignSelf: 'center',
-    marginBottom: spacing.lg,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  nameInputContainer: {
-    marginBottom: spacing.lg,
-  },
-  noPlanMeal: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginBottom: spacing.lg,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.sm,
-  },
-  actionBtn: {
-    flex: 1,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    backdrop: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: c.overlay,
+    },
+    sheet: {
+      backgroundColor: c.surface,
+      borderTopLeftRadius: borderRadius.xl,
+      borderTopRightRadius: borderRadius.xl,
+      padding: spacing['2xl'],
+      paddingBottom: 40,
+      maxHeight: '85%',
+    },
+    handle: {
+      width: 40,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: c.borderLight,
+      alignSelf: 'center',
+      marginBottom: spacing.lg,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    title: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    nameInputContainer: {
+      marginBottom: spacing.lg,
+    },
+    noPlanMeal: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+      marginBottom: spacing.lg,
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: spacing.md,
+      marginTop: spacing.sm,
+    },
+    actionBtn: {
+      flex: 1,
+    },
+  });
+}
