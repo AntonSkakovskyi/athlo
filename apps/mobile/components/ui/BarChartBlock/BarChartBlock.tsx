@@ -6,7 +6,9 @@ import {
   type LayoutChangeEvent,
 } from 'react-native';
 import { BarChart, type barDataItem } from 'react-native-gifted-charts';
-import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
+import { borderRadius, spacing, fontSize } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { PeriodSelector } from './PeriodSelector/PeriodSelector';
 import { MetricSelector } from './MetricSelector/MetricSelector';
 
@@ -46,6 +48,9 @@ export function BarChartBlock({
   activeMetric,
   onMetricChange,
 }: BarChartBlockProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const axisTextStyle = useMemo(() => ({ color: colors.textMuted, fontSize: 10 }), [colors]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [periodOpen, setPeriodOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -75,7 +80,7 @@ export function BarChartBlock({
       frontColor: selectedIndex === i ? colors.primary : colors.primary + '80', // semi-transparent if not selected
       onPress: () => setSelectedIndex(i),
     }));
-  }, [data, selectedIndex]);
+  }, [data, selectedIndex, colors]);
 
   const plotWidth = containerWidth > 0
     ? containerWidth - CONTAINER_PADDING * 2 - Y_AXIS_WIDTH
@@ -130,8 +135,8 @@ export function BarChartBlock({
             rulesColor={colors.border}
             yAxisColor="transparent"
             xAxisColor={colors.border}
-            yAxisTextStyle={yAxisTextStyle}
-            xAxisLabelTextStyle={xAxisTextStyle}
+            yAxisTextStyle={axisTextStyle}
+            xAxisLabelTextStyle={axisTextStyle}
             backgroundColor="transparent"
             disableScroll
             hideRules={false}
@@ -153,56 +158,55 @@ export function BarChartBlock({
   );
 }
 
-const yAxisTextStyle = { color: colors.textMuted, fontSize: 10 };
-const xAxisTextStyle = { color: colors.textMuted, fontSize: 10 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: CONTAINER_PADDING,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.lg,
-  },
-  headerLeft: {
-    flex: 1,
-  },
-  metricLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  headerRight: {
-    alignItems: 'flex-end',
-  },
-  headerValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  headerDate: {
-    fontSize: fontSize.sm,
-    fontWeight: '400',
-    color: colors.textSecondary,
-  },
-  emptyText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    paddingVertical: 30,
-  },
-  chartWrapper: {
-    marginBottom: spacing.sm,
-    marginLeft: -10, // Adjust for Y-axis labels
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: CONTAINER_PADDING,
+      marginBottom: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: spacing.lg,
+    },
+    headerLeft: {
+      flex: 1,
+    },
+    metricLabel: {
+      fontSize: fontSize.sm,
+      fontWeight: '700',
+      color: c.textSecondary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 4,
+    },
+    headerRight: {
+      alignItems: 'flex-end',
+    },
+    headerValue: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      color: c.text,
+    },
+    headerDate: {
+      fontSize: fontSize.sm,
+      fontWeight: '400',
+      color: c.textSecondary,
+    },
+    emptyText: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+      paddingVertical: 30,
+    },
+    chartWrapper: {
+      marginBottom: spacing.sm,
+      marginLeft: -10, // Adjust for Y-axis labels
+    },
+  });
+}

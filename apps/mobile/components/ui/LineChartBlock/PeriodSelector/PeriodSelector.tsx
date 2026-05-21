@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, fontSize, spacing } from '@/constants/theme';
+import { borderRadius, fontSize, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface PeriodSelectorProps {
   period: string;
@@ -16,6 +19,9 @@ export function PeriodSelector({
   onToggle,
   onSelect,
 }: PeriodSelectorProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View>
       <Pressable style={styles.periodDropdown} onPress={onToggle}>
@@ -45,42 +51,44 @@ export function PeriodSelector({
   );
 }
 
-const styles = StyleSheet.create({
-  periodDropdown: {
-    marginTop: spacing.sm,
-    paddingHorizontal: 10,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.surfaceLight,
-  },
-  periodText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-  },
-  periodMenu: {
-    position: 'absolute',
-    top: 52,
-    right: 0,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    zIndex: 10,
-    minWidth: 120,
-  },
-  periodItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  periodItemActive: {
-    backgroundColor: colors.primaryLight,
-  },
-  periodItemText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  periodItemTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    periodDropdown: {
+      marginTop: spacing.sm,
+      paddingHorizontal: 10,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.sm,
+      backgroundColor: c.surfaceLight,
+    },
+    periodText: {
+      fontSize: 12,
+      color: c.textSecondary,
+    },
+    periodMenu: {
+      position: 'absolute',
+      top: 52,
+      right: 0,
+      backgroundColor: c.surfaceElevated,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: c.border,
+      zIndex: 10,
+      minWidth: 120,
+    },
+    periodItem: {
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    periodItemActive: {
+      backgroundColor: c.primaryLight,
+    },
+    periodItemText: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+    },
+    periodItemTextActive: {
+      color: c.primary,
+      fontWeight: '600',
+    },
+  });
+}

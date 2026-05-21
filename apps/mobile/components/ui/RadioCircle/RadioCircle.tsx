@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { colors } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface RadioCircleProps {
   selected: boolean;
@@ -7,6 +9,9 @@ interface RadioCircleProps {
 }
 
 export function RadioCircle({ selected, size = 22 }: RadioCircleProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={[styles.outer, { width: size, height: size, borderRadius: size / 2 }, selected && styles.outerSelected]}>
       {selected && (
@@ -16,17 +21,19 @@ export function RadioCircle({ selected, size = 22 }: RadioCircleProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  outer: {
-    borderWidth: 2,
-    borderColor: colors.textMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  outerSelected: {
-    borderColor: colors.primary,
-  },
-  inner: {
-    backgroundColor: colors.primary,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    outer: {
+      borderWidth: 2,
+      borderColor: c.textMuted,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    outerSelected: {
+      borderColor: c.primary,
+    },
+    inner: {
+      backgroundColor: c.primary,
+    },
+  });
+}

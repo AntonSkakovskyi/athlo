@@ -1,6 +1,7 @@
 import React from 'react';
-import { FlatList, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import type { FlatListProps } from 'react-native';
+import { spacing } from '@/constants/theme';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 export interface InfiniteListProps<T> extends FlatListProps<T> {
@@ -26,7 +27,7 @@ export const InfiniteList = function InfiniteList<T>({
         <>
           {ListFooterComponent}
           {isFetchingNextPage ? (
-            <View style={{ paddingVertical: 16 }}>
+            <View style={styles.footer}>
               <Spinner />
             </View>
           ) : null}
@@ -35,5 +36,11 @@ export const InfiniteList = function InfiniteList<T>({
     />
   );
 };
+
+const styles = StyleSheet.create({
+  footer: {
+    paddingVertical: spacing.lg,
+  },
+});
 
 

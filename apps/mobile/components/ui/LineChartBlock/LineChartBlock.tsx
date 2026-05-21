@@ -6,7 +6,9 @@ import {
   type LayoutChangeEvent,
 } from 'react-native';
 import { LineChart, type lineDataItem } from 'react-native-gifted-charts';
-import { colors, borderRadius, spacing, fontSize } from '@/constants/theme';
+import { borderRadius, spacing, fontSize } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { PeriodSelector } from './PeriodSelector/PeriodSelector';
 import { MetricSelector } from './MetricSelector/MetricSelector';
 
@@ -47,6 +49,9 @@ export function LineChartBlock({
   activeMetric,
   onMetricChange,
 }: LineChartBlockProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const axisTextStyle = useMemo(() => ({ color: colors.textMuted, fontSize: fontSize.xs }), [colors]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [periodOpen, setPeriodOpen] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
@@ -147,8 +152,8 @@ export function LineChartBlock({
             rulesColor={colors.border}
             yAxisColor="transparent"
             xAxisColor={colors.border}
-            yAxisTextStyle={yAxisTextStyle}
-            xAxisLabelTextStyle={xAxisTextStyle}
+            yAxisTextStyle={axisTextStyle}
+            xAxisLabelTextStyle={axisTextStyle}
             backgroundColor="transparent"
             disableScroll
             focusEnabled
@@ -180,50 +185,49 @@ export function LineChartBlock({
   );
 }
 
-const yAxisTextStyle = { color: colors.textMuted, fontSize: fontSize.xs };
-const xAxisTextStyle = { color: colors.textMuted, fontSize: fontSize.xs };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: CONTAINER_PADDING,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.lg,
-  },
-  metricLabel: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-    flex: 1,
-  },
-  headerRight: {
-    alignItems: 'flex-end',
-  },
-  headerValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  headerDate: {
-    fontSize: 12,
-    fontWeight: '400',
-    color: colors.textSecondary,
-  },
-  emptyText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    paddingVertical: 30,
-  },
-  chartWrapper: {
-    marginBottom: spacing.sm,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: CONTAINER_PADDING,
+      marginBottom: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: spacing.lg,
+    },
+    metricLabel: {
+      fontSize: fontSize.md,
+      fontWeight: '600',
+      color: c.text,
+      flex: 1,
+    },
+    headerRight: {
+      alignItems: 'flex-end',
+    },
+    headerValue: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: c.primary,
+    },
+    headerDate: {
+      fontSize: 12,
+      fontWeight: '400',
+      color: c.textSecondary,
+    },
+    emptyText: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+      paddingVertical: 30,
+    },
+    chartWrapper: {
+      marginBottom: spacing.sm,
+    },
+  });
+}

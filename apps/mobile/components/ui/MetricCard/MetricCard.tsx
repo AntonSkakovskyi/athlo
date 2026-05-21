@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius, fontSize } from '@/constants/theme';
+import { borderRadius, fontSize, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface MetricCardProps {
   icon?: string;
@@ -10,6 +13,9 @@ interface MetricCardProps {
 }
 
 export function MetricCard({ icon, value, label, size = 'md', highlighted = false }: MetricCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={[styles.card, size === 'sm' && styles.cardSm, highlighted && styles.cardHighlighted]}>
       {icon && <Text style={[styles.icon, size === 'sm' && styles.iconSm]}>{icon}</Text>}
@@ -19,45 +25,47 @@ export function MetricCard({ icon, value, label, size = 'md', highlighted = fals
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  cardSm: {
-    padding: 12,
-    minWidth: 'auto',
-  },
-  cardHighlighted: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
-  },
-  icon: {
-    fontSize: 24,
-    marginBottom: 6,
-  },
-  iconSm: {
-    fontSize: 18,
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  valueSm: {
-    fontSize: fontSize.md,
-  },
-  label: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: 2,
-    textTransform: 'uppercase',
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    card: {
+      flex: 1,
+      minWidth: '45%',
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    cardSm: {
+      padding: spacing.md,
+      minWidth: 'auto',
+    },
+    cardHighlighted: {
+      borderColor: c.primary,
+      backgroundColor: c.primaryLight,
+    },
+    icon: {
+      fontSize: 24,
+      marginBottom: 6,
+    },
+    iconSm: {
+      fontSize: 18,
+      marginBottom: spacing.xs,
+    },
+    value: {
+      fontSize: fontSize.lg,
+      fontWeight: '700',
+      color: c.text,
+    },
+    valueSm: {
+      fontSize: fontSize.md,
+    },
+    label: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: spacing.xxs,
+      textTransform: 'uppercase',
+    },
+  });
+}

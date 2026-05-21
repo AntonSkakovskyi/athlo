@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface TimePickerProps {
   value: number; // total seconds
@@ -23,9 +25,11 @@ interface WheelProps {
 }
 
 const Wheel = ({ data, selectedValue, onValueChange, label }: WheelProps) => {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const scrollViewRef = useRef<ScrollView>(null);
   const [isReady, setIsReady] = useState(false);
-  
+
   // Extended data for looping
   const extendedData = useMemo(() => {
     let res: number[] = [];
@@ -57,13 +61,13 @@ const Wheel = ({ data, selectedValue, onValueChange, label }: WheelProps) => {
     const y = event.nativeEvent.contentOffset.y;
     const index = Math.round(y / ITEM_HEIGHT);
     const actualValue = extendedData[index];
-    
+
     // Recenter if getting close to edges
     if (index < data.length * 2 || index > extendedData.length - data.length * 2) {
       const middleOffset = Math.floor(LOOP_FACTOR / 2) * data.length;
       const valueIndex = data.indexOf(actualValue);
       const newIndex = middleOffset + valueIndex;
-      
+
       scrollViewRef.current?.scrollTo({
         y: newIndex * ITEM_HEIGHT,
         animated: false,
@@ -98,13 +102,15 @@ const Wheel = ({ data, selectedValue, onValueChange, label }: WheelProps) => {
   );
 };
 
-export function TimePicker({ 
-  value, 
-  onChange, 
-  hideHours = false, 
-  hideMinutes = false, 
-  hideSeconds = false 
+export function TimePicker({
+  value,
+  onChange,
+  hideHours = false,
+  hideMinutes = false,
+  hideSeconds = false
 }: TimePickerProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const h = Math.floor(value / 3600);
   const m = Math.floor((value % 3600) / 60);
   const s = value % 60;
@@ -122,26 +128,26 @@ export function TimePicker({
       <View style={styles.selectionHighlight} pointerEvents="none" />
       <View style={styles.wheelsRow}>
         {!hideHours && (
-          <Wheel 
-            data={hoursData} 
-            selectedValue={h % 24} 
-            onValueChange={(val) => handleValueChange(val, m, s)} 
+          <Wheel
+            data={hoursData}
+            selectedValue={h % 24}
+            onValueChange={(val) => handleValueChange(val, m, s)}
             label="h"
           />
         )}
         {!hideMinutes && (
-          <Wheel 
-            data={minutesData} 
-            selectedValue={m % 60} 
-            onValueChange={(val) => handleValueChange(h, val, s)} 
+          <Wheel
+            data={minutesData}
+            selectedValue={m % 60}
+            onValueChange={(val) => handleValueChange(h, val, s)}
             label="m"
           />
         )}
         {!hideSeconds && (
-          <Wheel 
-            data={secondsData} 
-            selectedValue={s % 60} 
-            onValueChange={(val) => handleValueChange(h, m, val)} 
+          <Wheel
+            data={secondsData}
+            selectedValue={s % 60}
+            onValueChange={(val) => handleValueChange(h, m, val)}
             label="s"
           />
         )}
@@ -150,63 +156,65 @@ export function TimePicker({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: PICKER_HEIGHT,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    position: 'relative',
-    marginVertical: spacing.md,
-  },
-  wheelsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xl,
-    height: PICKER_HEIGHT,
-  },
-  wheelContainer: {
-    flex: 1,
-    height: PICKER_HEIGHT,
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  wheelScroll: {
-    flex: 1,
-    height: PICKER_HEIGHT,
-  },
-  wheelListContent: {
-    paddingVertical: ITEM_HEIGHT, // Center the items
-  },
-  wheelItem: {
-    height: ITEM_HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: 50,
-  },
-  wheelItemText: {
-    fontSize: fontSize.xl,
-    color: colors.text,
-    fontWeight: fontWeight.semibold,
-  },
-  wheelLabel: {
-    fontSize: fontSize.md,
-    color: colors.textMuted,
-    fontWeight: fontWeight.bold,
-    marginLeft: -5,
-    marginTop: 2,
-  },
-  selectionHighlight: {
-    position: 'absolute',
-    top: ITEM_HEIGHT,
-    left: spacing.md,
-    right: spacing.md,
-    height: ITEM_HEIGHT,
-    backgroundColor: colors.primaryLight,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    opacity: 0.2,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      height: PICKER_HEIGHT,
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      overflow: 'hidden',
+      position: 'relative',
+      marginVertical: spacing.md,
+    },
+    wheelsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.xl,
+      height: PICKER_HEIGHT,
+    },
+    wheelContainer: {
+      flex: 1,
+      height: PICKER_HEIGHT,
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
+    wheelScroll: {
+      flex: 1,
+      height: PICKER_HEIGHT,
+    },
+    wheelListContent: {
+      paddingVertical: ITEM_HEIGHT, // Center the items
+    },
+    wheelItem: {
+      height: ITEM_HEIGHT,
+      justifyContent: 'center',
+      alignItems: 'center',
+      width: 50,
+    },
+    wheelItemText: {
+      fontSize: fontSize.xl,
+      color: c.text,
+      fontWeight: fontWeight.semibold,
+    },
+    wheelLabel: {
+      fontSize: fontSize.md,
+      color: c.textMuted,
+      fontWeight: fontWeight.bold,
+      marginLeft: -5,
+      marginTop: 2,
+    },
+    selectionHighlight: {
+      position: 'absolute',
+      top: ITEM_HEIGHT,
+      left: spacing.md,
+      right: spacing.md,
+      height: ITEM_HEIGHT,
+      backgroundColor: c.primaryLight,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: c.primary,
+      opacity: 0.2,
+    },
+  });
+}

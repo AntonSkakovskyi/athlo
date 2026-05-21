@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { borderRadius, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface NavCardProps {
   icon: string;
@@ -10,6 +13,9 @@ interface NavCardProps {
 }
 
 export function NavCard({ icon, title, description, onPress, variant = 'default' }: NavCardProps) {
+  const { colors } = useTheme();
+  const { styles, compactStyles } = useMemo(() => makeStyles(colors), [colors]);
+
   if (variant === 'compact') {
     return (
       <Pressable style={compactStyles.card} onPress={onPress}>
@@ -32,67 +38,71 @@ export function NavCard({ icon, title, description, onPress, variant = 'default'
   );
 }
 
-const compactStyles = StyleSheet.create({
-  card: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 100,
-  },
-  icon: {
-    fontSize: 28,
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-    textAlign: 'center',
-  },
-  description: {
-    fontSize: 11,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  const compactStyles = StyleSheet.create({
+    card: {
+      flex: 1,
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      borderWidth: 1,
+      borderColor: c.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: 100,
+    },
+    icon: {
+      fontSize: 28,
+      marginBottom: spacing.sm,
+    },
+    title: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: c.text,
+      textAlign: 'center',
+    },
+    description: {
+      fontSize: 11,
+      color: c.textMuted,
+      textAlign: 'center',
+      marginTop: spacing.xxs,
+    },
+  });
 
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 10,
-  },
-  icon: {
-    fontSize: 24,
-    marginRight: 14,
-  },
-  content: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  description: {
-    fontSize: 13,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  chevron: {
-    fontSize: 22,
-    color: colors.textMuted,
-    fontWeight: '300',
-  },
-});
+  const styles = StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: spacing.sm,
+    },
+    icon: {
+      fontSize: 24,
+      marginRight: 14,
+    },
+    content: {
+      flex: 1,
+    },
+    title: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: c.text,
+    },
+    description: {
+      fontSize: 13,
+      color: c.textMuted,
+      marginTop: spacing.xxs,
+    },
+    chevron: {
+      fontSize: 22,
+      color: c.textMuted,
+      fontWeight: '300',
+    },
+  });
+
+  return { styles, compactStyles };
+}

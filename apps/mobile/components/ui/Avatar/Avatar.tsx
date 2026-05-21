@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface AvatarProps {
   name?: string;
@@ -21,6 +24,8 @@ function getInitials(name?: string): string {
 }
 
 export function Avatar({ name, uri, size = 'md' }: AvatarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const dimension = SIZES[size];
 
   if (uri) {
@@ -39,17 +44,19 @@ export function Avatar({ name, uri, size = 'md' }: AvatarProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  image: {
-    resizeMode: 'cover',
-  },
-  fallback: {
-    backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  initials: {
-    color: colors.primary,
-    fontWeight: '700',
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    image: {
+      resizeMode: 'cover',
+    },
+    fallback: {
+      backgroundColor: c.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    initials: {
+      color: c.primary,
+      fontWeight: '700',
+    },
+  });
+}

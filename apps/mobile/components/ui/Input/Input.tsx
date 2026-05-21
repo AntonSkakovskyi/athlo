@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { TextInput as RNTextInput, StyleSheet, Text, View, Pressable } from 'react-native';
 import type { TextInputProps as RNTextInputProps, ViewStyle, StyleProp } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface InputProps extends RNTextInputProps {
   label?: string;
@@ -10,6 +12,8 @@ interface InputProps extends RNTextInputProps {
 }
 
 export function Input({ label, error, style, secureTextEntry, containerStyle, ...rest }: InputProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [hidden, setHidden] = useState(true);
 
   const isPassword = secureTextEntry === true;
@@ -38,47 +42,49 @@ export function Input({ label, error, style, secureTextEntry, containerStyle, ..
   );
 }
 
-const styles = StyleSheet.create({
-  wrapper: {
-    marginBottom: spacing.md,
-  },
-  label: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-    marginBottom: spacing.xs,
-    color: colors.textSecondary,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    padding: spacing.md,
-    fontSize: fontSize.lg,
-    color: colors.text,
-    backgroundColor: colors.surface,
-  },
-  inputPassword: {
-    paddingRight: 44,
-  },
-  inputError: {
-    borderColor: colors.danger,
-  },
-  eyeBtn: {
-    position: 'absolute',
-    right: spacing.md,
-    padding: spacing.xs,
-  },
-  eyeIcon: {
-    fontSize: fontSize.xl,
-  },
-  errorText: {
-    fontSize: fontSize.sm,
-    color: colors.danger,
-    marginTop: spacing.xs,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    wrapper: {
+      marginBottom: spacing.md,
+    },
+    label: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.medium,
+      marginBottom: spacing.xs,
+      color: c.textSecondary,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    input: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      fontSize: fontSize.lg,
+      color: c.text,
+      backgroundColor: c.surface,
+    },
+    inputPassword: {
+      paddingRight: 44,
+    },
+    inputError: {
+      borderColor: c.danger,
+    },
+    eyeBtn: {
+      position: 'absolute',
+      right: spacing.md,
+      padding: spacing.xs,
+    },
+    eyeIcon: {
+      fontSize: fontSize.xl,
+    },
+    errorText: {
+      fontSize: fontSize.sm,
+      color: c.danger,
+      marginTop: spacing.xs,
+    },
+  });
+}

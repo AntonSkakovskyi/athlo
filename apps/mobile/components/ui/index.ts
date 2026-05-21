@@ -1,4 +1,5 @@
 export { Avatar } from './Avatar/Avatar';
+export { Badge } from './Badge/Badge';
 export { BarChartBlock } from './BarChartBlock/BarChartBlock';
 export { BottomSheet, BottomSheetItem } from './BottomSheet/BottomSheet';
 export { Button } from './Button/Button';
@@ -14,6 +15,7 @@ export { LoadingScreen } from './LoadingScreen/LoadingScreen';
 export { MetricCard } from './MetricCard/MetricCard';
 export { NavCard } from './NavCard/NavCard';
 export { NumericInput } from './NumericInput/NumericInput';
+export { OptionButton } from './OptionButton/OptionButton';
 export { ProgressBar } from './ProgressBar/ProgressBar';
 export { RadioCircle } from './RadioCircle/RadioCircle';
 export { ScreenHeader } from './ScreenHeader/ScreenHeader';

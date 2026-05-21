@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, ScrollView } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface BottomSheetProps {
   visible: boolean;
@@ -11,6 +13,8 @@ interface BottomSheetProps {
 }
 
 export function BottomSheet({ visible, onClose, title, children, scrollable = true }: BottomSheetProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const ContentContainer = scrollable ? ScrollView : View;
 
   return (
@@ -23,7 +27,7 @@ export function BottomSheet({ visible, onClose, title, children, scrollable = tr
       <Pressable style={styles.overlay} onPress={onClose}>
         <View style={styles.sheet} onStartShouldSetResponder={() => true}>
           <View style={styles.sheetHandle} />
-          
+
           {title && (
             <View style={styles.header}>
               <Text style={styles.title}>{title}</Text>
@@ -51,6 +55,9 @@ interface BottomSheetItemProps {
 }
 
 export function BottomSheetItem({ label, icon, onPress, danger }: BottomSheetItemProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <Pressable
       style={({ pressed }) => [
@@ -65,80 +72,82 @@ export function BottomSheetItem({ label, icon, onPress, danger }: BottomSheetIte
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: colors.surfaceElevated,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xl,
-    maxHeight: '80%',
-    borderTopWidth: 1,
-    borderColor: colors.border,
-  },
-  sheetHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: colors.border,
-    borderRadius: borderRadius.xs,
-    alignSelf: 'center',
-    marginBottom: spacing.md,
-  },
-  header: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    marginBottom: spacing.sm,
-  },
-  title: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  content: {
-    paddingHorizontal: spacing.sm,
-  },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-    gap: spacing.md,
-  },
-  itemPressed: {
-    backgroundColor: colors.surfaceLight,
-  },
-  itemIcon: {
-    fontSize: fontSize.xl,
-    width: 28,
-    textAlign: 'center',
-  },
-  itemLabel: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-    color: colors.text,
-  },
-  itemDanger: {
-    color: colors.danger,
-  },
-  cancelBtn: {
-    marginTop: spacing.sm,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  cancelText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.primary,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: c.overlay,
+      justifyContent: 'flex-end',
+    },
+    sheet: {
+      backgroundColor: c.surfaceElevated,
+      borderTopLeftRadius: borderRadius.xl,
+      borderTopRightRadius: borderRadius.xl,
+      paddingTop: spacing.sm,
+      paddingBottom: spacing.xl,
+      maxHeight: '80%',
+      borderTopWidth: 1,
+      borderColor: c.border,
+    },
+    sheetHandle: {
+      width: 40,
+      height: 4,
+      backgroundColor: c.border,
+      borderRadius: borderRadius.xs,
+      alignSelf: 'center',
+      marginBottom: spacing.md,
+    },
+    header: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: c.border,
+      marginBottom: spacing.sm,
+    },
+    title: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      textAlign: 'center',
+    },
+    content: {
+      paddingHorizontal: spacing.sm,
+    },
+    item: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.md,
+      gap: spacing.md,
+    },
+    itemPressed: {
+      backgroundColor: c.surfaceLight,
+    },
+    itemIcon: {
+      fontSize: fontSize.xl,
+      width: 28,
+      textAlign: 'center',
+    },
+    itemLabel: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.medium,
+      color: c.text,
+    },
+    itemDanger: {
+      color: c.danger,
+    },
+    cancelBtn: {
+      marginTop: spacing.sm,
+      paddingVertical: spacing.md,
+      alignItems: 'center',
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+    },
+    cancelText: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.primary,
+    },
+  });
+}

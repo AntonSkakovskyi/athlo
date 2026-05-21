@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { borderRadius, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface ChartBarProps {
   value: number;
@@ -9,6 +11,8 @@ interface ChartBarProps {
 }
 
 export function ChartBar({ value, maxValue, label }: ChartBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const height = maxValue > 0 ? Math.max((value / maxValue) * 100, 4) : 4;
   return (
     <View style={styles.barWrapper}>
@@ -28,6 +32,8 @@ interface ChartBlockProps {
 }
 
 export function ChartBlock({ title, summaryValue, data, emptyText }: ChartBlockProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const maxValue = useMemo(() => Math.max(...data.map((d) => d.value), 1), [data]);
 
   return (
@@ -49,63 +55,65 @@ export function ChartBlock({ title, summaryValue, data, emptyText }: ChartBlockP
   );
 }
 
-const styles = StyleSheet.create({
-  block: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  blockHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-  },
-  blockTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  blockSummary: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-  chartArea: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    height: 120,
-    gap: 6,
-  },
-  emptyText: {
-    fontSize: 13,
-    color: colors.textMuted,
-    textAlign: 'center',
-    paddingVertical: 20,
-  },
-  barWrapper: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  barContainer: {
-    flex: 1,
-    width: '100%',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-  },
-  bar: {
-    width: '70%',
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.sm,
-    minHeight: 4,
-  },
-  barLabel: {
-    fontSize: 10,
-    color: colors.textMuted,
-    marginTop: 6,
-    textAlign: 'center',
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    block: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    blockHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 14,
+    },
+    blockTitle: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: c.text,
+    },
+    blockSummary: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: c.primary,
+    },
+    chartArea: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      height: 120,
+      gap: 6,
+    },
+    emptyText: {
+      fontSize: 13,
+      color: c.textMuted,
+      textAlign: 'center',
+      paddingVertical: spacing.xl,
+    },
+    barWrapper: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    barContainer: {
+      flex: 1,
+      width: '100%',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+    },
+    bar: {
+      width: '70%',
+      backgroundColor: c.primary,
+      borderRadius: borderRadius.sm,
+      minHeight: 4,
+    },
+    barLabel: {
+      fontSize: 10,
+      color: c.textMuted,
+      marginTop: 6,
+      textAlign: 'center',
+    },
+  });
+}

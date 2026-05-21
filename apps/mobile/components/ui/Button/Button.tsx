@@ -1,6 +1,8 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 import type { PressableProps, StyleProp, ViewStyle } from 'react-native';
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
 
@@ -12,13 +14,17 @@ interface ButtonProps extends Omit<PressableProps, 'style'> {
   icon?: React.ReactNode;
 }
 
-const VARIANT_COLORS: Record<ButtonVariant, { bg: string; text: string; border?: string }> = {
-  primary: { bg: colors.primary, text: colors.black },
-  secondary: { bg: colors.surfaceLight, text: colors.text },
-  danger: { bg: colors.dangerLight, text: colors.danger },
-  ghost: { bg: 'transparent', text: colors.textSecondary },
-  outline: { bg: 'transparent', text: colors.primary, border: colors.primary },
-};
+function makeVariantColors(
+  c: ColorPalette,
+): Record<ButtonVariant, { bg: string; text: string; border?: string }> {
+  return {
+    primary: { bg: c.primary, text: c.black },
+    secondary: { bg: c.surfaceLight, text: c.text },
+    danger: { bg: c.dangerLight, text: c.danger },
+    ghost: { bg: 'transparent', text: c.textSecondary },
+    outline: { bg: 'transparent', text: c.primary, border: c.primary },
+  };
+}
 
 export function Button({
   title,
@@ -29,7 +35,8 @@ export function Button({
   icon,
   ...rest
 }: ButtonProps) {
-  const variantColors = VARIANT_COLORS[variant];
+  const { colors } = useTheme();
+  const variantColors = makeVariantColors(colors)[variant];
   const isDisabled = disabled || isLoading;
 
   return (

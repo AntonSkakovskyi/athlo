@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { VisibilityType } from '@athlo/shared';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { VISIBILITY_OPTIONS } from '@/utils/visibility';
 
 interface VisibilitySelectorProps {
@@ -10,6 +13,9 @@ interface VisibilitySelectorProps {
 }
 
 export function VisibilitySelector({ value, onChange, label = 'Visibility' }: VisibilitySelectorProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View>
       {label ? <Text style={styles.label}>{label}</Text> : null}
@@ -32,45 +38,47 @@ export function VisibilitySelector({ value, onChange, label = 'Visibility' }: Vi
   );
 }
 
-const styles = StyleSheet.create({
-  label: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-  },
-  row: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  btn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xxs,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  btnActive: {
-    backgroundColor: colors.primaryLight,
-    borderColor: colors.primary,
-  },
-  icon: {
-    fontSize: fontSize.md,
-  },
-  btnLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-    fontWeight: fontWeight.medium,
-  },
-  btnLabelActive: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    label: {
+      fontSize: fontSize.xs,
+      fontWeight: fontWeight.semibold,
+      color: c.textSecondary,
+      marginBottom: spacing.xs,
+      textTransform: 'uppercase',
+    },
+    row: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    btn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.xxs,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.md,
+      backgroundColor: c.surfaceLight,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    btnActive: {
+      backgroundColor: c.primaryLight,
+      borderColor: c.primary,
+    },
+    icon: {
+      fontSize: fontSize.md,
+    },
+    btnLabel: {
+      fontSize: fontSize.xs,
+      color: c.textSecondary,
+      fontWeight: fontWeight.medium,
+    },
+    btnLabelActive: {
+      color: c.primary,
+      fontWeight: fontWeight.bold,
+    },
+  });
+}

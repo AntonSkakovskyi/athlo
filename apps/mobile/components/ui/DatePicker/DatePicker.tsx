@@ -1,7 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface DatePickerProps {
   value: Date;
@@ -42,6 +44,8 @@ function getYearRange(): number[] {
 }
 
 export function DatePicker({ value, onChange, label, mode = 'date', maximumDate, minimumDate, trigger }: DatePickerProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [show, setShow] = useState(false);
   const [viewState, setViewState] = useState<'calendar' | 'month' | 'year'>(mode === 'monthYear' ? 'month' : 'calendar');
   const [currentMonth, setCurrentMonth] = useState({ year: value.getFullYear(), month: value.getMonth() });
@@ -56,7 +60,7 @@ export function DatePicker({ value, onChange, label, mode = 'date', maximumDate,
   const daysInMonth = getDaysInMonth(currentMonth.year, currentMonth.month);
   const firstDay = getFirstDayOfMonth(currentMonth.year, currentMonth.month);
   const today = new Date();
-  
+
   const calendarDays = useMemo(() => {
     const days: (number | null)[] = [];
     for (let i = 0; i < firstDay; i++) days.push(null);
@@ -97,7 +101,7 @@ export function DatePicker({ value, onChange, label, mode = 'date', maximumDate,
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
-      
+
       <Pressable onPress={() => setShow(true)}>
         {trigger ? trigger : (
           <View style={styles.trigger}>
@@ -142,7 +146,7 @@ export function DatePicker({ value, onChange, label, mode = 'date', maximumDate,
                 <View style={styles.dayGrid}>
                   {calendarDays.map((day, index) => {
                     if (day === null) return <View key={`empty-${index}`} style={styles.dayCell} />;
-                    
+
                     const d = new Date(currentMonth.year, currentMonth.month, day);
                     let isDisabled = false;
                     if (maximumDate) {
@@ -156,7 +160,7 @@ export function DatePicker({ value, onChange, label, mode = 'date', maximumDate,
 
                     const isSelected = value.getDate() === day && value.getMonth() === currentMonth.month && value.getFullYear() === currentMonth.year;
                     const isToday = today.getDate() === day && today.getMonth() === currentMonth.month && today.getFullYear() === currentMonth.year;
-                    
+
                     return (
                       <Pressable key={day} style={styles.dayCell} onPress={() => !isDisabled && handleDaySelect(day)}>
                         <View style={[styles.dayCircle, isToday && styles.dayCircleToday, isSelected && styles.dayCircleSelected, isDisabled && styles.dayCircleDisabled]}>
@@ -169,8 +173,8 @@ export function DatePicker({ value, onChange, label, mode = 'date', maximumDate,
                   })}
                 </View>
 
-                <Pressable 
-                  style={styles.todayBtn} 
+                <Pressable
+                  style={styles.todayBtn}
                   onPress={() => {
                     const todayDate = new Date();
                     setCurrentMonth({ year: todayDate.getFullYear(), month: todayDate.getMonth() });
@@ -247,59 +251,61 @@ export function DatePicker({ value, onChange, label, mode = 'date', maximumDate,
   );
 }
 
-const styles = StyleSheet.create({
-  container: { marginBottom: spacing.md },
-  label: { fontSize: fontSize.sm, fontWeight: fontWeight.medium, color: colors.textSecondary, marginBottom: spacing.xs },
-  trigger: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: borderRadius.md, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
-  dateText: { fontSize: fontSize.md, color: colors.text },
-  sheetOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
-  sheetContent: { backgroundColor: colors.surface, borderTopLeftRadius: borderRadius.xl, borderTopRightRadius: borderRadius.xl, paddingHorizontal: spacing.xl, paddingBottom: spacing['4xl'], maxHeight: '75%' },
-  sheetHandle: { width: 40, height: 4, borderRadius: borderRadius.xs, backgroundColor: colors.border, alignSelf: 'center', marginTop: spacing.md, marginBottom: spacing.lg },
-  monthNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
-  arrowBtn: { paddingHorizontal: spacing.xs, paddingVertical: spacing.xs },
-  monthArrow: { fontSize: fontSize['3xl'], color: colors.primary, fontWeight: fontWeight.semibold, paddingHorizontal: spacing.sm },
-  monthYearRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  monthYearRowCenter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg },
-  pickerChip: { backgroundColor: colors.surfaceLight, paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: borderRadius.md, borderWidth: 1, borderColor: colors.border },
-  pickerChipText: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, color: colors.text },
-  weekRow: { flexDirection: 'row', marginBottom: spacing.sm },
-  weekCell: { flex: 1, alignItems: 'center' },
-  weekDayText: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: colors.textMuted },
-  dayGrid: { flexDirection: 'row', flexWrap: 'wrap' },
-  dayCell: { width: '14.28%', aspectRatio: 1, justifyContent: 'center', alignItems: 'center' },
-  dayCircle: { width: 34, height: 34, borderRadius: borderRadius.lg, justifyContent: 'center', alignItems: 'center' },
-  dayCircleToday: { borderWidth: 1.5, borderColor: colors.primary },
-  dayCircleSelected: { backgroundColor: colors.primary },
-  dayCircleDisabled: { opacity: 0.3 },
-  dayText: { fontSize: fontSize.md, color: colors.text, fontWeight: fontWeight.medium },
-  dayTextToday: { color: colors.primary, fontWeight: fontWeight.bold },
-  dayTextSelected: { color: colors.black, fontWeight: fontWeight.bold },
-  dayTextDisabled: { color: colors.textMuted },
-  todayBtn: { 
-    marginTop: spacing.md, 
-    paddingVertical: spacing.sm, 
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  todayBtnText: {
-    color: colors.primary,
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold
-  },
-  backBtn: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, gap: spacing.xs },
-  backBtnText: { fontSize: fontSize.md, color: colors.text, fontWeight: fontWeight.medium },
-  sheetTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text },
-  monthGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  monthGridItem: { width: '31%', paddingVertical: spacing.md, borderRadius: borderRadius.md, backgroundColor: colors.surfaceLight, alignItems: 'center' },
-  monthGridItemActive: { backgroundColor: colors.primary },
-  monthGridText: { fontSize: fontSize.md, fontWeight: fontWeight.medium, color: colors.text },
-  monthGridTextActive: { color: colors.black, fontWeight: fontWeight.bold },
-  yearList: { maxHeight: 300 },
-  yearItem: { paddingVertical: spacing.md, borderRadius: borderRadius.md, alignItems: 'center', marginBottom: spacing.xs },
-  yearItemActive: { backgroundColor: colors.primary },
-  yearItemText: { fontSize: fontSize.lg, fontWeight: fontWeight.medium, color: colors.text },
-  yearItemTextActive: { color: colors.black, fontWeight: fontWeight.bold },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: { marginBottom: spacing.md },
+    label: { fontSize: fontSize.sm, fontWeight: fontWeight.medium, color: c.textSecondary, marginBottom: spacing.xs },
+    trigger: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: borderRadius.md, paddingHorizontal: spacing.md, paddingVertical: spacing.sm },
+    dateText: { fontSize: fontSize.md, color: c.text },
+    sheetOverlay: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
+    sheetContent: { backgroundColor: c.surface, borderTopLeftRadius: borderRadius.xl, borderTopRightRadius: borderRadius.xl, paddingHorizontal: spacing.xl, paddingBottom: spacing['4xl'], maxHeight: '75%' },
+    sheetHandle: { width: 40, height: 4, borderRadius: borderRadius.xs, backgroundColor: c.border, alignSelf: 'center', marginTop: spacing.md, marginBottom: spacing.lg },
+    monthNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
+    arrowBtn: { paddingHorizontal: spacing.xs, paddingVertical: spacing.xs },
+    monthArrow: { fontSize: fontSize['3xl'], color: c.primary, fontWeight: fontWeight.semibold, paddingHorizontal: spacing.sm },
+    monthYearRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    monthYearRowCenter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg },
+    pickerChip: { backgroundColor: c.surfaceLight, paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: borderRadius.md, borderWidth: 1, borderColor: c.border },
+    pickerChipText: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, color: c.text },
+    weekRow: { flexDirection: 'row', marginBottom: spacing.sm },
+    weekCell: { flex: 1, alignItems: 'center' },
+    weekDayText: { fontSize: fontSize.sm, fontWeight: fontWeight.semibold, color: c.textMuted },
+    dayGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+    dayCell: { width: '14.28%', aspectRatio: 1, justifyContent: 'center', alignItems: 'center' },
+    dayCircle: { width: 34, height: 34, borderRadius: borderRadius.lg, justifyContent: 'center', alignItems: 'center' },
+    dayCircleToday: { borderWidth: 1.5, borderColor: c.primary },
+    dayCircleSelected: { backgroundColor: c.primary },
+    dayCircleDisabled: { opacity: 0.3 },
+    dayText: { fontSize: fontSize.md, color: c.text, fontWeight: fontWeight.medium },
+    dayTextToday: { color: c.primary, fontWeight: fontWeight.bold },
+    dayTextSelected: { color: c.black, fontWeight: fontWeight.bold },
+    dayTextDisabled: { color: c.textMuted },
+    todayBtn: {
+      marginTop: spacing.md,
+      paddingVertical: spacing.sm,
+      alignItems: 'center',
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: c.border
+    },
+    todayBtnText: {
+      color: c.primary,
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold
+    },
+    backBtn: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.md, gap: spacing.xs },
+    backBtnText: { fontSize: fontSize.md, color: c.text, fontWeight: fontWeight.medium },
+    sheetTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: c.text },
+    monthGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    monthGridItem: { width: '31%', paddingVertical: spacing.md, borderRadius: borderRadius.md, backgroundColor: c.surfaceLight, alignItems: 'center' },
+    monthGridItemActive: { backgroundColor: c.primary },
+    monthGridText: { fontSize: fontSize.md, fontWeight: fontWeight.medium, color: c.text },
+    monthGridTextActive: { color: c.black, fontWeight: fontWeight.bold },
+    yearList: { maxHeight: 300 },
+    yearItem: { paddingVertical: spacing.md, borderRadius: borderRadius.md, alignItems: 'center', marginBottom: spacing.xs },
+    yearItemActive: { backgroundColor: c.primary },
+    yearItemText: { fontSize: fontSize.lg, fontWeight: fontWeight.medium, color: c.text },
+    yearItemTextActive: { color: c.black, fontWeight: fontWeight.bold },
+  });
+}

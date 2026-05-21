@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface SegmentControlProps {
   segments: string[];
@@ -10,6 +13,9 @@ interface SegmentControlProps {
 }
 
 export function SegmentControl({ segments, activeIndex, onSelect, style }: SegmentControlProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={[styles.container, style]}>
       {segments.map((seg, i) => (
@@ -27,29 +33,31 @@ export function SegmentControl({ segments, activeIndex, onSelect, style }: Segme
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    padding: 3,
-  },
-  segment: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: borderRadius.sm,
-  },
-  segmentActive: {
-    backgroundColor: colors.surfaceLight,
-  },
-  text: {
-    fontSize: 14,
-    color: colors.textMuted,
-    fontWeight: '500',
-  },
-  textActive: {
-    color: colors.text,
-    fontWeight: '600',
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.md,
+      padding: 3,
+    },
+    segment: {
+      flex: 1,
+      paddingVertical: 10,
+      alignItems: 'center',
+      borderRadius: borderRadius.sm,
+    },
+    segmentActive: {
+      backgroundColor: c.surfaceLight,
+    },
+    text: {
+      fontSize: 14,
+      color: c.textMuted,
+      fontWeight: '500',
+    },
+    textActive: {
+      color: c.text,
+      fontWeight: '600',
+    },
+  });
+}

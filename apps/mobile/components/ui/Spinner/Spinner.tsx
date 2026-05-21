@@ -1,6 +1,6 @@
 import { ActivityIndicator } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { colors } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface SpinnerProps {
   size?: 'small' | 'large';
@@ -8,6 +8,7 @@ interface SpinnerProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function Spinner({ size = 'large', color = colors.primary, style }: SpinnerProps) {
-  return <ActivityIndicator size={size} color={color} style={style} />;
+export function Spinner({ size = 'large', color, style }: SpinnerProps) {
+  const { colors } = useTheme();
+  return <ActivityIndicator size={size} color={color ?? colors.primary} style={style} />;
 }

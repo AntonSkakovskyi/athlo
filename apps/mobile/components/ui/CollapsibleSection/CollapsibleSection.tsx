@@ -1,7 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, borderRadius } from '@/constants/theme';
+import { spacing, borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Typography } from '../Typography/Typography';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -21,6 +23,8 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   initiallyExpanded = false,
   count,
 }) => {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [isExpanded, setIsExpanded] = useState(initiallyExpanded);
 
   const toggleExpand = useCallback(() => {
@@ -52,39 +56,41 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.sm,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  title: {
-    color: colors.text,
-  },
-  countBadge: {
-    backgroundColor: colors.primary + '20',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-    marginLeft: 8,
-  },
-  countText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primary,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.md,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: c.border,
+      padding: spacing.sm,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: spacing.md,
+      backgroundColor: c.surface,
+    },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    title: {
+      color: c.text,
+    },
+    countBadge: {
+      backgroundColor: c.primary + '20',
+      paddingHorizontal: 6,
+      paddingVertical: spacing.xxs,
+      borderRadius: borderRadius.md,
+      marginLeft: spacing.sm,
+    },
+    countText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: c.primary,
+    },
+  });
+}

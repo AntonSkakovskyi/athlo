@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { colors, spacing, fontSize } from '@/constants/theme';
+import { spacing, fontSize } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface ScreenHeaderProps {
   title: string;
@@ -8,6 +11,9 @@ interface ScreenHeaderProps {
 }
 
 export function ScreenHeader({ title, onBack, rightAction }: ScreenHeaderProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.header}>
       {onBack ? (
@@ -23,29 +29,31 @@ export function ScreenHeader({ title, onBack, rightAction }: ScreenHeaderProps) 
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    marginBottom: 12,
-  },
-  backBtn: {
-    paddingVertical: 8,
-    minWidth: 60,
-  },
-  backText: {
-    fontSize: 15,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  placeholder: {
-    minWidth: 60,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.md,
+    },
+    backBtn: {
+      paddingVertical: spacing.sm,
+      minWidth: 60,
+    },
+    backText: {
+      fontSize: 15,
+      color: c.primary,
+      fontWeight: '600',
+    },
+    title: {
+      fontSize: fontSize.lg,
+      fontWeight: '700',
+      color: c.text,
+    },
+    placeholder: {
+      minWidth: 60,
+    },
+  });
+}

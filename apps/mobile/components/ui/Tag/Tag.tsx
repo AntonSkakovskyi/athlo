@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 type TagColor = 'default' | 'primary' | 'success' | 'danger';
 
@@ -8,15 +11,18 @@ interface TagProps {
   color?: TagColor;
 }
 
-const TAG_COLORS: Record<TagColor, { bg: string; text: string }> = {
-  default: { bg: colors.surfaceLight, text: colors.textSecondary },
-  primary: { bg: colors.primaryLight, text: colors.primary },
-  success: { bg: colors.primaryLight, text: colors.success },
-  danger: { bg: colors.dangerLight, text: colors.danger },
-};
+function makeTagColors(c: ColorPalette): Record<TagColor, { bg: string; text: string }> {
+  return {
+    default: { bg: c.surfaceLight, text: c.textSecondary },
+    primary: { bg: c.primaryLight, text: c.primary },
+    success: { bg: c.primaryLight, text: c.success },
+    danger: { bg: c.dangerLight, text: c.danger },
+  };
+}
 
 export function Tag({ label, color = 'default' }: TagProps) {
-  const tagColor = TAG_COLORS[color];
+  const { colors } = useTheme();
+  const tagColor = makeTagColors(colors)[color];
   return (
     <View style={[styles.tag, { backgroundColor: tagColor.bg }]}>
       <Text style={[styles.label, { color: tagColor.text }]}>{label}</Text>

@@ -25,6 +25,8 @@ export const darkColors = {
 
   overlay: 'rgba(0, 0, 0, 0.6)',
 
+  gold: '#FFD700',
+
   black: '#000000',
   white: '#FFFFFF',
   link: '#007AFF',
@@ -54,6 +56,8 @@ export const lightColors = {
   borderLight: '#EAE7E1',
 
   overlay: 'rgba(0, 0, 0, 0.4)',
+
+  gold: '#D4A017',
 
   black: '#000000',
   white: '#FFFFFF',
