@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, borderRadius } from '@/constants/theme';
+import { borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface StatsBarProps {
   duration: string;
@@ -9,6 +12,9 @@ interface StatsBarProps {
 }
 
 export function StatsBar({ duration, volume, completedSets, totalSets }: StatsBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
       <View style={styles.stat}>
@@ -32,38 +38,40 @@ export function StatsBar({ duration, volume, completedSets, totalSets }: StatsBa
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  stat: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  icon: {
-    fontSize: 16,
-    marginBottom: 4,
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  label: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  divider: {
-    width: 1,
-    height: 40,
-    backgroundColor: colors.border,
-    alignSelf: 'center',
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      paddingVertical: 14,
+      paddingHorizontal: 8,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    stat: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    icon: {
+      fontSize: 16,
+      marginBottom: 4,
+    },
+    value: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: c.text,
+    },
+    label: {
+      fontSize: 11,
+      color: c.textMuted,
+      marginTop: 2,
+    },
+    divider: {
+      width: 1,
+      height: 40,
+      backgroundColor: c.border,
+      alignSelf: 'center',
+    },
+  });
+}

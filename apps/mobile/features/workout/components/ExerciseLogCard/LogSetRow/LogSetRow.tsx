@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { TrackingType } from '@athlo/shared';
 import { formatSeconds } from '@/utils/time';
 import { SetInputGroup } from './SetInputGroup/SetInputGroup';
@@ -51,6 +53,8 @@ export function LogSetRow({
   onOpenTimePicker,
   onPRPress,
 }: LogSetRowProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const isViewOnly = !isEditing && mode !== 'active';
   const showPrevious = mode === 'active' || (mode === 'summary' && isEditing);
   const showCheckbox = mode === 'active' || (mode === 'summary' && isEditing);
@@ -83,7 +87,7 @@ export function LogSetRow({
         if (set.duration === undefined && set.placeholderDuration !== undefined) updates.duration = set.placeholderDuration;
         if (set.distance === undefined && set.placeholderDistance !== undefined) updates.distance = set.placeholderDistance;
       }
-      
+
       if (Object.keys(updates).length > 0) {
         onUpdate(updates);
       }
@@ -93,7 +97,7 @@ export function LogSetRow({
 
   return (
     <View style={styles.container}>
-      <View 
+      <View
         style={[
           styles.row,
           set.isCompleted && isEditing && (mode === 'active' || mode === 'summary') && styles.rowCompleted,
@@ -144,83 +148,85 @@ export function LogSetRow({
 }
 
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 1,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.surface,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    gap: spacing.xs,
-  },
-  rowCompleted: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: borderRadius.sm,
-  },
-  setNumWrap: {
-    width: 24,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  setNum: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  previous: {
-    width: 60,
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-  actionSlot: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    gap: spacing.xs,
-    minWidth: 100,
-  },
-  checkbox: {
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.sm,
-    borderWidth: 2,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checked: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  checkmark: {
-    color: colors.black,
-    fontWeight: fontWeight.bold,
-    fontSize: fontSize.lg,
-  },
-  menuBtn: {
-    width: 28,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuIcon: {
-    fontSize: fontSize.lg,
-    color: colors.textMuted,
-  },
-  prTrophy: {
-    width: 28,
-    height: 32,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  trophyIcon: {
-    fontSize: fontSize.lg,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      marginBottom: 1,
+      borderRadius: borderRadius.sm,
+      backgroundColor: c.surface,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.xs,
+      gap: spacing.xs,
+    },
+    rowCompleted: {
+      backgroundColor: c.primaryLight,
+      borderRadius: borderRadius.sm,
+    },
+    setNumWrap: {
+      width: 24,
+      height: 32,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    setNum: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.textSecondary,
+      textAlign: 'center',
+    },
+    previous: {
+      width: 60,
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+    },
+    actionSlot: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      gap: spacing.xs,
+      minWidth: 100,
+    },
+    checkbox: {
+      width: 32,
+      height: 32,
+      borderRadius: borderRadius.sm,
+      borderWidth: 2,
+      borderColor: c.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checked: {
+      backgroundColor: c.primary,
+      borderColor: c.primary,
+    },
+    checkmark: {
+      color: c.black,
+      fontWeight: fontWeight.bold,
+      fontSize: fontSize.lg,
+    },
+    menuBtn: {
+      width: 28,
+      height: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    menuIcon: {
+      fontSize: fontSize.lg,
+      color: c.textMuted,
+    },
+    prTrophy: {
+      width: 28,
+      height: 32,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    trophyIcon: {
+      fontSize: fontSize.lg,
+    },
+  });
+}

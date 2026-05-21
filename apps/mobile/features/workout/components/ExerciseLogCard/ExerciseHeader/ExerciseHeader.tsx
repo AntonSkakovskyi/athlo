@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface ExerciseHeaderProps {
   exerciseName: string;
@@ -26,6 +29,9 @@ export function ExerciseHeader({
   onRestTimer,
   onMenuOpen,
 }: ExerciseHeaderProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.header}>
       <View style={styles.nameWrap}>
@@ -61,51 +67,53 @@ export function ExerciseHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.sm,
-  },
-  nameWrap: {
-    flex: 1,
-  },
-  exerciseName: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.primary,
-  },
-  subtitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.xxs,
-  },
-  notesText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-  },
-  restTimeText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    fontWeight: fontWeight.medium,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-    marginLeft: spacing.sm,
-  },
-  iconBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.surfaceLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconText: {
-    fontSize: fontSize.lg,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: spacing.sm,
+    },
+    nameWrap: {
+      flex: 1,
+    },
+    exerciseName: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.semibold,
+      color: c.primary,
+    },
+    subtitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginTop: spacing.xxs,
+    },
+    notesText: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+      fontStyle: 'italic',
+    },
+    restTimeText: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      fontWeight: fontWeight.medium,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+      marginLeft: spacing.sm,
+    },
+    iconBtn: {
+      width: 34,
+      height: 34,
+      borderRadius: borderRadius.sm,
+      backgroundColor: c.surfaceLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    iconText: {
+      fontSize: fontSize.lg,
+    },
+  });
+}

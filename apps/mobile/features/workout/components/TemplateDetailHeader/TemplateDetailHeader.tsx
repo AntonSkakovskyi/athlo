@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
 
 interface TemplateDetailHeaderProps {
@@ -29,6 +32,9 @@ export function TemplateDetailHeader({
   onSaveName,
   onSaveDesc,
 }: TemplateDetailHeaderProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View>
       {editName !== null ? (
@@ -71,33 +77,35 @@ export function TemplateDetailHeader({
   );
 }
 
-const styles = StyleSheet.create({
-  title: {
-    fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  nameInput: {
-    fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  description: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    marginBottom: spacing.xl,
-  },
-  descInput: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    marginBottom: spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    title: {
+      fontSize: fontSize['3xl'],
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      marginBottom: spacing.xs,
+    },
+    nameInput: {
+      fontSize: fontSize['3xl'],
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      marginBottom: spacing.xs,
+    },
+    description: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+      marginBottom: spacing.xl,
+    },
+    descInput: {
+      fontSize: fontSize.md,
+      color: c.text,
+      marginBottom: spacing.xl,
+    },
+    sectionTitle: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.semibold,
+      color: c.text,
+      marginBottom: spacing.md,
+    },
+  });
+}

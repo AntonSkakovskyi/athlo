@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { useRouter, useSegments } from 'expo-router';
-import { colors, fontSize, fontWeight, spacing, borderRadius } from '@/constants/theme';
+import { fontSize, fontWeight, spacing, borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { ICONS } from '@/utils/icons';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { useDeleteWorkout } from '@/hooks/api';
@@ -9,6 +11,8 @@ import { useDeleteWorkout } from '@/hooks/api';
 const HIDDEN_SCREENS = ['active-workout', 'exercise-picker', 'finish-workout', 'workout-summary', 'template'];
 
 export function FloatingWorkoutMini() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { workout, isActive, exercises, completedSets, totalSets, endWorkout } = useActiveWorkout();
   const router = useRouter();
   const segments = useSegments();
@@ -32,7 +36,7 @@ export function FloatingWorkoutMini() {
 
   const isInWorkoutTab = segments.includes('(workout)');
   const isOnHiddenScreen = segments.some(s => HIDDEN_SCREENS.includes(s));
-  
+
   if (!isActive || !workout || !isInWorkoutTab || isOnHiddenScreen) return null;
 
   const currentExercise = exercises.find((e) => e.sets.some((s) => !s.isCompleted));
@@ -88,45 +92,47 @@ export function FloatingWorkoutMini() {
   );
 }
 
-const styles = StyleSheet.create({
-  miniPlayer: {
-    position: 'absolute',
-    bottom: 80,
-    left: 16,
-    right: 16,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: borderRadius.xl,
-    padding: spacing.sm,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: spacing.xl,
-    borderWidth: 1,
-    borderColor: colors.primary,
-  },
-  miniCircleBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.xl,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  miniCircleBtnDanger: {
-    backgroundColor: colors.dangerLight,
-  },
-  miniCircleIcon: {
-    fontSize: fontSize.xl,
-    color: colors.black,
-  },
-  miniTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  miniSubtitle: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    miniPlayer: {
+      position: 'absolute',
+      bottom: 80,
+      left: 16,
+      right: 16,
+      backgroundColor: c.surfaceElevated,
+      borderRadius: borderRadius.xl,
+      padding: spacing.sm,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: spacing.xl,
+      borderWidth: 1,
+      borderColor: c.primary,
+    },
+    miniCircleBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: borderRadius.xl,
+      backgroundColor: c.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    miniCircleBtnDanger: {
+      backgroundColor: c.dangerLight,
+    },
+    miniCircleIcon: {
+      fontSize: fontSize.xl,
+      color: c.black,
+    },
+    miniTitle: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    miniSubtitle: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+      marginTop: 2,
+    },
+  });
+}

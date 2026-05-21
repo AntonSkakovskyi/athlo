@@ -1,6 +1,8 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { formatDurationSecs } from '@/utils/time';
 
 interface DurationPickerProps {
@@ -12,6 +14,8 @@ const ITEM_HEIGHT = 60;
 const DURATIONS = Array.from({ length: 301 }, (_, i) => i * 60); // 0 to 300 minutes (5 hours)
 
 export function DurationPicker({ value, onChange }: DurationPickerProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const flatListRef = useRef<FlatList>(null);
   const [selectedIndex, setSelectedIndex] = useState(Math.floor(value / 60));
   const [isInitialScrollDone, setIsInitialScrollDone] = useState(false);
@@ -66,7 +70,7 @@ export function DurationPicker({ value, onChange }: DurationPickerProps) {
   const renderItem = ({ item, index }: { item: number; index: number }) => {
     const isSelected = index === selectedIndex;
     return (
-      <Pressable 
+      <Pressable
         style={[styles.item, isSelected && styles.selectedItem]}
         onPress={() => handleItemPress(index)}
       >
@@ -103,46 +107,48 @@ export function DurationPicker({ value, onChange }: DurationPickerProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: ITEM_HEIGHT * 3,
-    width: '100%',
-    position: 'relative',
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-  },
-  highlightBar: {
-    position: 'absolute',
-    top: ITEM_HEIGHT,
-    left: spacing.lg,
-    right: spacing.lg,
-    height: ITEM_HEIGHT,
-    backgroundColor: colors.primaryLight,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    zIndex: 0,
-  },
-  listContent: {
-    paddingVertical: ITEM_HEIGHT,
-  },
-  item: {
-    height: ITEM_HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  selectedItem: {
-    // highlighted by bar
-  },
-  itemText: {
-    fontSize: fontSize.lg,
-    color: colors.textMuted,
-    fontWeight: fontWeight.medium,
-  },
-  selectedItemText: {
-    fontSize: fontSize.xl,
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      height: ITEM_HEIGHT * 3,
+      width: '100%',
+      position: 'relative',
+      backgroundColor: c.surface,
+      justifyContent: 'center',
+    },
+    highlightBar: {
+      position: 'absolute',
+      top: ITEM_HEIGHT,
+      left: spacing.lg,
+      right: spacing.lg,
+      height: ITEM_HEIGHT,
+      backgroundColor: c.primaryLight,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: c.primary,
+      zIndex: 0,
+    },
+    listContent: {
+      paddingVertical: ITEM_HEIGHT,
+    },
+    item: {
+      height: ITEM_HEIGHT,
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 1,
+    },
+    selectedItem: {
+      // highlighted by bar
+    },
+    itemText: {
+      fontSize: fontSize.lg,
+      color: c.textMuted,
+      fontWeight: fontWeight.medium,
+    },
+    selectedItemText: {
+      fontSize: fontSize.xl,
+      color: c.primary,
+      fontWeight: fontWeight.bold,
+    },
+  });
+}

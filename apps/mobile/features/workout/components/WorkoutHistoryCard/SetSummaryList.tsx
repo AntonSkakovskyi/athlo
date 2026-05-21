@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, fontSize, spacing, fontWeight } from '@/constants/theme';
+import { fontSize, spacing, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import type { ExerciseSetSummary } from '@/features/workout/components/WorkoutHistoryCard/WorkoutHistoryCard';
 
 interface SetSummaryListProps {
@@ -9,6 +12,9 @@ interface SetSummaryListProps {
 }
 
 export function SetSummaryList({ sets, hasMore, onSeeMore }: SetSummaryListProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.exerciseList}>
       {sets.map((item, i) => (
@@ -26,33 +32,35 @@ export function SetSummaryList({ sets, hasMore, onSeeMore }: SetSummaryListProps
   );
 }
 
-const styles = StyleSheet.create({
-  exerciseList: {
-    gap: spacing.sm,
-  },
-  exerciseRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  exerciseName: {
-    fontSize: fontSize.sm,
-    color: colors.text,
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  exerciseSets: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    fontWeight: fontWeight.medium,
-  },
-  seeMoreWrap: {
-    alignItems: 'center',
-    paddingTop: spacing.xs,
-  },
-  seeMore: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    exerciseList: {
+      gap: spacing.sm,
+    },
+    exerciseRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    exerciseName: {
+      fontSize: fontSize.sm,
+      color: c.text,
+      flex: 1,
+      marginRight: spacing.sm,
+    },
+    exerciseSets: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      fontWeight: fontWeight.medium,
+    },
+    seeMoreWrap: {
+      alignItems: 'center',
+      paddingTop: spacing.xs,
+    },
+    seeMore: {
+      fontSize: fontSize.sm,
+      color: c.primary,
+      fontWeight: fontWeight.semibold,
+    },
+  });
+}

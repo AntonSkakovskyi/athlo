@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,9 @@ import {
   Modal,
   ScrollView,
 } from 'react-native';
-import { colors, borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
+import { borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { MetricsForm } from './MetricsForm';
 
@@ -39,6 +41,8 @@ export function FinishWorkoutModal({
   onCancel,
   isLoading,
 }: FinishWorkoutModalProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [rpe, setRpe] = useState<number | undefined>(undefined);
   const [feeling, setFeeling] = useState<number | undefined>(undefined);
   const [calories, setCalories] = useState('');
@@ -107,6 +111,8 @@ export function FinishWorkoutModal({
 }
 
 function SummaryItem({ icon, value, label }: { icon: string; value: string; label: string }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.summaryItem}>
       <Text style={styles.summaryIcon}>{icon}</Text>
@@ -116,59 +122,61 @@ function SummaryItem({ icon, value, label }: { icon: string; value: string; labe
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  container: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    padding: spacing['3xl'],
-    paddingBottom: 48,
-    maxHeight: '85%',
-  },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-  },
-  // Summary
-  summaryRow: {
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing['2xl'],
-  },
-  summaryItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  summaryIcon: {
-    fontSize: fontSize.xl,
-    marginBottom: spacing.xs,
-  },
-  summaryValue: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  summaryLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  // Actions
-  actions: {
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  actionBtn: {
-    width: '100%',
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: c.overlay,
+      justifyContent: 'flex-end',
+    },
+    container: {
+      backgroundColor: c.surface,
+      borderTopLeftRadius: borderRadius.xl,
+      borderTopRightRadius: borderRadius.xl,
+      padding: spacing['3xl'],
+      paddingBottom: 48,
+      maxHeight: '85%',
+    },
+    title: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      textAlign: 'center',
+      marginBottom: spacing.xl,
+    },
+    // Summary
+    summaryRow: {
+      flexDirection: 'row',
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing['2xl'],
+    },
+    summaryItem: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    summaryIcon: {
+      fontSize: fontSize.xl,
+      marginBottom: spacing.xs,
+    },
+    summaryValue: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    summaryLabel: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: 2,
+    },
+    // Actions
+    actions: {
+      gap: spacing.sm,
+      marginTop: spacing.sm,
+    },
+    actionBtn: {
+      width: '100%',
+    },
+  });
+}

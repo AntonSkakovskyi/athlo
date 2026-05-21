@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { NumericInput } from '@/components/ui';
 import { TrackingType } from '@athlo/shared';
 import { formatSeconds } from '@/utils/time';
@@ -20,6 +23,9 @@ export function SetInputGroup({
   onUpdate,
   onOpenTimePicker,
 }: SetInputGroupProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const formatValue = (val?: number, unit: string = '') => {
     if (val == null) return '—';
     if (unit === 'time') return formatSeconds(val);
@@ -105,42 +111,44 @@ export function SetInputGroup({
   return null;
 }
 
-const styles = StyleSheet.create({
-  inputWrap: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  inputWrapWide: {
-    flex: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  valueText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  timePickerBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.sm,
-    gap: spacing.xs,
-    minWidth: 80,
-    justifyContent: 'center',
-  },
-  timeText: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  timePlaceholder: {
-    color: colors.textMuted,
-  },
-  timeIcon: {
-    fontSize: fontSize.md,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    inputWrap: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    inputWrapWide: {
+      flex: 2,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    valueText: {
+      fontSize: fontSize.md,
+      color: c.text,
+      fontWeight: fontWeight.medium,
+    },
+    timePickerBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.surfaceLight,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      borderRadius: borderRadius.sm,
+      gap: spacing.xs,
+      minWidth: 80,
+      justifyContent: 'center',
+    },
+    timeText: {
+      fontSize: fontSize.md,
+      color: c.text,
+      fontWeight: fontWeight.medium,
+    },
+    timePlaceholder: {
+      color: c.textMuted,
+    },
+    timeIcon: {
+      fontSize: fontSize.md,
+    },
+  });
+}

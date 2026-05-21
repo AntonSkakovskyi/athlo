@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
-import { colors, borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
+import { borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { ICONS } from '@/utils/icons';
 import { SetSummaryList } from './SetSummaryList';
 import { StatBadge } from './StatBadge/StatBadge';
@@ -38,6 +40,8 @@ export function WorkoutHistoryCard({
   onEdit,
   onDelete,
 }: WorkoutHistoryCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [menuVisible, setMenuVisible] = useState(false);
 
   const preview = sets.slice(0, 3);
@@ -128,96 +132,98 @@ export function WorkoutHistoryCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  cardPressed: {
-    opacity: 0.8,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: spacing.md,
-  },
-  nameDateCol: {
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  name: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    marginBottom: 3,
-  },
-  date: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-  },
-  menuTrigger: {
-    width: 28,
-    height: 28,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.surfaceLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuTriggerText: {
-    fontSize: fontSize.xl,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: spacing.md,
-  },
-  // Modal / bottom sheet
-  overlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: colors.surfaceElevated,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xl,
-    paddingHorizontal: spacing.lg,
-    borderTopWidth: 1,
-    borderColor: colors.border,
-  },
-  sheetHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: colors.border,
-    borderRadius: borderRadius.xs,
-    alignSelf: 'center',
-    marginBottom: spacing.lg,
-  },
-  menuDivider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: spacing.xs,
-  },
-  cancelRow: {
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  cancelText: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    cardPressed: {
+      opacity: 0.8,
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      marginBottom: spacing.md,
+    },
+    nameDateCol: {
+      flex: 1,
+      marginRight: spacing.sm,
+    },
+    name: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      marginBottom: 3,
+    },
+    date: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+    },
+    menuTrigger: {
+      width: 28,
+      height: 28,
+      borderRadius: borderRadius.full,
+      backgroundColor: c.surfaceLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    menuTriggerText: {
+      fontSize: fontSize.xl,
+      color: c.textSecondary,
+      lineHeight: 20,
+    },
+    statsRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      flexWrap: 'wrap',
+    },
+    divider: {
+      height: 1,
+      backgroundColor: c.border,
+      marginVertical: spacing.md,
+    },
+    // Modal / bottom sheet
+    overlay: {
+      flex: 1,
+      backgroundColor: c.overlay,
+      justifyContent: 'flex-end',
+    },
+    sheet: {
+      backgroundColor: c.surfaceElevated,
+      borderTopLeftRadius: borderRadius.xl,
+      borderTopRightRadius: borderRadius.xl,
+      paddingTop: spacing.md,
+      paddingBottom: spacing.xl,
+      paddingHorizontal: spacing.lg,
+      borderTopWidth: 1,
+      borderColor: c.border,
+    },
+    sheetHandle: {
+      width: 40,
+      height: 4,
+      backgroundColor: c.border,
+      borderRadius: borderRadius.xs,
+      alignSelf: 'center',
+      marginBottom: spacing.lg,
+    },
+    menuDivider: {
+      height: 1,
+      backgroundColor: c.border,
+      marginVertical: spacing.xs,
+    },
+    cancelRow: {
+      paddingVertical: 14,
+      alignItems: 'center',
+    },
+    cancelText: {
+      fontSize: fontSize.md,
+      color: c.primary,
+      fontWeight: fontWeight.semibold,
+    },
+  });
+}

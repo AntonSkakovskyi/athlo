@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { TemplateExerciseWithRelations } from '@/features/workout/types';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface TemplateExerciseListProps {
   item: TemplateExerciseWithRelations;
@@ -8,6 +11,9 @@ interface TemplateExerciseListProps {
 }
 
 export function TemplateExerciseList({ item, onDeleteExercise }: TemplateExerciseListProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.exerciseCard}>
       <View style={styles.exerciseHeader}>
@@ -46,66 +52,68 @@ export function TemplateExerciseList({ item, onDeleteExercise }: TemplateExercis
   );
 }
 
-const styles = StyleSheet.create({
-  exerciseCard: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  exerciseHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  exerciseInfo: {
-    flex: 1,
-  },
-  exerciseName: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.primary,
-  },
-  equipmentTag: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginTop: spacing.xxs,
-  },
-  exerciseActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  setsCount: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    fontWeight: fontWeight.medium,
-  },
-  deleteIcon: {
-    fontSize: fontSize.xl,
-  },
-  restTime: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
-  },
-  setRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.xs,
-    marginTop: spacing.xs,
-    gap: spacing.sm,
-  },
-  setNum: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    width: 48,
-  },
-  setValue: {
-    fontSize: fontSize.md,
-    color: colors.text,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    exerciseCard: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    exerciseHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+    },
+    exerciseInfo: {
+      flex: 1,
+    },
+    exerciseName: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.semibold,
+      color: c.primary,
+    },
+    equipmentTag: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      marginTop: spacing.xxs,
+    },
+    exerciseActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    setsCount: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+      fontWeight: fontWeight.medium,
+    },
+    deleteIcon: {
+      fontSize: fontSize.xl,
+    },
+    restTime: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      marginTop: spacing.xs,
+    },
+    setRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.xs,
+      marginTop: spacing.xs,
+      gap: spacing.sm,
+    },
+    setNum: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textSecondary,
+      width: 48,
+    },
+    setValue: {
+      fontSize: fontSize.md,
+      color: c.text,
+    },
+  });
+}

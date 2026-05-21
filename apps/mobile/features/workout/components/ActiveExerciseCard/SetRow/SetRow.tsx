@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { NumericInput } from '@/components/ui';
 import { TrackingType } from '@athlo/shared';
 import { formatSeconds } from '@/utils/time';
@@ -26,6 +29,9 @@ interface SetRowProps {
 }
 
 export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRowProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const formatPrevious = () => {
     if (trackingType === TrackingType.WEIGHT_AND_REPS) {
       if (set.previousWeight || set.previousReps) {
@@ -97,47 +103,49 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
 }
 
 
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-    gap: spacing.xs,
-  },
-  rowCompleted: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: borderRadius.sm,
-  },
-  setNum: {
-    width: 24,
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  previous: {
-    width: 60,
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-  checkbox: {
-    width: 32,
-    height: 32,
-    borderRadius: borderRadius.sm,
-    borderWidth: 2,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checked: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  checkmark: {
-    color: colors.black,
-    fontWeight: fontWeight.bold,
-    fontSize: fontSize.lg,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.xs,
+      gap: spacing.xs,
+    },
+    rowCompleted: {
+      backgroundColor: c.primaryLight,
+      borderRadius: borderRadius.sm,
+    },
+    setNum: {
+      width: 24,
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.textSecondary,
+      textAlign: 'center',
+    },
+    previous: {
+      width: 60,
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+    },
+    checkbox: {
+      width: 32,
+      height: 32,
+      borderRadius: borderRadius.sm,
+      borderWidth: 2,
+      borderColor: c.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checked: {
+      backgroundColor: c.primary,
+      borderColor: c.primary,
+    },
+    checkmark: {
+      color: c.black,
+      fontWeight: fontWeight.bold,
+      fontSize: fontSize.lg,
+    },
+  });
+}

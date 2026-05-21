@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,9 @@ import {
   Modal,
   Vibration,
 } from 'react-native';
-import { colors, borderRadius, fontSize, fontWeight, spacing } from '@/constants/theme';
+import { borderRadius, fontSize, fontWeight, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { TimerDisplay } from './TimerDisplay';
 
 interface RestTimerProps {
@@ -18,6 +20,8 @@ interface RestTimerProps {
 }
 
 export function RestTimerOverlay({ visible, initialSeconds, onClose }: RestTimerProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [remaining, setRemaining] = useState(initialSeconds);
   const [totalDuration, setTotalDuration] = useState(initialSeconds);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -111,66 +115,68 @@ export function RestTimerOverlay({ visible, initialSeconds, onClose }: RestTimer
   );
 }
 
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  container: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    padding: spacing['3xl'],
-    paddingBottom: 48,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    marginBottom: spacing['2xl'],
-  },
-  progressTrack: {
-    width: '100%',
-    height: 6,
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.xs,
-    marginBottom: spacing['2xl'],
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.xs,
-  },
-  adjustRow: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-    marginBottom: spacing.xl,
-  },
-  adjustBtn: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing['2xl'],
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  adjustText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
-  },
-  skipBtn: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing['3xl'],
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.primaryLight,
-  },
-  skipText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.primary,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: c.overlay,
+      justifyContent: 'flex-end',
+    },
+    container: {
+      backgroundColor: c.surface,
+      borderTopLeftRadius: borderRadius.xl,
+      borderTopRightRadius: borderRadius.xl,
+      padding: spacing['3xl'],
+      paddingBottom: 48,
+      alignItems: 'center',
+    },
+    title: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      marginBottom: spacing['2xl'],
+    },
+    progressTrack: {
+      width: '100%',
+      height: 6,
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.xs,
+      marginBottom: spacing['2xl'],
+      overflow: 'hidden',
+    },
+    progressFill: {
+      height: '100%',
+      backgroundColor: c.primary,
+      borderRadius: borderRadius.xs,
+    },
+    adjustRow: {
+      flexDirection: 'row',
+      gap: spacing.lg,
+      marginBottom: spacing.xl,
+    },
+    adjustBtn: {
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing['2xl'],
+      borderRadius: borderRadius.md,
+      backgroundColor: c.surfaceLight,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    adjustText: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.text,
+    },
+    skipBtn: {
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing['3xl'],
+      borderRadius: borderRadius.md,
+      backgroundColor: c.primaryLight,
+    },
+    skipText: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.primary,
+    },
+  });
+}

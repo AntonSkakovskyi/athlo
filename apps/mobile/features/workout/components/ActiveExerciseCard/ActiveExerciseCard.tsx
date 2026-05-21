@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { TrackingType } from '@athlo/shared';
 import { SetRow } from './SetRow/SetRow';
 import type { SetRowData } from './SetRow/SetRow';
@@ -32,6 +35,9 @@ export function ActiveExerciseCard({
   onAddSet,
   onRestTimer,
 }: ActiveExerciseCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.card}>
       <View style={styles.header}>
@@ -99,75 +105,77 @@ export function ActiveExerciseCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
-  },
-  exerciseName: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.primary,
-    flex: 1,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  iconBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: borderRadius.sm,
-    backgroundColor: colors.surfaceLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconText: {
-    fontSize: fontSize.lg,
-  },
-  notesInput: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-    padding: spacing.sm,
-    fontSize: fontSize.md,
-    color: colors.text,
-    marginBottom: spacing.sm,
-    minHeight: 40,
-  },
-  columnHeaders: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xs,
-    paddingBottom: spacing.xs,
-    gap: spacing.xs,
-  },
-  colHeader: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.textMuted,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
-  addSetBtn: {
-    marginTop: spacing.sm,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-  },
-  addSetText: {
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-    fontSize: fontSize.md,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
+    exerciseName: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.semibold,
+      color: c.primary,
+      flex: 1,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+    },
+    iconBtn: {
+      width: 34,
+      height: 34,
+      borderRadius: borderRadius.sm,
+      backgroundColor: c.surfaceLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    iconText: {
+      fontSize: fontSize.lg,
+    },
+    notesInput: {
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.sm,
+      padding: spacing.sm,
+      fontSize: fontSize.md,
+      color: c.text,
+      marginBottom: spacing.sm,
+      minHeight: 40,
+    },
+    columnHeaders: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.xs,
+      paddingBottom: spacing.xs,
+      gap: spacing.xs,
+    },
+    colHeader: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+      textAlign: 'center',
+      textTransform: 'uppercase',
+    },
+    addSetBtn: {
+      marginTop: spacing.sm,
+      paddingVertical: spacing.sm,
+      alignItems: 'center',
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.sm,
+    },
+    addSetText: {
+      color: c.primary,
+      fontWeight: fontWeight.semibold,
+      fontSize: fontSize.md,
+    },
+  });
+}

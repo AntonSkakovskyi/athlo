@@ -1,11 +1,13 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { TrackingType } from '@athlo/shared';
 import { LogSetRow, LogSetData, ExerciseLogMode } from './LogSetRow/LogSetRow';
 import { ExerciseHeader } from './ExerciseHeader/ExerciseHeader';
 import { Input } from '@/components/ui/Input/Input';
 import { BottomSheet, BottomSheetItem, TimePicker, Button } from '@/components/ui';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 interface ExerciseLogCardProps {
   exerciseName: string;
@@ -59,6 +61,8 @@ export function ExerciseLogCard({
   onMoveDown,
   onPRPress,
 }: ExerciseLogCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [menuVisible, setMenuVisible] = useState(false);
   const [isSetActionsVisible, setIsSetActionsVisible] = useState(false);
   const [selectedSetIndex, setSelectedSetIndex] = useState<number | null>(null);
@@ -276,52 +280,54 @@ export function ExerciseLogCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  notesInput: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-    padding: spacing.sm,
-    fontSize: fontSize.md,
-    color: colors.text,
-    marginBottom: spacing.sm,
-    minHeight: 40,
-  },
-  columnHeaders: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xs,
-    paddingBottom: spacing.xs,
-    gap: spacing.xs,
-  },
-  colHeader: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.textMuted,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
-  addSetBtn: {
-    marginTop: spacing.sm,
-    paddingVertical: spacing.sm,
-    alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: borderRadius.sm,
-  },
-  addSetText: {
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-    fontSize: fontSize.md,
-  },
-  saveTimeBtn: {
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    notesInput: {
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.sm,
+      padding: spacing.sm,
+      fontSize: fontSize.md,
+      color: c.text,
+      marginBottom: spacing.sm,
+      minHeight: 40,
+    },
+    columnHeaders: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.xs,
+      paddingBottom: spacing.xs,
+      gap: spacing.xs,
+    },
+    colHeader: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+      textAlign: 'center',
+      textTransform: 'uppercase',
+    },
+    addSetBtn: {
+      marginTop: spacing.sm,
+      paddingVertical: spacing.sm,
+      alignItems: 'center',
+      backgroundColor: c.surfaceLight,
+      borderRadius: borderRadius.sm,
+    },
+    addSetText: {
+      color: c.primary,
+      fontWeight: fontWeight.semibold,
+      fontSize: fontSize.md,
+    },
+    saveTimeBtn: {
+      marginTop: spacing.md,
+      marginBottom: spacing.lg,
+    },
+  });
+}

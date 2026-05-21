@@ -1,5 +1,6 @@
 import React, { useCallback, forwardRef } from 'react';
-import { Alert, View, FlatList } from 'react-native';
+import { Alert, View, FlatList, StyleSheet } from 'react-native';
+import { spacing } from '@/constants/theme';
 import { confirmDestructive, showErrorAlert } from '@/utils/alerts';
 import { useRouter } from 'expo-router';
 import type { IWorkoutWithRelations } from '@athlo/shared';
@@ -90,7 +91,7 @@ export const WorkoutHistoryList = ({
         ) : (
           ListHeaderComponent
         )}
-        <Spinner style={{ marginVertical: 20 }} />
+        <Spinner style={styles.loader} />
       </View>
     );
   }
@@ -144,5 +145,11 @@ export const WorkoutHistoryList = ({
     />
   );
 };
+
+const styles = StyleSheet.create({
+  loader: {
+    marginVertical: spacing.xl,
+  },
+});
 
 

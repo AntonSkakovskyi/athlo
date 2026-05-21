@@ -1,7 +1,10 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { TrackingType } from '@athlo/shared';
 import type { ILogExerciseWithSets } from '@athlo/shared';
-import { colors, borderRadius, fontSize, fontWeight, spacing } from '@/constants/theme';
+import { borderRadius, fontSize, fontWeight, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { getTrackingType } from '@/utils/workout';
 
 interface ExerciseSummaryCardProps {
@@ -16,6 +19,8 @@ function formatTimeDuration(seconds: number): string {
 }
 
 export function ExerciseSummaryCard({ exercise }: ExerciseSummaryCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const trackingType = getTrackingType(exercise.exercise?.trackingTypeId);
   const completedSets =
     exercise.sets?.filter((s) => s.isCompleted).sort((a, b) => a.order - b.order) ?? [];
@@ -115,79 +120,81 @@ export function ExerciseSummaryCard({ exercise }: ExerciseSummaryCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  name: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.primary,
-    marginBottom: spacing.xs,
-  },
-  notes: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    fontStyle: 'italic',
-    marginBottom: spacing.sm,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingBottom: spacing.xs,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    marginBottom: spacing.xs,
-  },
-  headerCol: {
-    fontSize: fontSize.xs,
-    fontWeight: fontWeight.semibold,
-    color: colors.textMuted,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
-  setRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  bestSetRow: {
-    backgroundColor: colors.primaryLight,
-    borderRadius: borderRadius.sm,
-    marginHorizontal: -spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
-  setNum: {
-    width: 28,
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  setValue: {
-    flex: 1,
-    fontSize: fontSize.md,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  bestText: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
-  bestBadge: {
-    fontSize: fontSize.md,
-    marginLeft: spacing.xs,
-  },
-  noSets: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    paddingVertical: spacing.md,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    name: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.primary,
+      marginBottom: spacing.xs,
+    },
+    notes: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+      fontStyle: 'italic',
+      marginBottom: spacing.sm,
+    },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingBottom: spacing.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: c.border,
+      marginBottom: spacing.xs,
+    },
+    headerCol: {
+      fontSize: fontSize.xs,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+      textAlign: 'center',
+      textTransform: 'uppercase',
+    },
+    setRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    bestSetRow: {
+      backgroundColor: c.primaryLight,
+      borderRadius: borderRadius.sm,
+      marginHorizontal: -spacing.xs,
+      paddingHorizontal: spacing.sm,
+    },
+    setNum: {
+      width: 28,
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textSecondary,
+      textAlign: 'center',
+    },
+    setValue: {
+      flex: 1,
+      fontSize: fontSize.md,
+      color: c.text,
+      textAlign: 'center',
+    },
+    bestText: {
+      color: c.primary,
+      fontWeight: fontWeight.bold,
+    },
+    bestBadge: {
+      fontSize: fontSize.md,
+      marginLeft: spacing.xs,
+    },
+    noSets: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+      paddingVertical: spacing.md,
+    },
+  });
+}

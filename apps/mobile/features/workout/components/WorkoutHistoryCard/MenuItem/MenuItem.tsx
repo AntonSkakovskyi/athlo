@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { Pressable, Text, StyleSheet } from 'react-native';
-import { colors, fontSize, spacing, fontWeight } from '@/constants/theme';
+import { fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface MenuItemProps {
   icon: string;
@@ -9,6 +12,9 @@ interface MenuItemProps {
 }
 
 export function MenuItem({ icon, label, danger, onPress }: MenuItemProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <Pressable
       style={({ pressed }) => [styles.menuItem, pressed && styles.menuItemPressed]}
@@ -20,27 +26,29 @@ export function MenuItem({ icon, label, danger, onPress }: MenuItemProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    gap: 14,
-  },
-  menuItemPressed: {
-    opacity: 0.6,
-  },
-  menuItemIcon: {
-    fontSize: fontSize.xl,
-    width: 24,
-    textAlign: 'center',
-  },
-  menuItemLabel: {
-    fontSize: fontSize.md,
-    color: colors.text,
-    fontWeight: fontWeight.medium,
-  },
-  menuItemDanger: {
-    color: colors.danger,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    menuItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 14,
+      gap: 14,
+    },
+    menuItemPressed: {
+      opacity: 0.6,
+    },
+    menuItemIcon: {
+      fontSize: fontSize.xl,
+      width: 24,
+      textAlign: 'center',
+    },
+    menuItemLabel: {
+      fontSize: fontSize.md,
+      color: c.text,
+      fontWeight: fontWeight.medium,
+    },
+    menuItemDanger: {
+      color: c.danger,
+    },
+  });
+}

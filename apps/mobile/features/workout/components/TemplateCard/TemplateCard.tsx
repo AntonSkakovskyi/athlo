@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { Tag } from '@/components/ui/Tag/Tag';
 
@@ -34,6 +37,9 @@ export default function TemplateCard({
   onSave,
   onUnsave,
 }: TemplateCardProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <Pressable style={styles.card} onPress={onPress}>
       <View style={styles.content}>
@@ -81,57 +87,59 @@ export default function TemplateCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    height: 160,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    justifyContent: 'space-between',
-  },
-  content: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  name: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
-    flex: 1,
-  },
-  count: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: fontWeight.medium,
-    marginLeft: spacing.sm,
-  },
-  description: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
-  author: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginVertical: spacing.xs,
-  },
-  muscleRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: spacing.sm,
-    gap: spacing.xs,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  actionFlex: {
-    flex: 1,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    card: {
+      height: 160,
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+      justifyContent: 'space-between',
+    },
+    content: {
+      flex: 1,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    name: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.semibold,
+      color: c.text,
+      flex: 1,
+    },
+    count: {
+      fontSize: fontSize.sm,
+      color: c.primary,
+      fontWeight: fontWeight.medium,
+      marginLeft: spacing.sm,
+    },
+    description: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+      marginTop: spacing.xs,
+    },
+    author: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      marginVertical: spacing.xs,
+    },
+    muscleRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginTop: spacing.sm,
+      gap: spacing.xs,
+    },
+    actions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    actionFlex: {
+      flex: 1,
+    },
+  });
+}
