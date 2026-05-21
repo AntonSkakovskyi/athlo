@@ -117,3 +117,5 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
 });
+
+export default ExerciseListSection;

@@ -37,6 +37,8 @@ export function FeelingSection({
   );
 }
 
+export default FeelingSection;
+
 const styles = StyleSheet.create({
   optionalItem: {
     alignItems: 'center',

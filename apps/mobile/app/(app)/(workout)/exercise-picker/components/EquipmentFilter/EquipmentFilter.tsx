@@ -145,6 +145,8 @@ export function EquipmentFilter({
   );
 }
 
+export default EquipmentFilter;
+
 const styles = StyleSheet.create({
   filtersRow: {
     flexDirection: 'row',

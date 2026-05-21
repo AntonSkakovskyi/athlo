@@ -1,5 +1,5 @@
 import { View, StyleSheet } from 'react-native';
-import { colors, spacing } from '@/constants/theme';
+import { spacing } from '@/constants/theme';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
@@ -88,6 +88,8 @@ export function ExercisePickerList({
     </View>
   );
 }
+
+export default ExercisePickerList;
 
 const styles = StyleSheet.create({
   listWrap: {

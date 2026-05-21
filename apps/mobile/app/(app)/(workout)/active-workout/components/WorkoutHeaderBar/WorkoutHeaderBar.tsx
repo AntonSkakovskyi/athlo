@@ -49,6 +49,8 @@ export function WorkoutHeaderBar({
   );
 }
 
+export default WorkoutHeaderBar;
+
 const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',

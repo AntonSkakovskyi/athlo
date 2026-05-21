@@ -44,6 +44,8 @@ export function MetricsRow({
   );
 }
 
+export default MetricsRow;
+
 const styles = StyleSheet.create({
   metricsGrid: {
     gap: 12,
