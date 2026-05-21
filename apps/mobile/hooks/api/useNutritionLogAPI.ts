@@ -45,6 +45,9 @@ interface DailySummary {
   totalCarbs: number;
   totalWaterMl: number;
   waterGoal?: number | null;
+  proteinGoal?: number | null;
+  fatGoal?: number | null;
+  carbGoal?: number | null;
   mealsCount: number;
   meals: LogMealWithItems[];
   waterLogs: IWaterLog[];

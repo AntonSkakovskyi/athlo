@@ -21,7 +21,7 @@ import {
   type LogMealItemApi,
 } from '@/features/nutrition/hooks';
 import type { MealItemDisplay } from '@/features/nutrition/components/MealCard/MealCard';
-import { calcItemMacros } from '@/features/nutrition/utils/macros';
+import { calcItemMacros, sumMacros } from '@/features/nutrition/utils/macros';
 
 export interface SelectedPlanItem {
   foodId: number;
@@ -218,9 +218,28 @@ export function useNutritionHomeScreen() {
     [router],
   );
 
+  // Which plan day matches the currently viewed date
+  const activePlanCurrentDay = useMemo(() => {
+    if (!activePlan?.startedAt || !activePlanDetails) return null;
+    const days = (activePlanDetails as unknown as { days?: Array<{ id: number; dayNumber: number; meals?: PlanMealWithItems[] }> }).days;
+    if (!days?.length) return null;
+    const startDate = new Date(activePlan.startedAt);
+    startDate.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(date + 'T00:00:00');
+    const daysSince = Math.floor((selectedDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysSince < 0) return null;
+    const totalDays = activePlanDetails.totalDays || days.length;
+    const planDayNumber = (daysSince % totalDays) + 1;
+    return days.find((d) => d.dayNumber === planDayNumber) ?? null;
+  }, [activePlan, activePlanDetails, date]);
+
+  const planDayMeals = useMemo((): PlanMealWithItems[] => {
+    return (activePlanCurrentDay?.meals as PlanMealWithItems[] | undefined) ?? [];
+  }, [activePlanCurrentDay]);
+
   const handleApplyPlanDay = useCallback(async () => {
     if (!planDayMeals.length) return;
-    
+
     Alert.alert(
       'Apply Today\'s Plan?',
       'This will log all meals from your active plan for this date.',
@@ -231,13 +250,13 @@ export function useNutritionHomeScreen() {
           onPress: async () => {
             for (const planMeal of planDayMeals) {
               const mealTypeName = mealTypes?.find(t => t.id === planMeal.mealTypeId)?.name;
-              
+
               let consumedAt = new Date(date + 'T00:00:00');
               if (planMeal.timeSuggestion) {
                 const [h, m] = planMeal.timeSuggestion.split(':').map(Number);
                 consumedAt.setHours(h, m, 0, 0);
               } else {
-                const defaultHours: Record<number, number> = { 1: 8, 2: 13, 3: 19, 4: 16 }; 
+                const defaultHours: Record<number, number> = { 1: 8, 2: 13, 3: 19, 4: 16 };
                 consumedAt.setHours(defaultHours[planMeal.mealTypeId] || 12, 0, 0, 0);
               }
 
@@ -268,24 +287,43 @@ export function useNutritionHomeScreen() {
     );
   }, [planDayMeals, mealTypes, date, createMeal, addMealItem]);
 
-  // Which plan day matches the currently viewed date
-  const activePlanCurrentDay = useMemo(() => {
-    if (!activePlan?.startedAt || !activePlanDetails) return null;
-    const days = (activePlanDetails as unknown as { days?: Array<{ id: number; dayNumber: number; meals?: PlanMealWithItems[] }> }).days;
-    if (!days?.length) return null;
-    const startDate = new Date(activePlan.startedAt);
-    startDate.setHours(0, 0, 0, 0);
-    const selectedDate = new Date(date + 'T00:00:00');
-    const daysSince = Math.floor((selectedDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    if (daysSince < 0) return null;
-    const totalDays = activePlanDetails.totalDays || days.length;
-    const planDayNumber = (daysSince % totalDays) + 1;
-    return days.find((d) => d.dayNumber === planDayNumber) ?? null;
-  }, [activePlan, activePlanDetails, date]);
+  const planDayMacros = useMemo(() => {
+    if (!planDayMeals.length) return null;
+    const all = planDayMeals.flatMap(
+      (meal) => meal.items?.map((item) => calcItemMacros(item.food, item.amount)) ?? [],
+    );
+    return sumMacros(all);
+  }, [planDayMeals]);
 
-  const planDayMeals = useMemo((): PlanMealWithItems[] => {
-    return (activePlanCurrentDay?.meals as PlanMealWithItems[] | undefined) ?? [];
-  }, [activePlanCurrentDay]);
+  const goals = useMemo(() => {
+    if (activePlanCurrentDay && planDayMacros) {
+      return {
+        calories: Math.round(planDayMacros.calories),
+        proteins: Math.round(planDayMacros.proteins),
+        fats: Math.round(planDayMacros.fats),
+        carbs: Math.round(planDayMacros.carbs),
+      };
+    }
+    
+    if (summary?.proteinGoal || summary?.fatGoal || summary?.carbGoal) {
+      const proteins = summary.proteinGoal ?? 0;
+      const fats = summary.fatGoal ?? 0;
+      const carbs = summary.carbGoal ?? 0;
+      return {
+        calories: Math.round(proteins * 4 + fats * 9 + carbs * 4),
+        proteins: summary.proteinGoal ?? undefined,
+        fats: summary.fatGoal ?? undefined,
+        carbs: summary.carbGoal ?? undefined,
+      };
+    }
+
+    return {
+      calories: undefined,
+      proteins: undefined,
+      fats: undefined,
+      carbs: undefined,
+    };
+  }, [activePlanCurrentDay, planDayMacros, summary]);
 
   const meals = useMemo(() => {
     const raw = (summary?.meals ?? []) as LogMealWithItems[];
@@ -321,6 +359,7 @@ export function useNutritionHomeScreen() {
     activePlan,
     activePlanDetails,
     planDayMeals,
+    goals,
     meals,
     waterLogs,
     selectedMealTypeId,

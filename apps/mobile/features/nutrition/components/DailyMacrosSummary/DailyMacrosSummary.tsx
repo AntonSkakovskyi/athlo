@@ -29,28 +29,40 @@ export function DailyMacrosSummary({
   proteins,
   fats,
   carbs,
-  calorieGoal = 2200,
-  proteinGoal = 150,
-  fatGoal = 70,
-  carbGoal = 250,
+  calorieGoal,
+  proteinGoal,
+  fatGoal,
+  carbGoal,
 }: DailyMacrosSummaryProps) {
-  const caloriePercent = calorieGoal > 0 ? (calories / calorieGoal) * 100 : 0;
-  const ringColor = getCalorieRingColor(caloriePercent);
+  // If calorieGoal is not passed but macros are, calculate it.
+  const finalCalorieGoal = calorieGoal ?? (
+    (proteinGoal || fatGoal || carbGoal) 
+      ? Math.round((proteinGoal ?? 0) * 4 + (fatGoal ?? 0) * 9 + (carbGoal ?? 0) * 4)
+      : undefined
+  );
+
+  const hasGoals = finalCalorieGoal !== undefined;
+  const caloriePercent = finalCalorieGoal && finalCalorieGoal > 0 ? (calories / finalCalorieGoal) * 100 : 0;
+  const ringColor = hasGoals ? getCalorieRingColor(caloriePercent) : colors.surfaceLight;
 
   return (
     <View style={styles.container}>
       {/* Calorie Ring */}
       <View style={styles.ringSection}>
-        <View style={[styles.ringOuter, { borderColor: caloriePercent > 0 ? ringColor : colors.surfaceLight }]}>
+        <View style={[styles.ringOuter, { borderColor: caloriePercent > 0 || !hasGoals ? ringColor : colors.surfaceLight }]}>
           <View style={styles.ringInner}>
-            <Text style={[styles.calorieValue, caloriePercent > 100 && { color: ringColor }]}>
+            <Text style={[styles.calorieValue, caloriePercent > 100 && hasGoals && { color: ringColor }]}>
               {Math.round(calories)}
             </Text>
-            <Text style={styles.calorieLabel}>/ {calorieGoal} kcal</Text>
+            <Text style={styles.calorieLabel}>
+              {hasGoals ? `/ ${finalCalorieGoal} kcal` : 'kcal consumed'}
+            </Text>
           </View>
-          <View style={[styles.ringProgress, { backgroundColor: ringColor }]}>
-            <Text style={styles.ringPercent}>{Math.round(caloriePercent)}%</Text>
-          </View>
+          {hasGoals && (
+            <View style={[styles.ringProgress, { backgroundColor: ringColor }]}>
+              <Text style={styles.ringPercent}>{Math.round(caloriePercent)}%</Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -67,15 +79,16 @@ export function DailyMacrosSummary({
 interface MacroBarProps {
   label: string;
   value: number;
-  goal: number;
+  goal?: number;
   color: string;
   unit: string;
 }
 
 function MacroBar({ label, value, goal, color, unit }: MacroBarProps) {
-  const percent = goal > 0 ? (value / goal) * 100 : 0;
+  const hasGoal = goal !== undefined && goal > 0;
+  const percent = hasGoal ? (value / goal) * 100 : 0;
   const displayPercent = Math.min(percent, 100);
-  const activeColor = getMacroColor(percent, color);
+  const activeColor = hasGoal ? getMacroColor(percent, color) : colors.text;
 
   return (
     <View style={styles.macroItem}>
@@ -83,10 +96,21 @@ function MacroBar({ label, value, goal, color, unit }: MacroBarProps) {
       <Text style={[styles.macroValue, { color: activeColor }]}>
         {Math.round(value)}{unit}
       </Text>
-      <View style={styles.macroBarBg}>
-        <View style={[styles.macroBarFill, { width: `${displayPercent}%`, backgroundColor: activeColor }]} />
-      </View>
-      <Text style={styles.macroGoal}>{Math.round(value)} / {goal}{unit}</Text>
+      {hasGoal ? (
+        <>
+          <View style={styles.macroBarBg}>
+            <View style={[styles.macroBarFill, { width: `${displayPercent}%`, backgroundColor: activeColor }]} />
+          </View>
+          <Text style={styles.macroGoal}>{Math.round(value)} / {goal}{unit}</Text>
+        </>
+      ) : (
+        <>
+          <View style={styles.macroBarBg}>
+            <View style={[styles.macroBarFill, { width: '100%', backgroundColor: colors.surfaceLight }]} />
+          </View>
+          <Text style={styles.macroGoal}>{Math.round(value)}{unit}</Text>
+        </>
+      )}
     </View>
   );
 }

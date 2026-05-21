@@ -23,7 +23,7 @@ export default function NutritionScreen() {
   
   const {
     date, isToday, summary, isLoading, mealTypes, activePlan, activePlanDetails,
-    planDayMeals, meals, waterLogs, selectedMealTypeId, setSelectedMealTypeId,
+    planDayMeals, goals, meals, waterLogs, selectedMealTypeId, setSelectedMealTypeId,
     showAddMealSheet, setShowAddMealSheet, editingMeal, setEditingMeal,
     handlePrevDay, handleNextDay, handleDateSelect, handleAddMeal, handleConfirmAddMeal,
     handleDeleteMeal, handleEditMeal, handleConfirmEditMeal, handleDeleteMealItem,
@@ -78,6 +78,10 @@ export default function NutritionScreen() {
               proteins={summary?.totalProteins ?? 0}
               fats={summary?.totalFats ?? 0}
               carbs={summary?.totalCarbs ?? 0}
+              calorieGoal={goals.calories}
+              proteinGoal={goals.proteins}
+              fatGoal={goals.fats}
+              carbGoal={goals.carbs}
             />
 
             <SegmentControl
