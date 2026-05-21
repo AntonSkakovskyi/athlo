@@ -4,7 +4,8 @@
  * Kept deliberately tiny: the ETL is plain Node (CommonJS), no Nest bootstrap.
  * Same connection-string contract as `apps/api/seed.js`.
  */
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 const { Pool } = require('pg');
 
 const sslDisabled = process.env.DATABASE_SSL === 'false';
