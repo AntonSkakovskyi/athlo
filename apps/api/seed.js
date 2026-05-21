@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { Pool } = require('pg');
 
 const USER_ID = 1;
@@ -61,7 +62,13 @@ async function seedUsersAndFriends(client) {
   // Ensure settings exist for FRIEND_ID
   const fsCheck = await client.query(`SELECT id FROM settings WHERE user_id=$1`, [FRIEND_ID]);
   if (!fsCheck.rows.length) {
-    await insertRow(client, 'settings', { user_id: FRIEND_ID, water_goal: 2000 });
+    await insertRow(client, 'settings', { 
+      user_id: FRIEND_ID, 
+      water_goal: 2000,
+      protein_goal: 150,
+      fat_goal: 70,
+      carb_goal: 250
+    });
   }
 
   console.log('  → Users, friendship, and settings ready');
@@ -238,10 +245,19 @@ async function seedLookups(client) {
   return { vt, tt, units, mealTypes, muscles, equip, metricTypes };
 }
 
-async function seedExercises(client, { vt, tt, equip, muscles }) {
+async function seedExercises(client, { vt, tt, equip, muscles }, skipEtl = false) {
+  if (skipEtl) {
+    const r = await client.query(`SELECT id FROM exercises WHERE user_id IS NULL ORDER BY id LIMIT 50`);
+    const dbIds = r.rows.map((row) => row.id);
+    if (dbIds.length === 0) throw new Error('--skip-etl: no exercises in DB — run ETL first');
+    const exIds = EXERCISES.map((_, i) => dbIds[i % dbIds.length]);
+    console.log(`  → ${dbIds.length} ETL exercises found, mapped across ${exIds.length} positions`);
+    return exIds;
+  }
+
   const exIds = [];
   for (const ex of EXERCISES) {
-    const s = await client.query(`SELECT id FROM exercises WHERE name=$1 AND user_id IS NULL LIMIT 1`, [ex.name]);
+    const s = await client.query(`SELECT id FROM exercises WHERE LOWER(name)=LOWER($1) AND user_id IS NULL LIMIT 1`, [ex.name]);
     if (s.rows.length) { exIds.push(s.rows[0].id); continue; }
 
     const exId = await insertRow(client, 'exercises', {
@@ -466,15 +482,26 @@ async function seedPublicTemplates(client, { vt }, exIds) {
   console.log('  → 3 public templates ready');
 }
 
-async function seedNutrition(client, { mealTypes, units, vt }) {
+async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) {
   const gId = units['g'];
 
   // Foods
   const foodIds = {};
+  if (skipEtl) {
+    const r = await client.query(`SELECT id FROM foods ORDER BY id LIMIT 50`);
+    const dbIds = r.rows.map((row) => row.id);
+    if (dbIds.length === 0) throw new Error('--skip-etl: no foods in DB — run ETL first');
+    let rr = 0;
+    for (const f of FOODS) {
+      const s = await client.query(`SELECT id FROM foods WHERE LOWER(name) LIKE LOWER($1) LIMIT 1`, [`%${f.name}%`]);
+      foodIds[f.name] = s.rows.length ? s.rows[0].id : dbIds[rr++ % dbIds.length];
+    }
+    console.log(`  → ${Object.keys(foodIds).length} foods mapped from ETL data`);
+  } else {
   for (const f of FOODS) {
-    const s = await client.query(`SELECT id FROM foods WHERE name=$1 LIMIT 1`, [f.name]);
-    if (s.rows.length) { 
-      foodIds[f.name] = s.rows[0].id; 
+    const s = await client.query(`SELECT id FROM foods WHERE LOWER(name)=LOWER($1) LIMIT 1`, [f.name]);
+    if (s.rows.length) {
+      foodIds[f.name] = s.rows[0].id;
     } else {
       foodIds[f.name] = await insertRow(client, 'foods', {
         name: f.name, brand: f.brand,
@@ -502,6 +529,7 @@ async function seedNutrition(client, { mealTypes, units, vt }) {
       }
     }
   }
+  } // end else (skipEtl)
   console.log(`  → ${Object.keys(foodIds).length} foods ready`);
 
   // Meal log — 14 days
@@ -742,6 +770,9 @@ async function seedAchievements(client, exIds) {
 // ─── Entry point ─────────────────────────────────────────────────────────────
 
 async function seed() {
+  const skipEtl = process.argv.includes('--skip-etl');
+  if (skipEtl) console.log('[seed] --skip-etl: exercises and foods will be looked up, not inserted');
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -753,7 +784,7 @@ async function seed() {
     const ids = await seedLookups(client);
 
     console.log('\nPhase 2: Exercises');
-    const exIds = await seedExercises(client, ids);
+    const exIds = await seedExercises(client, ids, skipEtl);
 
     console.log('\nPhase 3: Body metrics');
     await seedBodyMetrics(client, ids);
@@ -766,7 +797,7 @@ async function seed() {
     await seedPublicTemplates(client, ids, exIds);
 
     console.log('\nPhase 6: Nutrition');
-    await seedNutrition(client, ids);
+    await seedNutrition(client, ids, skipEtl);
 
     console.log('\nPhase 7: Achievements');
     await seedAchievements(client, exIds);

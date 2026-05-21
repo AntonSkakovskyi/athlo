@@ -14,4 +14,16 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsInt()
   waterGoal?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  proteinGoal?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  fatGoal?: number | null;
+
+  @IsOptional()
+  @IsInt()
+  carbGoal?: number | null;
 }

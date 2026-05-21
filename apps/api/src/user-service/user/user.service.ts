@@ -48,6 +48,9 @@ export class UserService {
     return {
       ...profile,
       waterGoal: profile.settings?.waterGoal ?? null,
+      proteinGoal: profile.settings?.proteinGoal ?? null,
+      fatGoal: profile.settings?.fatGoal ?? null,
+      carbGoal: profile.settings?.carbGoal ?? null,
     };
   }
 
@@ -61,17 +64,20 @@ export class UserService {
       .then((users) => users.map(({ password_hash, ...u }) => u));
   }
 
-  async updateProfile(id: number, dto: UpdateProfileDto & { waterGoal?: number | null }) {
+  async updateProfile(id: number, dto: UpdateProfileDto & { waterGoal?: number | null, proteinGoal?: number | null, fatGoal?: number | null, carbGoal?: number | null }) {
     const user = await this.findOne(id);
-    const { waterGoal, ...userDto } = dto;
+    const { waterGoal, proteinGoal, fatGoal, carbGoal, ...userDto } = dto;
     Object.assign(user, userDto);
     
-    if (waterGoal !== undefined) {
+    if (waterGoal !== undefined || proteinGoal !== undefined || fatGoal !== undefined || carbGoal !== undefined) {
       let settings = await this.settingRepository.findOne({ where: { userId: id } });
       if (!settings) {
         settings = this.settingRepository.create({ userId: id });
       }
-      settings.waterGoal = waterGoal;
+      if (waterGoal !== undefined) settings.waterGoal = waterGoal;
+      if (proteinGoal !== undefined) settings.proteinGoal = proteinGoal;
+      if (fatGoal !== undefined) settings.fatGoal = fatGoal;
+      if (carbGoal !== undefined) settings.carbGoal = carbGoal;
       await this.settingRepository.save(settings);
       user.settings = settings;
     }
@@ -81,6 +87,9 @@ export class UserService {
     return {
       ...profile,
       waterGoal: profile.settings?.waterGoal ?? null,
+      proteinGoal: profile.settings?.proteinGoal ?? null,
+      fatGoal: profile.settings?.fatGoal ?? null,
+      carbGoal: profile.settings?.carbGoal ?? null,
     };
   }
 
