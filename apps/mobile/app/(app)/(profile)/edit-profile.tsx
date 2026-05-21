@@ -14,6 +14,15 @@ export default function EditProfileScreen() {
     setFullName,
     nickname,
     setNickname,
+    waterGoalInput,
+    setWaterGoalInput,
+    proteinInput,
+    setProteinInput,
+    fatInput,
+    setFatInput,
+    carbInput,
+    setCarbInput,
+    editingCalorieGoal,
     hasChanges,
     initials,
     updateProfile,
@@ -53,9 +62,52 @@ export default function EditProfileScreen() {
         </Pressable>
       </View>
 
-      <View style={styles.form}>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Personal Info</Text>
         <Input label="Full Name" value={fullName} onChangeText={setFullName} placeholder="Enter your full name" />
         <Input label="Nickname" value={nickname} onChangeText={setNickname} placeholder="Enter your nickname" />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Water Goal</Text>
+        <Text style={styles.sectionDesc}>Leave empty to calculate automatically based on your body weight.</Text>
+        <Input
+          label="Daily Water Goal (ml)"
+          value={waterGoalInput}
+          onChangeText={setWaterGoalInput}
+          keyboardType="number-pad"
+          placeholder="e.g. 2500"
+        />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Nutrition Goals</Text>
+        <Text style={styles.sectionDesc}>Used when you don't have an active meal plan. Clear all fields to disable.</Text>
+        <Input
+          label="Protein (g)"
+          value={proteinInput}
+          onChangeText={setProteinInput}
+          keyboardType="number-pad"
+          placeholder="e.g. 150"
+        />
+        <Input
+          label="Fats (g)"
+          value={fatInput}
+          onChangeText={setFatInput}
+          keyboardType="number-pad"
+          placeholder="e.g. 70"
+        />
+        <Input
+          label="Carbs (g)"
+          value={carbInput}
+          onChangeText={setCarbInput}
+          keyboardType="number-pad"
+          placeholder="e.g. 250"
+        />
+        <View style={styles.calorieRow}>
+          <Text style={styles.calorieLabel}>Total Calories:</Text>
+          <Text style={styles.calorieValue}>{editingCalorieGoal ? `${editingCalorieGoal} kcal` : '0 kcal'}</Text>
+        </View>
       </View>
 
       <Button
@@ -101,6 +153,28 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   changePhotoText: { fontSize: fontSize.md, color: colors.primary, fontWeight: fontWeight.semibold },
-  form: { marginBottom: spacing['2xl'] },
+  section: { marginBottom: spacing['2xl'] },
+  sectionTitle: {
+    fontSize: fontSize.md,
+    fontWeight: fontWeight.semibold,
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.xs,
+  },
+  sectionDesc: {
+    fontSize: fontSize.sm,
+    color: colors.textMuted,
+    marginBottom: spacing.md,
+  },
+  calorieRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  calorieLabel: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, color: colors.text },
+  calorieValue: { fontSize: fontSize.md, fontWeight: fontWeight.bold, color: colors.primary },
   footerBtn: { marginTop: spacing.sm },
 });

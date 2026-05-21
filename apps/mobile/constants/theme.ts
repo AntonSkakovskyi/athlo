@@ -1,39 +1,5 @@
-export const colors = {
-  // Brand
-  primary: '#2BDE6A',
-  primaryDark: '#24B857',
-  primaryLight: '#2BDE6A33',
-
-  // Background
-  background: '#0A0906',
-  surface: '#1A1A17',
-  surfaceLight: '#2A2A26',
-  surfaceElevated: '#333330',
-
-  // Text
-  text: '#FFFFFF',
-  textSecondary: '#A0A0A0',
-  textMuted: '#666666',
-
-  // Semantic
-  danger: '#FF4444',
-  dangerLight: '#FF444433',
-  warning: '#FFB020',
-  success: '#2BDE6A',
-  info: '#4DA6FF',
-
-  // Border
-  border: '#2A2A26',
-  borderLight: '#333330',
-
-  // Overlay
-  overlay: 'rgba(0, 0, 0, 0.6)',
-
-  // Base palette
-  black: '#000000',
-  white: '#FFFFFF',
-  link: '#007AFF',
-} as const;
+export { darkColors as colors } from './colors';
+export type { ColorPalette, ThemePreference } from './colors';
 
 // Spacing scale (4pt base grid).
 // Off-scale values: 2–3 → xxs, 5–6 → xs, 9–10 → sm, 14 → md, 18 → xl, 28–30 → 3xl, 60+ = screen-specific.

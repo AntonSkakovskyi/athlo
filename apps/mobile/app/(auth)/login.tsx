@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLogin } from '@/features/auth/hooks';
 import { AxiosError } from 'axios';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { colors, spacing, fontSize } from '@/constants/theme';
 
 function extractErrorMessages(error: unknown): string[] {
   if (error instanceof AxiosError) {
@@ -42,43 +42,52 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Image
+          source={require('../../assets/icon-with-text.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.subtitle}>Welcome back</Text>
 
-      {generalError ? <Text style={styles.generalError}>{generalError}</Text> : null}
+        {generalError ? <Text style={styles.generalError}>{generalError}</Text> : null}
 
-      <Input
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        error={emailError}
-      />
+        <Input
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          error={emailError}
+        />
 
-      <Input
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        error={passwordError}
-      />
+        <Input
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          error={passwordError}
+        />
 
-      <Button
-        title="Login"
-        onPress={handleLogin}
-        isLoading={loginMutation.isPending}
-      />
+        <Button
+          title="Login"
+          onPress={handleLogin}
+          isLoading={loginMutation.isPending}
+        />
 
-      <Link href="/(auth)/register" style={styles.link}>
-        Don't have an account? Register
-      </Link>
+        <Link href="/(auth)/register" style={styles.link}>
+          Don't have an account? Register
+        </Link>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: spacing.xl },
-  title: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, marginBottom: spacing.xl, textAlign: 'center' },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { flexGrow: 1, justifyContent: 'center', padding: spacing.xl },
+  logo: { width: 200, height: 160, alignSelf: 'center', marginBottom: spacing.md },
+  subtitle: { fontSize: fontSize.lg, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
   link: { marginTop: spacing.lg, textAlign: 'center', color: colors.link },
   generalError: { fontSize: fontSize.sm, color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
 });

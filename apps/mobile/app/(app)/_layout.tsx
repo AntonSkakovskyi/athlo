@@ -1,12 +1,17 @@
 import { Redirect, Tabs } from 'expo-router';
+import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
-import { colors, fontSize, fontWeight, spacing } from '@/constants/theme';
+import { fontSize, fontWeight, spacing } from '@/constants/theme';
+import { ColorPalette } from '@/constants/colors';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useAppLayout } from '@/features/auth/hooks/useAppLayout';
 import { FloatingWorkoutMini } from '@/features/workout/components/FloatingWorkoutMini/FloatingWorkoutMini';
 
 export default function AppLayout() {
   const { token, isLoading, isActive } = useAppLayout();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   if (isLoading) {
     return (
@@ -58,15 +63,17 @@ export default function AppLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
-  tabBar: {
-    backgroundColor: colors.surface,
-    borderTopColor: colors.border,
-    borderTopWidth: 1,
-    height: 60,
-    paddingBottom: spacing.xs,
-  },
-  tabIcon: { fontSize: fontSize.xl },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    flex: { flex: 1 },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: c.background },
+    tabBar: {
+      backgroundColor: c.surface,
+      borderTopColor: c.border,
+      borderTopWidth: 1,
+      height: 60,
+      paddingBottom: spacing.xs,
+    },
+    tabIcon: { fontSize: fontSize.xl },
+  });
+}

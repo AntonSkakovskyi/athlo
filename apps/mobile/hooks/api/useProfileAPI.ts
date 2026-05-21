@@ -21,6 +21,10 @@ export const useGetProfile = () => {
 interface UpdateProfileData {
   fullName?: string;
   nickname?: string;
+  waterGoal?: number | null;
+  proteinGoal?: number | null;
+  fatGoal?: number | null;
+  carbGoal?: number | null;
 }
 
 export const useUpdateProfile = () => {

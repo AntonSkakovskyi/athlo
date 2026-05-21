@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRegister } from '@/features/auth/hooks';
 import { AxiosError } from 'axios';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { colors, spacing, fontSize } from '@/constants/theme';
 
 function extractErrorMessages(error: unknown): string[] {
   if (error instanceof AxiosError) {
@@ -52,60 +52,69 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Image
+          source={require('../../assets/icon-with-text.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.subtitle}>Create your account</Text>
 
-      {generalErrors.length > 0 && (
-        <Text style={styles.generalError}>{generalErrors.join('. ')}</Text>
-      )}
+        {generalErrors.length > 0 && (
+          <Text style={styles.generalError}>{generalErrors.join('. ')}</Text>
+        )}
 
-      <Input
-        placeholder="Full Name"
-        value={fullName}
-        onChangeText={setFullName}
-        error={nameError}
-      />
+        <Input
+          placeholder="Full Name"
+          value={fullName}
+          onChangeText={setFullName}
+          error={nameError}
+        />
 
-      <Input
-        placeholder="Nickname"
-        value={nickname}
-        onChangeText={setNickname}
-        autoCapitalize="none"
-        error={nicknameError}
-      />
+        <Input
+          placeholder="Nickname"
+          value={nickname}
+          onChangeText={setNickname}
+          autoCapitalize="none"
+          error={nicknameError}
+        />
 
-      <Input
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        error={emailError}
-      />
+        <Input
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          error={emailError}
+        />
 
-      <Input
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        error={passwordError}
-      />
+        <Input
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          error={passwordError}
+        />
 
-      <Button
-        title="Register"
-        onPress={handleRegister}
-        isLoading={registerMutation.isPending}
-      />
+        <Button
+          title="Register"
+          onPress={handleRegister}
+          isLoading={registerMutation.isPending}
+        />
 
-      <Link href="/(auth)/login" style={styles.link}>
-        Already have an account? Login
-      </Link>
+        <Link href="/(auth)/login" style={styles.link}>
+          Already have an account? Login
+        </Link>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: spacing.xl },
-  title: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, marginBottom: spacing.xl, textAlign: 'center' },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { flexGrow: 1, justifyContent: 'center', padding: spacing.xl },
+  logo: { width: 200, height: 160, alignSelf: 'center', marginBottom: spacing.md },
+  subtitle: { fontSize: fontSize.lg, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
   link: { marginTop: spacing.lg, textAlign: 'center', color: colors.link },
   generalError: { fontSize: fontSize.sm, color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
 });
