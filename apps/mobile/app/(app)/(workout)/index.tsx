@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { WorkoutHistoryList } from '@/features/workout/components';
 import { QuickActionCard } from '@/features/workout/components';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
@@ -20,6 +23,8 @@ export default function WorkoutsScreen() {
     insets,
     router,
   } = useWorkoutsScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const renderHeader = () => (
     <View style={styles.headerContainer}>
@@ -105,38 +110,40 @@ export default function WorkoutsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-  },
-  headerContainer: {
-    paddingBottom: spacing.sm,
-  },
-  screenTitle: {
-    fontSize: fontSize['3xl'],
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    marginBottom: spacing.xl,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    marginBottom: spacing['3xl'],
-  },
-  section: {
-    marginBottom: spacing['3xl'],
-  },
-  templateList: {
-    paddingRight: 16,
-    gap: spacing.md,
-  },
-  templateCardWrapper: {
-    width: 260,
-    height: 160,
-  },
-  loader: {
-    marginVertical: 20,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+      paddingHorizontal: spacing.lg,
+    },
+    headerContainer: {
+      paddingBottom: spacing.sm,
+    },
+    screenTitle: {
+      fontSize: fontSize['3xl'],
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      marginBottom: spacing.xl,
+    },
+    quickActions: {
+      flexDirection: 'row',
+      gap: spacing.md,
+      marginBottom: spacing['3xl'],
+    },
+    section: {
+      marginBottom: spacing['3xl'],
+    },
+    templateList: {
+      paddingRight: spacing.lg,
+      gap: spacing.md,
+    },
+    templateCardWrapper: {
+      width: 260,
+      height: 160,
+    },
+    loader: {
+      marginVertical: spacing.xl,
+    },
+  });
+}

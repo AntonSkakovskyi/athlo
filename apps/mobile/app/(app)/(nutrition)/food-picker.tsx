@@ -2,8 +2,11 @@ import { View, Text, StyleSheet, Pressable, KeyboardAvoidingView, Platform } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import type { IFood } from '@athlo/shared';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
+import { useMemo } from 'react';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
@@ -25,6 +28,8 @@ export default function FoodPickerScreen() {
     handleDeleteFood, handleAddCustomUnit, resetCreateForm, isCreator,
     params, deleteFood,
   } = useFoodPickerScreen({ insets, router });
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const renderFoodItem = ({ item }: { item: IFood }) => {
     // Determine the "serving" to display in the list
@@ -154,88 +159,90 @@ export default function FoodPickerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-  },
-  cancelBtn: {
-    fontSize: fontSize.md,
-    color: colors.danger,
-    fontWeight: fontWeight.semibold,
-    width: 60,
-  },
-  createBtn: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-    width: 60,
-    textAlign: 'right',
-  },
-  title: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  searchWrap: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  searchInput: {
-    marginBottom: 0,
-  },
-  list: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: 260,
-  },
-  foodItem: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  foodItemSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
-  },
-  foodInfo: {
-    flex: 1,
-  },
-  foodName: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.text,
-  },
-  foodBrand: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginTop: spacing.xxs,
-  },
-  macroRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.xs,
-    gap: spacing.md,
-  },
-  calorieText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.primary,
-  },
-  macroText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  loader: {
-    marginTop: 40,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+    },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.md,
+    },
+    cancelBtn: {
+      fontSize: fontSize.md,
+      color: c.danger,
+      fontWeight: fontWeight.semibold,
+      width: 60,
+    },
+    createBtn: {
+      fontSize: fontSize.md,
+      color: c.primary,
+      fontWeight: fontWeight.semibold,
+      width: 60,
+      textAlign: 'right',
+    },
+    title: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    searchWrap: {
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.sm,
+    },
+    searchInput: {
+      marginBottom: 0,
+    },
+    list: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: 260,
+    },
+    foodItem: {
+      backgroundColor: c.surface,
+      borderRadius: 8,
+      padding: spacing.md,
+      marginBottom: spacing.sm,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    foodItemSelected: {
+      borderColor: c.primary,
+      backgroundColor: c.primaryLight,
+    },
+    foodInfo: {
+      flex: 1,
+    },
+    foodName: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.semibold,
+      color: c.text,
+    },
+    foodBrand: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      marginTop: spacing.xxs,
+    },
+    macroRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: spacing.xs,
+      gap: spacing.md,
+    },
+    calorieText: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.primary,
+    },
+    macroText: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+    },
+    loader: {
+      marginTop: 40,
+    },
+  });
+}

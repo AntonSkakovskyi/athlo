@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
@@ -28,6 +31,8 @@ export default function EditProfileScreen() {
     updateProfile,
     handleSave,
   } = useEditProfileScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   if (isLoading) {
     return (
@@ -121,60 +126,62 @@ export default function EditProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-  },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing['2xl'] },
-  backBtn: { fontSize: fontSize.lg, color: colors.primary, fontWeight: fontWeight.semibold },
-  screenTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text },
-  saveBtn: { fontSize: fontSize.lg, color: colors.primary, fontWeight: fontWeight.semibold },
-  saveBtnDisabled: { color: colors.textMuted },
-  avatarSection: { alignItems: 'center', marginBottom: spacing['3xl'] },
-  avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  avatarText: { fontSize: fontSize['3xl'], fontWeight: fontWeight.bold, color: colors.primary },
-  changePhotoBtn: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  changePhotoText: { fontSize: fontSize.md, color: colors.primary, fontWeight: fontWeight.semibold },
-  section: { marginBottom: spacing['2xl'] },
-  sectionTitle: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: spacing.xs,
-  },
-  sectionDesc: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginBottom: spacing.md,
-  },
-  calorieRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  calorieLabel: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, color: colors.text },
-  calorieValue: { fontSize: fontSize.md, fontWeight: fontWeight.bold, color: colors.primary },
-  footerBtn: { marginTop: spacing.sm },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+      paddingHorizontal: spacing.lg,
+    },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: c.background },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing['2xl'] },
+    backBtn: { fontSize: fontSize.lg, color: c.primary, fontWeight: fontWeight.semibold },
+    screenTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: c.text },
+    saveBtn: { fontSize: fontSize.lg, color: c.primary, fontWeight: fontWeight.semibold },
+    saveBtnDisabled: { color: c.textMuted },
+    avatarSection: { alignItems: 'center', marginBottom: spacing['3xl'] },
+    avatar: {
+      width: 96,
+      height: 96,
+      borderRadius: 48,
+      backgroundColor: c.primaryLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+    },
+    avatarText: { fontSize: fontSize['3xl'], fontWeight: fontWeight.bold, color: c.primary },
+    changePhotoBtn: {
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      borderRadius: borderRadius.md,
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    changePhotoText: { fontSize: fontSize.md, color: c.primary, fontWeight: fontWeight.semibold },
+    section: { marginBottom: spacing['2xl'] },
+    sectionTitle: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: spacing.xs,
+    },
+    sectionDesc: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      marginBottom: spacing.md,
+    },
+    calorieRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    calorieLabel: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, color: c.text },
+    calorieValue: { fontSize: fontSize.md, fontWeight: fontWeight.bold, color: c.primary },
+    footerBtn: { marginTop: spacing.sm },
+  });
+}

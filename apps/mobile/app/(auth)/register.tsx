@@ -6,7 +6,10 @@ import { useRegister } from '@/features/auth/hooks';
 import { AxiosError } from 'axios';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
-import { colors, spacing, fontSize } from '@/constants/theme';
+import { spacing, fontSize } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
+import { useMemo } from 'react';
 
 function extractErrorMessages(error: unknown): string[] {
   if (error instanceof AxiosError) {
@@ -18,6 +21,8 @@ function extractErrorMessages(error: unknown): string[] {
 }
 
 export default function RegisterScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { setSession } = useAuth();
   const router = useRouter();
   const registerMutation = useRegister();
@@ -110,11 +115,13 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { flexGrow: 1, justifyContent: 'center', padding: spacing.xl },
-  logo: { width: 200, height: 160, alignSelf: 'center', marginBottom: spacing.md },
-  subtitle: { fontSize: fontSize.lg, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
-  link: { marginTop: spacing.lg, textAlign: 'center', color: colors.link },
-  generalError: { fontSize: fontSize.sm, color: colors.danger, marginBottom: spacing.md, textAlign: 'center' },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background },
+    content: { flexGrow: 1, justifyContent: 'center', padding: spacing.xl },
+    logo: { width: 200, height: 160, alignSelf: 'center', marginBottom: spacing.md },
+    subtitle: { fontSize: fontSize.lg, color: c.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
+    link: { marginTop: spacing.lg, textAlign: 'center', color: c.link },
+    generalError: { fontSize: fontSize.sm, color: c.danger, marginBottom: spacing.md, textAlign: 'center' },
+  });
+}

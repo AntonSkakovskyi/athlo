@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { NavCard } from '@/components/ui/NavCard/NavCard';
 import { BarChartBlock } from '@/components/ui/BarChartBlock/BarChartBlock';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
@@ -33,6 +36,8 @@ export default function ProfileScreen() {
     PERIOD_LABELS,
     PERFORMANCE_METRICS,
   } = usePerformanceChart();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   if (profileLoading) {
     return <LoadingScreen />;
@@ -122,47 +127,49 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-  },
-  headerContainer: {
-    paddingBottom: spacing.sm,
-  },
-  headerRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.md, marginBottom: spacing.sm },
-  headerBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  headerBtnIcon: { fontSize: fontSize.xl },
-  profileCard: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
-    padding: spacing['2xl'],
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing['2xl'],
-  },
-  nickname: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text, marginTop: spacing.md },
-  fullName: { fontSize: fontSize.md, color: colors.textSecondary, marginTop: spacing.xs },
-  statsRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xl, gap: spacing['2xl'] },
-  statItem: { alignItems: 'center' },
-  statValue: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, color: colors.text },
-  statLabel: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.xxs },
-  statDivider: { width: 1, height: 32, backgroundColor: colors.border },
-  section: { marginBottom: spacing['2xl'] },
-  navGrid: {},
-  navRow: { flexDirection: 'row' },
-  navGap: { width: spacing.md },
-  navRowGap: { height: spacing.md },
-  loader: { marginVertical: spacing.xl },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+      paddingHorizontal: spacing.lg,
+    },
+    headerContainer: {
+      paddingBottom: spacing.sm,
+    },
+    headerRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: spacing.md, marginBottom: spacing.sm },
+    headerBtn: {
+      width: 40,
+      height: 40,
+      borderRadius: borderRadius.full,
+      backgroundColor: c.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    headerBtnIcon: { fontSize: fontSize.xl },
+    profileCard: {
+      alignItems: 'center',
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.xl,
+      padding: spacing['2xl'],
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: spacing['2xl'],
+    },
+    nickname: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: c.text, marginTop: spacing.md },
+    fullName: { fontSize: fontSize.md, color: c.textSecondary, marginTop: spacing.xs },
+    statsRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xl, gap: spacing['2xl'] },
+    statItem: { alignItems: 'center' },
+    statValue: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, color: c.text },
+    statLabel: { fontSize: fontSize.sm, color: c.textMuted, marginTop: spacing.xxs },
+    statDivider: { width: 1, height: 32, backgroundColor: c.border },
+    section: { marginBottom: spacing['2xl'] },
+    navGrid: {},
+    navRow: { flexDirection: 'row' },
+    navGap: { width: spacing.md },
+    navRowGap: { height: spacing.md },
+    loader: { marginVertical: spacing.xl },
+  });
+}

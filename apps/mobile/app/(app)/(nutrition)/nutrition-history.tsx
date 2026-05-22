@@ -2,7 +2,10 @@ import { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Dimensions, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
+import { useMemo } from 'react';
 import { NutritionBarChart } from '@/features/nutrition/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
@@ -40,6 +43,8 @@ export default function NutritionHistoryScreen() {
     router, scopeIndex, setScopeIndex, history, isLoading,
     caloriesData, proteinData, fatData, carbData, waterData,
   } = useNutritionHistoryScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [pageIndex, setPageIndex] = useState(0);
   const scrollRef = useRef<ScrollView>(null);
@@ -144,6 +149,8 @@ export default function NutritionHistoryScreen() {
 }
 
 function StatCard({ label, value, unit, color, sub }: { label: string; value: string; unit: string; color: string; sub?: string }) {
+  const { colors } = useTheme();
+  const statStyles = useMemo(() => makeStatStyles(colors), [colors]);
   return (
     <View style={statStyles.card}>
       <Text style={statStyles.label}>{label}</Text>
@@ -154,61 +161,65 @@ function StatCard({ label, value, unit, color, sub }: { label: string; value: st
   );
 }
 
-const statStyles = StyleSheet.create({
-  card: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  label: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginBottom: 2,
-  },
-  value: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-  },
-  unit: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-    marginTop: 1,
-  },
-  sub: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-});
+function makeStatStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    card: {
+      flex: 1,
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    label: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginBottom: 2,
+    },
+    value: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+    },
+    unit: {
+      fontSize: fontSize.xs,
+      color: c.textSecondary,
+      marginTop: 1,
+    },
+    sub: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      marginTop: 2,
+    },
+  });
+}
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, marginBottom: spacing.lg },
-  backBtn: { color: colors.primary, fontSize: fontSize.md, fontWeight: fontWeight.semibold },
-  screenTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text },
-  headerSpacer: { width: 50 },
-  scopeWrapper: { paddingHorizontal: spacing.lg, marginBottom: spacing.lg },
-  loader: { marginTop: 60 },
-  tabsRow: { flexGrow: 0, flexShrink: 0, marginBottom: spacing.md },
-  tabRowContent: { paddingHorizontal: spacing.lg, gap: spacing.xs, flex: 1 },
-  tab: {
-    flex: 1,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-  },
-  tabText: {
-    textAlign: 'center',
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.medium,
-    color: colors.textSecondary,
-  },
-  page: { paddingBottom: spacing['2xl'] },
-  pageContent: { paddingHorizontal: spacing.lg, paddingBottom: spacing['2xl']},
-  statsRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: spacing.lg, marginBottom: spacing.lg },
+    backBtn: { color: c.primary, fontSize: fontSize.md, fontWeight: fontWeight.semibold },
+    screenTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: c.text },
+    headerSpacer: { width: 50 },
+    scopeWrapper: { paddingHorizontal: spacing.lg, marginBottom: spacing.lg },
+    loader: { marginTop: 60 },
+    tabsRow: { flexGrow: 0, flexShrink: 0, marginBottom: spacing.md },
+    tabRowContent: { paddingHorizontal: spacing.lg, gap: spacing.xs, flex: 1 },
+    tab: {
+      flex: 1,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderBottomWidth: 2,
+      borderBottomColor: 'transparent',
+    },
+    tabText: {
+      textAlign: 'center',
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.medium,
+      color: c.textSecondary,
+    },
+    page: { paddingBottom: spacing['2xl'] },
+    pageContent: { paddingHorizontal: spacing.lg, paddingBottom: spacing['2xl']},
+    statsRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
+  });
+}

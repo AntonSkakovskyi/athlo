@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
-import { colors, spacing } from '@/constants/theme';
+import { spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { useStatisticsScreen } from '@/features/profile/hooks/useStatisticsScreen';
 import { BodyMetricsTab } from '@/features/profile/components/BodyMetricsTab/BodyMetricsTab';
@@ -9,6 +12,8 @@ export default function StatisticsScreen() {
     insets,
     router,
   } = useStatisticsScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <ScrollView
@@ -24,10 +29,12 @@ export default function StatisticsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+      paddingHorizontal: spacing.lg,
+    },
+  });
+}

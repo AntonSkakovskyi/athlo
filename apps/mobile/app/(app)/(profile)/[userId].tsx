@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
@@ -21,6 +24,8 @@ export default function UserProfileScreen() {
     templates,
     mealPlans,
   } = useUserProfileScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   if (profileLoading) {
     return <LoadingScreen />;
@@ -95,63 +100,65 @@ export default function UserProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-  },
-  headerContainer: {
-    paddingBottom: spacing.sm,
-  },
-  headerRow: { flexDirection: 'row', justifyContent: 'flex-start', marginBottom: spacing.sm },
-  backBtn: {
-    paddingVertical: spacing.xs,
-  },
-  backBtnText: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-  },
-  profileCard: {
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
-    padding: spacing['2xl'],
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing['2xl'],
-  },
-  nickname: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text, marginTop: spacing.md },
-  fullName: { fontSize: fontSize.md, color: colors.textSecondary, marginTop: spacing.xs },
-  friendBadgeText: {
-    fontSize: fontSize.xs,
-    color: colors.textSecondary,
-    fontWeight: fontWeight.bold,
-  },
-  resourcesSection: {
-    marginBottom: spacing['2xl'],
-  },
-  resourceCard: {
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  resourceTitle: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  resourceDesc: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    marginTop: spacing.xxs,
-  },
-  emptyText: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginVertical: spacing.md,
-  },
-  gap: { height: spacing.md },
-  sectionHeaderContainer: { marginBottom: spacing.md },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+      paddingHorizontal: spacing.lg,
+    },
+    headerContainer: {
+      paddingBottom: spacing.sm,
+    },
+    headerRow: { flexDirection: 'row', justifyContent: 'flex-start', marginBottom: spacing.sm },
+    backBtn: {
+      paddingVertical: spacing.xs,
+    },
+    backBtnText: {
+      fontSize: fontSize.md,
+      color: c.primary,
+      fontWeight: fontWeight.bold,
+    },
+    profileCard: {
+      alignItems: 'center',
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.xl,
+      padding: spacing['2xl'],
+      borderWidth: 1,
+      borderColor: c.border,
+      marginBottom: spacing['2xl'],
+    },
+    nickname: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: c.text, marginTop: spacing.md },
+    fullName: { fontSize: fontSize.md, color: c.textSecondary, marginTop: spacing.xs },
+    friendBadgeText: {
+      fontSize: fontSize.xs,
+      color: c.textSecondary,
+      fontWeight: fontWeight.bold,
+    },
+    resourcesSection: {
+      marginBottom: spacing['2xl'],
+    },
+    resourceCard: {
+      padding: spacing.md,
+      marginBottom: spacing.sm,
+    },
+    resourceTitle: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    resourceDesc: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+      marginTop: spacing.xxs,
+    },
+    emptyText: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      textAlign: 'center',
+      marginVertical: spacing.md,
+    },
+    gap: { height: spacing.md },
+    sectionHeaderContainer: { marginBottom: spacing.md },
+  });
+}

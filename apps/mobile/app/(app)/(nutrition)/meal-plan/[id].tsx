@@ -6,7 +6,10 @@ import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { Typography } from '@/components/ui/Typography/Typography';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
+import { useMemo } from 'react';
 import {
   DayTabsRow,
   MealCard,
@@ -33,6 +36,8 @@ export default function MealPlanDetailScreen() {
     handleSaveName, startEditName, isActive, isActivatePending,
     editingMealItem, setEditingMealItem, isUpdateItemPending,
   } = useMealPlanDetailScreen(id);
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   if (isLoading) {
     return (
@@ -178,22 +183,24 @@ export default function MealPlanDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
-  activateBtn: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
-  nameSection: { paddingHorizontal: spacing.lg, marginBottom: spacing.lg },
-  nameInput: {
-    fontSize: fontSize['2xl'],
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.primary,
-    paddingVertical: spacing.xs,
-  },
-  planDesc: { marginTop: spacing.xs },
-  planMeta: { marginTop: spacing.xs },
-  dayContent: { flex: 1 },
-  dayContentInner: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
-  addMealBtn: { marginTop: spacing.md },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: c.background },
+    activateBtn: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
+    nameSection: { paddingHorizontal: spacing.lg, marginBottom: spacing.lg },
+    nameInput: {
+      fontSize: fontSize['2xl'],
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      borderBottomWidth: 1,
+      borderBottomColor: c.primary,
+      paddingVertical: spacing.xs,
+    },
+    planDesc: { marginTop: spacing.xs },
+    planMeta: { marginTop: spacing.xs },
+    dayContent: { flex: 1 },
+    dayContentInner: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
+    addMealBtn: { marginTop: spacing.md },
+  });
+}

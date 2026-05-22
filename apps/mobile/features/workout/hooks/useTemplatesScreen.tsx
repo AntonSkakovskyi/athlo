@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { spacing } from '@/constants/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { 
@@ -61,7 +62,7 @@ export function useTemplatesScreen() {
   };
 
   const renderTemplateItem = (item: IWorkoutTemplate, variant: 'my' | 'public' | 'saved', creatorNickname?: string) => (
-    <View key={item.id} style={{ marginBottom: 12 }}>
+    <View key={item.id} style={styles.templateItem}>
       <TemplateCard
         name={item.name}
         description={item.description}
@@ -133,3 +134,9 @@ export function useTemplatesScreen() {
     router,
   };
 }
+
+const styles = StyleSheet.create({
+  templateItem: {
+    marginBottom: spacing.md,
+  },
+});

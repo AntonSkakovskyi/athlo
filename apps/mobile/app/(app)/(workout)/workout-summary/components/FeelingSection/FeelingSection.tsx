@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, fontSize } from '@/constants/theme';
+import { fontSize, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { FEELING_OPTIONS } from '@/utils/icons';
 
 interface FeelingScectionProps {
@@ -15,6 +18,8 @@ export function FeelingSection({
   workoutFeelingScore,
   onFeelingChange,
 }: FeelingScectionProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.optionalItem}>
       <Text style={styles.optionalLabel}>Feeling</Text>
@@ -39,31 +44,33 @@ export function FeelingSection({
 
 export default FeelingSection;
 
-const styles = StyleSheet.create({
-  optionalItem: {
-    alignItems: 'center',
-    minWidth: 70,
-    flex: 1,
-  },
-  optionalLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  optionalValueLarge: {
-    fontSize: 24,
-  },
-  feelingRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  emoji: {
-    fontSize: 20,
-    opacity: 0.5,
-  },
-  selectedEmoji: {
-    opacity: 1,
-    transform: [{ scale: 1.2 }],
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    optionalItem: {
+      alignItems: 'center',
+      minWidth: 70,
+      flex: 1,
+    },
+    optionalLabel: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      textTransform: 'uppercase',
+      marginBottom: spacing.xs,
+    },
+    optionalValueLarge: {
+      fontSize: 24,
+    },
+    feelingRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    emoji: {
+      fontSize: 20,
+      opacity: 0.5,
+    },
+    selectedEmoji: {
+      opacity: 1,
+      transform: [{ scale: 1.2 }],
+    },
+  });
+}

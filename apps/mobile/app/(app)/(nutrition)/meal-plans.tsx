@@ -10,8 +10,11 @@ import { CollapsibleSection } from '@/components/ui/CollapsibleSection/Collapsib
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
 import { PlanCard } from '@/features/nutrition/components';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { borderRadius, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { useMealPlansScreen } from '@/features/nutrition/hooks/useMealPlansScreen';
+import { useMemo } from 'react';
 import type { IMealPlan } from '@athlo/shared';
 
 const TABS = ['My', 'Public', 'Friends'];
@@ -27,6 +30,8 @@ export default function MealPlansScreen() {
     handleCreate, handleDelete, handleActivate, handleDeactivate,
     handleSave, handleUnsave, isCreatePending, router,
   } = useMealPlansScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const renderPlan = (plan: IMealPlan, variant: 'my' | 'public' | 'saved') => (
     <PlanCard
@@ -179,21 +184,23 @@ export default function MealPlansScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  segmentWrap: { paddingHorizontal: spacing.lg, marginBottom: spacing.md },
-  searchWrap: { paddingHorizontal: spacing.lg, marginBottom: spacing.sm },
-  searchInput: { marginBottom: 0 },
-  createCard: {
-    marginHorizontal: spacing.lg,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.lg,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  createBtn: { marginTop: spacing.md },
-  list: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
-  loader: { marginTop: 40 },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background },
+    segmentWrap: { paddingHorizontal: spacing.lg, marginBottom: spacing.md },
+    searchWrap: { paddingHorizontal: spacing.lg, marginBottom: spacing.sm },
+    searchInput: { marginBottom: 0 },
+    createCard: {
+      marginHorizontal: spacing.lg,
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    createBtn: { marginTop: spacing.md },
+    list: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
+    loader: { marginTop: 40 },
+  });
+}

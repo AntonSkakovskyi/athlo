@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, borderRadius, spacing } from '@/constants/theme';
+import { borderRadius, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { Tag } from '@/components/ui/Tag/Tag';
 import { LineChartBlock } from '@/components/ui/LineChartBlock/LineChartBlock';
@@ -30,6 +33,8 @@ export default function ExerciseDetailScreen() {
     PERIOD_LABELS,
     trackingType,
   } = useExerciseDetailScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const renderHeader = () => {
     // Group PR history by metricType to find the latest
@@ -144,47 +149,49 @@ export default function ExerciseDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  listContent: {
-    paddingHorizontal: spacing.lg,
-  },
-  headerContent: {
-    marginBottom: spacing.md,
-  },
-  exerciseInfo: { alignItems: 'center', marginBottom: 20 },
-  exerciseImagePlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.surfaceLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  exerciseImageEmoji: { fontSize: 32 },
-  exerciseName: { fontSize: 22, fontWeight: '700', color: colors.text, textAlign: 'center', marginBottom: 8 },
-  muscleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'center' },
-  prsContainer: { marginBottom: spacing.lg },
-  prsTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
-  prsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  prCard: { flex: 1, minWidth: '45%', alignItems: 'center', padding: spacing.md },
-  prTrophy: { fontSize: 24, marginBottom: 4 },
-  prMetricType: { fontSize: 12, fontWeight: '600', color: colors.textMuted, marginBottom: 2, textTransform: 'uppercase' },
-  prValue: { fontSize: 18, fontWeight: '700', color: colors.primary },
-  loader: { marginVertical: 40 },
-  historyTitle: { fontSize: 18, fontWeight: '700', color: colors.text, marginTop: spacing.md, marginBottom: 12 },
-  historyCardWrapper: {
-    marginBottom: spacing.sm,
-  },
-  historyDate: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textSecondary,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+    },
+    listContent: {
+      paddingHorizontal: spacing.lg,
+    },
+    headerContent: {
+      marginBottom: spacing.md,
+    },
+    exerciseInfo: { alignItems: 'center', marginBottom: 20 },
+    exerciseImagePlaceholder: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: c.surfaceLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    exerciseImageEmoji: { fontSize: 32 },
+    exerciseName: { fontSize: 22, fontWeight: '700', color: c.text, textAlign: 'center', marginBottom: 8 },
+    muscleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, justifyContent: 'center' },
+    prsContainer: { marginBottom: spacing.lg },
+    prsTitle: { fontSize: 18, fontWeight: '700', color: c.text, marginBottom: spacing.md },
+    prsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+    prCard: { flex: 1, minWidth: '45%', alignItems: 'center', padding: spacing.md },
+    prTrophy: { fontSize: 24, marginBottom: 4 },
+    prMetricType: { fontSize: 12, fontWeight: '600', color: c.textMuted, marginBottom: 2, textTransform: 'uppercase' },
+    prValue: { fontSize: 18, fontWeight: '700', color: c.primary },
+    loader: { marginVertical: 40 },
+    historyTitle: { fontSize: 18, fontWeight: '700', color: c.text, marginTop: spacing.md, marginBottom: 12 },
+    historyCardWrapper: {
+      marginBottom: spacing.sm,
+    },
+    historyDate: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: c.textSecondary,
+      marginBottom: 8,
+      marginLeft: 4,
+    },
+  });
+}

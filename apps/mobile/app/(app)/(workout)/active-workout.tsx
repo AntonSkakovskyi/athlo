@@ -1,5 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { colors, spacing, fontSize } from '@/constants/theme';
+import { spacing, fontSize } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { WorkoutHeaderBar } from './active-workout/components/WorkoutHeaderBar/WorkoutHeaderBar';
 import { ExerciseListSection } from './active-workout/components/ExerciseListSection/ExerciseListSection';
@@ -8,7 +10,7 @@ import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { BottomSheet, AchievementToast } from '@/components/ui';
 import { formatHMS, formatSeconds } from '@/utils/time';
 import { useActiveWorkoutScreen } from '@/features/workout/hooks/useActiveWorkoutScreen';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export default function ActiveWorkoutScreen() {
   const {
@@ -43,6 +45,8 @@ export default function ActiveWorkoutScreen() {
     router,
   } = useActiveWorkoutScreen();
 
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [prAchievement, setPrAchievement] = useState<any>(null);
   const [prVisible, setPrVisible] = useState(false);
 
@@ -159,10 +163,10 @@ export default function ActiveWorkoutScreen() {
         <View style={styles.prContent}>
           <Text style={styles.trophyBigIcon}>🏆</Text>
           <Text style={styles.prDescription}>{prAchievement?.description}</Text>
-          <Button 
-            title="Awesome!" 
+          <Button
+            title="Awesome!"
             onPress={() => setPrVisible(false)}
-            style={{ marginTop: 24 }}
+            style={styles.awesomeBtn}
           />
         </View>
       </BottomSheet>
@@ -177,45 +181,50 @@ export default function ActiveWorkoutScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  statsWrap: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.lg,
-  },
-  footer: {
-    flexDirection: 'row',
-    padding: spacing.lg,
-    gap: spacing.md,
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  footerBtn: {
-    flex: 1,
-  },
-  prContent: {
-    paddingBottom: 24,
-    alignItems: 'center',
-  },
-  trophyBigIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  prDescription: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 20,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: c.background,
+    },
+    statsWrap: {
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.lg,
+    },
+    footer: {
+      flexDirection: 'row',
+      padding: spacing.lg,
+      gap: spacing.md,
+      backgroundColor: c.surface,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+    },
+    footerBtn: {
+      flex: 1,
+    },
+    prContent: {
+      paddingBottom: spacing['2xl'],
+      alignItems: 'center',
+    },
+    trophyBigIcon: {
+      fontSize: 64,
+      marginBottom: spacing.lg,
+    },
+    prDescription: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+      paddingHorizontal: spacing.xl,
+    },
+    awesomeBtn: {
+      marginTop: spacing['2xl'],
+    },
+  });
+}

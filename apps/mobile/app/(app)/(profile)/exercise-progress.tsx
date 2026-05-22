@@ -2,7 +2,9 @@ import { useState, useMemo, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { colors, spacing } from '@/constants/theme';
+import { spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { useInfiniteExercises } from '@/hooks/api/useExerciseAPI';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { Input } from '@/components/ui/Input/Input';
@@ -13,6 +15,8 @@ import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import type { ExerciseWithRelations } from '@/hooks/api/useExerciseAPI';
 
 export default function ExerciseProgressScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
@@ -103,16 +107,18 @@ export default function ExerciseProgressScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-  },
-  searchSection: {
-    marginBottom: 16,
-  },
-  loader: {
-    marginVertical: 30,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+      paddingHorizontal: spacing.lg,
+    },
+    searchSection: {
+      marginBottom: spacing.lg,
+    },
+    loader: {
+      marginVertical: 30,
+    },
+  });
+}

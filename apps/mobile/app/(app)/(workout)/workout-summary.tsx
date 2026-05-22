@@ -1,5 +1,7 @@
 import { View, Text, ScrollView, StyleSheet, TextInput, Pressable } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
@@ -12,7 +14,7 @@ import { getTrackingType } from '@/utils/workout';
 import { formatSeconds } from '@/utils/time';
 import { VISIBILITY_ENUM_TO_ID, getVisibilityIcon } from '@/utils/visibility';
 import { BottomSheet, AchievementToast } from '@/components/ui';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 
 export default function WorkoutSummaryScreen() {
@@ -58,6 +60,8 @@ export default function WorkoutSummaryScreen() {
     newAchievement,
     setNewAchievement,
   } = useWorkoutSummaryScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [durationPickerVisible, setDurationPickerVisible] = useState(false);
   const [tempDuration, setTempDuration] = useState(0);
@@ -266,15 +270,15 @@ export default function WorkoutSummaryScreen() {
           title="Workout Duration"
           scrollable={false}
         >
-          <View style={{ paddingBottom: 16 }}>
-            <DurationPicker 
+          <View style={styles.sheetBody}>
+            <DurationPicker
               value={tempDuration}
               onChange={setTempDuration}
             />
-            <Button 
-              title="Confirm" 
+            <Button
+              title="Confirm"
               onPress={handleConfirmDuration}
-              style={{ marginTop: 24 }}
+              style={styles.sheetActionBtn}
             />
           </View>
         </BottomSheet>
@@ -288,10 +292,10 @@ export default function WorkoutSummaryScreen() {
           <View style={styles.prContent}>
             <Text style={styles.trophyBigIcon}>🏆</Text>
             <Text style={styles.prDescription}>{prAchievement?.description}</Text>
-            <Button 
-              title="Awesome!" 
+            <Button
+              title="Awesome!"
               onPress={() => setPrVisible(false)}
-              style={{ marginTop: 24 }}
+              style={styles.sheetActionBtn}
             />
           </View>
         </BottomSheet>
@@ -388,149 +392,157 @@ export default function WorkoutSummaryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  emptyText: {
-    fontSize: fontSize.lg,
-    color: colors.textSecondary,
-  },
-  goBackBtn: {
-    marginTop: 16,
-  },
-  renameBtn: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-    minWidth: 80,
-    alignItems: 'flex-end',
-  },
-  renameBtnText: {
-    fontSize: fontSize.sm,
-    color: colors.primary,
-    fontWeight: fontWeight.medium,
-  },
-  scrollArea: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: 40,
-  },
-  workoutName: {
-    fontSize: fontSize['2xl'],
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  workoutNameInput: {
-    fontSize: fontSize['2xl'],
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.primary,
-    paddingVertical: 0,
-  },
-  workoutDate: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    marginBottom: 20,
-  },
-  optionalMetrics: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: 16,
-    marginBottom: 20,
-    gap: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  optionalItem: {
-    alignItems: 'center',
-    minWidth: 70,
-    flex: 1,
-  },
-  optionalLabel: {
-    fontSize: fontSize.xs,
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-    marginBottom: 4,
-  },
-  optionalValue: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  metricInput: {
-    fontSize: fontSize.md,
-    fontWeight: '600',
-    color: colors.primary,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.primary,
-    minWidth: 40,
-    textAlign: 'center',
-  },
-  visibilitySection: {
-    marginBottom: 20,
-  },
-  descriptionSection: {
-    marginBottom: 20,
-  },
-  descriptionInput: {
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    padding: 12,
-    fontSize: fontSize.sm,
-    color: colors.text,
-    borderWidth: 1,
-    borderColor: colors.border,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  descriptionText: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    backgroundColor: colors.surface,
-    padding: 12,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  sectionTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  addExerciseBtn: {
-    marginTop: spacing.md,
-    marginBottom: spacing.xl,
-  },
-  prContent: {
-    paddingBottom: 24,
-    alignItems: 'center',
-  },
-  trophyBigIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  prDescription: {
-    fontSize: fontSize.md,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 20,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: c.background,
+    },
+    emptyText: {
+      fontSize: fontSize.lg,
+      color: c.textSecondary,
+    },
+    goBackBtn: {
+      marginTop: spacing.lg,
+    },
+    renameBtn: {
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.sm,
+      minWidth: 80,
+      alignItems: 'flex-end',
+    },
+    renameBtnText: {
+      fontSize: fontSize.sm,
+      color: c.primary,
+      fontWeight: fontWeight.medium,
+    },
+    scrollArea: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing['4xl'],
+    },
+    workoutName: {
+      fontSize: fontSize['2xl'],
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      marginBottom: spacing.xs,
+    },
+    workoutNameInput: {
+      fontSize: fontSize['2xl'],
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      marginBottom: spacing.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: c.primary,
+      paddingVertical: 0,
+    },
+    workoutDate: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      marginBottom: spacing.xl,
+    },
+    optionalMetrics: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.xl,
+      gap: spacing.lg,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    optionalItem: {
+      alignItems: 'center',
+      minWidth: 70,
+      flex: 1,
+    },
+    optionalLabel: {
+      fontSize: fontSize.xs,
+      color: c.textMuted,
+      textTransform: 'uppercase',
+      marginBottom: spacing.xs,
+    },
+    optionalValue: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.text,
+    },
+    metricInput: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.primary,
+      borderBottomWidth: 1,
+      borderBottomColor: c.primary,
+      minWidth: 40,
+      textAlign: 'center',
+    },
+    visibilitySection: {
+      marginBottom: spacing.xl,
+    },
+    descriptionSection: {
+      marginBottom: spacing.xl,
+    },
+    descriptionInput: {
+      backgroundColor: c.surface,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      fontSize: fontSize.sm,
+      color: c.text,
+      borderWidth: 1,
+      borderColor: c.border,
+      minHeight: 80,
+      textAlignVertical: 'top',
+    },
+    descriptionText: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+      lineHeight: 20,
+      backgroundColor: c.surface,
+      padding: spacing.md,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    sectionTitle: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      marginBottom: spacing.md,
+    },
+    addExerciseBtn: {
+      marginTop: spacing.md,
+      marginBottom: spacing.xl,
+    },
+    sheetBody: {
+      paddingBottom: spacing.lg,
+    },
+    sheetActionBtn: {
+      marginTop: spacing['2xl'],
+    },
+    prContent: {
+      paddingBottom: spacing['2xl'],
+      alignItems: 'center',
+    },
+    trophyBigIcon: {
+      fontSize: 64,
+      marginBottom: spacing.lg,
+    },
+    prDescription: {
+      fontSize: fontSize.md,
+      color: c.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+      paddingHorizontal: spacing.xl,
+    },
+  });
+}
 

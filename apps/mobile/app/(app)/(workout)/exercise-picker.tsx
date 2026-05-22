@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { colors, spacing, fontWeight } from '@/constants/theme';
+import { spacing, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
@@ -32,6 +34,8 @@ export default function ExercisePickerScreen() {
     router,
     isReplaceMode,
   } = useExercisePickerScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const selectedList = useMemo(() => Array.from(selectedExercises.values()), [selectedExercises]);
 
@@ -126,52 +130,54 @@ export default function ExercisePickerScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  searchWrap: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: 8,
-  },
-  searchInput: {
-    marginBottom: 0,
-  },
-  selectedSection: {
-    maxHeight: 220,
-    backgroundColor: colors.surfaceLight,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.md,
-  },
-  selectedHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  selectedTitle: {
-    fontSize: 14,
-    fontWeight: fontWeight.bold,
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  selectedScroll: {
-    paddingHorizontal: spacing.lg,
-  },
-  selectedContent: {
-    paddingBottom: spacing.md,
-  },
-  footer: {
-    padding: spacing.lg,
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  addBtn: {
-    width: '100%',
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+    },
+    searchWrap: {
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.sm,
+    },
+    searchInput: {
+      marginBottom: 0,
+    },
+    selectedSection: {
+      maxHeight: 220,
+      backgroundColor: c.surfaceLight,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+      paddingTop: spacing.md,
+    },
+    selectedHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.sm,
+    },
+    selectedTitle: {
+      fontSize: 14,
+      fontWeight: fontWeight.bold,
+      color: c.textSecondary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    selectedScroll: {
+      paddingHorizontal: spacing.lg,
+    },
+    selectedContent: {
+      paddingBottom: spacing.md,
+    },
+    footer: {
+      padding: spacing.lg,
+      backgroundColor: c.surface,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+    },
+    addBtn: {
+      width: '100%',
+    },
+  });
+}

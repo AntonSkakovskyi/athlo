@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { colors, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
@@ -24,6 +27,8 @@ export default function TemplateDetailScreen() {
     startFromTemplatePending, deleteTemplatePending,
     insets, router,
   } = useTemplateDetailScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const isOwner = user?.id === typedTemplate?.creatorId;
 
@@ -131,18 +136,20 @@ export default function TemplateDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
-  header: { paddingHorizontal: spacing.lg, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  backBtn: { fontSize: fontSize.md, color: colors.primary, fontWeight: fontWeight.semibold },
-  editBtn: { fontSize: fontSize.md, color: colors.primary, fontWeight: fontWeight.semibold },
-  list: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
-  addExerciseBtn: { marginTop: spacing.xs, marginBottom: spacing.lg },
-  footer: { flexDirection: 'row', padding: spacing.lg, gap: spacing.md, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
-  footerButton: { flex: 1 },
-  deleteButton: { width: 90 },
-  errorText: { color: colors.danger, fontSize: fontSize.lg },
-  goBackBtn: { marginTop: spacing.lg },
-  saveRestBtn: { marginTop: spacing.md, marginBottom: spacing.lg },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: c.background },
+    header: { paddingHorizontal: spacing.lg, marginBottom: spacing.sm, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    backBtn: { fontSize: fontSize.md, color: c.primary, fontWeight: fontWeight.semibold },
+    editBtn: { fontSize: fontSize.md, color: c.primary, fontWeight: fontWeight.semibold },
+    list: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
+    addExerciseBtn: { marginTop: spacing.xs, marginBottom: spacing.lg },
+    footer: { flexDirection: 'row', padding: spacing.lg, gap: spacing.md, backgroundColor: c.surface, borderTopWidth: 1, borderTopColor: c.border },
+    footerButton: { flex: 1 },
+    deleteButton: { width: 90 },
+    errorText: { color: c.danger, fontSize: fontSize.lg },
+    goBackBtn: { marginTop: spacing.lg },
+    saveRestBtn: { marginTop: spacing.md, marginBottom: spacing.lg },
+  });
+}

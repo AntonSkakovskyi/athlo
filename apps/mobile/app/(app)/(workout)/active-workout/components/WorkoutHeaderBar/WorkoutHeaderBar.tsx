@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 
 interface WorkoutHeaderBarProps {
   workoutName: string;
@@ -20,6 +23,9 @@ export function WorkoutHeaderBar({
   onEditNameSave,
   onFinish,
 }: WorkoutHeaderBarProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.topBar}>
       <Pressable onPress={onBack}>
@@ -51,47 +57,49 @@ export function WorkoutHeaderBar({
 
 export default WorkoutHeaderBar;
 
-const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  backBtn: {
-    fontSize: fontSize.md,
-    color: colors.primary,
-    fontWeight: fontWeight.semibold,
-  },
-  nameWrap: {
-    flex: 1,
-  },
-  workoutName: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  nameInput: {
-    flex: 1,
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    textAlign: 'center',
-    borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
-    paddingVertical: spacing.xs,
-  },
-  finishBtn: {
-    backgroundColor: colors.primaryLight,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-  },
-  finishText: {
-    color: colors.primary,
-    fontWeight: fontWeight.bold,
-    fontSize: fontSize.md,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    topBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.md,
+      gap: spacing.sm,
+    },
+    backBtn: {
+      fontSize: fontSize.md,
+      color: c.primary,
+      fontWeight: fontWeight.semibold,
+    },
+    nameWrap: {
+      flex: 1,
+    },
+    workoutName: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      textAlign: 'center',
+    },
+    nameInput: {
+      flex: 1,
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      textAlign: 'center',
+      borderBottomWidth: 2,
+      borderBottomColor: c.primary,
+      paddingVertical: spacing.xs,
+    },
+    finishBtn: {
+      backgroundColor: c.primaryLight,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.md,
+    },
+    finishText: {
+      color: c.primary,
+      fontWeight: fontWeight.bold,
+      fontSize: fontSize.md,
+    },
+  });
+}

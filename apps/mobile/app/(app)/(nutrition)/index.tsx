@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Chip } from '@/components/ui/Chip/Chip';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
@@ -17,6 +19,8 @@ import { useNutritionHomeScreen } from '@/features/nutrition/hooks/useNutritionH
 const TAB_LABELS = ['🥘 Meals', '💧 Water'];
 
 export default function NutritionScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const activeTab = activeTabIndex === 0 ? 'meals' : 'water';
@@ -175,23 +179,25 @@ export default function NutritionScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, paddingHorizontal: spacing.lg },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
-  headerActions: { flexDirection: 'row', gap: spacing.sm },
-  screenTitle: { fontSize: 22, fontWeight: '700', color: colors.text },
-  mealPlansBtn: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.surface, borderRadius: borderRadius.md, borderWidth: 1, borderColor: colors.border },
-  mealPlansBtnText: { fontSize: 13, fontWeight: '600', color: colors.text },
-  loader: { marginVertical: 40 },
-  tabContainer: {
-    marginBottom: spacing.lg,
-  },
-  section: { marginBottom: spacing.xl },
-  chipRow: { 
-    flexDirection: 'row', 
-    flexWrap: 'wrap', 
-    marginBottom: spacing.md,
-    justifyContent: 'space-between',
-  },
-  addMealBtn: { marginBottom: spacing.lg },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: c.background, paddingHorizontal: spacing.lg },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.sm },
+    headerActions: { flexDirection: 'row', gap: spacing.sm },
+    screenTitle: { fontSize: 22, fontWeight: '700', color: c.text },
+    mealPlansBtn: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, backgroundColor: c.surface, borderRadius: borderRadius.md, borderWidth: 1, borderColor: c.border },
+    mealPlansBtnText: { fontSize: 13, fontWeight: '600', color: c.text },
+    loader: { marginVertical: 40 },
+    tabContainer: {
+      marginBottom: spacing.lg,
+    },
+    section: { marginBottom: spacing.xl },
+    chipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginBottom: spacing.md,
+      justifyContent: 'space-between',
+    },
+    addMealBtn: { marginBottom: spacing.lg },
+  });
+}

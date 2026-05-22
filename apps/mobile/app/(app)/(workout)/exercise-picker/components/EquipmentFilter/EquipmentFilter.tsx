@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { IMuscle, IEquipment } from '@athlo/shared';
-import { colors, spacing, borderRadius, fontSize } from '@/constants/theme';
+import { spacing, borderRadius, fontSize } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
 import { BottomSheet, BottomSheetItem } from '@/components/ui/BottomSheet/BottomSheet';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,6 +25,8 @@ export function EquipmentFilter({
   onToggleMuscle,
   onToggleEquipment,
 }: EquipmentFilterProps) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [muscleSheetVisible, setMuscleSheetVisible] = useState(false);
   const [equipmentSheetVisible, setEquipmentSheetVisible] = useState(false);
   const [muscleSearch, setMuscleSearch] = useState('');
@@ -147,52 +151,54 @@ export function EquipmentFilter({
 
 export default EquipmentFilter;
 
-const styles = StyleSheet.create({
-  filtersRow: {
-    flexDirection: 'row',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: 8,
-    gap: spacing.sm,
-  },
-  filterBtnWrap: {
-    flex: 1,
-  },
-  filterBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
-    gap: spacing.xs,
-  },
-  filterBtnActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '10',
-  },
-  filterBtnText: {
-    fontSize: 14,
-    color: colors.text,
-    fontWeight: '500',
-    flex: 1,
-  },
-  filterBtnTextActive: {
-    color: colors.primary,
-  },
-  sheetSearchWrap: {
-    paddingHorizontal: spacing.sm,
-  },
-  sheetSearchInput: {
-    backgroundColor: colors.surfaceLight,
-    fontSize: fontSize.md,
-  },
-  noResults: {
-    textAlign: 'center',
-    paddingVertical: spacing.lg,
-    color: colors.textSecondary,
-    fontSize: 14,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    filtersRow: {
+      flexDirection: 'row',
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      gap: spacing.sm,
+    },
+    filterBtnWrap: {
+      flex: 1,
+    },
+    filterBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: c.surface,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: borderRadius.md,
+      paddingHorizontal: spacing.md,
+      paddingVertical: 10,
+      gap: spacing.xs,
+    },
+    filterBtnActive: {
+      borderColor: c.primary,
+      backgroundColor: c.primary + '10',
+    },
+    filterBtnText: {
+      fontSize: 14,
+      color: c.text,
+      fontWeight: '500',
+      flex: 1,
+    },
+    filterBtnTextActive: {
+      color: c.primary,
+    },
+    sheetSearchWrap: {
+      paddingHorizontal: spacing.sm,
+    },
+    sheetSearchInput: {
+      backgroundColor: c.surfaceLight,
+      fontSize: fontSize.md,
+    },
+    noResults: {
+      textAlign: 'center',
+      paddingVertical: spacing.lg,
+      color: c.textSecondary,
+      fontSize: 14,
+    },
+  });
+}

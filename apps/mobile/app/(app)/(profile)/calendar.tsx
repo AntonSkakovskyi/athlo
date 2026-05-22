@@ -1,5 +1,8 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-native';
-import { colors, borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import type { IWorkoutWithRelations } from '@athlo/shared';
 import { WorkoutHistoryCard } from '@/features/workout/components';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
@@ -34,6 +37,8 @@ export default function CalendarScreen() {
     handleStartWorkout,
     today,
   } = useCalendarScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <ScrollView
@@ -154,96 +159,98 @@ export default function CalendarScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-    paddingHorizontal: spacing.lg,
-  },
-  section: {
-    marginBottom: spacing['2xl'],
-  },
-  selectedDateText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.semibold,
-    color: colors.textSecondary,
-    marginBottom: spacing.lg,
-  },
-  loader: {
-    marginVertical: spacing.xl,
-  },
-  sheetOverlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'flex-end',
-  },
-  sheetContent: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing['4xl'],
-    maxHeight: '50%',
-  },
-  sheetHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: borderRadius.xs,
-    backgroundColor: colors.border,
-    alignSelf: 'center',
-    marginTop: spacing.md,
-    marginBottom: spacing.lg,
-  },
-  sheetTitle: {
-    fontSize: fontSize.xl,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-  },
-  monthGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  monthGridItem: {
-    width: '30%',
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.surfaceLight,
-    alignItems: 'center',
-  },
-  monthGridItemActive: {
-    backgroundColor: colors.primary,
-  },
-  monthGridText: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.medium,
-    color: colors.text,
-  },
-  monthGridTextActive: {
-    color: colors.black,
-    fontWeight: fontWeight.bold,
-  },
-  yearList: {
-    maxHeight: 300,
-  },
-  yearItem: {
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
-    alignItems: 'center',
-    marginBottom: spacing.xs,
-  },
-  yearItemActive: {
-    backgroundColor: colors.primary,
-  },
-  yearItemText: {
-    fontSize: fontSize.lg,
-    fontWeight: fontWeight.medium,
-    color: colors.text,
-  },
-  yearItemTextActive: {
-    color: colors.black,
-    fontWeight: fontWeight.bold,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+      paddingHorizontal: spacing.lg,
+    },
+    section: {
+      marginBottom: spacing['2xl'],
+    },
+    selectedDateText: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.semibold,
+      color: c.textSecondary,
+      marginBottom: spacing.lg,
+    },
+    loader: {
+      marginVertical: spacing.xl,
+    },
+    sheetOverlay: {
+      flex: 1,
+      backgroundColor: c.overlay,
+      justifyContent: 'flex-end',
+    },
+    sheetContent: {
+      backgroundColor: c.surface,
+      borderTopLeftRadius: borderRadius.xl,
+      borderTopRightRadius: borderRadius.xl,
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing['4xl'],
+      maxHeight: '50%',
+    },
+    sheetHandle: {
+      width: 40,
+      height: 4,
+      borderRadius: borderRadius.xs,
+      backgroundColor: c.border,
+      alignSelf: 'center',
+      marginTop: spacing.md,
+      marginBottom: spacing.lg,
+    },
+    sheetTitle: {
+      fontSize: fontSize.xl,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+      textAlign: 'center',
+      marginBottom: spacing.xl,
+    },
+    monthGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    monthGridItem: {
+      width: '30%',
+      paddingVertical: spacing.md,
+      borderRadius: borderRadius.md,
+      backgroundColor: c.surfaceLight,
+      alignItems: 'center',
+    },
+    monthGridItemActive: {
+      backgroundColor: c.primary,
+    },
+    monthGridText: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.medium,
+      color: c.text,
+    },
+    monthGridTextActive: {
+      color: c.black,
+      fontWeight: fontWeight.bold,
+    },
+    yearList: {
+      maxHeight: 300,
+    },
+    yearItem: {
+      paddingVertical: spacing.md,
+      borderRadius: borderRadius.md,
+      alignItems: 'center',
+      marginBottom: spacing.xs,
+    },
+    yearItemActive: {
+      backgroundColor: c.primary,
+    },
+    yearItemText: {
+      fontSize: fontSize.lg,
+      fontWeight: fontWeight.medium,
+      color: c.text,
+    },
+    yearItemTextActive: {
+      color: c.black,
+      fontWeight: fontWeight.bold,
+    },
+  });
+}

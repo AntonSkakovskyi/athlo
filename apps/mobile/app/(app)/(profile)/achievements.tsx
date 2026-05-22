@@ -1,6 +1,9 @@
+import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable, Modal, Dimensions } from 'react-native';
 import type { IAchievement } from '@athlo/shared';
-import { colors, borderRadius, spacing, fontSize, fontWeight, shadows } from '@/constants/theme';
+import { borderRadius, spacing, fontSize, fontWeight, shadows } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
@@ -32,6 +35,8 @@ export default function AchievementsScreen() {
     selectedProgress,
     selectedProgressPercent,
   } = useAchievementsScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <View style={styles.screen}>
@@ -138,68 +143,70 @@ export default function AchievementsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  container: { flex: 1, paddingHorizontal: spacing.lg },
-  counter: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.semibold,
-    color: colors.primary,
-    minWidth: 60,
-    textAlign: 'right',
-  },
-  tabSection: { marginBottom: spacing.xl },
-  loader: { marginVertical: 40 },
-  achievementGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-  achievementGridItem: { width: '22%', alignItems: 'center', marginBottom: spacing.sm },
-  achievementCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.surfaceLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  achievementCircleUnlocked: { backgroundColor: colors.primaryLight, borderColor: colors.primary },
-  achievementEmoji: { fontSize: fontSize['2xl'] },
-  achievementTitle: { fontSize: fontSize.xs, color: colors.text, textAlign: 'center', marginTop: spacing.xs, lineHeight: 14 },
-  achievementTitleLocked: { color: colors.textMuted },
-  sheetOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
-  sheetContent: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xl,
-    borderTopRightRadius: borderRadius.xl,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing['3xl'],
-    paddingBottom: spacing['4xl'],
-    maxHeight: SHEET_HEIGHT,
-    minHeight: 200,
-  },
-  collapseBtn: {
-    position: 'absolute',
-    top: -20,
-    left: 20,
-    width: 40,
-    height: 40,
-    borderRadius: borderRadius.xl,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    zIndex: 10,
-    ...shadows.button,
-  },
-  collapseBtnText: { fontSize: fontSize.xl, color: colors.black, fontWeight: fontWeight.semibold },
-  sheetScroll: { flexGrow: 0 },
-  sheetName: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: colors.text, marginBottom: spacing.sm },
-  sheetDesc: { fontSize: fontSize.md, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md },
-  exerciseBadgeWrap: { alignSelf: 'flex-start', marginBottom: spacing.md },
-  sheetUnlockedInfo: { gap: spacing.sm, marginTop: spacing.xs },
-  sheetValue: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold, color: colors.text },
-  sheetDate: { fontSize: fontSize.md, color: colors.primary, fontWeight: fontWeight.medium },
-  sheetProgressSection: { marginTop: spacing.xs },
-  sheetProgressText: { fontSize: fontSize.sm, color: colors.textMuted, marginTop: spacing.xs },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    screen: { flex: 1, backgroundColor: c.background },
+    container: { flex: 1, paddingHorizontal: spacing.lg },
+    counter: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.semibold,
+      color: c.primary,
+      minWidth: 60,
+      textAlign: 'right',
+    },
+    tabSection: { marginBottom: spacing.xl },
+    loader: { marginVertical: 40 },
+    achievementGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+    achievementGridItem: { width: '22%', alignItems: 'center', marginBottom: spacing.sm },
+    achievementCircle: {
+      width: 60,
+      height: 60,
+      borderRadius: borderRadius.full,
+      backgroundColor: c.surfaceLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    achievementCircleUnlocked: { backgroundColor: c.primaryLight, borderColor: c.primary },
+    achievementEmoji: { fontSize: fontSize['2xl'] },
+    achievementTitle: { fontSize: fontSize.xs, color: c.text, textAlign: 'center', marginTop: spacing.xs, lineHeight: 14 },
+    achievementTitleLocked: { color: c.textMuted },
+    sheetOverlay: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
+    sheetContent: {
+      backgroundColor: c.surface,
+      borderTopLeftRadius: borderRadius.xl,
+      borderTopRightRadius: borderRadius.xl,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing['3xl'],
+      paddingBottom: spacing['4xl'],
+      maxHeight: SHEET_HEIGHT,
+      minHeight: 200,
+    },
+    collapseBtn: {
+      position: 'absolute',
+      top: -20,
+      left: 20,
+      width: 40,
+      height: 40,
+      borderRadius: borderRadius.xl,
+      backgroundColor: c.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+      zIndex: 10,
+      ...shadows.button,
+    },
+    collapseBtnText: { fontSize: fontSize.xl, color: c.black, fontWeight: fontWeight.semibold },
+    sheetScroll: { flexGrow: 0 },
+    sheetName: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: c.text, marginBottom: spacing.sm },
+    sheetDesc: { fontSize: fontSize.md, color: c.textSecondary, lineHeight: 22, marginBottom: spacing.md },
+    exerciseBadgeWrap: { alignSelf: 'flex-start', marginBottom: spacing.md },
+    sheetUnlockedInfo: { gap: spacing.sm, marginTop: spacing.xs },
+    sheetValue: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold, color: c.text },
+    sheetDate: { fontSize: fontSize.md, color: c.primary, fontWeight: fontWeight.medium },
+    sheetProgressSection: { marginTop: spacing.xs },
+    sheetProgressText: { fontSize: fontSize.sm, color: c.textMuted, marginTop: spacing.xs },
+  });
+}

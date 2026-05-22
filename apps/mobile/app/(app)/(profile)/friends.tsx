@@ -1,5 +1,7 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { colors, spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
+import type { ColorPalette } from '@/constants/colors';
 import { useFriendsScreen } from '@/features/friends/hooks/useFriendsScreen';
 import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
 import { Input } from '@/components/ui/Input/Input';
@@ -9,7 +11,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 const TABS = ['Friends', 'Requests', 'Find'];
 
@@ -37,6 +39,8 @@ export default function FriendsScreen() {
     cancelRequest,
     removeFriend,
   } = useFriendsScreen();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   useEffect(() => {
     if (params.tab === 'find') {
@@ -244,7 +248,7 @@ export default function FriendsScreen() {
           <Text style={styles.backBtn}>← Back</Text>
         </Pressable>
         <Text style={styles.screenTitle}>Social</Text>
-        <View style={{ width: 40 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
       <View style={styles.segmentWrap}>
@@ -256,82 +260,85 @@ export default function FriendsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    marginBottom: 16,
-  },
-  backBtn: {
-    fontSize: 15,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  screenTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  segmentWrap: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: 12,
-  },
-  searchWrap: {
-    paddingHorizontal: spacing.lg,
-    marginBottom: 8,
-  },
-  list: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: 40,
-  },
-  center: { marginTop: 40 },
-  userItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  userInfo: {
-    flex: 1,
-    marginLeft: spacing.md,
-  },
-  userName: {
-    fontSize: fontSize.md,
-    fontWeight: fontWeight.bold,
-    color: colors.text,
-  },
-  userNickname: {
-    fontSize: fontSize.sm,
-    color: colors.textSecondary,
-  },
-  actionBtn: {
-    marginLeft: spacing.sm,
-  },
-  requestActions: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  statusLabel: {
-    fontSize: fontSize.sm,
-    color: colors.textMuted,
-    fontWeight: fontWeight.medium,
-  },
-  section: {
-    marginBottom: spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: fontSize.sm,
-    fontWeight: fontWeight.bold,
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-    marginBottom: spacing.xs,
-  },
-});
+function makeStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: c.background,
+    },
+    flex: { flex: 1 },
+    header: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.lg,
+    },
+    headerSpacer: { width: 40 },
+    backBtn: {
+      fontSize: 15,
+      color: c.primary,
+      fontWeight: '600',
+    },
+    screenTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: c.text,
+    },
+    segmentWrap: {
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.md,
+    },
+    searchWrap: {
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.sm,
+    },
+    list: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing['4xl'],
+    },
+    center: { marginTop: spacing['4xl'] },
+    userItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      borderBottomWidth: 1,
+      borderBottomColor: c.border,
+    },
+    userInfo: {
+      flex: 1,
+      marginLeft: spacing.md,
+    },
+    userName: {
+      fontSize: fontSize.md,
+      fontWeight: fontWeight.bold,
+      color: c.text,
+    },
+    userNickname: {
+      fontSize: fontSize.sm,
+      color: c.textSecondary,
+    },
+    actionBtn: {
+      marginLeft: spacing.sm,
+    },
+    requestActions: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+    },
+    statusLabel: {
+      fontSize: fontSize.sm,
+      color: c.textMuted,
+      fontWeight: fontWeight.medium,
+    },
+    section: {
+      marginBottom: spacing.xl,
+    },
+    sectionTitle: {
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.bold,
+      color: c.textMuted,
+      textTransform: 'uppercase',
+      marginBottom: spacing.xs,
+    },
+  });
+}
