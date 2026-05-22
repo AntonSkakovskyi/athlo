@@ -1,4 +1,3 @@
-export { darkColors as colors } from './colors';
 export type { ColorPalette, ThemePreference } from './colors';
 
 // Spacing scale (4pt base grid).
