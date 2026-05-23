@@ -4,7 +4,7 @@ import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 
-type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
+type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'ghost-primary' | 'outline';
 
 interface ButtonProps extends Omit<PressableProps, 'style'> {
   title: string;
@@ -22,6 +22,7 @@ function makeVariantColors(
     secondary: { bg: c.surfaceLight, text: c.text },
     danger: { bg: c.dangerLight, text: c.danger },
     ghost: { bg: 'transparent', text: c.textSecondary },
+    'ghost-primary': { bg: 'transparent', text: c.primary },
     outline: { bg: 'transparent', text: c.primary, border: c.primary },
   };
 }

@@ -54,6 +54,7 @@ export const apiRoutes = {
     getById: (id: string) => `profile/${id}`,
     search: 'profile/search',
     update: 'profile',
+    delete: 'profile',
   },
   bodyMetrics: {
     getAll: 'body-metrics',
@@ -65,6 +66,7 @@ export const apiRoutes = {
     getAll: 'foods',
     getById: (id: string) => `foods/${id}`,
     addUnit: (id: string) => `foods/${id}/units`,
+    deleteUnit: (foodId: string, unitId: string) => `foods/${foodId}/units/${unitId}`,
   },
   mealTypes: {
     getAll: 'meal-types',

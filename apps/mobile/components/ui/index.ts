@@ -22,6 +22,7 @@ export { ScreenHeader } from './ScreenHeader/ScreenHeader';
 export { SectionHeader } from './SectionHeader/SectionHeader';
 export { SegmentControl } from './SegmentControl/SegmentControl';
 export { Spinner } from './Spinner/Spinner';
+export { SplashScreen } from './SplashScreen/SplashScreen';
 export { Tag } from './Tag/Tag';
 export { Typography } from './Typography/Typography';
 export { TimePicker } from './TimePicker/TimePicker';

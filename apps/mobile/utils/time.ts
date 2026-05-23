@@ -12,6 +12,14 @@ export function formatHMS(ms: number): string {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+/** sec → "90s" or "2m 30s" (for values > 120s) — for rest time display */
+export function formatRestTime(sec: number): string {
+  if (sec <= 120) return `${sec}s`;
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return s > 0 ? `${m}m ${s}s` : `${m}m`;
+}
+
 /** sec → "1h 30m" or "45m" — for duration picker labels */
 export function formatDurationSecs(sec: number): string {
   const h = Math.floor(sec / 3600);

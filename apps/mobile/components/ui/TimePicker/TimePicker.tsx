@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, NativeSyntheticEvent, NativeScrollEvent, ListRenderItemInfo } from 'react-native';
 import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
@@ -15,7 +15,7 @@ interface TimePickerProps {
 const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 3;
 const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
-const LOOP_FACTOR = 20; // Multiplier for fake infinite scroll
+const LOOP_FACTOR = 5;
 
 interface WheelProps {
   data: number[];
@@ -24,13 +24,12 @@ interface WheelProps {
   label: string;
 }
 
-const Wheel = ({ data, selectedValue, onValueChange, label }: WheelProps) => {
+const Wheel = React.memo(({ data, selectedValue, onValueChange, label }: WheelProps) => {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList<number>>(null);
   const [isReady, setIsReady] = useState(false);
 
-  // Extended data for looping
   const extendedData = useMemo(() => {
     let res: number[] = [];
     for (let i = 0; i < LOOP_FACTOR; i++) {
@@ -47,8 +46,8 @@ const Wheel = ({ data, selectedValue, onValueChange, label }: WheelProps) => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      scrollViewRef.current?.scrollTo({
-        y: initialIndex * ITEM_HEIGHT,
+      flatListRef.current?.scrollToOffset({
+        offset: initialIndex * ITEM_HEIGHT,
         animated: false,
       });
       setIsReady(true);
@@ -56,51 +55,64 @@ const Wheel = ({ data, selectedValue, onValueChange, label }: WheelProps) => {
     return () => clearTimeout(timer);
   }, [initialIndex]);
 
-  const handleScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const getItemLayout = useCallback((_: ArrayLike<number> | null | undefined, index: number) => ({
+    length: ITEM_HEIGHT,
+    offset: ITEM_HEIGHT * index,
+    index,
+  }), []);
+
+  const renderItem = useCallback(({ item }: ListRenderItemInfo<number>) => (
+    <View style={styles.wheelItem}>
+      <Text style={styles.wheelItemText}>{String(item).padStart(2, '0')}</Text>
+    </View>
+  ), [styles]);
+
+  const keyExtractor = useCallback((_: number, index: number) => String(index), []);
+
+  const handleScrollEnd = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
     if (!isReady) return;
     const y = event.nativeEvent.contentOffset.y;
     const index = Math.round(y / ITEM_HEIGHT);
     const actualValue = extendedData[index];
 
-    // Recenter if getting close to edges
     if (index < data.length * 2 || index > extendedData.length - data.length * 2) {
       const middleOffset = Math.floor(LOOP_FACTOR / 2) * data.length;
       const valueIndex = data.indexOf(actualValue);
       const newIndex = middleOffset + valueIndex;
-
-      scrollViewRef.current?.scrollTo({
-        y: newIndex * ITEM_HEIGHT,
+      flatListRef.current?.scrollToOffset({
+        offset: newIndex * ITEM_HEIGHT,
         animated: false,
       });
     }
 
     onValueChange(actualValue);
-  };
+  }, [isReady, extendedData, data, onValueChange]);
 
   return (
     <View style={styles.wheelContainer}>
-      <ScrollView
-        ref={scrollViewRef}
+      <FlatList
+        ref={flatListRef}
+        data={extendedData}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        getItemLayout={getItemLayout}
         style={styles.wheelScroll}
+        contentContainerStyle={styles.wheelListContent}
         snapToInterval={ITEM_HEIGHT}
         showsVerticalScrollIndicator={false}
         onMomentumScrollEnd={handleScrollEnd}
         onScrollEndDrag={handleScrollEnd}
-        contentContainerStyle={styles.wheelListContent}
         decelerationRate="fast"
         scrollEventThrottle={16}
         nestedScrollEnabled={true}
-      >
-        {extendedData.map((item, index) => (
-          <View key={index} style={styles.wheelItem}>
-            <Text style={styles.wheelItemText}>{String(item).padStart(2, '0')}</Text>
-          </View>
-        ))}
-      </ScrollView>
+        initialNumToRender={7}
+        maxToRenderPerBatch={15}
+        windowSize={5}
+      />
       <Text style={styles.wheelLabel}>{label}</Text>
     </View>
   );
-};
+});
 
 export function TimePicker({
   value,
@@ -115,13 +127,13 @@ export function TimePicker({
   const m = Math.floor((value % 3600) / 60);
   const s = value % 60;
 
-  const hoursData = Array.from({ length: 24 }, (_, i) => i);
-  const minutesData = Array.from({ length: 60 }, (_, i) => i);
-  const secondsData = Array.from({ length: 60 }, (_, i) => i);
+  const hoursData = useMemo(() => Array.from({ length: 24 }, (_, i) => i), []);
+  const minutesData = useMemo(() => Array.from({ length: 60 }, (_, i) => i), []);
+  const secondsData = useMemo(() => Array.from({ length: 60 }, (_, i) => i), []);
 
-  const handleValueChange = (newH: number, newM: number, newS: number) => {
-    onChange(newH * 3600 + newM * 60 + newS);
-  };
+  const handleHourChange = useCallback((val: number) => onChange(val * 3600 + m * 60 + s), [m, s, onChange]);
+  const handleMinuteChange = useCallback((val: number) => onChange(h * 3600 + val * 60 + s), [h, s, onChange]);
+  const handleSecondChange = useCallback((val: number) => onChange(h * 3600 + m * 60 + val), [h, m, onChange]);
 
   return (
     <View style={styles.container}>
@@ -131,7 +143,7 @@ export function TimePicker({
           <Wheel
             data={hoursData}
             selectedValue={h % 24}
-            onValueChange={(val) => handleValueChange(val, m, s)}
+            onValueChange={handleHourChange}
             label="h"
           />
         )}
@@ -139,7 +151,7 @@ export function TimePicker({
           <Wheel
             data={minutesData}
             selectedValue={m % 60}
-            onValueChange={(val) => handleValueChange(h, val, s)}
+            onValueChange={handleMinuteChange}
             label="m"
           />
         )}
@@ -147,7 +159,7 @@ export function TimePicker({
           <Wheel
             data={secondsData}
             selectedValue={s % 60}
-            onValueChange={(val) => handleValueChange(h, m, val)}
+            onValueChange={handleSecondChange}
             label="s"
           />
         )}
@@ -184,7 +196,7 @@ function makeStyles(c: ColorPalette) {
       height: PICKER_HEIGHT,
     },
     wheelListContent: {
-      paddingVertical: ITEM_HEIGHT, // Center the items
+      paddingVertical: ITEM_HEIGHT,
     },
     wheelItem: {
       height: ITEM_HEIGHT,

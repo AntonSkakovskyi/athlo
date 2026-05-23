@@ -7,11 +7,11 @@ import type { ColorPalette } from '@/constants/colors';
 interface AvatarProps {
   name?: string;
   uri?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-const SIZES = { sm: 36, md: 56, lg: 80 };
-const FONT_SIZES = { sm: 14, md: 20, lg: 28 };
+const SIZES = { sm: 36, md: 56, lg: 80, xl: 120 };
+const FONT_SIZES = { sm: 14, md: 20, lg: 28, xl: 40 };
 
 function getInitials(name?: string): string {
   if (!name) return '?';

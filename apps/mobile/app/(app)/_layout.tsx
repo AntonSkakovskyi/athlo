@@ -1,7 +1,7 @@
 import { Redirect, Tabs } from 'expo-router';
 import { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { Spinner } from '@/components/ui/Spinner/Spinner';
+import { SplashScreen } from '@/components/ui';
 import { fontSize, fontWeight, spacing } from '@/constants/theme';
 import { ColorPalette } from '@/constants/colors';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -9,20 +9,20 @@ import { useAppLayout } from '@/features/auth/hooks/useAppLayout';
 import { FloatingWorkoutMini } from '@/features/workout/components/FloatingWorkoutMini/FloatingWorkoutMini';
 
 export default function AppLayout() {
-  const { token, isLoading, isActive } = useAppLayout();
+  const { token, isLoading, isActive, needsOnboarding } = useAppLayout();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <Spinner size="large" />
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   if (!token) {
     return <Redirect href="/(auth)/login" />;
+  }
+
+  if (needsOnboarding) {
+    return <Redirect href="/onboarding" />;
   }
 
   return (

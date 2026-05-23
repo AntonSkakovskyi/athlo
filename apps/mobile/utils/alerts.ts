@@ -16,3 +16,20 @@ export function confirmDestructive(
 export function showErrorAlert(message: string): void {
   Alert.alert('Error', message);
 }
+
+export function showAlert(title: string, message: string): void {
+  Alert.alert(title, message);
+}
+
+export function confirmAction(
+  title: string,
+  message: string,
+  onConfirm: () => void,
+  confirmLabel = 'Proceed',
+  cancelLabel = 'Cancel',
+): void {
+  Alert.alert(title, message, [
+    { text: cancelLabel, style: 'cancel' },
+    { text: confirmLabel, onPress: onConfirm },
+  ]);
+}

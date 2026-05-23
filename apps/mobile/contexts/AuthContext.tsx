@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { IUser } from '@athlo/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { AuthService } from '@/features/auth/services';
 import apiClient, { setUnauthorizedHandler } from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
@@ -18,6 +19,7 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   const [state, setState] = useState<AuthState>({
     user: null,
     token: null,
@@ -58,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     await AuthService.deleteToken();
+    queryClient.clear();
     setState({ user: null, token: null, isLoading: false });
   };
 

@@ -24,8 +24,9 @@ export function BottomSheet({ visible, onClose, title, children, scrollable = tr
       animationType="slide"
       onRequestClose={onClose}
     >
-      <Pressable style={styles.overlay} onPress={onClose}>
-        <View style={styles.sheet} onStartShouldSetResponder={() => true}>
+      <View style={styles.outerContainer}>
+        <Pressable style={styles.overlay} onPress={onClose} />
+        <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
 
           {title && (
@@ -42,7 +43,7 @@ export function BottomSheet({ visible, onClose, title, children, scrollable = tr
             <Text style={styles.cancelText}>Cancel</Text>
           </Pressable>
         </View>
-      </Pressable>
+      </View>
     </Modal>
   );
 }
@@ -74,10 +75,17 @@ export function BottomSheetItem({ label, icon, onPress, danger }: BottomSheetIte
 
 function makeStyles(c: ColorPalette) {
   return StyleSheet.create({
-    overlay: {
+    outerContainer: {
       flex: 1,
-      backgroundColor: c.overlay,
       justifyContent: 'flex-end',
+    },
+    overlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: c.overlay,
     },
     sheet: {
       backgroundColor: c.surfaceElevated,

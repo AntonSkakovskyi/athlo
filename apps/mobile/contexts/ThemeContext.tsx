@@ -14,7 +14,7 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const deviceScheme = useColorScheme() ?? 'dark';
-  const [themePreference, setThemePreference] = useState<ThemePreference>('dark');
+  const [themePreference, setThemePreference] = useState<ThemePreference>('system');
 
   useEffect(() => {
     themeService.getPreference().then(saved => {

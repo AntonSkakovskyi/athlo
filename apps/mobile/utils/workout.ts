@@ -1,6 +1,48 @@
 import { TrackingType } from '@athlo/shared';
 import type { IWorkoutWithRelations } from '@athlo/shared';
 
+export interface ValidatableSet {
+  isCompleted?: boolean;
+  weight?: number | null;
+  reps?: number | null;
+  duration?: number | null;
+  placeholderWeight?: number;
+  placeholderReps?: number;
+  placeholderDuration?: number;
+}
+
+/**
+ * Returns true if any set has an empty required field with no placeholder to fall back on.
+ * completedOnly — check only completed sets.
+ * allowPlaceholders — treat a placeholder value as sufficient (active workout context).
+ */
+export function hasEmptySets(
+  sets: ValidatableSet[],
+  trackingType: TrackingType,
+  options: { completedOnly?: boolean; allowPlaceholders?: boolean } = {},
+): boolean {
+  const { completedOnly = false, allowPlaceholders = false } = options;
+  const toCheck = completedOnly ? sets.filter((s) => s.isCompleted) : sets;
+
+  return toCheck.some((set) => {
+    const hasWeight = set.weight != null || (allowPlaceholders && set.placeholderWeight != null);
+    const hasReps = set.reps != null || (allowPlaceholders && set.placeholderReps != null);
+    const hasDuration = set.duration != null || (allowPlaceholders && set.placeholderDuration != null);
+
+    switch (trackingType) {
+      case TrackingType.WEIGHT_AND_REPS:
+        return !hasWeight || !hasReps;
+      case TrackingType.REPS_ONLY:
+        return !hasReps;
+      case TrackingType.TIME_BASED:
+        return !hasDuration;
+      default:
+        return false;
+    }
+  });
+}
+
+
 export function computeVolume(workout: IWorkoutWithRelations): number {
   return (
     workout.logExercises?.reduce(
