@@ -21,9 +21,6 @@ export class LogMealItemEntity implements ILogMealItem {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
-  @Column({ name: 'calculated_weight_g', type: 'decimal', precision: 10, scale: 2, nullable: true })
-  calculatedWeightG: number | null;
-
   @ManyToOne(() => LogMealEntity, (meal) => meal.items, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'log_meal_id' })
   logMeal: LogMealEntity;

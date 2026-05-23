@@ -23,7 +23,7 @@ export class MealPlanEntity implements IMealPlan {
   @Column({ name: 'total_days', default: 1 })
   totalDays: number;
 
-  @ManyToOne(() => UserEntity, { onDelete: 'NO ACTION' })
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
   creator: UserEntity;
 

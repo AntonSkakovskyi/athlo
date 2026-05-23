@@ -11,9 +11,4 @@ export class UpdateLogMealItemDto {
   @IsNumber()
   @IsOptional()
   amount?: number;
-
-  @ApiPropertyOptional({ example: 150 })
-  @IsNumber()
-  @IsOptional()
-  calculatedWeightG?: number;
 }

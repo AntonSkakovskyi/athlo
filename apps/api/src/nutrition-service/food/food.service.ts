@@ -2,23 +2,41 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { FoodEntity } from '../entities/food.entity';
-import { FoodUnitEntity } from '../entities/food-unit.entity';
+import { NutritionFactEntity } from '../entities/nutrition-fact.entity';
+import { LogMealItemEntity } from '../entities/log-meal-item.entity';
+import { PlanMealItemEntity } from '../entities/plan-meal-item.entity';
 import { CreateFoodDto } from '../dto/food/create-food.dto';
 import { UpdateFoodDto } from '../dto/food/update-food.dto';
-import { AddFoodUnitDto } from '../dto/food/add-food-unit.dto';
+import { AddNutritionFactDto } from '../dto/food/add-nutrition-fact.dto';
 
 @Injectable()
 export class FoodService {
   constructor(
     @InjectRepository(FoodEntity)
     private readonly foodRepository: Repository<FoodEntity>,
-    @InjectRepository(FoodUnitEntity)
-    private readonly foodUnitRepository: Repository<FoodUnitEntity>,
+    @InjectRepository(NutritionFactEntity)
+    private readonly nutritionFactRepository: Repository<NutritionFactEntity>,
+    @InjectRepository(LogMealItemEntity)
+    private readonly logMealItemRepository: Repository<LogMealItemEntity>,
+    @InjectRepository(PlanMealItemEntity)
+    private readonly planMealItemRepository: Repository<PlanMealItemEntity>,
   ) {}
 
   async create(dto: CreateFoodDto) {
-    const food = this.foodRepository.create(dto);
-    return this.foodRepository.save(food);
+    const food = this.foodRepository.create({
+      name: dto.name,
+      brand: dto.brand,
+      creatorId: dto.creatorId,
+    });
+    const savedFood = await this.foodRepository.save(food);
+
+    if (dto.units && dto.units.length > 0) {
+      for (const fact of dto.units) {
+        await this.addNutritionFact(savedFood.id, dto.creatorId || 0, fact);
+      }
+    }
+
+    return this.findOne(savedFood.id);
   }
 
   async findAll(search?: string, page = 1, limit = 20) {
@@ -26,7 +44,7 @@ export class FoodService {
     const [data, total] = await this.foodRepository.findAndCount({
       where,
       relations: ['units', 'units.unit'],
-      order: { name: 'ASC' },
+      order: { id: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
     });
@@ -55,45 +73,87 @@ export class FoodService {
 
   async update(id: number, dto: UpdateFoodDto) {
     const food = await this.findOne(id);
-    Object.assign(food, dto);
-    return this.foodRepository.save(food);
+    if (dto.name !== undefined) food.name = dto.name;
+    if (dto.brand !== undefined) food.brand = dto.brand;
+    await this.foodRepository.save(food);
+
+    if (dto.units && dto.units.length > 0) {
+      for (const fact of dto.units) {
+        await this.addNutritionFact(food.id, food.creatorId || 0, fact);
+      }
+    }
+
+    return this.findOne(id);
   }
 
   async remove(id: number, userId: number) {
     const food = await this.findOne(id);
-    
+
     if (food.creatorId && food.creatorId !== userId) {
       throw new ForbiddenException('Only the creator can delete this food');
     }
-    
-    await this.foodRepository.remove(food);
+
+    const [logCount, planCount] = await Promise.all([
+      this.logMealItemRepository.count({ where: { foodId: id } }),
+      this.planMealItemRepository.count({ where: { foodId: id } }),
+    ]);
+
+    if (logCount > 0 || planCount > 0) {
+      await this.foodRepository.softDelete(id);
+    } else {
+      await this.foodRepository.remove(food);
+    }
   }
 
-  async addUnit(foodId: number, userId: number, dto: AddFoodUnitDto) {
+  async addNutritionFact(foodId: number, userId: number, dto: AddNutritionFactDto) {
     const food = await this.findOne(foodId);
-    
-    // Only allow creator to add units, unless it's a legacy food (creatorId is null) 
-    // where we might want to restrict to admins or just allow for now.
-    // Given the user's hint, we'll enforce creator check if creatorId exists.
-    if (food.creatorId && food.creatorId !== userId) {
+
+    if (food.creatorId && food.creatorId !== userId && userId !== 0) {
       throw new ForbiddenException('Only the creator can add units to this food');
     }
 
-    const existing = await this.foodUnitRepository.findOne({
+    const existing = await this.nutritionFactRepository.findOne({
       where: { foodId, unitId: dto.unitId }
     });
 
     if (existing) {
-      existing.conversionFactor = dto.conversionFactor;
-      return this.foodUnitRepository.save(existing);
+      existing.amount = dto.amount;
+      existing.calories = dto.calories;
+      existing.proteins = dto.proteins;
+      existing.fats = dto.fats;
+      existing.carbs = dto.carbs;
+      return this.nutritionFactRepository.save(existing);
     }
 
-    const foodUnit = this.foodUnitRepository.create({
+    const nutritionFact = this.nutritionFactRepository.create({
       foodId,
       unitId: dto.unitId,
-      conversionFactor: dto.conversionFactor,
+      amount: dto.amount,
+      calories: dto.calories,
+      proteins: dto.proteins,
+      fats: dto.fats,
+      carbs: dto.carbs,
     });
 
-    return this.foodUnitRepository.save(foodUnit);
+    return this.nutritionFactRepository.save(nutritionFact);
+  }
+
+  async removeNutritionFact(foodId: number, unitId: number, userId: number) {
+    const food = await this.findOne(foodId);
+
+    if (food.creatorId && food.creatorId !== userId) {
+      throw new ForbiddenException('Only the creator can remove units from this food');
+    }
+
+    const fact = await this.nutritionFactRepository.findOne({
+      where: { foodId, unitId },
+    });
+
+    if (!fact) {
+      throw new NotFoundException(`Nutrition fact for unit ${unitId} not found`);
+    }
+
+    await this.nutritionFactRepository.remove(fact);
+    return this.findOne(foodId);
   }
 }

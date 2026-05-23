@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateFoodDto } from '../dto/food/create-food.dto';
 import { UpdateFoodDto } from '../dto/food/update-food.dto';
-import { AddFoodUnitDto } from '../dto/food/add-food-unit.dto';
+import { AddNutritionFactDto } from '../dto/food/add-nutrition-fact.dto';
 import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Foods')
@@ -60,13 +60,25 @@ export class FoodController {
   }
 
   @Post(':id/units')
-  @ApiOperation({ summary: 'Add a unit conversion to a food item' })
-  @ApiResponse({ status: 201, description: 'Unit added' })
+  @ApiOperation({ summary: 'Add a nutrition fact (unit) to a food item' })
+  @ApiResponse({ status: 201, description: 'Nutrition fact added' })
   addUnit(
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser('id') userId: number,
-    @Body() dto: AddFoodUnitDto,
+    @Body() dto: AddNutritionFactDto,
   ) {
-    return this.foodService.addUnit(id, userId, dto);
+    return this.foodService.addNutritionFact(id, userId, dto);
+  }
+
+  @Delete(':id/units/:unitId')
+  @ApiOperation({ summary: 'Delete a nutrition fact (unit) from a food item' })
+  @ApiResponse({ status: 200, description: 'Nutrition fact deleted' })
+  @ApiResponse({ status: 404, description: 'Nutrition fact not found' })
+  removeUnit(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('unitId', ParseIntPipe) unitId: number,
+    @CurrentUser('id') userId: number,
+  ) {
+    return this.foodService.removeNutritionFact(id, unitId, userId);
   }
 }

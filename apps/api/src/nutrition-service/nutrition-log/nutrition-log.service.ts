@@ -49,7 +49,7 @@ export class NutritionLogService {
         mealType: true,
         items: { food: { units: true }, unit: true },
       },
-      order: { consumedAt: 'ASC' },
+      order: { consumedAt: 'ASC', items: { id: 'ASC' } },
     });
   }
 
@@ -93,7 +93,6 @@ export class NutritionLogService {
       foodId: dto.foodId,
       unitId: dto.unitId,
       amount: dto.amount,
-      calculatedWeightG: dto.calculatedWeightG,
     });
     return this.logMealItemRepository.save(item);
   }
@@ -111,7 +110,6 @@ export class NutritionLogService {
     }
     if (dto.unitId !== undefined) item.unitId = dto.unitId;
     if (dto.amount !== undefined) item.amount = dto.amount;
-    if (dto.calculatedWeightG !== undefined) item.calculatedWeightG = dto.calculatedWeightG;
     return this.logMealItemRepository.save(item);
   }
 
@@ -203,11 +201,13 @@ export class NutritionLogService {
 
     for (const meal of meals) {
       for (const item of meal.items) {
-        const multiplier = Number(item.calculatedWeightG ?? item.amount) / 100;
-        totalCalories += Number(item.food.calories) * multiplier;
-        totalProteins += Number(item.food.proteins) * multiplier;
-        totalFats += Number(item.food.fats) * multiplier;
-        totalCarbs += Number(item.food.carbs) * multiplier;
+        const foodUnit = item.food.units?.find((u) => u.unitId === item.unitId);
+        if (!foodUnit) continue;
+        const multiplier = Number(item.amount) / Number(foodUnit.amount || 1);
+        totalCalories += Number(foodUnit.calories) * multiplier;
+        totalProteins += Number(foodUnit.proteins) * multiplier;
+        totalFats += Number(foodUnit.fats) * multiplier;
+        totalCarbs += Number(foodUnit.carbs) * multiplier;
       }
     }
 
@@ -238,8 +238,8 @@ export class NutritionLogService {
 
     const meals = await this.logMealRepository.find({
       where: { userId, consumedAt: Between(startDate, endDate) },
-      relations: { items: { food: true } },
-      order: { consumedAt: 'ASC' },
+      relations: { items: { food: { units: true } } },
+      order: { consumedAt: 'ASC', items: { id: 'ASC' } },
     });
 
     const waterLogs = await this.waterLogRepository.find({
@@ -257,11 +257,13 @@ export class NutritionLogService {
       }
       const day = dayMap.get(date)!;
       for (const item of meal.items) {
-        const multiplier = Number(item.calculatedWeightG ?? item.amount) / 100;
-        day.calories += Number(item.food.calories) * multiplier;
-        day.proteins += Number(item.food.proteins) * multiplier;
-        day.fats += Number(item.food.fats) * multiplier;
-        day.carbs += Number(item.food.carbs) * multiplier;
+        const foodUnit = item.food.units?.find((u) => u.unitId === item.unitId);
+        if (!foodUnit) continue;
+        const multiplier = Number(item.amount) / Number(foodUnit.amount || 1);
+        day.calories += Number(foodUnit.calories) * multiplier;
+        day.proteins += Number(foodUnit.proteins) * multiplier;
+        day.fats += Number(foodUnit.fats) * multiplier;
+        day.carbs += Number(foodUnit.carbs) * multiplier;
       }
     }
 

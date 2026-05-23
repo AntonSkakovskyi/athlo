@@ -14,6 +14,6 @@ export class CreateMealPlanDto {
 
   @IsOptional()
   @IsInt()
-  @Min(1)
+  @Min(0)
   totalDays?: number;
 }

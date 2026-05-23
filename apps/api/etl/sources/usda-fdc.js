@@ -10,13 +10,10 @@
  *   1003  Protein (g)
  *   1004  Total fat (g)
  *   1005  Carbohydrate by difference (g)
- *   1079  Fiber (g)
- *   2000  Total sugars (g)
- *   1093  Sodium (mg)
  */
 const { createClient } = require('../lib/http');
 const { withTransaction } = require('../lib/db');
-const { upsertFood, ensureFoodUnit } = require('../transform/food');
+const { upsertFood, ensureNutritionFact } = require('../transform/food');
 
 const FDC_BASE = 'https://api.nal.usda.gov/fdc/v1';
 const PAGE_SIZE = 200;
@@ -26,9 +23,6 @@ const NUTRIENT_IDS = {
   proteins: 1003,
   fats: 1004,
   carbs: 1005,
-  fiber: 1079,
-  sugar: 2000,
-  sodiumMg: 1093,
 };
 
 function getKey() {
@@ -62,12 +56,7 @@ function mapFood(food) {
     proteins: nutrient(food, NUTRIENT_IDS.proteins),
     fats: nutrient(food, NUTRIENT_IDS.fats),
     carbs: nutrient(food, NUTRIENT_IDS.carbs),
-    fiber: nutrient(food, NUTRIENT_IDS.fiber),
-    sugar: nutrient(food, NUTRIENT_IDS.sugar),
-    sodiumMg: nutrient(food, NUTRIENT_IDS.sodiumMg),
-    servingSizeG: null,
     imageUrl: null,
-    barcode: null,
   };
 }
 
@@ -118,10 +107,19 @@ async function run({ limit, dryRun, dataType }) {
   }
 
   let written = 0;
+  const { buildPayload } = require('../transform/food');
   await withTransaction(async (client) => {
     for (const food of collected) {
       const id = await upsertFood(client, food);
-      await ensureFoodUnit(client, id, 'g', 1);
+      const data = buildPayload(food);
+      // Store exactly as it comes (per 100g)
+      await ensureNutritionFact(client, id, 'g', {
+        amount: 100,
+        calories: data.calories,
+        proteins: data.proteins,
+        fats: data.fats,
+        carbs: data.carbs,
+      });
       written += 1;
       if (written % 100 === 0) process.stdout.write(`\r[fdc] upserted ${written}/${collected.length}…`);
     }

@@ -2,8 +2,9 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { Pool } = require('pg');
 
-const USER_ID = 1;
-const FRIEND_ID = 2;
+let USER_ID = 1;
+let FRIEND_ID;
+let STRANGER_ID;
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
 
 function daysAgo(n, hour = 9) {
@@ -32,17 +33,56 @@ async function insertRow(client, table, data) {
 async function seedUsersAndFriends(client) {
   const pwdHash = '$2b$10$oTPuRIChn9z3KsC63c/0a.tIC3OsCgYVAG9Hgrn712fecnLbnfwmW'; // 'password'
   
-  // Ensure FRIEND_ID exists
-  const fCheck = await client.query(`SELECT id FROM users WHERE id=$1`, [FRIEND_ID]);
+  // Ensure FRIEND exists
+  const fCheck = await client.query(`SELECT id FROM users WHERE email=$1`, ['friend@example.com']);
   if (!fCheck.rows.length) {
-    await insertRow(client, 'users', {
-      id: FRIEND_ID,
+    FRIEND_ID = await insertRow(client, 'users', {
       email: 'friend@example.com',
       full_name: 'John Friend',
       nickname: 'johnny_f',
       password_hash: pwdHash,
+      gender: 'male',
+      age: 28,
+      height: 180,
+      weight: 80,
+      activity_level: 'moderate',
+      fitness_goal: 'maintain'
     });
+  } else {
+    FRIEND_ID = fCheck.rows[0].id;
   }
+
+  // Ensure STRANGER exists
+  const sCheck = await client.query(`SELECT id FROM users WHERE email=$1`, ['stranger@example.com']);
+  if (!sCheck.rows.length) {
+    STRANGER_ID = await insertRow(client, 'users', {
+      email: 'stranger@example.com',
+      full_name: 'Mike Public',
+      nickname: 'mike_p',
+      password_hash: pwdHash,
+      gender: 'male',
+      age: 32,
+      height: 175,
+      weight: 85,
+      activity_level: 'light',
+      fitness_goal: 'lose_weight'
+    });
+  } else {
+    STRANGER_ID = sCheck.rows[0].id;
+  }
+
+  // Populate USER_ID 1 if it exists but missing data
+  await client.query(
+    `UPDATE users SET 
+      gender = COALESCE(gender, 'male'),
+      age = COALESCE(age, 25),
+      height = COALESCE(height, 182),
+      weight = COALESCE(weight, 82),
+      activity_level = COALESCE(activity_level, 'moderate'),
+      fitness_goal = COALESCE(fitness_goal, 'build_muscle')
+     WHERE id = $1 AND (gender IS NULL OR age IS NULL)`,
+    [USER_ID]
+  );
 
   // Ensure friendship exists
   const frCheck = await client.query(
@@ -53,22 +93,18 @@ async function seedUsersAndFriends(client) {
     await insertRow(client, 'user_friends', { user_id: USER_ID, friend_id: FRIEND_ID, status: 'ACCEPTED' });
   }
 
-  // Ensure settings exist for USER_ID
-  const sCheck = await client.query(`SELECT id FROM settings WHERE user_id=$1`, [USER_ID]);
-  if (!sCheck.rows.length) {
-    await insertRow(client, 'settings', { user_id: USER_ID, water_goal: 2500 });
-  }
-
-  // Ensure settings exist for FRIEND_ID
-  const fsCheck = await client.query(`SELECT id FROM settings WHERE user_id=$1`, [FRIEND_ID]);
-  if (!fsCheck.rows.length) {
-    await insertRow(client, 'settings', { 
-      user_id: FRIEND_ID, 
-      water_goal: 2000,
-      protein_goal: 150,
-      fat_goal: 70,
-      carb_goal: 250
-    });
+  // Ensure settings exist
+  for (const uid of [USER_ID, FRIEND_ID, STRANGER_ID]) {
+    const sCheck = await client.query(`SELECT id FROM settings WHERE user_id=$1`, [uid]);
+    if (!sCheck.rows.length) {
+      await insertRow(client, 'settings', { 
+        user_id: uid, 
+        water_goal: 2500,
+        protein_goal: 150,
+        fat_goal: 70,
+        carb_goal: 250
+      });
+    }
   }
 
   console.log('  → Users, friendship, and settings ready');
@@ -88,7 +124,7 @@ const EXERCISES = [
   { name: 'Front Squat',                    tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
   { name: 'Hack Squat',                     tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Quadriceps', sm: ['Hamstrings', 'Glutes'] },
   { name: 'Hip Thrust (Barbell)',           tt: 'WEIGHT_AND_REPS', eq: 'Barbell',       pm: 'Glutes',     sm: [] },
-  // 11–18  WEIGHT_AND_REPS — Dumbbell
+  // 11–21  WEIGHT_AND_REPS — Dumbbell
   { name: 'Shoulder Press (Dumbbell)',      tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Shoulders',  sm: [] },
   { name: 'Bench Press (Dumbbell)',         tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Chest',      sm: ['Triceps', 'Shoulders'] },
   { name: 'Arnold Press (Dumbbell)',        tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Shoulders',  sm: [] },
@@ -97,7 +133,10 @@ const EXERCISES = [
   { name: 'Lateral Raise (Dumbbell)',       tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Shoulders',  sm: [] },
   { name: 'Chest Fly (Dumbbell)',           tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Chest',      sm: [] },
   { name: 'Overhead Dumbbell Lunge',        tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Quadriceps', sm: [] },
-  // 19–30  WEIGHT_AND_REPS — Machine / Cable
+  { name: 'Hammer Curl (Dumbbell)',         tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Biceps',     sm: ['Forearms'] },
+  { name: 'Goblet Squat (Dumbbell)',        tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Quadriceps', sm: ['Glutes'] },
+  { name: 'Bulgarian Split Squat',          tt: 'WEIGHT_AND_REPS', eq: 'Dumbbell',      pm: 'Quadriceps', sm: ['Glutes', 'Hamstrings'] },
+  // 22–35  WEIGHT_AND_REPS — Machine / Cable
   { name: 'Lat Pulldown (Cable)',           tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Lats',       sm: [] },
   { name: 'Seated Cable Row - Bar Grip',    tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Upper Back', sm: [] },
   { name: 'Cable Fly Crossovers',           tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Chest',      sm: [] },
@@ -110,7 +149,9 @@ const EXERCISES = [
   { name: 'Face Pull',                      tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Shoulders',  sm: [] },
   { name: 'Lateral Raise (Cable)',          tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Shoulders',  sm: [] },
   { name: 'Back Extension (Hyperextension)',tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Lower Back', sm: [] },
-  // 31–41  REPS_ONLY
+  { name: 'Pec Deck (Machine)',             tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Chest',      sm: [] },
+  { name: 'Seated Row (Machine)',           tt: 'WEIGHT_AND_REPS', eq: 'Machine',       pm: 'Upper Back', sm: [] },
+  // 36–48  REPS_ONLY
   { name: 'Pull Up',                        tt: 'REPS_ONLY',     eq: 'Machine',       pm: 'Lats',       sm: ['Upper Back'] },
   { name: 'Push Up',                        tt: 'REPS_ONLY',     eq: null,            pm: 'Chest',      sm: ['Triceps', 'Shoulders'] },
   { name: 'Chin Up',                        tt: 'REPS_ONLY',     eq: 'Machine',       pm: 'Lats',       sm: [] },
@@ -122,7 +163,8 @@ const EXERCISES = [
   { name: 'Chest Dip',                      tt: 'REPS_ONLY',     eq: 'Machine',       pm: 'Chest',      sm: ['Triceps'] },
   { name: 'Floor Triceps Dip',              tt: 'REPS_ONLY',     eq: null,            pm: 'Triceps',    sm: [] },
   { name: 'Ab Wheel',                       tt: 'REPS_ONLY',     eq: 'Other',         pm: 'Abdominals', sm: [] },
-  // 42–49  TIME_BASED
+  { name: 'Burpees',                        tt: 'REPS_ONLY',     eq: null,            pm: 'Cardio',     sm: ['Full Body'] },
+  // 49–57  TIME_BASED
   { name: 'Plank',                          tt: 'TIME_BASED',    eq: null,            pm: 'Abdominals', sm: [] },
   { name: 'Running',                        tt: 'TIME_BASED',    eq: null,            pm: 'Cardio',     sm: [] },
   { name: 'Jump Rope',                      tt: 'TIME_BASED',    eq: 'Other',         pm: 'Cardio',     sm: [] },
@@ -130,13 +172,14 @@ const EXERCISES = [
   { name: 'Aerobics',                       tt: 'TIME_BASED',    eq: null,            pm: 'Cardio',     sm: [] },
   { name: 'Reverse Plank',                  tt: 'TIME_BASED',    eq: null,            pm: 'Abdominals', sm: [] },
   { name: 'Ab Scissors',                    tt: 'TIME_BASED',    eq: null,            pm: 'Abdominals', sm: [] },
+  { name: 'Mountain Climbers',              tt: 'TIME_BASED',    eq: null,            pm: 'Cardio',     sm: ['Abdominals'] },
   { name: 'Lateral Raise (Band)',           tt: 'WEIGHT_AND_REPS', eq: 'Resistance Band', pm: 'Shoulders', sm: [] },
 ];
 
 // Exercise indices per workout type
-const PUSH = [0, 5, 3, 16, 22, 32];   // Bench, Incline, OHP, Lateral DB, Tricep Pushdown, Push Up
-const PULL = [2, 4, 19, 20, 7, 31];   // Deadlift, BOR, Lat Pulldown, Cable Row, Bicep Curl, Pull Up
-const LEGS = [1, 6, 24, 25, 10, 27];  // Squat, RDL, Leg Press, Leg Curl, Hip Thrust BB, Calf Raise
+const PUSH = [0, 5, 3, 16, 25, 37];   // Bench, Incline, OHP, Lateral DB, Tricep Pushdown, Push Up
+const PULL = [2, 4, 22, 23, 7, 36];   // Deadlift, BOR, Lat Pulldown, Cable Row, Bicep Curl, Pull Up
+const LEGS = [1, 6, 27, 28, 10, 30];  // Squat, RDL, Leg Press, Leg Curl, Hip Thrust BB, Calf Raise
 
 const WEIGHT_PROG = {
   0:  { base: 60,  prog: 12.5 }, // Bench Press
@@ -149,12 +192,12 @@ const WEIGHT_PROG = {
   7:  { base: 30,  prog: 5    }, // Bicep Curl
   10: { base: 60,  prog: 12.5 }, // Hip Thrust
   16: { base: 10,  prog: 4    }, // Lateral Raise
-  19: { base: 50,  prog: 10   }, // Lat Pulldown
-  20: { base: 50,  prog: 10   }, // Cable Row
-  22: { base: 30,  prog: 7.5  }, // Tricep Pushdown
-  24: { base: 80,  prog: 20   }, // Leg Press
-  25: { base: 40,  prog: 10   }, // Leg Curl
-  27: { base: 40,  prog: 10   }, // Calf Raise
+  22: { base: 50,  prog: 10   }, // Lat Pulldown
+  23: { base: 50,  prog: 10   }, // Cable Row
+  25: { base: 30,  prog: 7.5  }, // Tricep Pushdown
+  27: { base: 80,  prog: 20   }, // Leg Press
+  28: { base: 40,  prog: 10   }, // Leg Curl
+  30: { base: 40,  prog: 10   }, // Calf Raise
 };
 
 function getWeight(exIdx, wi, total) {
@@ -194,6 +237,20 @@ const FOODS = [
   { name: 'Whey Protein',      brand: 'Generic', calories: 375, proteins: 75,  fats: 5,   carbs: 10  },
   { name: 'Avocado',           brand: null,      calories: 160, proteins: 2,   fats: 15,  carbs: 9   },
   { name: 'Potato',            brand: null,      calories: 77,  proteins: 2,   fats: 0.1, carbs: 17  },
+  // Added foods
+  { name: 'Turkey Breast',     brand: null,      calories: 135, proteins: 30,  fats: 1,   carbs: 0   },
+  { name: 'Quinoa',            brand: null,      calories: 120, proteins: 4.4, fats: 1.9, carbs: 21  },
+  { name: 'Tofu',              brand: null,      calories: 76,  proteins: 8,   fats: 4.8, carbs: 1.9 },
+  { name: 'Spinach',           brand: null,      calories: 23,  proteins: 2.9, fats: 0.4, carbs: 3.6 },
+  { name: 'Blueberries',       brand: null,      calories: 57,  proteins: 0.7, fats: 0.3, carbs: 14  },
+  { name: 'Walnuts',           brand: null,      calories: 654, proteins: 15,  fats: 65,  carbs: 14  },
+  { name: 'Greek Salad',       brand: 'Homemade',calories: 120, proteins: 3.5, fats: 9,   carbs: 8   },
+  { name: 'Protein Bar',       brand: 'Quest',   calories: 190, proteins: 21,  fats: 7,   carbs: 21  },
+  { name: 'Rice Cakes',        brand: null,      calories: 387, proteins: 8,   fats: 2.8, carbs: 82  },
+  { name: 'Scrambled Eggs',    brand: 'Homemade',calories: 148, proteins: 10,  fats: 11,  carbs: 1.6 },
+  // "My Products" for USER_ID
+  { name: 'Grandma\'s Borscht', brand: 'Private', calories: 45,  proteins: 1.5, fats: 2.5, carbs: 5, creatorId: USER_ID },
+  { name: 'Morning Protein Shake', brand: 'My Mix', calories: 250, proteins: 40, fats: 5, carbs: 15, creatorId: USER_ID },
 ];
 
 // ─── Seed functions ──────────────────────────────────────────────────────────
@@ -207,7 +264,7 @@ async function seedLookups(client) {
   for (const name of ['WEIGHT_AND_REPS', 'REPS_ONLY', 'TIME_BASED'])
     tt[name] = await nameId(client, 'tracking_types', name);
 
-  for (const name of ['g', 'ml', 'pcs', 'cup', 'kg', 'cm'])
+  for (const name of ['g', 'ml', 'pcs', 'cup', 'kg', 'cm', 'kcal'])
     units[name] = await nameId(client, 'units', name);
 
   for (const name of ['Breakfast', 'Lunch', 'Dinner', 'Snack'])
@@ -215,8 +272,12 @@ async function seedLookups(client) {
 
   for (const name of ['Abdominals','Abductors','Adductors','Biceps','Calves','Cardio','Chest',
                        'Forearms','Full Body','Glutes','Hamstrings','Lats','Lower Back','Neck',
-                       'Other','Quadriceps','Shoulders','Traps','Triceps','Upper Back'])
-    muscles[name] = await nameId(client, 'muscles', name);
+                       'Other','Quadriceps','Shoulders','Traps','Triceps','Upper Back']) {
+    const s = await client.query(`SELECT id FROM muscles WHERE name=$1 LIMIT 1`, [name]);
+    if (s.rows.length) { muscles[name] = s.rows[0].id; continue; }
+    const i = await client.query(`INSERT INTO muscles (name) VALUES ($1) RETURNING id`, [name]);
+    muscles[name] = i.rows[0].id;
+  }
 
   for (const name of ['Barbell','Dumbbell','Kettlebell','Machine','Plate','Resistance Band','Suspension','Other']) {
     const s = await client.query(`SELECT id FROM equipments WHERE name=$1 AND user_id IS NULL LIMIT 1`, [name]);
@@ -231,6 +292,11 @@ async function seedLookups(client) {
     { name: 'Waist',       unit: 'cm' },
     { name: 'Chest',       unit: 'cm' },
     { name: 'Hips',        unit: 'cm' },
+    { name: 'Neck',        unit: 'cm' },
+    { name: 'Thigh',       unit: 'cm' },
+    { name: 'Bicep',       unit: 'cm' },
+    { name: 'Shoulders',   unit: 'cm' },
+    { name: 'Height',      unit: 'cm' },
   ]) {
     const s = await client.query(`SELECT id FROM metric_types WHERE name=$1 LIMIT 1`, [name]);
     if (s.rows.length) { metricTypes[name] = s.rows[0].id; continue; }
@@ -314,69 +380,72 @@ async function seedBodyMetrics(client, { metricTypes }) {
 }
 
 async function seedWorkouts(client, { vt }, exIds) {
-  const existing = await client.query(
-    `SELECT COUNT(*) FROM workouts WHERE user_id=$1 AND status='COMPLETED'`, [USER_ID]
-  );
-  if (parseInt(existing.rows[0].count) >= 20) { console.log('  → workouts already seeded'); return; }
+  for (const uid of [USER_ID, STRANGER_ID]) {
+    const existing = await client.query(
+      `SELECT COUNT(*) FROM workouts WHERE user_id=$1 AND status='COMPLETED'`, [uid]
+    );
+    if (parseInt(existing.rows[0].count) >= 10) continue;
 
-  const typeMap = { push: PUSH, pull: PULL, legs: LEGS };
-  const wNames  = { push: 'Push Day', pull: 'Pull Day', legs: 'Leg Day' };
-  const total = WORKOUT_SCHEDULE.length;
-  let wCount = 0, leCount = 0, lsCount = 0;
+    const typeMap = { push: PUSH, pull: PULL, legs: LEGS };
+    const wNames  = { push: 'Push Day', pull: 'Pull Day', legs: 'Leg Day' };
+    const total = uid === USER_ID ? WORKOUT_SCHEDULE.length : 5;
+    const schedule = uid === USER_ID ? WORKOUT_SCHEDULE : [10, 8, 6, 4, 2];
+    const types = uid === USER_ID ? WORKOUT_TYPES : ['push', 'pull', 'legs', 'push', 'pull'];
+    const visibility = uid === USER_ID ? vt['PRIVATE'] : vt['PUBLIC'];
 
-  for (let wi = 0; wi < total; wi++) {
-    const da     = WORKOUT_SCHEDULE[wi];
-    const wType  = WORKOUT_TYPES[wi];
-    const exList = typeMap[wType];
-    const startedAt = daysAgo(da, 9 + (wi % 4));
-    const endedAt   = new Date(startedAt.getTime() + (50 + (wi % 6) * 5) * 60000);
+    let wCount = 0;
+    for (let wi = 0; wi < total; wi++) {
+      const da     = schedule[wi];
+      const wType  = types[wi];
+      const exList = typeMap[wType];
+      const startedAt = daysAgo(da, 9 + (wi % 4));
+      const endedAt   = new Date(startedAt.getTime() + (50 + (wi % 6) * 5) * 60000);
 
-    const wId = await insertRow(client, 'workouts', {
-      user_id:           USER_ID,
-      visibility_type_id: vt['PRIVATE'],
-      name:              wNames[wType],
-      status:            'COMPLETED',
-      started_at:        startedAt,
-      ended_at:          endedAt,
-      calories:          300 + wi * 12,
-      avg_heart_rate:    132 + (wi % 18),
-      max_heart_rate:    158 + (wi % 12),
-      rpe:               Math.min(6 + Math.floor(wi / 8), 9),
-      feeling_score:     Math.min(3 + Math.floor(wi / 12), 5),
-    });
-    wCount++;
-
-    for (let order = 0; order < exList.length; order++) {
-      const exIdx = exList[order];
-      const exId  = exIds[exIdx];
-      const ex    = EXERCISES[exIdx];
-
-      const leId = await insertRow(client, 'log_exercises', {
-        workout_id:  wId,
-        exercise_id: exId,
-        order:       order + 1,
-        rest_time:   90,
+      const wId = await insertRow(client, 'workouts', {
+        user_id:           uid,
+        visibility_type_id: visibility,
+        name:              wNames[wType] + (uid === STRANGER_ID ? ' (Public)' : ''),
+        status:            'COMPLETED',
+        started_at:        startedAt,
+        ended_at:          endedAt,
+        calories:          300 + wi * 12,
+        avg_heart_rate:    132 + (wi % 18),
+        max_heart_rate:    158 + (wi % 12),
+        rpe:               Math.min(6 + Math.floor(wi / 8), 9),
+        feeling_score:     Math.min(3 + Math.floor(wi / 12), 5),
       });
-      leCount++;
+      wCount++;
 
-      const numSets = order < 2 ? 4 : 3;
-      for (let s = 1; s <= numSets; s++) {
-        const setData = { log_exercise_id: leId, order: s, is_completed: true };
-        if (ex.tt === 'WEIGHT_AND_REPS') {
-          setData.weight = getWeight(exIdx, wi, total);
-          setData.reps   = 8 + (s === 1 ? 2 : 0);
-        } else if (ex.tt === 'REPS_ONLY') {
-          setData.reps   = 8 + wi + s;
-          setData.weight = 0;
-        } else {
-          setData.duration = 60 + wi * 3;
+      for (let order = 0; order < exList.length; order++) {
+        const exIdx = exList[order];
+        const exId  = exIds[exIdx];
+        const ex    = EXERCISES[exIdx];
+
+        const leId = await insertRow(client, 'log_exercises', {
+          workout_id:  wId,
+          exercise_id: exId,
+          order:       order + 1,
+          rest_time:   90,
+        });
+
+        const numSets = order < 2 ? 4 : 3;
+        for (let s = 1; s <= numSets; s++) {
+          const setData = { log_exercise_id: leId, order: s, is_completed: true };
+          if (ex.tt === 'WEIGHT_AND_REPS') {
+            setData.weight = getWeight(exIdx, wi, total);
+            setData.reps   = 8 + (s === 1 ? 2 : 0);
+          } else if (ex.tt === 'REPS_ONLY') {
+            setData.reps   = 8 + wi + s;
+            setData.weight = 0;
+          } else {
+            setData.duration = 60 + wi * 3;
+          }
+          await insertRow(client, 'log_sets', setData);
         }
-        await insertRow(client, 'log_sets', setData);
-        lsCount++;
       }
     }
+    console.log(`  → ${wCount} workouts seeded for user ${uid}`);
   }
-  console.log(`  → ${wCount} workouts, ${leCount} log_exercises, ${lsCount} log_sets`);
 }
 
 async function seedTemplates(client, { vt }, exIds) {
@@ -384,8 +453,9 @@ async function seedTemplates(client, { vt }, exIds) {
     { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Push Day', desc: 'Chest, shoulders, triceps',  exList: PUSH },
     { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Pull Day', desc: 'Back and biceps',            exList: PULL },
     { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Leg Day',  desc: 'Quads, hamstrings, glutes',  exList: LEGS },
-    { creatorId: FRIEND_ID, vis: vt['FRIENDS_ONLY'], name: 'Home Full Body', desc: 'Friend\'s home routine', exList: [32, 35, 36, 41, 42] },
+    { creatorId: FRIEND_ID, vis: vt['FRIENDS_ONLY'], name: 'Home Full Body', desc: 'Friend\'s home routine', exList: [36, 39, 40, 45, 49] },
     { creatorId: FRIEND_ID, vis: vt['FRIENDS_ONLY'], name: 'Dumbbell Only',  desc: 'Hypertrophy with DBs', exList: [12, 11, 14, 15, 16] },
+    { creatorId: STRANGER_ID, vis: vt['PUBLIC'],     name: 'Stranger\'s Power Plan', desc: 'Public heavy routine', exList: [1, 2, 0, 4, 3] },
   ];
 
   for (const tpl of tplConfigs) {
@@ -433,14 +503,14 @@ async function seedTemplates(client, { vt }, exIds) {
       }
     }
   }
-  console.log('  → User and Friend templates ready');
+  console.log('  → Workout templates ready');
 }
 
 async function seedPublicTemplates(client, { vt }, exIds) {
   for (const tpl of [
-    { name: 'Full Body (Beginner)', desc: 'Fundamental movements for total body development', exList: [1, 0, 4, 11, 25, 32, 42] },
-    { name: 'Upper Body Power', desc: 'Heavy compound lifts for upper body strength', exList: [0, 4, 3, 31, 7] },
-    { name: 'Lower Body Strength', desc: 'Leg focused strength routine', exList: [1, 2, 24, 27, 43] },
+    { name: 'Full Body (Beginner)', desc: 'Fundamental movements for total body development', exList: [1, 0, 4, 11, 29, 37, 49] },
+    { name: 'Upper Body Power', desc: 'Heavy compound lifts for upper body strength', exList: [0, 4, 3, 36, 7] },
+    { name: 'Lower Body Strength', desc: 'Leg focused strength routine', exList: [1, 2, 27, 30, 50] },
   ]) {
     const s = await client.query(
       `SELECT id FROM workout_templates WHERE name=$1 AND creator_id IS NULL LIMIT 1`, [tpl.name]
@@ -479,7 +549,7 @@ async function seedPublicTemplates(client, { vt }, exIds) {
       }
     }
   }
-  console.log('  → 3 public templates ready');
+  console.log('  → 3 system public templates ready');
 }
 
 async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) {
@@ -496,47 +566,28 @@ async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) 
       const s = await client.query(`SELECT id FROM foods WHERE LOWER(name) LIKE LOWER($1) LIMIT 1`, [`%${f.name}%`]);
       foodIds[f.name] = s.rows.length ? s.rows[0].id : dbIds[rr++ % dbIds.length];
     }
-    console.log(`  → ${Object.keys(foodIds).length} foods mapped from ETL data`);
   } else {
-  for (const f of FOODS) {
-    const s = await client.query(`SELECT id FROM foods WHERE LOWER(name)=LOWER($1) LIMIT 1`, [f.name]);
-    if (s.rows.length) {
-      foodIds[f.name] = s.rows[0].id;
-    } else {
-      foodIds[f.name] = await insertRow(client, 'foods', {
-        name: f.name, brand: f.brand,
-        calories: f.calories, proteins: f.proteins, fats: f.fats, carbs: f.carbs,
-        creator_id: null,
-      });
-    }
-    
-    // Seed units for this food
-    if (f.units) {
-      for (const u of f.units) {
-        const uId = units[u.u];
-        if (!uId) continue;
-        const exists = await client.query(
-          `SELECT id FROM food_units WHERE food_id=$1 AND unit_id=$2 LIMIT 1`,
-          [foodIds[f.name], uId]
-        );
-        if (!exists.rows.length) {
-          await insertRow(client, 'food_units', {
-            food_id: foodIds[f.name],
-            unit_id: uId,
-            conversion_factor: u.f,
-          });
-        }
+    for (const f of FOODS) {
+      const s = await client.query(`SELECT id FROM foods WHERE LOWER(name)=LOWER($1) AND COALESCE(creator_id, 0)=COALESCE($2, 0) LIMIT 1`, [f.name, f.creatorId || null]);
+      if (s.rows.length) {
+        foodIds[f.name] = s.rows[0].id;
+      } else {
+        foodIds[f.name] = await insertRow(client, 'foods', {
+          name: f.name, brand: f.brand, creator_id: f.creatorId || null,
+        });
+        // Insert nutrition facts (per 100g)
+        await insertRow(client, 'nutrition_facts', {
+          food_id: foodIds[f.name], unit_id: gId, amount: 100,
+          calories: f.calories, proteins: f.proteins, fats: f.fats, carbs: f.carbs
+        });
       }
     }
   }
-  } // end else (skipEtl)
   console.log(`  → ${Object.keys(foodIds).length} foods ready`);
 
-  // Meal log — 14 days
+  // Meal log — 14 days for USER_ID
   const existingLogs = await client.query(`SELECT COUNT(*) FROM log_meals WHERE user_id=$1`, [USER_ID]);
-  if (parseInt(existingLogs.rows[0].count) >= 40) {
-    console.log('  → meal logs already seeded');
-  } else {
+  if (parseInt(existingLogs.rows[0].count) < 40) {
     const DINNER_VARIANTS = [
       [['Beef Steak', 200], ['Sweet Potato', 200], ['Broccoli', 100]],
       [['Salmon', 200],     ['Potato', 200],        ['Broccoli', 100]],
@@ -550,7 +601,7 @@ async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) 
       { type: 'Snack',     items: [['Greek Yogurt', 150], ['Almonds', 30], ['Whey Protein', 30]] },
     ];
 
-    let mlCount = 0, mliCount = 0;
+    let mlCount = 0;
     for (let d = 13; d >= 0; d--) {
       const logDate = daysAgo(d, 0).toISOString().split('T')[0];
       for (let mi = 0; mi < MEAL_PLAN.length; mi++) {
@@ -567,20 +618,16 @@ async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) 
             log_meal_id: mealId, food_id: foodIds[fname],
             unit_id: gId, amount, calculated_weight_g: amount,
           });
-          mliCount++;
         }
       }
     }
-    console.log(`  → ${mlCount} meal logs, ${mliCount} items (14 days)`);
+    console.log(`  → ${mlCount} meal logs for USER_ID`);
   }
 
-  // Water logs — 14 days
+  // Water logs
   const existingWater = await client.query(`SELECT COUNT(*) FROM water_logs WHERE user_id=$1`, [USER_ID]);
-  if (parseInt(existingWater.rows[0].count) >= 40) {
-    console.log('  → water logs already seeded');
-  } else {
+  if (parseInt(existingWater.rows[0].count) < 40) {
     const WATER = [[300,8],[500,12],[400,15],[300,18],[500,21]];
-    let wCount = 0;
     for (let d = 13; d >= 0; d--) {
       for (let w = 0; w < 3 + (d % 3); w++) {
         const [ml, hour] = WATER[w];
@@ -588,17 +635,15 @@ async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) 
           `INSERT INTO water_logs (user_id, amount_ml, consumed_at) VALUES ($1, $2, $3)`,
           [USER_ID, ml, daysAgo(d, hour)]
         );
-        wCount++;
       }
     }
-    console.log(`  → ${wCount} water log entries`);
   }
 
-  // Meal plan
+  // Meal plans
   const mealPlanConfigs = [
     { name: 'Clean Bulk Plan', desc: '7-day high-protein bulk plan', creator: USER_ID, vis: vt['PRIVATE'], assignTo: USER_ID },
     { name: 'Friend Fat Loss Plan', desc: 'Low carb plan', creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], assignTo: FRIEND_ID },
-    { name: 'Public Keto Guide', desc: 'A standard keto approach', creator: null, vis: vt['PUBLIC'], assignTo: null },
+    { name: 'Public Keto Guide', desc: 'A standard keto approach', creator: STRANGER_ID, vis: vt['PUBLIC'], assignTo: null },
     { name: 'Balanced Maintenance', desc: 'Stable calorie maintenance plan', creator: null, vis: vt['PUBLIC'], assignTo: null },
   ];
 
@@ -607,7 +652,7 @@ async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) 
       ? await client.query(`SELECT id FROM meal_plans WHERE creator_id=$1 AND name=$2 LIMIT 1`, [plan.creator, plan.name])
       : await client.query(`SELECT id FROM meal_plans WHERE creator_id IS NULL AND name=$1 LIMIT 1`, [plan.name]);
       
-    if (planEx.rows.length) continue; // Skip if already seeded
+    if (planEx.rows.length) continue;
 
     const DINNER_VAR = [
       [['Beef Steak', 200], ['Sweet Potato', 200], ['Broccoli', 100]],
@@ -656,115 +701,102 @@ async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) 
       }
     }
   }
-  console.log('  → Meal plans ready (User 1, Friend, Public)');
+  console.log('  → Meal plans ready');
 }
 
 async function seedAchievements(client, exIds) {
-  // Ensure achievement definitions exist (migration may or may not have run)
-  const achRows = await client.query(`SELECT id, name FROM achievements ORDER BY "order"`);
   const achMap = {};
-  if (achRows.rows.length === 0) {
-    const definitions = [
-      ['First Workout',    'Complete your first workout',             'GLOBAL_WORKOUTS', 1,     1, null, null],
-      ['10 Workouts',      'Complete 10 workouts',                    'GLOBAL_WORKOUTS', 10,    2, null, null],
-      ['25 Workouts',      'Complete 25 workouts',                    'GLOBAL_WORKOUTS', 25,    3, null, null],
-      ['100 Sets',         'Complete 100 sets across all workouts',   'GLOBAL_SETS',     100,   8, null, null],
-      ['500 Sets',         'Complete 500 sets across all workouts',   'GLOBAL_SETS',     500,   9, null, null],
-      ['1,000 kg Lifted',  'Lift a total of 1,000 kg',               'GLOBAL_WEIGHT',   1000,  12, null, null],
-      ['10,000 kg Lifted', 'Lift a total of 10,000 kg',              'GLOBAL_WEIGHT',   10000, 13, null, null],
-      ['100 Hours',        'Train for a total of 100 hours',         'GLOBAL_TIME',     360000, 14, null, null],
-    ];
 
-    // Add exercise specific achievements if exIds are available
-    if (exIds && exIds.length > 0) {
-      definitions.push(['100kg Bench Press', 'Lift 100kg in Bench Press (Barbell)', 'EXERCISE_PERSONAL_RECORD', 100, 20, exIds[0], 'WEIGHT']);
-      definitions.push(['140kg Squat', 'Squat 140kg (Barbell)', 'EXERCISE_PERSONAL_RECORD', 140, 21, exIds[1], 'WEIGHT']);
-      definitions.push(['180kg Deadlift', 'Deadlift 180kg (Barbell)', 'EXERCISE_PERSONAL_RECORD', 180, 22, exIds[2], 'WEIGHT']);
-    }
+  const definitions = [
+    ['First Workout',       'Complete your first workout',                   'GLOBAL_WORKOUTS',  1,      1,  null,       null   ],
+    ['10 Workouts',         'Complete 10 workouts',                          'GLOBAL_WORKOUTS',  10,     2,  null,       null   ],
+    ['25 Workouts',         'Complete 25 workouts',                          'GLOBAL_WORKOUTS',  25,     3,  null,       null   ],
+    ['50 Workouts',         'Complete 50 workouts',                          'GLOBAL_WORKOUTS',  50,     4,  null,       null   ],
+    ['100 Workouts',        'Complete 100 workouts',                         'GLOBAL_WORKOUTS',  100,    5,  null,       null   ],
+    ['100 Sets',            'Complete 100 sets across all workouts',         'GLOBAL_SETS',      100,    6,  null,       null   ],
+    ['500 Sets',            'Complete 500 sets across all workouts',         'GLOBAL_SETS',      500,    7,  null,       null   ],
+    ['1,000 Sets',          'Complete 1,000 sets across all workouts',       'GLOBAL_SETS',      1000,   8,  null,       null   ],
+    ['2,000 Sets',          'Complete 2,000 sets across all workouts',       'GLOBAL_SETS',      2000,   9,  null,       null   ],
+    ['10 Hours Trained',    'Train for a total of 10 hours',                 'GLOBAL_TIME',      36000,  10, null,       null   ],
+    ['50 Hours Trained',    'Train for a total of 50 hours',                 'GLOBAL_TIME',      180000, 11, null,       null   ],
+    ['100 Hours Trained',   'Train for a total of 100 hours',                'GLOBAL_TIME',      360000, 12, null,       null   ],
+    ['200 Hours Trained',   'Train for a total of 200 hours',                'GLOBAL_TIME',      720000, 13, null,       null   ],
+    ['1,000 kg Lifted',     'Lift a total of 1,000 kg',                      'GLOBAL_WEIGHT',    1000,   14, null,       null   ],
+    ['10,000 kg Lifted',    'Lift a total of 10,000 kg',                     'GLOBAL_WEIGHT',    10000,  15, null,       null   ],
+    ['50,000 kg Lifted',    'Lift a total of 50,000 kg',                     'GLOBAL_WEIGHT',    50000,  16, null,       null   ],
+    ['100,000 kg Lifted',   'Lift a total of 100,000 kg',                    'GLOBAL_WEIGHT',    100000, 17, null,       null   ],
+    ['10 Exercises Tried',  'Perform 10 different exercises',                'GLOBAL_EXERCISES', 10,     18, null,       null   ],
+    ['20 Exercises Tried',  'Perform 20 different exercises',                'GLOBAL_EXERCISES', 20,     19, null,       null   ],
+    ['30 Exercises Tried',  'Perform 30 different exercises',                'GLOBAL_EXERCISES', 30,     20, null,       null   ],
+  ];
 
-    for (const [name, desc, type, thr, ord, exId, metric] of definitions) {
-      achMap[name] = await insertRow(client, 'achievements', { 
-        name, description: desc, type, threshold: thr, order: ord, 
-        exercise_id: exId, tracking_metric: metric 
+  if (exIds && exIds.length > 0) {
+    definitions.push(
+      ['100kg Bench Press',   'Lift 100 kg in Bench Press (Barbell)',         'EXERCISE_PERSONAL_RECORD', 100, 21, exIds[0],  'WEIGHT'],
+      ['140kg Squat',         'Squat 140 kg with Barbell',                    'EXERCISE_PERSONAL_RECORD', 140, 22, exIds[1],  'WEIGHT'],
+      ['180kg Deadlift',      'Deadlift 180 kg with Barbell',                 'EXERCISE_PERSONAL_RECORD', 180, 23, exIds[2],  'WEIGHT'],
+      ['60kg Overhead Press', 'Overhead Press 60 kg with Barbell',            'EXERCISE_PERSONAL_RECORD', 60,  24, exIds[3],  'WEIGHT'],
+      ['80kg Bent Over Row',  'Bent Over Row 80 kg with Barbell',             'EXERCISE_PERSONAL_RECORD', 80,  25, exIds[4],  'WEIGHT'],
+      ['80kg Lat Pulldown',   'Lat Pulldown 80 kg on Cable',                  'EXERCISE_PERSONAL_RECORD', 80,  26, exIds[22], 'WEIGHT'],
+      ['120kg Leg Press',     'Leg Press 120 kg on Machine',                  'EXERCISE_PERSONAL_RECORD', 120, 27, exIds[27], 'WEIGHT'],
+      ['40kg Bicep Curl',     'Bicep Curl 40 kg with Barbell',                'EXERCISE_PERSONAL_RECORD', 40,  28, exIds[7],  'WEIGHT'],
+      ['20 Pull Ups',         'Complete 20 pull ups in a single set',         'EXERCISE_PERSONAL_RECORD', 20,  29, exIds[36], 'REPS' ],
+    );
+  }
+
+  for (const [name, desc, type, thr, ord, exId, metric] of definitions) {
+    const existing = await client.query(`SELECT id FROM achievements WHERE name=$1 LIMIT 1`, [name]);
+    if (existing.rows.length) {
+      achMap[name] = existing.rows[0].id;
+    } else {
+      achMap[name] = await insertRow(client, 'achievements', {
+        name, description: desc, type, threshold: thr, order: ord,
+        exercise_id: exId, tracking_metric: metric,
       });
     }
-  } else {
-    for (const r of achRows.rows) achMap[r.name] = r.id;
   }
 
-  // Unlock achievements
-  let unlocked = 0;
-  for (const [name, value] of [
-    ['First Workout',    1],
-    ['10 Workouts',      10],
-    ['100 Sets',         100],
-    ['1,000 kg Lifted',  1000],
-    ['10,000 kg Lifted', 10000],
-  ]) {
-    const achId = achMap[name];
-    if (!achId) continue;
-    const ex = await client.query(
-      `SELECT id FROM user_achievements WHERE user_id=$1 AND achievement_id=$2`, [USER_ID, achId]
-    );
-    if (ex.rows.length) continue;
-    await insertRow(client, 'user_achievements', {
-      user_id: USER_ID, achievement_id: achId,
-      unlocked_at: daysAgo(5, 12), value,
-    });
-    unlocked++;
-  }
-  console.log(`  → ${unlocked} achievements unlocked`);
-
-  // Personal records for key exercises
-  let recCount = 0;
+  // Personal records
   const records = [
-    // [exIdx, metric, value]
-    [0, 'WEIGHT', 72.5],
-    [0, '1RM', 81.4],
-    [1, 'WEIGHT', 95],
-    [1, '1RM', 106.7],
-    [2, 'WEIGHT', 97.5],
-    [2, '1RM', 104.2],
-    [3, 'WEIGHT', 47.5],
-    [4, 'WEIGHT', 70],
-    [7, 'WEIGHT', 35],
-    [19, 'WEIGHT', 60],
-    [24, 'WEIGHT', 100],
-    [42, 'DURATION', 180],
+    [0,  'WEIGHT',   72.5],
+    [0,  '1RM',      81.4],
+    [1,  'WEIGHT',   95  ],
+    [1,  '1RM',     106.7],
+    [2,  'WEIGHT',   97.5],
+    [2,  '1RM',     104.2],
+    [3,  'WEIGHT',   47.5],
+    [4,  'WEIGHT',   70  ],
+    [7,  'WEIGHT',   35  ],
+    [22, 'WEIGHT',   60  ],
+    [27, 'WEIGHT',  100  ],
+    [36, 'REPS',     15  ],
+    [49, 'DURATION', 180 ],
   ];
 
   for (const [idx, metric, value] of records) {
     const exId = exIds[idx];
-    const ex = await client.query(
-      `SELECT id FROM user_exercise_records WHERE user_id=$1 AND exercise_id=$2 AND metric_type=$3`, [USER_ID, exId, metric]
-    );
-    // Ignore existing records for this purpose
+    if (!exId) continue;
     await insertRow(client, 'user_exercise_records', {
       user_id: USER_ID,
       exercise_id: exId,
       metric_type: metric,
-      value: value,
+      value,
       created_at: daysAgo(1, 11),
     });
-    recCount++;
   }
-  console.log(`  → ${recCount} exercise records`);
+  console.log('  → Achievements and records ready');
+}
 
-  // Mark some sets as isPR in the most recent workouts
-  const recentWorkouts = await client.query(
-    `SELECT id FROM workouts WHERE user_id=$1 ORDER BY started_at DESC LIMIT 3`, [USER_ID]
-  );
-  for (const row of recentWorkouts.rows) {
-    const sets = await client.query(
-      `SELECT ls.id, le.exercise_id FROM log_sets ls 
-       JOIN log_exercises le ON ls.log_exercise_id = le.id 
-       WHERE le.workout_id = $1 LIMIT 2`, [row.id]
-    );
-    for (const set of sets.rows) {
-      await client.query(`UPDATE log_sets SET is_pr = true WHERE id = $1`, [set.id]);
+async function syncSequences(client) {
+  const tables = ['users', 'exercises', 'foods', 'workouts', 'workout_templates', 'meal_plans', 'achievements', 'body_metrics'];
+  for (const table of tables) {
+    try {
+      await client.query(`SELECT setval(pg_get_serial_sequence('"${table}"', 'id'), COALESCE((SELECT MAX(id) FROM "${table}"), 1))`);
+    } catch (e) {
+      // Ignore errors for tables that might not have standard sequences
     }
   }
-  console.log('  → Marked some sets as PRs in recent workouts');
+  console.log('  → Sequences synchronized');
 }
 
 // ─── Entry point ─────────────────────────────────────────────────────────────
@@ -801,6 +833,9 @@ async function seed() {
 
     console.log('\nPhase 7: Achievements');
     await seedAchievements(client, exIds);
+
+    console.log('\nPhase 8: Synchronizing sequences');
+    await syncSequences(client);
 
     await client.query('COMMIT');
     console.log('\n✓ Seed completed successfully!\n');

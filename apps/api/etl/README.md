@@ -7,10 +7,10 @@ raw `pg`) so it mirrors `apps/api/seed.js` and runs without booting Nest.
 ## Prerequisites
 
 1. The schema in `apps/api/athlo-db.sql` must already be
-   applied — the ETL relies on the new media columns (`image_url`, `gif_url`,
-   `instructions`, `barcode`, `serving_size_g`, `fiber`, `sugar`, `sodium_mg`,
-   muscle SVGs) and the partial unique indexes `idx_exercises_system_name`,
-   `idx_foods_barcode`, `idx_foods_system_name`.
+   applied — the ETL relies on the media columns (`image_url`, `gif_url`,
+   `instructions`, muscle SVGs) and the partial unique indexes
+   `idx_exercises_system_name` and `idx_foods_system_name`. Food macros land in
+   `nutrition_facts` (`calories`, `proteins`, `fats`, `carbs` per unit).
 2. `apps/api/.env` (or root `.env`) must define:
    - `DATABASE_URL` — same connection string the API uses.
    - `DATABASE_SSL` — `false` for local Docker Postgres.
@@ -35,13 +35,33 @@ node apps/api/etl/index.js --source=fdc --datatype=Foundation --limit=300
 node apps/api/etl/index.js --source=wger --limit=10 --dry-run
 ```
 
+## Raw Dump (Local Files)
+
+To fetch raw payloads from APIs and save them directly to JSON files (bypassing the database), use `dump.js`. This is useful for inspecting the data shape or offline debugging.
+
+Files are saved to `apps/api/etl/dumps/` by default.
+
+```bash
+# everything in one go (default limits)
+node apps/api/etl/dump.js
+
+# individual sources
+node apps/api/etl/dump.js --source=wger --limit=100
+node apps/api/etl/dump.js --source=exercisedb
+node apps/api/etl/dump.js --source=off --categories=snacks,beverages --limit=50
+node apps/api/etl/dump.js --source=fdc --datatype=Foundation --limit=100
+
+# custom output directory
+node apps/api/etl/dump.js --out-dir=./tmp/raw_data
+```
+
 ## Sources & licensing
 
 | Source | Endpoint | Output | License |
 |---|---|---|---|
 | [wger](https://wger.de/api/v2/exerciseinfo/) | `https://wger.de/api/v2` | 800+ exercises + muscles (with SVG diagrams) | CC-BY-SA 4.0 |
 | [ExerciseDB](https://github.com/exercisedb-org/exercisedb-api) | configurable (`EXERCISEDB_BASE_URL`) | GIF animations, instructions | content varies |
-| [Open Food Facts](https://world.openfoodfacts.org/) | `/api/v2/search` | branded foods, barcodes, photos | ODbL (data) + CC-BY-SA (images) |
+| [Open Food Facts](https://world.openfoodfacts.org/) | `/api/v2/search` | branded foods + macros + photos | ODbL (data) + CC-BY-SA (images) |
 | [USDA FoodData Central](https://fdc.nal.usda.gov/) | `https://api.nal.usda.gov/fdc/v1` | reference whole foods macros | Public domain (CC0) |
 
 > Attribution required for end-user UI: include a credits line such as
@@ -77,9 +97,8 @@ Re-running any command is a no-op for unchanged rows. Anchors:
 | `equipments` | `LOWER(name) WHERE user_id IS NULL` | wger upsert |
 | `exercises` | partial idx `idx_exercises_system_name` on `LOWER(name) WHERE user_id IS NULL` | wger upsert |
 | `exercise_muscles` | unique `(exercise_id, muscle_id)` | wger upsert |
-| `foods` (OFF) | partial idx `idx_foods_barcode` on `barcode WHERE barcode IS NOT NULL` | OFF upsert |
-| `foods` (FDC, no barcode) | partial idx `idx_foods_system_name` on `(LOWER(name), COALESCE(LOWER(brand), '')) WHERE creator_id IS NULL` | FDC upsert |
-| `food_units` | unique `(food_id, unit_id)` | both food sources |
+| `foods` (OFF + FDC) | partial idx `idx_foods_system_name` on `(LOWER(name), COALESCE(LOWER(brand), '')) WHERE creator_id IS NULL` | both food sources |
+| `nutrition_facts` | unique `(food_id, unit_id)` | both food sources |
 
 User-created rows (`user_id IS NOT NULL` / `creator_id IS NOT NULL`) are never
 touched by the ETL — they live outside the partial unique indexes.
@@ -112,7 +131,7 @@ apps/api/etl/
 └── transform/
     ├── lookups.js           # visibility/tracking/categories/muscle/equipment
     ├── exercise.js          # exercise + exercise_muscles upserts
-    └── food.js              # food + food_units upserts
+    └── food.js              # food + nutrition_facts upserts
 ```
 
 ## Verification
@@ -134,8 +153,8 @@ WHERE user_id IS NULL;
 -- food coverage
 SELECT
   COUNT(*) AS total,
-  COUNT(barcode) AS with_barcode,
-  COUNT(image_url) AS with_image
+  COUNT(image_url) AS with_image,
+  (SELECT COUNT(*) FROM nutrition_facts) AS macro_rows
 FROM foods
 WHERE creator_id IS NULL;
 ```

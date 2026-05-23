@@ -1,4 +1,6 @@
-import { IsString, IsOptional, IsNumber, Min } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { AddNutritionFactDto } from './add-nutrition-fact.dto';
 
 export class CreateFoodDto {
   @IsString()
@@ -8,23 +10,13 @@ export class CreateFoodDto {
   @IsString()
   brand?: string;
 
-  @IsNumber()
-  @Min(0)
-  calories: number;
-
-  @IsNumber()
-  @Min(0)
-  proteins: number;
-
-  @IsNumber()
-  @Min(0)
-  fats: number;
-
-  @IsNumber()
-  @Min(0)
-  carbs: number;
-
   @IsOptional()
   @IsNumber()
   creatorId?: number;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => AddNutritionFactDto)
+  units?: AddNutritionFactDto[];
 }

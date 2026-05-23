@@ -15,11 +15,10 @@
  */
 const { createClient } = require('../lib/http');
 const { withTransaction } = require('../lib/db');
-const { upsertFood, ensureFoodUnit } = require('../transform/food');
+const { upsertFood, ensureNutritionFact } = require('../transform/food');
 
 const OFF_BASE = 'https://world.openfoodfacts.org';
 const FIELDS = [
-  'code',
   'product_name',
   'product_name_en',
   'brands',
@@ -27,10 +26,6 @@ const FIELDS = [
   'image_front_small_url',
   'image_front_url',
   'nutriments',
-  'serving_quantity',
-  'serving_size',
-  'nova_group',
-  'nutriscore_grade',
 ].join(',');
 
 const http = createClient({
@@ -64,12 +59,6 @@ function pickBrand(p) {
   return first || null;
 }
 
-function pickServingSize(p) {
-  const n = Number(p.serving_quantity);
-  if (Number.isFinite(n) && n > 0) return n;
-  return null;
-}
-
 function pickNutriment(p, key) {
   const n = Number(p.nutriments?.[key]);
   return Number.isFinite(n) ? n : null;
@@ -98,16 +87,7 @@ function mapProduct(p) {
     proteins: pickNutriment(p, 'proteins_100g'),
     fats: pickNutriment(p, 'fat_100g'),
     carbs: pickNutriment(p, 'carbohydrates_100g'),
-    fiber: pickNutriment(p, 'fiber_100g'),
-    sugar: pickNutriment(p, 'sugars_100g'),
-    // OFF stores sodium in grams per 100g; convert to mg.
-    sodiumMg: (() => {
-      const s = pickNutriment(p, 'sodium_100g');
-      return s == null ? null : Math.round(s * 1000 * 100) / 100;
-    })(),
-    servingSizeG: pickServingSize(p),
     imageUrl: pickImage(p),
-    barcode: p.code ? String(p.code) : null,
   };
 }
 
@@ -158,16 +138,25 @@ async function run({ limit, dryRun, categories }) {
 
   if (dryRun) {
     for (const food of collected.slice(0, 5)) {
-      console.log(`  · ${food.name}  brand=${food.brand || '-'}  kcal=${food.calories}  barcode=${food.barcode}`);
+      console.log(`  · ${food.name}  brand=${food.brand || '-'}  kcal=${food.calories}`);
     }
     return;
   }
 
   let written = 0;
+  const { buildPayload } = require('../transform/food');
   await withTransaction(async (client) => {
     for (const food of collected) {
       const id = await upsertFood(client, food);
-      await ensureFoodUnit(client, id, 'g', 1);
+      const data = buildPayload(food);
+      // Store exactly as it comes (per 100g)
+      await ensureNutritionFact(client, id, 'g', {
+        amount: 100,
+        calories: data.calories,
+        proteins: data.proteins,
+        fats: data.fats,
+        carbs: data.carbs,
+      });
       written += 1;
       if (written % 100 === 0) process.stdout.write(`\r[off] upserted ${written}/${collected.length}…`);
     }

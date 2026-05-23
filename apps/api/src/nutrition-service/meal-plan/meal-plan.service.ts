@@ -35,7 +35,7 @@ export class MealPlanService {
   // ─── Meal Plans ───────────────────────────────────
 
   async create(userId: number, dto: CreateMealPlanDto) {
-    const totalDays = dto.totalDays ?? 1;
+    const totalDays = dto.totalDays ?? 0;
     const plan = this.mealPlanRepository.create({
       creatorId: userId,
       name: dto.name,
@@ -46,15 +46,17 @@ export class MealPlanService {
     
     const savedPlan = await this.mealPlanRepository.save(plan);
 
-    // Automatically create days
-    const days = [];
-    for (let i = 1; i <= totalDays; i++) {
-      days.push(this.planDayRepository.create({
-        mealPlanId: savedPlan.id,
-        dayNumber: i,
-      }));
+    // Automatically create days only if totalDays > 0
+    if (totalDays > 0) {
+      const days = [];
+      for (let i = 1; i <= totalDays; i++) {
+        days.push(this.planDayRepository.create({
+          mealPlanId: savedPlan.id,
+          dayNumber: i,
+        }));
+      }
+      await this.planDayRepository.save(days);
     }
-    await this.planDayRepository.save(days);
 
     return savedPlan;
   }
