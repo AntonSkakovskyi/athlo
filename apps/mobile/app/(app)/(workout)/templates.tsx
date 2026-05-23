@@ -13,6 +13,8 @@ import { CollapsibleSection } from '@/components/ui/CollapsibleSection/Collapsib
 import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
 import { useTemplatesScreen } from '@/features/workout/hooks/useTemplatesScreen';
 
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+
 const TABS = ['My', 'Public', 'Friends'];
 
 export default function TemplatesScreen() {
@@ -39,6 +41,9 @@ export default function TemplatesScreen() {
     handleCreate,
     insets,
     router,
+    savedTemplateIds,
+    saveTemplate,
+    unsaveTemplate,
   } = useTemplatesScreen();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -68,7 +73,7 @@ export default function TemplatesScreen() {
           data={[]}
           renderItem={() => null}
           ListHeaderComponent={
-            <View>
+            <View style={styles.listContainer}>
               {myGroups.my.length > 0 && (
                 <CollapsibleSection title="My Templates" count={myGroups.my.length} initiallyExpanded>
                   {myGroups.my.map((t: any) => renderTemplateItem(t as any, 'my'))}
@@ -76,12 +81,24 @@ export default function TemplatesScreen() {
               )}
               {myGroups.friends.length > 0 && (
                 <CollapsibleSection title="Friends' Templates" count={myGroups.friends.length}>
-                  {myGroups.friends.map((s: any) => renderTemplateItem(s.workoutTemplate! as any, 'saved', s.workoutTemplate?.creatorNickname))}
+                  {myGroups.friends.map((s: any) => renderTemplateItem(
+                    s.workoutTemplate! as any,
+                    'saved',
+                    s.workoutTemplate?.creatorNickname,
+                    undefined,
+                    () => unsaveTemplate.mutate(String(s.workoutTemplate!.id)),
+                  ))}
                 </CollapsibleSection>
               )}
               {myGroups.public.length > 0 && (
                 <CollapsibleSection title="Public & General" count={myGroups.public.length}>
-                  {myGroups.public.map((s: any) => renderTemplateItem(s.workoutTemplate! as any, 'saved', s.workoutTemplate?.creatorNickname))}
+                  {myGroups.public.map((s: any) => renderTemplateItem(
+                    s.workoutTemplate! as any,
+                    'saved',
+                    s.workoutTemplate?.creatorNickname,
+                    undefined,
+                    () => unsaveTemplate.mutate(String(s.workoutTemplate!.id)),
+                  ))}
                 </CollapsibleSection>
               )}
             </View>
@@ -92,22 +109,34 @@ export default function TemplatesScreen() {
     }
 
     if (activeTab === 1) {
-      const hasContent = publicGroups.general.length > 0 || publicGroups.public.length > 0;
-      
+      const unsavedGeneral = publicGroups.general.filter((t: any) => !savedTemplateIds.has(t.id));
+      const unsavedPublic = publicGroups.public.filter((t: any) => !savedTemplateIds.has(t.id));
+      const hasContent = unsavedGeneral.length > 0 || unsavedPublic.length > 0;
+
       return (
         <InfiniteList
           data={[]}
           renderItem={() => null}
           ListHeaderComponent={
-            <View>
-              {publicGroups.general.length > 0 && (
-                <CollapsibleSection title="General" count={publicGroups.general.length} initiallyExpanded>
-                  {publicGroups.general.map((t: any) => renderTemplateItem(t as any, 'public'))}
+            <View style={styles.listContainer}>
+              {unsavedGeneral.length > 0 && (
+                <CollapsibleSection title="General" count={unsavedGeneral.length} initiallyExpanded>
+                  {unsavedGeneral.map((t: any) => renderTemplateItem(
+                    t as any,
+                    'public',
+                    undefined,
+                    () => saveTemplate.mutate(String(t.id)),
+                  ))}
                 </CollapsibleSection>
               )}
-              {publicGroups.public.length > 0 && (
-                <CollapsibleSection title="Public Templates" count={publicGroups.public.length} initiallyExpanded>
-                  {publicGroups.public.map((t: any) => renderTemplateItem(t as any, 'public', t.creatorNickname))}
+              {unsavedPublic.length > 0 && (
+                <CollapsibleSection title="Public Templates" count={unsavedPublic.length} initiallyExpanded>
+                  {unsavedPublic.map((t: any) => renderTemplateItem(
+                    t as any,
+                    'public',
+                    t.creatorNickname,
+                    () => saveTemplate.mutate(String(t.id)),
+                  ))}
                 </CollapsibleSection>
               )}
               {!hasContent && !(publicTemplatesQuery as any).isFetchingNextPage && (
@@ -127,31 +156,43 @@ export default function TemplatesScreen() {
     }
 
     if (activeTab === 2) {
+      const unsavedFriendGroups = friendsGroups
+        .map(group => ({
+          ...group,
+          templates: group.templates.filter(t => !savedTemplateIds.has(t.id)),
+        }))
+        .filter(group => group.templates.length > 0);
+
       return (
         <InfiniteList
           data={[]}
           renderItem={() => null}
           ListHeaderComponent={
-            <View>
+            <View style={styles.listContainer}>
               <Button
                 title="+ Add Friend"
-                variant="ghost"
+                variant="ghost-primary"
                 onPress={() => router.push({ pathname: '/(app)/(profile)/friends', params: { tab: 'find' } })}
                 style={styles.addFriendBtn}
               />
-              {friendsGroups.length === 0 && (
+              {unsavedFriendGroups.length === 0 && (
                 <EmptyState
                   title="No friend templates"
                   description="Your friends haven't shared any templates yet"
                 />
               )}
-              {friendsGroups.map(group => (
-                <CollapsibleSection 
-                  key={group.friend.id} 
-                  title={group.friend.nickname || group.friend.fullName} 
+              {unsavedFriendGroups.map(group => (
+                <CollapsibleSection
+                  key={group.friend.id}
+                  title={group.friend.nickname || group.friend.fullName}
                   count={group.templates.length}
                 >
-                  {group.templates.map(t => renderTemplateItem(t, 'public', group.friend.nickname))}
+                  {group.templates.map(t => renderTemplateItem(
+                    t,
+                    'public',
+                    group.friend.nickname,
+                    () => saveTemplate.mutate(String(t.id)),
+                  ))}
                 </CollapsibleSection>
               ))}
             </View>
@@ -166,15 +207,17 @@ export default function TemplatesScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.backBtn}>← Back</Text>
-        </Pressable>
-        <Text style={styles.screenTitle}>Templates</Text>
-        <Pressable onPress={() => setShowCreate(true)}>
-          <Text style={styles.createBtn}>+ Create</Text>
-        </Pressable>
-      </View>
+      <ScreenHeader
+        title="Templates"
+        onBack={() => router.back()}
+        rightAction={
+          <Button
+            title={showCreate ? 'Cancel' : '+ Create'}
+            variant="ghost-primary"
+            onPress={() => setShowCreate(!showCreate)}
+          />
+        }
+      />
 
       <View style={styles.segmentWrap}>
         <SegmentControl segments={TABS} activeIndex={activeTab} onSelect={setActiveTab} />
@@ -231,27 +274,8 @@ function makeStyles(c: ColorPalette) {
       flex: 1,
       backgroundColor: c.background,
     },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: spacing.lg,
-      marginBottom: spacing.lg,
-    },
-    backBtn: {
-      fontSize: 15,
-      color: c.primary,
-      fontWeight: '600',
-    },
-    screenTitle: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: c.text,
-    },
-    createBtn: {
-      fontSize: 15,
-      color: c.primary,
-      fontWeight: '600',
+    listContainer: {
+      gap: spacing.md,
     },
     segmentWrap: {
       paddingHorizontal: spacing.lg,

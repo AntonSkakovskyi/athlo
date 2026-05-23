@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
+import { formatRestTime } from '@/utils/time';
 
 interface ExerciseHeaderProps {
   exerciseName: string;
@@ -37,12 +38,12 @@ export function ExerciseHeader({
       <View style={styles.nameWrap}>
         <Text style={styles.exerciseName} numberOfLines={1}>{exerciseName}</Text>
         <View style={styles.subtitleRow}>
+          {restTime !== undefined && restTime > 0 && (
+            <Text style={styles.restTimeText}>⏱️ {formatRestTime(restTime)}</Text>
+          )}
           {isViewOnly && notes ? (
             <Text style={styles.notesText}>{notes}</Text>
           ) : null}
-          {restTime !== undefined && restTime > 0 && (
-            <Text style={styles.restTimeText}>⏱️ {restTime}s</Text>
-          )}
         </View>
       </View>
 

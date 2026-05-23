@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { BottomSheet, TimePicker } from '@/components/ui';
+import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
 import { useTemplateDetailScreen } from '@/features/workout/hooks/useTemplateDetailScreen';
 import { ExerciseLogCard } from '@/features/workout/components';
 import { TemplateDetailHeader } from '@/features/workout/components/TemplateDetailHeader/TemplateDetailHeader';
@@ -24,6 +25,7 @@ export default function TemplateDetailScreen() {
     timePickerVisible, setTimePickerVisible, pickerValue, setPickerValue,
     handleMoveExercise, handleAddExercise,
     handleUpdateSet, handleAddSet, handleDeleteSet,
+    currentVisibility, handleVisibilityChange,
     startFromTemplatePending, deleteTemplatePending,
     insets, router,
   } = useTemplateDetailScreen();
@@ -77,8 +79,18 @@ export default function TemplateDetailScreen() {
           onSaveDesc={handleSaveDesc}
         />
 
+        {isEditing && isOwner && (
+          <View style={styles.visibilitySelector}>
+            <VisibilitySelector
+              value={currentVisibility}
+              onChange={handleVisibilityChange}
+              label="Visibility"
+            />
+          </View>
+        )}
+
         {exercises.length === 0 ? (
-          <EmptyState title="No exercises yet" description="Add exercises to build your template" actionLabel={isOwner ? "+ Add Exercise" : undefined} onAction={isOwner ? handleAddExercise : undefined} />
+          <EmptyState title="No exercises yet" description="Add exercises to build your template" actionLabel={isOwner ? '+ Add Exercise' : undefined} onAction={isOwner ? (isEditing ? handleAddExercise : () => { toggleEditing(); handleAddExercise(); }) : undefined} />
         ) : (
           exercises.map((ex, idx) => (
             <ExerciseLogCard
@@ -151,5 +163,6 @@ function makeStyles(c: ColorPalette) {
     errorText: { color: c.danger, fontSize: fontSize.lg },
     goBackBtn: { marginTop: spacing.lg },
     saveRestBtn: { marginTop: spacing.md, marginBottom: spacing.lg },
+    visibilitySelector: { marginBottom: spacing.lg },
   });
 }

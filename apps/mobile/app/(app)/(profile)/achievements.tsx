@@ -101,9 +101,6 @@ export default function AchievementsScreen() {
       >
         <Pressable style={styles.sheetOverlay} onPress={handleCloseSheet}>
           <Pressable style={styles.sheetContent} onPress={() => {}}>
-            <Pressable style={styles.collapseBtn} onPress={handleCloseSheet}>
-              <Text style={styles.collapseBtnText}>↓</Text>
-            </Pressable>
             <ScrollView showsVerticalScrollIndicator={false} style={styles.sheetScroll}>
               {selectedAchievement && (
                 <>
@@ -182,21 +179,6 @@ function makeStyles(c: ColorPalette) {
       paddingBottom: spacing['4xl'],
       maxHeight: SHEET_HEIGHT,
       minHeight: 200,
-    },
-    collapseBtn: {
-      position: 'absolute',
-      top: -20,
-      left: 20,
-      width: 40,
-      height: 40,
-      borderRadius: borderRadius.xl,
-      backgroundColor: c.surface,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: c.border,
-      zIndex: 10,
-      ...shadows.button,
     },
     collapseBtnText: { fontSize: fontSize.xl, color: c.black, fontWeight: fontWeight.semibold },
     sheetScroll: { flexGrow: 0 },

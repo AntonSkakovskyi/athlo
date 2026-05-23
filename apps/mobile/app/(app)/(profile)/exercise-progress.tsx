@@ -5,11 +5,12 @@ import { useRouter } from 'expo-router';
 import { spacing } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
-import { useInfiniteExercises } from '@/hooks/api/useExerciseAPI';
+import { useInfiniteExercises, useGetEquipments, useGetMuscles } from '@/hooks/api';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { Input } from '@/components/ui/Input/Input';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { ExerciseProgressListItem } from '@/features/profile/components';
+import { EquipmentFilter } from '@/features/workout/components';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { InfiniteList } from '@/components/ui/InfiniteList/InfiniteList';
 import type { ExerciseWithRelations } from '@/hooks/api/useExerciseAPI';
@@ -23,6 +24,8 @@ export default function ExerciseProgressScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [debounceTimer, setDebounceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [selectedMuscleId, setSelectedMuscleId] = useState<number | null>(null);
+  const [selectedEquipmentId, setSelectedEquipmentId] = useState<number | null>(null);
 
   const handleSearchChange = useCallback(
     (text: string) => {
@@ -34,8 +37,35 @@ export default function ExerciseProgressScreen() {
     [debounceTimer],
   );
 
+  const toggleMuscle = useCallback((id: number) => {
+    setSelectedMuscleId((prev) => (prev === id ? null : id));
+  }, []);
+
+  const toggleEquipment = useCallback((id: number) => {
+    setSelectedEquipmentId((prev) => (prev === id ? null : id));
+  }, []);
+
+  const hasFilters = !!debouncedSearch || !!selectedMuscleId || !!selectedEquipmentId;
+
+  const clearFilters = useCallback(() => {
+    setSearchQuery('');
+    setDebouncedSearch('');
+    setSelectedMuscleId(null);
+    setSelectedEquipmentId(null);
+  }, []);
+
+  const filters = useMemo(() => {
+    const f: Record<string, unknown> = {};
+    if (debouncedSearch) f.search = debouncedSearch;
+    if (selectedMuscleId) f.muscleId = selectedMuscleId;
+    if (selectedEquipmentId) f.equipmentId = selectedEquipmentId;
+    return f;
+  }, [debouncedSearch, selectedMuscleId, selectedEquipmentId]);
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteExercises({ search: debouncedSearch || undefined });
+    useInfiniteExercises(filters);
+  const musclesQuery = useGetMuscles();
+  const equipmentsQuery = useGetEquipments();
 
   const exercises = useMemo(
     () => data?.pages.flatMap((p) => p.data) ?? [],
@@ -64,14 +94,20 @@ export default function ExerciseProgressScreen() {
       ListHeaderComponent={
         <View>
           <ScreenHeader title="Exercise Progress" onBack={() => router.back()} />
-          <View style={styles.searchSection}>
-            <Input
-              label="Search Exercise"
-              placeholder="Type exercise name..."
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-            />
-          </View>
+          <Input
+            label="Search Exercise"
+            placeholder="Type exercise name..."
+            value={searchQuery}
+            onChangeText={handleSearchChange}
+          />
+          <EquipmentFilter
+            selectedMuscleId={selectedMuscleId}
+            selectedEquipmentId={selectedEquipmentId}
+            muscles={musclesQuery.data ?? []}
+            equipments={equipmentsQuery.data ?? []}
+            onToggleMuscle={toggleMuscle}
+            onToggleEquipment={toggleEquipment}
+          />
         </View>
       }
       data={exercises}
@@ -96,7 +132,13 @@ export default function ExerciseProgressScreen() {
         ) : (
           <EmptyState
             title="No exercises found"
-            description="Start working out or adjust your search to see progress"
+            description={
+              hasFilters
+                ? 'No exercises match your filters'
+                : 'Start working out or adjust your search to see progress'
+            }
+            actionLabel={hasFilters ? 'Clear filters' : undefined}
+            onAction={hasFilters ? clearFilters : undefined}
           />
         )
       }
@@ -113,9 +155,6 @@ function makeStyles(c: ColorPalette) {
       flex: 1,
       backgroundColor: c.background,
       paddingHorizontal: spacing.lg,
-    },
-    searchSection: {
-      marginBottom: spacing.lg,
     },
     loader: {
       marginVertical: 30,

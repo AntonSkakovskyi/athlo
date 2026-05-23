@@ -55,7 +55,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.profileCard}>
-        <Avatar name={profile?.fullName} size="lg" />
+        <Avatar uri={profile?.avatar ?? undefined} name={profile?.fullName} size="lg" />
         <Text style={styles.nickname}>@{profile?.nickname}</Text>
         <Text style={styles.fullName}>{profile?.fullName}</Text>
         <View style={styles.statsRow}>

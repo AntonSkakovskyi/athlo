@@ -10,10 +10,10 @@ import { formatSeconds } from '@/utils/time';
 export interface SetRowData {
   id?: number;
   order: number;
-  weight?: number;
-  reps?: number;
-  duration?: number;
-  distance?: number;
+  weight?: number | null;
+  reps?: number | null;
+  duration?: number | null;
+  distance?: number | null;
   isCompleted: boolean;
   previousWeight?: number;
   previousReps?: number;
@@ -58,12 +58,12 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
           <NumericInput
             placeholder="kg"
             value={set.weight != null ? String(set.weight) : ''}
-            onChangeText={(t) => onUpdate({ weight: t ? Number(t) : undefined })}
+            onChangeText={(t) => onUpdate({ weight: t ? Number(t) : null })}
           />
           <NumericInput
             placeholder="reps"
             value={set.reps != null ? String(set.reps) : ''}
-            onChangeText={(t) => onUpdate({ reps: t ? Number(t) : undefined })}
+            onChangeText={(t) => onUpdate({ reps: t ? Number(t) : null })}
           />
         </>
       )}
@@ -73,7 +73,7 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
           wide
           placeholder="reps"
           value={set.reps != null ? String(set.reps) : ''}
-          onChangeText={(t) => onUpdate({ reps: t ? Number(t) : undefined })}
+          onChangeText={(t) => onUpdate({ reps: t ? Number(t) : null })}
         />
       )}
 
@@ -82,12 +82,12 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
           <NumericInput
             placeholder="sec"
             value={set.duration != null ? String(set.duration) : ''}
-            onChangeText={(t) => onUpdate({ duration: t ? Number(t) : undefined })}
+            onChangeText={(t) => onUpdate({ duration: t ? Number(t) : null })}
           />
           <NumericInput
             placeholder="m"
             value={set.distance != null ? String(set.distance) : ''}
-            onChangeText={(t) => onUpdate({ distance: t ? Number(t) : undefined })}
+            onChangeText={(t) => onUpdate({ distance: t ? Number(t) : null })}
           />
         </>
       )}

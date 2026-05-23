@@ -52,7 +52,7 @@ export default function FriendsScreen() {
 
   const renderFriendItem = ({ item }: { item: any }) => (
     <Pressable style={styles.userItem} onPress={() => handleUserPress(item.id)}>
-      <Avatar name={item.fullName} size="md" />
+      <Avatar uri={item.avatar ?? undefined} name={item.fullName} size="md" />
       <View style={styles.userInfo}>
         <Text style={styles.userName}>{item.fullName}</Text>
         <Text style={styles.userNickname}>@{item.nickname}</Text>
@@ -69,7 +69,7 @@ export default function FriendsScreen() {
 
   const renderIncomingRequest = ({ item }: { item: any }) => (
     <View style={styles.userItem}>
-      <Avatar name={item.fullName} size="md" />
+      <Avatar uri={item.avatar ?? undefined} name={item.fullName} size="md" />
       <View style={styles.userInfo}>
         <Text style={styles.userName}>{item.fullName}</Text>
         <Text style={styles.userNickname}>@{item.nickname}</Text>
@@ -93,7 +93,7 @@ export default function FriendsScreen() {
 
   const renderOutgoingRequest = ({ item }: { item: any }) => (
     <View style={styles.userItem}>
-      <Avatar name={item.fullName} size="md" />
+      <Avatar uri={item.avatar ?? undefined} name={item.fullName} size="md" />
       <View style={styles.userInfo}>
         <Text style={styles.userName}>{item.fullName}</Text>
         <Text style={styles.userNickname}>@{item.nickname}</Text>
@@ -120,7 +120,7 @@ export default function FriendsScreen() {
 
     return (
       <Pressable style={styles.userItem} onPress={() => handleUserPress(item.id)}>
-        <Avatar name={item.fullName} size="md" />
+        <Avatar uri={item.avatar ?? undefined} name={item.fullName} size="md" />
         <View style={styles.userInfo}>
           <Text style={styles.userName}>{item.fullName}</Text>
           <Text style={styles.userNickname}>@{item.nickname}</Text>

@@ -42,7 +42,7 @@ export function SetInputGroup({
             <NumericInput
               placeholder={set.placeholderWeight != null ? String(set.placeholderWeight) : 'kg'}
               value={set.weight != null ? String(set.weight) : ''}
-              onChangeText={(t) => onUpdate({ weight: t ? Number(t) : undefined })}
+              onChangeText={(t) => onUpdate({ weight: t ? Number(t) : null })}
             />
           )}
         </View>
@@ -53,7 +53,7 @@ export function SetInputGroup({
             <NumericInput
               placeholder={set.placeholderReps != null ? String(set.placeholderReps) : 'reps'}
               value={set.reps != null ? String(set.reps) : ''}
-              onChangeText={(t) => onUpdate({ reps: t ? Number(t) : undefined })}
+              onChangeText={(t) => onUpdate({ reps: t ? Number(t) : null })}
             />
           )}
         </View>
@@ -71,7 +71,7 @@ export function SetInputGroup({
             wide
             placeholder={set.placeholderReps != null ? String(set.placeholderReps) : 'reps'}
             value={set.reps != null ? String(set.reps) : ''}
-            onChangeText={(t) => onUpdate({ reps: t ? Number(t) : undefined })}
+            onChangeText={(t) => onUpdate({ reps: t ? Number(t) : null })}
           />
         )}
       </View>
@@ -100,7 +100,7 @@ export function SetInputGroup({
             <NumericInput
               placeholder={set.placeholderDistance != null ? String(set.placeholderDistance) : 'm'}
               value={set.distance != null ? String(set.distance) : ''}
-              onChangeText={(t) => onUpdate({ distance: t ? Number(t) : undefined })}
+              onChangeText={(t) => onUpdate({ distance: t ? Number(t) : null })}
             />
           )}
         </View>

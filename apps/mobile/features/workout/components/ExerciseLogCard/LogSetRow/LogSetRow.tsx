@@ -5,6 +5,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { TrackingType } from '@athlo/shared';
 import { formatSeconds } from '@/utils/time';
+import { showAlert } from '@/utils/alerts';
 import { SetInputGroup } from './SetInputGroup/SetInputGroup';
 
 export type ExerciseLogMode = 'active' | 'summary' | 'template';
@@ -12,10 +13,10 @@ export type ExerciseLogMode = 'active' | 'summary' | 'template';
 export interface LogSetData {
   id?: number;
   order: number;
-  weight?: number;
-  reps?: number;
-  duration?: number;
-  distance?: number;
+  weight?: number | null;
+  reps?: number | null;
+  duration?: number | null;
+  distance?: number | null;
   isCompleted: boolean;
   isPR?: boolean;
   achievementId?: number | null;
@@ -76,6 +77,38 @@ export function LogSetRow({
 
   const handleToggleComplete = () => {
     if (!set.isCompleted) {
+      let isEmptyWithoutPlaceholder = false;
+
+      if (trackingType === TrackingType.WEIGHT_AND_REPS) {
+        const hasWeight = set.weight != null;
+        const hasPlaceholderWeight = set.placeholderWeight != null;
+        const hasReps = set.reps != null;
+        const hasPlaceholderReps = set.placeholderReps != null;
+        
+        if ((!hasWeight && !hasPlaceholderWeight) || (!hasReps && !hasPlaceholderReps)) {
+          isEmptyWithoutPlaceholder = true;
+        }
+      } else if (trackingType === TrackingType.REPS_ONLY) {
+        const hasReps = set.reps != null;
+        const hasPlaceholderReps = set.placeholderReps != null;
+        
+        if (!hasReps && !hasPlaceholderReps) {
+          isEmptyWithoutPlaceholder = true;
+        }
+      } else if (trackingType === TrackingType.TIME_BASED) {
+        const hasDuration = set.duration != null;
+        const hasPlaceholderDuration = set.placeholderDuration != null;
+        
+        if (!hasDuration && !hasPlaceholderDuration) {
+          isEmptyWithoutPlaceholder = true;
+        }
+      }
+
+      if (isEmptyWithoutPlaceholder) {
+        showAlert('Незаповнений підхід', 'Введіть значення перед тим як відмітити підхід.');
+        return;
+      }
+
       // If completing and values are empty, fill from placeholders (last set of current workout)
       const updates: Partial<LogSetData> = {};
       if (trackingType === TrackingType.WEIGHT_AND_REPS) {

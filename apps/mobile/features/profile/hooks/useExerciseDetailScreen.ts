@@ -117,7 +117,7 @@ export function useExerciseDetailScreen() {
   const historyRecords = useMemo(() => {
     const records = progress?.records ?? [];
     return [...records]
-      .reverse()
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .map((record) => ({
         ...record,
         sets: (record.sets ?? []).map((s) => ({

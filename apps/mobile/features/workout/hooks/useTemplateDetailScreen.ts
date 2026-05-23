@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { confirmDestructive, showErrorAlert } from '@/utils/alerts';
@@ -9,11 +9,13 @@ import { useQueryClient } from '@tanstack/react-query';
 import apiClient from '@/api/api-client';
 import { templateKeys } from '@/api/queries/query-keys';
 import { getTrackingType } from '@/utils/workout';
+import { VisibilityType } from '@athlo/shared';
+import { VISIBILITY_ENUM_TO_ID } from '@/utils/visibility';
 
 export function useTemplateDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, edit } = useLocalSearchParams<{ id: string; edit?: string }>();
   const queryClient = useQueryClient();
 
   const { data: template, isLoading, error } = useGetTemplateById(id);
@@ -27,7 +29,10 @@ export function useTemplateDetailScreen() {
 
   const [editName, setEditName] = useState<string | null>(null);
   const [editDesc, setEditDesc] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(edit === '1');
+
+  // Pending set value changes — flushed to API only on "Done"
+  const pendingSetUpdates = useRef<Map<number, { exerciseEntryId: number; data: any }>>(new Map());
 
   // Time Picker State (for Rest Time)
   const [timePickerVisible, setTimePickerVisible] = useState(false);
@@ -41,23 +46,40 @@ export function useTemplateDetailScreen() {
     [typedTemplate],
   );
 
-  const toggleEditing = useCallback(() => {
-    setIsEditing(prev => !prev);
-  }, []);
+  const flushPendingSetUpdates = useCallback(async () => {
+    const updates = Array.from(pendingSetUpdates.current.entries());
+    pendingSetUpdates.current.clear();
+    if (updates.length === 0) return;
+    await Promise.allSettled(
+      updates.map(([setId, { exerciseEntryId, data }]) =>
+        apiClient.patch(`templates/${id}/exercises/${exerciseEntryId}/sets/${setId}`, data),
+      ),
+    );
+    queryClient.invalidateQueries({ queryKey: templateKeys.byId(id) });
+  }, [id, queryClient]);
 
-  const handleUpdateSet = useCallback(async (exerciseEntryId: number, setIndex: number, data: any) => {
+  const toggleEditing = useCallback(() => {
+    if (isEditing) {
+      flushPendingSetUpdates();
+      setIsEditing(false);
+      return;
+    }
+    // Entering edit mode — clear stale pending updates
+    pendingSetUpdates.current.clear();
+    setIsEditing(true);
+  }, [isEditing, flushPendingSetUpdates]);
+
+  const handleUpdateSet = useCallback((exerciseEntryId: number, setIndex: number, data: any) => {
     const ex = exercises.find(e => e.id === exerciseEntryId);
     const set = ex?.templateSets?.sort((a, b) => a.order - b.order)[setIndex];
     if (!set) return;
 
-    try {
-      await apiClient.patch(`templates/${id}/exercises/${exerciseEntryId}/sets/${set.id}`, data);
-      // Invalidate query to refresh data
-      queryClient.invalidateQueries({ queryKey: templateKeys.byId(id) });
-    } catch {
-      showErrorAlert('Failed to update set.');
-    }
-  }, [exercises, id, queryClient]);
+    // Accumulate changes — no API call until "Done"
+    pendingSetUpdates.current.set(set.id, {
+      exerciseEntryId,
+      data: { ...(pendingSetUpdates.current.get(set.id)?.data ?? {}), ...data },
+    });
+  }, [exercises]);
 
   const handleAddSet = useCallback(async (exerciseEntryId: number) => {
     const ex = exercises.find(e => e.id === exerciseEntryId);
@@ -129,11 +151,25 @@ export function useTemplateDetailScreen() {
 
   const handleSaveDesc = useCallback(() => {
     if (editDesc === null) return;
+    if (editDesc === (typedTemplate?.description ?? '')) {
+      setEditDesc(null);
+      return;
+    }
     updateTemplate.mutate(
-      { id, data: { description: editDesc || undefined } },
+      { id, data: { description: editDesc } },
       { onSuccess: () => setEditDesc(null) },
     );
-  }, [editDesc, updateTemplate, id]);
+  }, [editDesc, typedTemplate, updateTemplate, id]);
+
+  const currentVisibility = useMemo((): VisibilityType => {
+    if (typedTemplate?.visibilityTypeId === 2) return VisibilityType.PUBLIC;
+    if (typedTemplate?.visibilityTypeId === 3) return VisibilityType.FRIENDS_ONLY;
+    return VisibilityType.PRIVATE;
+  }, [typedTemplate?.visibilityTypeId]);
+
+  const handleVisibilityChange = useCallback((value: VisibilityType) => {
+    updateTemplate.mutate({ id, data: { visibilityTypeId: VISIBILITY_ENUM_TO_ID[value] } });
+  }, [updateTemplate, id]);
 
   const handleDelete = useCallback(() => {
     confirmDestructive('Delete Template', 'Are you sure?', () => deleteTemplate.mutate(id, { onSuccess: () => router.back() }));
@@ -200,6 +236,8 @@ export function useTemplateDetailScreen() {
     setPickerValue,
     handleMoveExercise,
     handleAddExercise,
+    currentVisibility,
+    handleVisibilityChange,
     startFromTemplatePending: startFromTemplate.isPending,
     deleteTemplatePending: deleteTemplate.isPending,
     insets,

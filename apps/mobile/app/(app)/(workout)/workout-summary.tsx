@@ -37,7 +37,6 @@ export default function WorkoutSummaryScreen() {
     handleAddSet,
     handleDeleteSet,
     handleMoveSet,
-    handleUpdateExercise,
     handleDeleteExercise,
     handleMoveExercise,
     handleChangeExercise,
@@ -56,6 +55,8 @@ export default function WorkoutSummaryScreen() {
     setLocalVisibility,
     localDescription,
     setLocalDescription,
+    localNotesMap,
+    handleUpdateExerciseNotes,
     lastPerformances,
     newAchievement,
     setNewAchievement,
@@ -189,13 +190,13 @@ export default function WorkoutSummaryScreen() {
         mode="summary"
         isEditing={isEditing}
         sets={logSets}
-        notes={ex.notes}
+        notes={localNotesMap[String(ex.id)] ?? ex.notes ?? ''}
         restTime={ex.restTime}
         showNotes={showNotesMap[ex.id] ?? false}
         isFirst={index === 0}
         isLast={index === exercises.length - 1}
         onToggleNotes={() => toggleNotes(ex.id)}
-        onNotesChange={(text) => handleUpdateExercise(ex.id, { notes: text })}
+        onNotesChange={(text) => handleUpdateExerciseNotes(ex.id, text)}
         onUpdateSet={(setIdx, data) => handleUpdateSet(ex.id, setIdx, data)}
         onToggleSetComplete={(setIdx) => handleToggleSetComplete(ex.id, setIdx)}
         onAddSet={() => handleAddSet(ex.id)}

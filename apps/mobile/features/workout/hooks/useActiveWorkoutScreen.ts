@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
-import { getTrackingType } from '@/utils/workout';
+import { getTrackingType, hasEmptySets } from '@/utils/workout';
 import { formatHMS, formatSeconds } from '@/utils/time';
 import { showErrorAlert } from '@/utils/alerts';
 import apiClient from '@/api/api-client';
@@ -306,46 +306,60 @@ export function useActiveWorkoutScreen() {
   const handleFinish = useCallback(async () => {
     if (!workout) return;
 
-    // Silent pruning: remove exercises with no sets
-    const emptyExerciseIndices = exercises
-      .map((ex, idx) => (ex.sets.length === 0 ? idx : -1))
-      .filter((idx) => idx !== -1);
+    const proceed = async () => {
+      // Silent pruning: remove exercises with no sets
+      const emptyExerciseIndices = exercises
+        .map((ex, idx) => (ex.sets.length === 0 ? idx : -1))
+        .filter((idx) => idx !== -1);
 
-    if (emptyExerciseIndices.length > 0) {
-      // Delete from DB and local state
-      // We process in reverse to not mess up indices during local removal
-      const reverseIndices = [...emptyExerciseIndices].reverse();
-      for (const idx of reverseIndices) {
-        const ex = exercises[idx];
-        if (ex.logExerciseId) {
-          try {
-            await apiClient.delete(`workouts/${workoutId}/exercises/${ex.logExerciseId}`);
-            addedLogExerciseIds.current.delete(ex.logExerciseId);
-          } catch (e) {
-            console.error('Failed to prune empty exercise:', e);
+      if (emptyExerciseIndices.length > 0) {
+        const reverseIndices = [...emptyExerciseIndices].reverse();
+        for (const idx of reverseIndices) {
+          const ex = exercises[idx];
+          if (ex.logExerciseId) {
+            try {
+              await apiClient.delete(`workouts/${workoutId}/exercises/${ex.logExerciseId}`);
+              addedLogExerciseIds.current.delete(ex.logExerciseId);
+            } catch (e) {
+              console.error('Failed to prune empty exercise:', e);
+            }
           }
+          removeExercise(idx);
         }
-        removeExercise(idx);
       }
-    }
 
-    // Recalculate completed sets after pruning if necessary, 
-    // but the summary screen will use the latest state anyway.
-    
-    if (completedSets === 0 && emptyExerciseIndices.length === exercises.length) {
-      Alert.alert('No Sets Completed', 'Your workout has no set values.', [{ text: 'Ok' }]);
+      if (completedSets === 0 && emptyExerciseIndices.length === exercises.length) {
+        Alert.alert('No Sets Completed', 'Your workout has no set values.', [{ text: 'Ok' }]);
+        return;
+      }
+
+      router.push({
+        pathname: '/(app)/(workout)/finish-workout',
+        params: {
+          duration: formatHMS(elapsed),
+          volume: String(totalVolume),
+          completedSets: String(completedSets),
+          totalSets: String(totalSets),
+        },
+      });
+    };
+
+    const hasEmpty = exercises.some((ex) =>
+      hasEmptySets(ex.sets, ex.trackingType, { completedOnly: true, allowPlaceholders: true }),
+    );
+    if (hasEmpty) {
+      Alert.alert(
+        'Незаповнені підходи',
+        'Деякі виконані підходи не мають значень і немає попередніх даних. Продовжити?',
+        [
+          { text: 'Скасувати', style: 'cancel' },
+          { text: 'Продовжити', onPress: proceed },
+        ],
+      );
       return;
     }
 
-    router.push({
-      pathname: '/(app)/(workout)/finish-workout',
-      params: {
-        duration: formatHMS(elapsed),
-        volume: String(totalVolume),
-        completedSets: String(completedSets),
-        totalSets: String(totalSets),
-      },
-    });
+    await proceed();
   }, [workout, exercises, workoutId, removeExercise, completedSets, router, elapsed, totalVolume, totalSets]);
 
   const handleRestTimer = useCallback((seconds: number) => {

@@ -1,8 +1,8 @@
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
+import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { formatDurationRange, getTrackingType } from '@/utils/workout';
-import { formatSeconds } from '@/utils/time';
+import { formatDurationRange, getTrackingType, hasEmptySets } from '@/utils/workout';
 import { 
   useGetWorkoutById, 
   useUpdateWorkout, 
@@ -40,6 +40,7 @@ export function useWorkoutSummaryScreen() {
   const [localDuration, setLocalDuration] = useState<string>(''); // format "HH:MM:SS" or similar
   const [localVisibility, setLocalVisibility] = useState<VisibilityType>(VisibilityType.PRIVATE);
   const [localDescription, setLocalDescription] = useState<string>('');
+  const [localNotesMap, setLocalNotesMap] = useState<Record<string, string>>({});
   const [newAchievement, setNewAchievement] = useState<{ title: string; description?: string } | null>(null);
 
   useEffect(() => {
@@ -48,7 +49,7 @@ export function useWorkoutSummaryScreen() {
       setLocalCalories(workout.calories != null ? String(workout.calories) : '');
       setLocalFeeling(workout.feelingScore ?? null);
       setNameInput(workout.name ?? '');
-      
+
       const visibilityMap: Record<number, VisibilityType> = {
         1: VisibilityType.PRIVATE,
         2: VisibilityType.PUBLIC,
@@ -56,7 +57,7 @@ export function useWorkoutSummaryScreen() {
       };
       setLocalVisibility(visibilityMap[workout.visibilityTypeId] || VisibilityType.PRIVATE);
       setLocalDescription(workout.description ?? '');
-      
+
       if (workout.started_at && workout.ended_at) {
         const diff = Math.floor((new Date(workout.ended_at).getTime() - new Date(workout.started_at).getTime()) / 1000);
         const h = Math.floor(diff / 3600);
@@ -64,6 +65,12 @@ export function useWorkoutSummaryScreen() {
         const s = diff % 60;
         setLocalDuration(`${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
       }
+
+      const notesMap: Record<string, string> = {};
+      workout.logExercises?.forEach(ex => {
+        notesMap[String(ex.id)] = ex.notes ?? '';
+      });
+      setLocalNotesMap(notesMap);
     }
   }, [workout]);
 
@@ -83,35 +90,73 @@ export function useWorkoutSummaryScreen() {
 
   const toggleEditing = useCallback(() => {
     if (isEditing) {
-      // Silent pruning: remove exercises with no sets
-      const emptyExercises = exercises.filter(ex => !ex.sets || ex.sets.length === 0);
-      emptyExercises.forEach(ex => {
-        deleteLogExercise.mutate(String(ex.id));
+      const commit = () => {
+        // Silent pruning: remove exercises with no sets
+        const emptyExercises = exercises.filter(ex => !ex.sets || ex.sets.length === 0);
+        emptyExercises.forEach(ex => {
+          deleteLogExercise.mutate(String(ex.id));
+        });
+
+        // Sync metrics on "Done"
+        const diffParts = localDuration.split(':').map(Number);
+        let totalSeconds = 0;
+        if (diffParts.length === 3) totalSeconds = diffParts[0] * 3600 + diffParts[1] * 60 + diffParts[2];
+        else if (diffParts.length === 2) totalSeconds = diffParts[0] * 60 + diffParts[1];
+
+        const newEndDate = new Date(new Date(workout?.started_at ?? '').getTime() + totalSeconds * 1000);
+
+        updateWorkout.mutate({
+          id: workoutId ?? '',
+          data: {
+            name: nameInput.trim() || workout?.name,
+            rpe: localRpe ? Number(localRpe) : undefined,
+            calories: localCalories ? Number(localCalories) : undefined,
+            feelingScore: localFeeling ?? undefined,
+            ended_at: newEndDate.toISOString(),
+            visibility: localVisibility,
+            description: localDescription.trim() || undefined,
+          },
+        });
+
+        // Save buffered exercise notes only if changed
+        exercises.forEach(ex => {
+          const buffered = localNotesMap[String(ex.id)];
+          if (buffered !== undefined && buffered !== (ex.notes ?? '')) {
+            updateLogExercise.mutate({
+              id: String(ex.id),
+              data: { notes: buffered.trim() || undefined },
+            });
+          }
+        });
+
+        setIsEditing(false);
+      };
+
+      const hasEmpty = exercises.some((ex) => {
+        const trackingType = getTrackingType(ex.exercise?.trackingTypeId);
+        return hasEmptySets(ex.sets ?? [], trackingType, { completedOnly: true });
       });
 
-      // Sync metrics on "Done"
-      const diffParts = localDuration.split(':').map(Number);
-      let totalSeconds = 0;
-      if (diffParts.length === 3) totalSeconds = diffParts[0] * 3600 + diffParts[1] * 60 + diffParts[2];
-      else if (diffParts.length === 2) totalSeconds = diffParts[0] * 60 + diffParts[1];
+      if (hasEmpty) {
+        Alert.alert(
+          'Незаповнені підходи',
+          'Деякі виконані підходи не мають значень. Продовжити?',
+          [
+            { text: 'Скасувати', style: 'cancel' },
+            { text: 'Продовжити', onPress: commit },
+          ],
+        );
+        return;
+      }
 
-      const newEndDate = new Date(new Date(workout?.started_at ?? '').getTime() + totalSeconds * 1000);
-
-      updateWorkout.mutate({
-        id: workoutId ?? '',
-        data: {
-          name: nameInput.trim() || workout?.name,
-          rpe: localRpe ? Number(localRpe) : undefined,
-          calories: localCalories ? Number(localCalories) : undefined,
-          feelingScore: localFeeling ?? undefined,
-          ended_at: newEndDate.toISOString(),
-          visibility: localVisibility,
-          description: localDescription.trim() || undefined
-        }
-      });
+      commit();
+      return;
     }
-    setIsEditing(prev => !prev);
-  }, [isEditing, localRpe, localCalories, localFeeling, localDuration, localVisibility, localDescription, workoutId, workout?.started_at, workout?.name, nameInput, updateWorkout, exercises, deleteLogExercise]);
+    setIsEditing(true);
+  }, [isEditing, localRpe, localCalories, localFeeling, localDuration, localVisibility, localDescription, localNotesMap, workoutId, workout?.started_at, workout?.name, nameInput, updateWorkout, updateLogExercise, exercises, deleteLogExercise]);
+
+  const updateTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const pendingSetData = useRef<Map<string, any>>(new Map());
 
   const handleUpdateSet = useCallback((exerciseId: number, setIndex: number, data: any) => {
     const ex = exercises.find(e => e.id === exerciseId);
@@ -119,11 +164,19 @@ export function useWorkoutSummaryScreen() {
     const set = sets[setIndex];
     if (!set) return;
 
-    updateLogSet.mutate({
-      exerciseId: String(exerciseId),
-      setId: String(set.id),
-      data
-    });
+    const key = String(set.id);
+    pendingSetData.current.set(key, { ...(pendingSetData.current.get(key) ?? {}), ...data });
+
+    clearTimeout(updateTimers.current.get(key));
+    updateTimers.current.set(key, setTimeout(() => {
+      updateLogSet.mutate({
+        exerciseId: String(exerciseId),
+        setId: key,
+        data: pendingSetData.current.get(key),
+      });
+      pendingSetData.current.delete(key);
+      updateTimers.current.delete(key);
+    }, 400));
   }, [exercises, updateLogSet]);
 
   const handleToggleSetComplete = useCallback((exerciseId: number, setIndex: number) => {
@@ -138,43 +191,6 @@ export function useWorkoutSummaryScreen() {
       exerciseId: String(exerciseId),
       setId: String(set.id),
       data: { isCompleted: isNowCompleted }
-    }, {
-      onSuccess: (data) => {
-        if (isNowCompleted && data && (data.isPR || data.achievement)) {
-          if (data.achievement) {
-            setNewAchievement({
-              title: data.achievement.name,
-              description: data.achievement.description,
-            });
-          } else if (data.isPR) {
-            const trackingType = getTrackingType(ex.exercise?.trackingTypeId);
-            let recordDetails = '';
-            if (trackingType === 'WEIGHT_AND_REPS') {
-              if (set.weight != null && set.reps != null) {
-                recordDetails = `${set.weight}kg × ${set.reps} reps`;
-              } else if (set.weight != null) {
-                recordDetails = `${set.weight}kg`;
-              } else if (set.reps != null) {
-                recordDetails = `${set.reps} reps`;
-              }
-            } else if (trackingType === 'REPS_ONLY') {
-              if (set.reps != null) recordDetails = `${set.reps} reps`;
-            } else if (trackingType === 'TIME_BASED') {
-              const dur = set.duration ? formatSeconds(set.duration) : '';
-              const dist = set.distance ? `${set.distance}m` : '';
-              recordDetails = [dur, dist].filter(Boolean).join(' ');
-            }
-
-            const exName = ex.exercise?.name ?? `Exercise #${ex.order}`;
-            setNewAchievement({
-              title: 'Personal Record!',
-              description: recordDetails
-                ? `You've set a new personal record of ${recordDetails} for ${exName}!`
-                : `You've set a new personal record for ${exName}!`,
-            });
-          }
-        }
-      }
     });
   }, [exercises, updateLogSet]);
 
@@ -210,6 +226,10 @@ export function useWorkoutSummaryScreen() {
       data
     });
   }, [updateLogExercise]);
+
+  const handleUpdateExerciseNotes = useCallback((exerciseId: number, notes: string) => {
+    setLocalNotesMap(prev => ({ ...prev, [String(exerciseId)]: notes }));
+  }, []);
 
   const handleDeleteExercise = useCallback((exerciseId: number) => {
     confirmDestructive('Delete Exercise', 'Are you sure?', () => deleteLogExercise.mutate(String(exerciseId)));
@@ -356,6 +376,8 @@ export function useWorkoutSummaryScreen() {
     setLocalVisibility,
     localDescription,
     setLocalDescription,
+    localNotesMap,
+    handleUpdateExerciseNotes,
     lastPerformances,
     newAchievement,
     setNewAchievement,

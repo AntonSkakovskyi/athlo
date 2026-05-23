@@ -1,4 +1,5 @@
 export * from './ActiveExerciseCard/ActiveExerciseCard';
+export * from './EquipmentFilter/EquipmentFilter';
 export * from './DurationPicker/DurationPicker';
 export * from './ExerciseLogCard/ExerciseLogCard';
 export * from './ExerciseLogCard/LogSetRow/LogSetRow';

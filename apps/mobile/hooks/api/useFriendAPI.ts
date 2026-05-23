@@ -22,6 +22,7 @@ interface FriendRequest {
   fullName: string;
   nickname: string;
   email: string;
+  avatar?: string | null;
   createdAt: string;
 }
 
@@ -41,6 +42,7 @@ interface OutgoingRequest {
   fullName: string;
   nickname: string;
   email: string;
+  avatar?: string | null;
   createdAt: string;
 }
 

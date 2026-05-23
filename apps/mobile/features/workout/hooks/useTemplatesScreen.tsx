@@ -3,20 +3,26 @@ import { View, StyleSheet } from 'react-native';
 import { spacing } from '@/constants/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { 
-  useGetMyTemplates, 
-  useGetPublicTemplates, 
-  useGetFriendsTemplates, 
-  useCreateTemplate, 
-  useStartFromTemplate 
+import {
+  useGetMyTemplates,
+  useGetPublicTemplates,
+  useGetFriendsTemplates,
+  useCreateTemplate,
+  useStartFromTemplate,
+  useSaveTemplate,
+  useUnsaveTemplate,
+  useGetSavedTemplates,
 } from '@/hooks/api';
 import type { IWorkoutTemplate } from '@athlo/shared';
 import { VisibilityType } from '@athlo/shared';
+import { VISIBILITY_ENUM_TO_ID } from '@/utils/visibility';
+import { useAuth } from '@/contexts/AuthContext';
 import TemplateCard from '../components/TemplateCard/TemplateCard';
 
 export function useTemplatesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState('');
@@ -32,6 +38,9 @@ export function useTemplatesScreen() {
 
   const createTemplate = useCreateTemplate();
   const startFromTemplate = useStartFromTemplate();
+  const saveTemplate = useSaveTemplate();
+  const unsaveTemplate = useUnsaveTemplate();
+  const savedTemplatesQuery = useGetSavedTemplates();
 
   const handleCreate = () => {
     if (!newName.trim()) return;
@@ -39,7 +48,7 @@ export function useTemplatesScreen() {
       { 
         name: newName.trim(), 
         description: newDescription.trim() || undefined,
-        visibilityTypeId: visibility as unknown as number,
+        visibilityTypeId: VISIBILITY_ENUM_TO_ID[visibility],
       },
       {
         onSuccess: (tpl: IWorkoutTemplate) => {
@@ -47,7 +56,7 @@ export function useTemplatesScreen() {
           setNewDescription('');
           setVisibility(VisibilityType.PRIVATE);
           setShowCreate(false);
-          router.push(`/(app)/(workout)/template/${tpl.id}` as any);
+          router.push({ pathname: `/(app)/(workout)/template/${tpl.id}` as any, params: { edit: '1' } });
         },
       }
     );
@@ -61,7 +70,18 @@ export function useTemplatesScreen() {
     });
   };
 
-  const renderTemplateItem = (item: IWorkoutTemplate, variant: 'my' | 'public' | 'saved', creatorNickname?: string) => (
+  const savedTemplateIds = useMemo(() => {
+    const saved = (savedTemplatesQuery.data ?? []) as Array<{ workoutTemplateId: number }>;
+    return new Set(saved.map((s) => s.workoutTemplateId));
+  }, [savedTemplatesQuery.data]);
+
+  const renderTemplateItem = (
+    item: IWorkoutTemplate,
+    variant: 'my' | 'public' | 'saved',
+    creatorNickname?: string,
+    onSave?: () => void,
+    onUnsave?: () => void,
+  ) => (
     <View key={item.id} style={styles.templateItem}>
       <TemplateCard
         name={item.name}
@@ -70,18 +90,41 @@ export function useTemplatesScreen() {
         variant={variant}
         onPress={() => router.push(`/(app)/(workout)/template/${item.id}` as any)}
         onStart={() => handleStartFromTemplate(item.id)}
+        onSave={onSave}
+        onUnsave={onUnsave}
       />
     </View>
   );
 
   const myGroups = useMemo(() => {
-    const templates = (myTemplatesQuery.data as any) ?? [];
+    const myTemplates = (myTemplatesQuery.data ?? []) as IWorkoutTemplate[];
+    const savedTemplates = (savedTemplatesQuery.data ?? []) as Array<{
+      workoutTemplateId: number;
+      workoutTemplate?: IWorkoutTemplate & { creatorNickname?: string };
+    }>;
+
+    const friendCreatorIds = new Set(
+      ((friendsTemplatesQuery.data ?? []) as Array<{ creatorId?: number }>)
+        .map(t => t.creatorId)
+        .filter((id): id is number => !!id),
+    );
+
+    const friendSaved = savedTemplates.filter(
+      s => s.workoutTemplate && friendCreatorIds.has(s.workoutTemplate.creatorId),
+    );
+    const publicGeneralSaved = savedTemplates.filter(
+      s =>
+        s.workoutTemplate &&
+        !friendCreatorIds.has(s.workoutTemplate.creatorId) &&
+        s.workoutTemplate.creatorId !== user?.id,
+    );
+
     return {
-      my: templates,
-      friends: [],
-      public: []
+      my: myTemplates,
+      friends: friendSaved,
+      public: publicGeneralSaved,
     };
-  }, [myTemplatesQuery.data]);
+  }, [myTemplatesQuery.data, savedTemplatesQuery.data, friendsTemplatesQuery.data, user?.id]);
 
   const publicGroups = useMemo(() => {
     const templates = (publicTemplatesQuery.data as any) ?? [];
@@ -132,6 +175,9 @@ export function useTemplatesScreen() {
     handleCreate,
     insets,
     router,
+    savedTemplateIds,
+    saveTemplate,
+    unsaveTemplate,
   };
 }
 

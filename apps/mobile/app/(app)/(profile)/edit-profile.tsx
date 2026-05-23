@@ -1,12 +1,34 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
+import { Gender, ActivityLevel, FitnessGoal } from '@athlo/shared';
 import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
+import { Avatar } from '@/components/ui/Avatar/Avatar';
+import { NumericInput } from '@/components/ui/NumericInput/NumericInput';
+import { SegmentControl } from '@/components/ui/SegmentControl/SegmentControl';
+import { OptionButton } from '@/components/ui/OptionButton/OptionButton';
+import { Card } from '@/components/ui/Card/Card';
+import { Typography } from '@/components/ui/Typography/Typography';
+import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { useEditProfileScreen } from '@/features/profile/hooks/useEditProfileScreen';
+
+const ACTIVITY_LEVELS: { id: ActivityLevel; label: string }[] = [
+  { id: ActivityLevel.SEDENTARY, label: 'Sedentary' },
+  { id: ActivityLevel.LIGHT, label: 'Light' },
+  { id: ActivityLevel.MODERATE, label: 'Moderate' },
+  { id: ActivityLevel.ACTIVE, label: 'Active' },
+  { id: ActivityLevel.VERY_ACTIVE, label: 'Very Active' },
+];
+
+const GOALS: { id: FitnessGoal; label: string }[] = [
+  { id: FitnessGoal.LOSE_WEIGHT, label: 'Lose Weight' },
+  { id: FitnessGoal.MAINTAIN, label: 'Maintain' },
+  { id: FitnessGoal.BUILD_MUSCLE, label: 'Build Muscle' },
+];
 
 export default function EditProfileScreen() {
   const {
@@ -17,6 +39,20 @@ export default function EditProfileScreen() {
     setFullName,
     nickname,
     setNickname,
+    avatar,
+    pickImage,
+    gender,
+    setGender,
+    age,
+    setAge,
+    height,
+    setHeight,
+    weight,
+    setWeight,
+    activityLevel,
+    setActivityLevel,
+    fitnessGoal,
+    setFitnessGoal,
     waterGoalInput,
     setWaterGoalInput,
     proteinInput,
@@ -27,9 +63,8 @@ export default function EditProfileScreen() {
     setCarbInput,
     editingCalorieGoal,
     hasChanges,
-    initials,
-    updateProfile,
     handleSave,
+    updateProfile,
   } = useEditProfileScreen();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -42,146 +77,279 @@ export default function EditProfileScreen() {
     );
   }
 
+  const genderIdx = gender === Gender.MALE ? 0 : gender === Gender.FEMALE ? 1 : 2;
+  const handleGenderSelect = (idx: number) => {
+    setGender(idx === 0 ? Gender.MALE : idx === 1 ? Gender.FEMALE : Gender.OTHER);
+  };
+
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ paddingTop: insets.top + spacing.sm, paddingBottom: 40 }}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.backBtn}>← Back</Text>
-        </Pressable>
-        <Text style={styles.screenTitle}>Edit Profile</Text>
-        <Pressable onPress={handleSave} disabled={!hasChanges}>
-          <Text style={[styles.saveBtn, !hasChanges && styles.saveBtnDisabled]}>Save</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.avatarSection}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials}</Text>
-        </View>
-        <Pressable style={styles.changePhotoBtn}>
-          <Text style={styles.changePhotoText}>Change Photo</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Personal Info</Text>
-        <Input label="Full Name" value={fullName} onChangeText={setFullName} placeholder="Enter your full name" />
-        <Input label="Nickname" value={nickname} onChangeText={setNickname} placeholder="Enter your nickname" />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Water Goal</Text>
-        <Text style={styles.sectionDesc}>Leave empty to calculate automatically based on your body weight.</Text>
-        <Input
-          label="Daily Water Goal (ml)"
-          value={waterGoalInput}
-          onChangeText={setWaterGoalInput}
-          keyboardType="number-pad"
-          placeholder="e.g. 2500"
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Nutrition Goals</Text>
-        <Text style={styles.sectionDesc}>Used when you don't have an active meal plan. Clear all fields to disable.</Text>
-        <Input
-          label="Protein (g)"
-          value={proteinInput}
-          onChangeText={setProteinInput}
-          keyboardType="number-pad"
-          placeholder="e.g. 150"
-        />
-        <Input
-          label="Fats (g)"
-          value={fatInput}
-          onChangeText={setFatInput}
-          keyboardType="number-pad"
-          placeholder="e.g. 70"
-        />
-        <Input
-          label="Carbs (g)"
-          value={carbInput}
-          onChangeText={setCarbInput}
-          keyboardType="number-pad"
-          placeholder="e.g. 250"
-        />
-        <View style={styles.calorieRow}>
-          <Text style={styles.calorieLabel}>Total Calories:</Text>
-          <Text style={styles.calorieValue}>{editingCalorieGoal ? `${editingCalorieGoal} kcal` : '0 kcal'}</Text>
-        </View>
-      </View>
-
-      <Button
-        title="Save Changes"
-        onPress={handleSave}
-        disabled={!hasChanges}
-        isLoading={updateProfile.isPending}
-        style={styles.footerBtn}
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      <ScreenHeader
+        title="Edit Profile"
+        onBack={() => router.back()}
+        rightAction={
+          <Pressable onPress={handleSave} disabled={!hasChanges} hitSlop={8}>
+            <Text style={[styles.saveBtn, !hasChanges && styles.saveBtnDisabled]}>Save</Text>
+          </Pressable>
+        }
       />
-    </ScrollView>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={{
+          paddingBottom: insets.bottom + spacing['2xl'],
+          paddingHorizontal: spacing.lg,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.avatarSection}>
+          <Avatar uri={avatar ?? undefined} name={fullName} size="xl" />
+          <Pressable style={styles.changePhotoBtn} onPress={pickImage}>
+            <Text style={styles.changePhotoText}>Change Photo</Text>
+          </Pressable>
+        </View>
+
+        <Card style={styles.card}>
+          <Typography variant="h4" style={styles.cardTitle}>Personal Info</Typography>
+          <Input
+            label="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Enter your full name"
+            containerStyle={styles.lastInputInCard}
+          />
+          <Input
+            label="Nickname"
+            value={nickname}
+            onChangeText={setNickname}
+            placeholder="Enter your nickname"
+            containerStyle={styles.lastInputInCard}
+          />
+          <View style={styles.inputGroup}>
+            <Typography variant="label" style={styles.fieldLabel}>Gender</Typography>
+            <SegmentControl
+              segments={['Male', 'Female', 'Other']}
+              activeIndex={genderIdx}
+              onSelect={handleGenderSelect}
+            />
+          </View>
+        </Card>
+
+        <Card style={styles.card}>
+          <Typography variant="h4" style={styles.cardTitle}>Physical Metrics</Typography>
+          <View style={styles.metricsRow}>
+            <View style={styles.metricInputWrap}>
+              <Typography variant="label" style={styles.fieldLabel}>Age</Typography>
+              <NumericInput value={age} onChangeText={setAge} placeholder="Years" />
+            </View>
+            <View style={styles.metricInputWrap}>
+              <Typography variant="label" style={styles.fieldLabel}>Height (cm)</Typography>
+              <NumericInput value={height} onChangeText={setHeight} placeholder="cm" />
+            </View>
+            <View style={styles.metricInputWrap}>
+              <Typography variant="label" style={styles.fieldLabel}>Weight (kg)</Typography>
+              <NumericInput value={weight} onChangeText={setWeight} placeholder="kg" />
+            </View>
+          </View>
+        </Card>
+
+        <Card style={styles.card}>
+          <Typography variant="h4" style={styles.cardTitle}>Activity & Goal</Typography>
+          <Typography variant="label" style={styles.fieldLabel}>Activity Level</Typography>
+          <View style={styles.optionsContainer}>
+            {ACTIVITY_LEVELS.map(level => (
+              <OptionButton
+                key={level.id}
+                label={level.label}
+                active={activityLevel === level.id}
+                onPress={() => setActivityLevel(level.id)}
+                style={styles.optionButton}
+              />
+            ))}
+          </View>
+
+          <Typography variant="label" style={[styles.fieldLabel, { marginTop: spacing.md }]}>Fitness Goal</Typography>
+          <View style={styles.optionsContainer}>
+            {GOALS.map(g => (
+              <OptionButton
+                key={g.id}
+                label={g.label}
+                active={fitnessGoal === g.id}
+                onPress={() => setFitnessGoal(g.id)}
+                style={styles.optionButton}
+              />
+            ))}
+          </View>
+        </Card>
+
+        <Card style={styles.card}>
+          <Typography variant="h4" style={styles.cardTitle}>Water & Nutrition</Typography>
+          <Typography variant="caption" style={styles.sectionDesc}>
+            Leave unchanged to keep automatic calculation based on metrics.
+          </Typography>
+          
+          <Input
+            label="Daily Water Goal (ml)"
+            value={waterGoalInput}
+            onChangeText={setWaterGoalInput}
+            keyboardType="number-pad"
+            placeholder="e.g. 2500"
+          />
+
+          <View style={styles.nutritionRow}>
+            <View style={styles.nutritionInputWrap}>
+              <Input
+                label="Protein (g)"
+                value={proteinInput}
+                onChangeText={setProteinInput}
+                keyboardType="number-pad"
+                placeholder="150"
+              />
+            </View>
+            <View style={styles.nutritionInputWrap}>
+              <Input
+                label="Fats (g)"
+                value={fatInput}
+                onChangeText={setFatInput}
+                keyboardType="number-pad"
+                placeholder="70"
+              />
+            </View>
+            <View style={styles.nutritionInputWrap}>
+              <Input
+                label="Carbs (g)"
+                value={carbInput}
+                onChangeText={setCarbInput}
+                keyboardType="number-pad"
+                placeholder="250"
+              />
+            </View>
+          </View>
+
+          <View style={styles.calorieRow}>
+            <Typography variant="body" style={styles.calorieLabel}>Total Calories:</Typography>
+            <Typography variant="h3" style={styles.calorieValue}>
+              {editingCalorieGoal ? `${editingCalorieGoal} kcal` : '0 kcal'}
+            </Typography>
+          </View>
+        </Card>
+
+        <Button
+          title="Save All Changes"
+          onPress={handleSave}
+          disabled={!hasChanges}
+          isLoading={updateProfile.isPending}
+          style={styles.footerBtn}
+        />
+      </ScrollView>
+    </View>
   );
 }
 
 function makeStyles(c: ColorPalette) {
   return StyleSheet.create({
-    container: {
+    root: {
       flex: 1,
       backgroundColor: c.background,
-      paddingHorizontal: spacing.lg,
     },
-    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: c.background },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing['2xl'] },
-    backBtn: { fontSize: fontSize.lg, color: c.primary, fontWeight: fontWeight.semibold },
-    screenTitle: { fontSize: fontSize.xl, fontWeight: fontWeight.bold, color: c.text },
-    saveBtn: { fontSize: fontSize.lg, color: c.primary, fontWeight: fontWeight.semibold },
-    saveBtnDisabled: { color: c.textMuted },
-    avatarSection: { alignItems: 'center', marginBottom: spacing['3xl'] },
-    avatar: {
-      width: 96,
-      height: 96,
-      borderRadius: 48,
-      backgroundColor: c.primaryLight,
+    container: {
+      flex: 1,
+    },
+    centered: {
+      flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: spacing.md,
+      backgroundColor: c.background,
     },
-    avatarText: { fontSize: fontSize['3xl'], fontWeight: fontWeight.bold, color: c.primary },
+    saveBtn: {
+      fontSize: fontSize.md,
+      color: c.primary,
+      fontWeight: fontWeight.bold,
+    },
+    saveBtnDisabled: {
+      color: c.textMuted,
+    },
+    avatarSection: {
+      alignItems: 'center',
+      marginVertical: spacing.xl,
+    },
     changePhotoBtn: {
+      marginTop: spacing.lg,
       paddingVertical: spacing.sm,
-      paddingHorizontal: spacing.lg,
-      borderRadius: borderRadius.md,
+      paddingHorizontal: spacing.xl,
+      borderRadius: borderRadius.full,
       backgroundColor: c.surface,
       borderWidth: 1,
       borderColor: c.border,
     },
-    changePhotoText: { fontSize: fontSize.md, color: c.primary, fontWeight: fontWeight.semibold },
-    section: { marginBottom: spacing['2xl'] },
-    sectionTitle: {
+    changePhotoText: {
       fontSize: fontSize.md,
+      color: c.primary,
       fontWeight: fontWeight.semibold,
-      color: c.textMuted,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-      marginBottom: spacing.xs,
+    },
+    card: {
+      marginBottom: spacing.lg,
+      padding: spacing.lg,
+    },
+    cardTitle: {
+      marginBottom: spacing.lg,
+      color: c.text,
     },
     sectionDesc: {
-      fontSize: fontSize.sm,
-      color: c.textMuted,
       marginBottom: spacing.md,
+      color: c.textMuted,
+    },
+    fieldLabel: {
+      marginBottom: spacing.xs,
+      color: c.textSecondary,
+    },
+    inputGroup: {
+      marginTop: spacing.xs,
+    },
+    lastInputInCard: {
+      marginBottom: spacing.md,
+    },
+    metricsRow: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    metricInputWrap: {
+      flex: 1,
+    },
+    optionsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    optionButton: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+    },
+    nutritionRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    nutritionInputWrap: {
+      flex: 1,
     },
     calorieRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       marginTop: spacing.sm,
-      paddingHorizontal: spacing.xs,
+      paddingTop: spacing.md,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
     },
-    calorieLabel: { fontSize: fontSize.md, fontWeight: fontWeight.semibold, color: c.text },
-    calorieValue: { fontSize: fontSize.md, fontWeight: fontWeight.bold, color: c.primary },
-    footerBtn: { marginTop: spacing.sm },
+    calorieLabel: {
+      color: c.textSecondary,
+    },
+    calorieValue: {
+      color: c.primary,
+    },
+    footerBtn: {
+      marginTop: spacing.md,
+    },
   });
 }
+

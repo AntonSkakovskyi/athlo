@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { IUser } from '@athlo/shared';
+import type { IUser, IUserProfile } from '@athlo/shared';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
 import { profileKeys } from '@/api/queries/query-keys';
@@ -8,7 +8,7 @@ export const useGetUserProfile = (userId: string) => {
   return useQuery({
     queryKey: profileKeys.byId(userId),
     queryFn: async () => {
-      const response = await apiClient.get<Omit<IUser, 'password_hash'>>(apiRoutes.profile.getById(userId));
+      const response = await apiClient.get<IUserProfile>(apiRoutes.profile.getById(userId));
       return response.data;
     },
     enabled: !!userId,
@@ -19,7 +19,7 @@ export const useSearchUsers = (query: string) => {
   return useQuery({
     queryKey: profileKeys.search(query),
     queryFn: async () => {
-      const response = await apiClient.get<Omit<IUser, 'password_hash'>[]>(apiRoutes.profile.search, {
+      const response = await apiClient.get<IUser[]>(apiRoutes.profile.search, {
         params: { query },
       });
       return response.data;
@@ -40,6 +40,14 @@ export const useUpdateUserProfile = () => {
       queryClient.setQueryData(profileKeys.all, data);
       queryClient.invalidateQueries({ queryKey: profileKeys.all });
       queryClient.invalidateQueries({ queryKey: ['nutrition-log'] });
+    },
+  });
+};
+
+export const useDeleteAccount = () => {
+  return useMutation({
+    mutationFn: async () => {
+      await apiClient.delete(apiRoutes.profile.delete);
     },
   });
 };
