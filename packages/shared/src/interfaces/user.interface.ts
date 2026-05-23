@@ -1,10 +1,17 @@
+import { Gender, ActivityLevel, FitnessGoal } from '../enums/index.js';
+
 export interface IUser {
   id: number;
   fullName: string;
   nickname: string;
   email: string;
-  waterGoal?: number | null;
-  proteinGoal?: number | null;
-  fatGoal?: number | null;
-  carbGoal?: number | null;
+  avatar?: string | null;
+  
+  // Anthropometry
+  gender?: Gender;
+  age?: number;
+  height?: number;
+  weight?: number;
+  activityLevel?: ActivityLevel;
+  fitnessGoal?: FitnessGoal;
 }

@@ -8,6 +8,7 @@ export type { ILogExerciseWithSets } from './log-exercise-with-sets.interface.js
 export type { ILogSet } from './log-set.interface.js';
 export type { IWorkoutWithRelations } from './workout-with-relations.interface.js';
 export type { IUser } from './user.interface.js';
+export type { IUserProfile } from './user-profile.interface.js';
 export type { IUserSettings } from './user-settings.interface.js';
 export type { ITrackingType } from './tracking-type.interface.js';
 export type { IVisibilityType } from './visibility-type.interface.js';
@@ -22,7 +23,7 @@ export type { IMetricType } from './metric-type.interface.js';
 export type { IBodyMetric } from './body-metric.interface.js';
 
 export type { IFood } from './food.interface.js';
-export type { IFoodUnit } from './food-unit.interface.js';
+export type { INutritionFact } from './nutrition-fact.interface.js';
 export type { IMealType } from './meal-type.interface.js';
 export type { IMealPlan } from './meal-plan.interface.js';
 export type { IPlanDay } from './plan-day.interface.js';

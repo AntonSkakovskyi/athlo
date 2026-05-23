@@ -4,5 +4,4 @@ export interface ILogMealItem {
   foodId: number;
   unitId: number;
   amount: number;
-  calculatedWeightG: number | null;
 }

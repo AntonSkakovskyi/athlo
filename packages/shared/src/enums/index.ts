@@ -4,3 +4,6 @@ export { VisibilityType } from './visibility-type.enum.js';
 export { FriendRequestStatus } from './friend-request-status.enum.js';
 export { AchievementType } from './achievement-type.enum.js';
 export { TrackingMetric } from './tracking-metric.enum.js';
+export { Gender } from './gender.enum.js';
+export { ActivityLevel } from './activity-level.enum.js';
+export { FitnessGoal } from './fitness-goal.enum.js';
