@@ -10,6 +10,7 @@ jest.mock('bcrypt', () => ({
 import * as bcrypt from 'bcrypt';
 const mockBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 import { UserEntity } from './entities/user.entity';
+import { UserSettingEntity } from './entities/user-setting.entity';
 
 const createMockRepository = () => ({
   create: jest.fn(),
@@ -22,6 +23,7 @@ const createMockRepository = () => ({
 describe('UserService', () => {
   let service: UserService;
   let userRepo: ReturnType<typeof createMockRepository>;
+  let settingRepo: ReturnType<typeof createMockRepository>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,11 +33,16 @@ describe('UserService', () => {
           provide: getRepositoryToken(UserEntity),
           useValue: createMockRepository(),
         },
+        {
+          provide: getRepositoryToken(UserSettingEntity),
+          useValue: createMockRepository(),
+        },
       ],
     }).compile();
 
     service = module.get<UserService>(UserService);
     userRepo = module.get(getRepositoryToken(UserEntity));
+    settingRepo = module.get(getRepositoryToken(UserSettingEntity));
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -91,7 +98,7 @@ describe('UserService', () => {
       const result = await service.findOne(1);
 
       // Assert
-      expect(userRepo.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(userRepo.findOne).toHaveBeenCalledWith({ where: { id: 1 }, relations: ['settings'] });
       expect(result).toEqual(user);
     });
 
@@ -157,7 +164,10 @@ describe('UserService', () => {
     it('should update profile fields and return without password_hash', async () => {
       // Arrange
       const user = { id: 1, email: 'a@b.com', fullName: 'Old', nickname: 'old', password_hash: 'secret' };
+      const existingSettings = { id: 1, userId: 1, waterGoal: 2000, proteinGoal: null, fatGoal: null, carbGoal: null };
       userRepo.findOne.mockResolvedValue(user);
+      settingRepo.findOne.mockResolvedValue(existingSettings);
+      settingRepo.save.mockResolvedValue(existingSettings);
       userRepo.save.mockResolvedValue({ ...user, fullName: 'New Name' });
 
       // Act
@@ -165,6 +175,26 @@ describe('UserService', () => {
 
       // Assert
       expect(userRepo.save).toHaveBeenCalled();
+      expect(settingRepo.save).toHaveBeenCalled();
+      expect(result).not.toHaveProperty('password_hash');
+    });
+
+    it('should create settings when none exist and apply explicit goals', async () => {
+      // Arrange
+      const user = { id: 1, email: 'a@b.com', fullName: 'Test', nickname: 'tester', password_hash: 'secret' };
+      const newSettings = { userId: 1 };
+      userRepo.findOne.mockResolvedValue(user);
+      settingRepo.findOne.mockResolvedValue(null);
+      settingRepo.create.mockReturnValue(newSettings);
+      settingRepo.save.mockResolvedValue({ ...newSettings, waterGoal: 2500 });
+      userRepo.save.mockResolvedValue({ ...user, settings: { waterGoal: 2500 } });
+
+      // Act
+      const result = await service.updateProfile(1, { waterGoal: 2500 });
+
+      // Assert
+      expect(settingRepo.create).toHaveBeenCalledWith({ userId: 1 });
+      expect(settingRepo.save).toHaveBeenCalled();
       expect(result).not.toHaveProperty('password_hash');
     });
   });

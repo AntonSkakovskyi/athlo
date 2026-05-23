@@ -4,7 +4,7 @@ import { BodyMetricService } from './body-metric.service';
 
 describe('BodyMetricController', () => {
   let controller: BodyMetricController;
-  let service: jest.Mocked<Partial<BodyMetricService>>;
+  let service: jest.Mocked<BodyMetricService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -25,7 +25,7 @@ describe('BodyMetricController', () => {
     }).compile();
 
     controller = module.get<BodyMetricController>(BodyMetricController);
-    service = module.get(BodyMetricService);
+    service = module.get(BodyMetricService) as jest.Mocked<BodyMetricService>;
   });
 
   afterEach(() => jest.clearAllMocks());

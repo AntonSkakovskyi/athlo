@@ -4,6 +4,7 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { BodyMetricService } from './body-metric.service';
 import { BodyMetricEntity } from './entities/body-metric.entity';
 import { MetricTypeEntity } from './entities/metric-type.entity';
+import { UnitEntity } from './entities/unit.entity';
 
 const createMockRepository = () => ({
   create: jest.fn(),
@@ -17,6 +18,7 @@ describe('BodyMetricService', () => {
   let service: BodyMetricService;
   let bodyMetricRepo: ReturnType<typeof createMockRepository>;
   let metricTypeRepo: ReturnType<typeof createMockRepository>;
+  let unitRepo: ReturnType<typeof createMockRepository>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,12 +32,17 @@ describe('BodyMetricService', () => {
           provide: getRepositoryToken(MetricTypeEntity),
           useValue: createMockRepository(),
         },
+        {
+          provide: getRepositoryToken(UnitEntity),
+          useValue: createMockRepository(),
+        },
       ],
     }).compile();
 
     service = module.get<BodyMetricService>(BodyMetricService);
     bodyMetricRepo = module.get(getRepositoryToken(BodyMetricEntity));
     metricTypeRepo = module.get(getRepositoryToken(MetricTypeEntity));
+    unitRepo = module.get(getRepositoryToken(UnitEntity));
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -52,8 +59,20 @@ describe('BodyMetricService', () => {
       const result = await service.getMetricTypes();
 
       // Assert
-      expect(metricTypeRepo.find).toHaveBeenCalledWith({ relations: { unit: true } });
+      expect(metricTypeRepo.find).toHaveBeenCalledWith({ relations: ['unit'] });
       expect(result).toEqual(mockTypes);
+    });
+  });
+
+  describe('getUnits', () => {
+    it('should return all units', async () => {
+      const mockUnits = [{ id: 1, name: 'kg' }, { id: 2, name: 'lb' }];
+      unitRepo.find.mockResolvedValue(mockUnits);
+
+      const result = await service.getUnits();
+
+      expect(unitRepo.find).toHaveBeenCalled();
+      expect(result).toEqual(mockUnits);
     });
   });
 

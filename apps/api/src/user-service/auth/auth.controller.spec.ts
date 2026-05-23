@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
-  let service: jest.Mocked<Partial<AuthService>>;
+  let service: jest.Mocked<AuthService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -21,7 +21,7 @@ describe('AuthController', () => {
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
-    service = module.get(AuthService);
+    service = module.get(AuthService) as jest.Mocked<AuthService>;
   });
 
   afterEach(() => jest.clearAllMocks());

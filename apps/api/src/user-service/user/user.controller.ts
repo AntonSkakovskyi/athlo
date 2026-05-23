@@ -1,4 +1,4 @@
-import { Controller, Get, Body, Patch, UseGuards, Query, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Body, Patch, Delete, UseGuards, Query, Param, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -41,5 +41,12 @@ export class UserController {
   @ApiResponse({ status: 200, description: 'Profile updated' })
   updateProfile(@CurrentUser('id') userId: number, @Body() dto: UpdateProfileDto) {
     return this.userService.updateProfile(userId, dto);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: 'Delete current user account' })
+  @ApiResponse({ status: 200, description: 'Account deleted' })
+  deleteAccount(@CurrentUser('id') userId: number) {
+    return this.userService.delete(userId);
   }
 }

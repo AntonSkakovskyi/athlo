@@ -4,7 +4,7 @@ import { MuscleService } from './muscle.service';
 
 describe('MuscleController', () => {
   let controller: MuscleController;
-  let service: jest.Mocked<Partial<MuscleService>>;
+  let service: jest.Mocked<MuscleService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -20,7 +20,7 @@ describe('MuscleController', () => {
     }).compile();
 
     controller = module.get<MuscleController>(MuscleController);
-    service = module.get(MuscleService);
+    service = module.get(MuscleService) as jest.Mocked<MuscleService>;
   });
 
   afterEach(() => jest.clearAllMocks());

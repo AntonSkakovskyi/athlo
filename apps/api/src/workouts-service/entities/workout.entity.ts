@@ -12,7 +12,7 @@ export class WorkoutEntity implements IWorkout {
   @Column({ name: 'user_id' })
   userId: number;
 
-  @ManyToOne(() => UserEntity, user => user.workouts)
+  @ManyToOne(() => UserEntity, user => user.workouts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 

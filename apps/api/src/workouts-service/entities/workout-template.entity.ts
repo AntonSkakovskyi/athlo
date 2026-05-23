@@ -11,7 +11,7 @@ export class WorkoutTemplateEntity implements IWorkoutTemplate {
   @Column({ name: 'creator_id' })
   creatorId: number;
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'creator_id' })
   creator: UserEntity;
 

@@ -94,7 +94,14 @@ export class AchievementService {
     let newRecordsToSave: UserExerciseRecordEntity[] = [];
 
     for (const set of sets) {
-      if (!set.isCompleted) continue;
+      if (!set.isCompleted) {
+        if (set.isPR || set.achievementId) {
+          set.isPR = false;
+          set.achievementId = null;
+          await this.logSetRepo.save(set);
+        }
+        continue;
+      }
 
       let setIsPR = false;
       let triggeredAchievementId: number | null = null;
@@ -180,19 +187,46 @@ export class AchievementService {
     if (newRecordsToSave.length > 0) {
       await this.userExerciseRecordRepo.save(newRecordsToSave);
     }
+
+    // Re-check exercise achievements: revoke if actual max no longer meets threshold
+    const exerciseAchievements = await this.achievementRepo.find({
+      where: { type: AchievementType.EXERCISE_PERSONAL_RECORD, exerciseId },
+    });
+
+    for (const achievement of exerciseAchievements) {
+      const metricType = achievement.trackingMetric || '';
+
+      const allRecords = await this.userExerciseRecordRepo.find({
+        where: { userId, exerciseId, metricType },
+      });
+      const currentMax = allRecords.length > 0
+        ? Math.max(...allRecords.map(r => Number(r.value)))
+        : 0;
+
+      const existing = await this.userAchievementRepo.findOne({
+        where: { userId, achievementId: achievement.id },
+      });
+
+      if (!existing) continue;
+
+      if (currentMax < Number(achievement.threshold)) {
+        await this.userAchievementRepo.remove(existing);
+      } else if (Number(existing.value) !== currentMax) {
+        existing.value = currentMax;
+        await this.userAchievementRepo.save(existing);
+      }
+    }
   }
 
   /**
    * Called after a workout is completed.
-   * Checks global achievements (workouts, sets, weight).
+   * Checks global achievements (workouts, sets, weight, time, unique exercises).
    */
   async checkGlobalAchievements(userId: number): Promise<void> {
-    // Total completed workouts
     const totalWorkouts = await this.workoutRepo.count({
       where: { userId, status: WorkoutStatus.COMPLETED },
     });
 
-    // Total completed sets
     const totalSets = await this.logSetRepo
       .createQueryBuilder('ls')
       .innerJoin('ls.logExercise', 'le')
@@ -201,7 +235,6 @@ export class AchievementService {
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
       .getCount();
 
-    // Total weight lifted (weight * reps)
     const totalWeightResult = await this.logSetRepo
       .createQueryBuilder('ls')
       .select('COALESCE(SUM(ls.weight * ls.reps), 0)', 'total')
@@ -213,27 +246,35 @@ export class AchievementService {
 
     const totalWeight = parseFloat(totalWeightResult?.total ?? '0');
 
-    // Total duration (for GLOBAL_TIME)
     const totalTimeResult = await this.workoutRepo
       .createQueryBuilder('w')
       .select('COALESCE(SUM(EXTRACT(EPOCH FROM (w.ended_at - w.started_at))), 0)', 'total')
       .where('w.user_id = :userId', { userId })
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
       .getRawOne();
-      
+
     const totalTimeSeconds = parseFloat(totalTimeResult?.total ?? '0');
 
-    // Get all global achievements
+    const uniqueExercisesResult = await this.logExerciseRepo
+      .createQueryBuilder('le')
+      .select('COUNT(DISTINCT le.exercise_id)', 'count')
+      .innerJoin('le.workout', 'w')
+      .where('w.user_id = :userId', { userId })
+      .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .getRawOne();
+
+    const totalUniqueExercises = parseInt(uniqueExercisesResult?.count ?? '0');
+
     const globalAchievements = await this.achievementRepo.find({
       where: [
         { type: AchievementType.GLOBAL_WORKOUTS },
         { type: AchievementType.GLOBAL_SETS },
         { type: AchievementType.GLOBAL_WEIGHT },
         { type: AchievementType.GLOBAL_TIME },
+        { type: AchievementType.GLOBAL_EXERCISES },
       ],
     });
 
-    // Get already unlocked achievement IDs for this user
     const unlocked = await this.userAchievementRepo.find({
       where: { userId },
       select: ['achievementId'],
@@ -256,6 +297,9 @@ export class AchievementService {
           break;
         case AchievementType.GLOBAL_TIME:
           currentValue = totalTimeSeconds;
+          break;
+        case AchievementType.GLOBAL_EXERCISES:
+          currentValue = totalUniqueExercises;
           break;
       }
 

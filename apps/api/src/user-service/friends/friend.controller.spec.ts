@@ -4,7 +4,7 @@ import { FriendService } from './friend.service';
 
 describe('FriendController', () => {
   let controller: FriendController;
-  let service: jest.Mocked<Partial<FriendService>>;
+  let service: jest.Mocked<FriendService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -27,7 +27,7 @@ describe('FriendController', () => {
     }).compile();
 
     controller = module.get<FriendController>(FriendController);
-    service = module.get(FriendService);
+    service = module.get(FriendService) as jest.Mocked<FriendService>;
   });
 
   afterEach(() => jest.clearAllMocks());

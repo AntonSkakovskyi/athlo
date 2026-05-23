@@ -13,8 +13,8 @@ const mockBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 
 describe('AuthService', () => {
   let authService: AuthService;
-  let mockUserService: jest.Mocked<Partial<UserService>>;
-  let mockJwtService: jest.Mocked<Partial<JwtService>>;
+  let mockUserService: { findByEmail: jest.Mock; create: jest.Mock };
+  let mockJwtService: { sign: jest.Mock };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -37,8 +37,8 @@ describe('AuthService', () => {
     }).compile();
 
     authService = module.get<AuthService>(AuthService);
-    mockUserService = module.get(UserService);
-    mockJwtService = module.get(JwtService);
+    mockUserService = module.get(UserService) as any;
+    mockJwtService = module.get(JwtService) as any;
   });
 
   afterEach(() => jest.clearAllMocks());

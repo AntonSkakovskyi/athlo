@@ -4,7 +4,7 @@ import { EquipmentService } from './equipment.service';
 
 describe('EquipmentController', () => {
   let controller: EquipmentController;
-  let service: jest.Mocked<Partial<EquipmentService>>;
+  let service: jest.Mocked<EquipmentService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -23,7 +23,7 @@ describe('EquipmentController', () => {
     }).compile();
 
     controller = module.get<EquipmentController>(EquipmentController);
-    service = module.get(EquipmentService);
+    service = module.get(EquipmentService) as jest.Mocked<EquipmentService>;
   });
 
   afterEach(() => jest.clearAllMocks());

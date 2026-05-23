@@ -144,6 +144,7 @@ export class FriendService {
           fullName: other.fullName,
           nickname: other.nickname,
           email: other.email,
+          avatar: other.avatar,
         });
       }
     });
@@ -164,6 +165,7 @@ export class FriendService {
       fullName: r.user.fullName,
       nickname: r.user.nickname,
       email: r.user.email,
+      avatar: r.user.avatar,
       createdAt: r.createdAt,
     }));
   }
@@ -181,6 +183,7 @@ export class FriendService {
       fullName: r.friend.fullName,
       nickname: r.friend.nickname,
       email: r.friend.email,
+      avatar: r.friend.avatar,
       createdAt: r.createdAt,
     }));
   }
