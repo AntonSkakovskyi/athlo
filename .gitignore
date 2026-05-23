@@ -27,6 +27,9 @@ out/
 build
 dist
 
+# ETL raw dumps (apps/api/etl/dump.js output)
+apps/api/etl/dumps/
+
 
 # Debug
 npm-debug.log*
