@@ -27,7 +27,7 @@ export default function NutritionScreen() {
   
   const {
     date, isToday, summary, isLoading, mealTypes, activePlan, activePlanDetails,
-    planDayMeals, goals, meals, waterLogs, selectedMealTypeId, setSelectedMealTypeId,
+    activePlanCycleInfo, planDayMeals, goals, meals, waterLogs, selectedMealTypeId, setSelectedMealTypeId,
     showAddMealSheet, setShowAddMealSheet, editingMeal, setEditingMeal,
     handlePrevDay, handleNextDay, handleDateSelect, handleAddMeal, handleConfirmAddMeal,
     handleDeleteMeal, handleEditMeal, handleConfirmEditMeal, handleDeleteMealItem,
@@ -69,6 +69,7 @@ export default function NutritionScreen() {
           <ActivePlanBanner
             userMealPlan={activePlan}
             planName={activePlanDetails?.name}
+            cycleInfo={activePlanCycleInfo ?? undefined}
             onPress={() => router.push(`/(app)/(nutrition)/meal-plan/${activePlan.mealPlanId}`)}
           />
         )}

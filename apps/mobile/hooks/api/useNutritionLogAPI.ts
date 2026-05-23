@@ -6,6 +6,18 @@ import { nutritionLogKeys } from '@/api/queries/query-keys';
 
 // ─── Extended meal types (API returns relations) ────
 
+export interface NutritionFactApi {
+  id: number;
+  foodId: number;
+  unitId: number;
+  amount: number;
+  calories: number;
+  proteins: number;
+  fats: number;
+  carbs: number;
+  unit?: { id: number; name: string };
+}
+
 export interface LogMealItemApi {
   id: number;
   logMealId: number;
@@ -13,19 +25,13 @@ export interface LogMealItemApi {
   unitId: number;
   amount: number;
   calculatedWeightG: number | null;
-  food?: { 
-    id: number; 
-    name: string; 
-    calories: number; 
-    proteins: number; 
-    fats: number; 
-    carbs: number; 
+  food?: {
+    id: number;
+    name: string;
     brand: string | null;
-    units?: Array<{
-      unitId: number;
-      conversionFactor: number;
-      unit?: { id: number; name: string };
-    }>;
+    imageUrl: string | null;
+    creatorId: number | null;
+    units?: NutritionFactApi[];
   };
   unit?: { id: number; name: string };
 }

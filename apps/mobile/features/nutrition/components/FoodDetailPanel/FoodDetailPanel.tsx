@@ -19,6 +19,7 @@ interface FoodDetailPanelProps {
   onClose: () => void;
   onAdd: () => void;
   onDelete?: () => void;
+  onEdit?: () => void;
   isCreator?: boolean;
   isPending: boolean;
   isDeleting?: boolean;
@@ -35,6 +36,7 @@ export function FoodDetailPanel({
   onClose,
   onAdd,
   onDelete,
+  onEdit,
   isCreator,
   isPending,
   isDeleting,
@@ -57,9 +59,14 @@ export function FoodDetailPanel({
             {selectedFood.name}
           </Text>
           {isCreator && (
-            <Pressable onPress={handleDelete} style={styles.deleteBtn} disabled={isDeleting}>
-              <Text style={styles.deleteBtnText}>{isDeleting ? '...' : 'Delete'}</Text>
-            </Pressable>
+            <View style={styles.creatorActions}>
+              <Pressable onPress={onEdit} style={styles.editBtn}>
+                <Text style={styles.editBtnText}>Edit</Text>
+              </Pressable>
+              <Pressable onPress={handleDelete} style={styles.deleteBtn} disabled={isDeleting}>
+                <Text style={styles.deleteBtnText}>{isDeleting ? '...' : 'Delete'}</Text>
+              </Pressable>
+            </View>
           )}
         </View>
         <Pressable onPress={onClose} style={styles.closeBtn}>
@@ -163,6 +170,23 @@ function makeStyles(c: ColorPalette) {
       fontWeight: fontWeight.semibold,
       color: c.text,
       maxWidth: '70%',
+    },
+    creatorActions: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+    },
+    editBtn: {
+      backgroundColor: c.primaryLight,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xxs,
+      borderRadius: borderRadius.sm,
+      borderWidth: 1,
+      borderColor: c.primary,
+    },
+    editBtnText: {
+      color: c.primary,
+      fontSize: fontSize.xs,
+      fontWeight: fontWeight.bold,
     },
     deleteBtn: {
       backgroundColor: c.dangerLight,

@@ -18,18 +18,20 @@ interface Metric {
   unit: string;
   color: string;
   data: { date: string; value: number }[];
+  rawData: { date: string; value: number }[];
 }
 
 function computeStats(data: { date: string; value: number }[], unit: string) {
   const nonZero = data.filter((d) => d.value > 0);
   if (nonZero.length === 0) return null;
   const values = nonZero.map((d) => d.value);
-  const avg = Math.round(values.reduce((s, v) => s + v, 0) / values.length);
+  const total = Math.round(values.reduce((s, v) => s + v, 0));
+  const avg = Math.round(total / values.length);
   const maxVal = Math.max(...values);
   const minVal = Math.min(...values);
   const maxDay = nonZero.find((d) => d.value === maxVal)!;
   const minDay = nonZero.find((d) => d.value === minVal)!;
-  return { avg, maxVal, minVal, maxDay, minDay, unit };
+  return { total, avg, maxVal, minVal, maxDay, minDay, unit };
 }
 
 function formatShortDate(dateStr: string) {
@@ -41,7 +43,11 @@ export default function NutritionHistoryScreen() {
   const insets = useSafeAreaInsets();
   const {
     router, scopeIndex, setScopeIndex, history, isLoading,
-    caloriesData, proteinData, fatData, carbData, waterData,
+    caloriesData, caloriesRaw,
+    proteinData,  proteinRaw,
+    fatData,      fatRaw,
+    carbData,     carbRaw,
+    waterData,    waterRaw,
   } = useNutritionHistoryScreen();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -54,11 +60,11 @@ export default function NutritionHistoryScreen() {
   }, [scopeIndex]);
 
   const metrics: Metric[] = [
-    { title: 'Calories', unit: 'kcal', color: colors.primary, data: caloriesData },
-    { title: 'Protein',  unit: 'g',    color: colors.info,    data: proteinData },
-    { title: 'Fats',     unit: 'g',    color: colors.warning, data: fatData },
-    { title: 'Carbs',    unit: 'g',    color: colors.primary, data: carbData },
-    { title: 'Water',    unit: 'ml',   color: colors.info,    data: waterData },
+    { title: 'Calories', unit: 'kcal', color: colors.primary, data: caloriesData, rawData: caloriesRaw },
+    { title: 'Protein',  unit: 'g',    color: colors.info,    data: proteinData,  rawData: proteinRaw },
+    { title: 'Fats',     unit: 'g',    color: colors.warning, data: fatData,      rawData: fatRaw },
+    { title: 'Carbs',    unit: 'g',    color: colors.primary, data: carbData,     rawData: carbRaw },
+    { title: 'Water',    unit: 'ml',   color: colors.info,    data: waterData,    rawData: waterRaw },
   ];
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -112,13 +118,14 @@ export default function NutritionHistoryScreen() {
             onMomentumScrollEnd={handleScroll}
           >
             {metrics.map((metric) => {
-              const stats = computeStats(metric.data, metric.unit);
+              const stats = computeStats(metric.rawData, metric.unit);
               return (
                 <View key={metric.title} style={[styles.page, { width: WINDOW_WIDTH }]}>
                   <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.pageContent}>
                     <NutritionBarChart key={`${metric.title}-${pageIndex}`} data={metric.data} color={metric.color} unit={metric.unit} />
                     {stats && (
                       <View style={styles.statsRow}>
+                        <StatCard label="Total" value={`${stats.total}`} unit={metric.unit} color={metric.color} />
                         <StatCard label="Avg" value={`${stats.avg}`} unit={metric.unit} color={metric.color} />
                         <StatCard
                           label="Max"
@@ -164,13 +171,14 @@ function StatCard({ label, value, unit, color, sub }: { label: string; value: st
 function makeStatStyles(c: ColorPalette) {
   return StyleSheet.create({
     card: {
-      flex: 1,
+      width: '48%',
       backgroundColor: c.surface,
       borderRadius: borderRadius.lg,
       padding: spacing.md,
       alignItems: 'center',
       borderWidth: 1,
       borderColor: c.border,
+      marginBottom: spacing.sm,
     },
     label: {
       fontSize: fontSize.xs,
@@ -220,6 +228,11 @@ function makeStyles(c: ColorPalette) {
     },
     page: { paddingBottom: spacing['2xl'] },
     pageContent: { paddingHorizontal: spacing.lg, paddingBottom: spacing['2xl']},
-    statsRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg },
+    statsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      marginTop: spacing.lg,
+    },
   });
 }

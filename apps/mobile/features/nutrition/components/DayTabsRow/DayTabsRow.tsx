@@ -13,8 +13,8 @@ interface DayTabsRowProps {
   days: DayItem[];
   selectedIndex: number;
   onSelect: (index: number) => void;
-  onAddDay: () => void;
-  onRemoveDay: (dayId: number) => void;
+  onAddDay?: () => void;
+  onRemoveDay?: (dayId: number) => void;
 }
 
 export function DayTabsRow({ days, selectedIndex, onSelect, onAddDay, onRemoveDay }: DayTabsRowProps) {
@@ -22,7 +22,7 @@ export function DayTabsRow({ days, selectedIndex, onSelect, onAddDay, onRemoveDa
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const handleLongPress = (dayId: number) => {
-    onRemoveDay(dayId);
+    onRemoveDay?.(dayId);
   };
 
   return (
@@ -37,16 +37,18 @@ export function DayTabsRow({ days, selectedIndex, onSelect, onAddDay, onRemoveDa
             key={day.id}
             style={[styles.tab, index === selectedIndex && styles.tabActive]}
             onPress={() => onSelect(index)}
-            onLongPress={() => handleLongPress(day.id)}
+            onLongPress={onRemoveDay ? () => handleLongPress(day.id) : undefined}
           >
             <Text style={[styles.tabText, index === selectedIndex && styles.tabTextActive]}>
               Day {day.dayNumber}
             </Text>
           </Pressable>
         ))}
-        <Pressable style={styles.addTab} onPress={onAddDay}>
-          <Text style={styles.addTabText}>+ Add Day</Text>
-        </Pressable>
+        {onAddDay && (
+          <Pressable style={styles.addTab} onPress={onAddDay}>
+            <Text style={styles.addTabText}>+ Add Day</Text>
+          </Pressable>
+        )}
       </ScrollView>
     </View>
   );

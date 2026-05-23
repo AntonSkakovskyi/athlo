@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
-import { confirmDestructive, showErrorAlert } from '@/utils/alerts';
+import { confirmDestructive, showErrorAlert, showAlert } from '@/utils/alerts';
 import { VisibilityType, type IMealPlan } from '@athlo/shared';
 import {
   useGetMyMealPlans,
@@ -44,20 +44,43 @@ export function useMealPlansScreen() {
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [totalDays, setTotalDays] = useState('7');
+  const [totalDays, setTotalDays] = useState('1');
   const [visibility, setVisibility] = useState<VisibilityType>(VisibilityType.PRIVATE);
 
   const activePlanId = activePlanQuery.data?.mealPlanId;
+
+  const savedPlanIds = useMemo(() => {
+    return new Set((savedPlansQuery.data ?? []).map(p => p.id));
+  }, [savedPlansQuery.data]);
 
   // Grouping for "My" tab
   const myGroups = useMemo(() => {
     const owned = myPlansQuery.data ?? [];
     const saved = savedPlansQuery.data ?? [];
+    
+    const friendCreatorIds = new Set(
+      (friendsPlansQuery.data ?? [])
+        .map(p => p.creatorId)
+        .filter((id): id is number => !!id),
+    );
+
+    const friendSaved = saved.filter(s => friendCreatorIds.has(s.creatorId));
+    const publicGeneralSaved = saved.filter(s => !friendCreatorIds.has(s.creatorId));
+
     return {
       owned,
-      saved,
+      friendSaved,
+      publicGeneralSaved,
     };
-  }, [myPlansQuery.data, savedPlansQuery.data]);
+  }, [myPlansQuery.data, savedPlansQuery.data, friendsPlansQuery.data]);
+
+  const publicGroups = useMemo(() => {
+    const plans = publicPlansQuery.data ?? [];
+    return {
+      general: plans.filter(p => !p.creatorId),
+      public: plans.filter(p => !!p.creatorId),
+    };
+  }, [publicPlansQuery.data]);
 
   // Grouping for "Friends" tab
   const friendsGroups = useMemo(() => {
@@ -80,19 +103,21 @@ export function useMealPlansScreen() {
 
   const handleCreate = () => {
     if (!name.trim()) return;
-    const days = parseInt(totalDays, 10);
+    const parsedDays = parseInt(totalDays, 10);
+    const finalDays = isNaN(parsedDays) || parsedDays < 0 ? 0 : parsedDays;
+
     createPlan.mutate(
       {
         name: name.trim(),
         description: description.trim() || undefined,
-        totalDays: isNaN(days) || days < 1 ? 7 : days,
+        totalDays: finalDays,
         visibilityTypeId: VISIBILITY_ENUM_TO_ID[visibility],
       },
       {
         onSuccess: (newPlan) => {
           setName('');
           setDescription('');
-          setTotalDays('7');
+          setTotalDays('1');
           setVisibility(VisibilityType.PRIVATE);
           setShowCreate(false);
           router.push(`/(app)/(nutrition)/meal-plan/${newPlan.id}` as never);
@@ -109,7 +134,11 @@ export function useMealPlansScreen() {
     confirmDestructive('Delete meal plan?', 'This action cannot be undone.', () => deletePlan.mutate(String(id)));
   };
 
-  const handleActivate = (id: number) => {
+  const handleActivate = (id: number, totalDays: number) => {
+    if (totalDays === 0) {
+      showAlert('Plan has no days', 'Add at least one day to this plan before activating it.');
+      return;
+    }
     activatePlan.mutate(String(id));
   };
 
@@ -135,6 +164,7 @@ export function useMealPlansScreen() {
     setSearch,
     myGroups,
     publicPlans: publicPlansQuery.data ?? [],
+    publicGroups,
     friendsGroups,
     showCreate,
     setShowCreate,
@@ -154,5 +184,6 @@ export function useMealPlansScreen() {
     handleUnsave,
     isCreatePending: createPlan.isPending,
     router,
+    savedPlanIds,
   };
 }

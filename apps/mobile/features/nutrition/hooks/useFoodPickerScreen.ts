@@ -8,6 +8,7 @@ import type { IFood } from '@athlo/shared';
 import {
   useInfiniteSearchFoods,
   useCreateFood,
+  useUpdateFood,
   useAddLogMealItem,
   useAddPlanMealItem,
   useDeleteLogMealItem,
@@ -15,7 +16,9 @@ import {
   useGetUnits,
   useAddFoodUnit,
   useDeleteFood,
+  useDeleteFoodUnit,
 } from '@/features/nutrition/hooks';
+import type { NutritionFactData } from '@/hooks/api/useFoodAPI';
 
 type PickerMode = 'logMeal' | 'planMeal';
 
@@ -45,6 +48,7 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
   const [amount, setAmount] = useState('100');
   const [unitId, setUnitId] = useState(1);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   const [newFoodName, setNewFoodName] = useState('');
   const [newFoodBrand, setNewFoodBrand] = useState('');
@@ -66,11 +70,13 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
   
   const units = useMemo(() => {
     if (!allUnits) return [];
-    return allUnits.filter(u => !['cm', 'sm', 'kg'].includes(u.name.toLowerCase()));
+    return allUnits.filter(u => !['cm', 'sm', 'kg', 'kcal'].includes(u.name.toLowerCase()));
   }, [allUnits]);
 
   const createFood = useCreateFood();
+  const updateFood = useUpdateFood();
   const deleteFood = useDeleteFood();
+  const deleteFoodUnit = useDeleteFoodUnit();
   const addFoodUnit = useAddFoodUnit();
   const addLogMealItem = useAddLogMealItem();
   const addPlanMealItem = useAddPlanMealItem();
@@ -85,61 +91,55 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
   const calculatedMacros = useMemo(() => {
     if (!selectedFood) return null;
     
-    // Find the selected unit's conversion factor
-    let factor = 1; // default 1g = 1g
-    if (selectedFood.units) {
-      const selectedUnit = selectedFood.units.find(u => u.unitId === unitId);
-      if (selectedUnit) {
-        factor = Number(selectedUnit.conversionFactor);
-      }
-    }
+    const selectedFact = selectedFood.units?.find(u => u.unitId === unitId);
+    if (!selectedFact) return { calories: 0, proteins: 0, fats: 0, carbs: 0 };
 
     const amountNum = parseFloat(amount) || 0;
-    // Calculate total grams, then divide by 100
-    const totalGrams = amountNum * factor;
-    const macroFactor = totalGrams / 100;
+    const multiplier = amountNum / (Number(selectedFact.amount) || 1);
 
     return {
-      calories: Math.round(selectedFood.calories * macroFactor),
-      proteins: Math.round(selectedFood.proteins * macroFactor * 10) / 10,
-      fats: Math.round(selectedFood.fats * macroFactor * 10) / 10,
-      carbs: Math.round(selectedFood.carbs * macroFactor * 10) / 10,
+      calories: Math.round((selectedFact.calories || 0) * multiplier),
+      proteins: Math.round((selectedFact.proteins || 0) * multiplier * 10) / 10,
+      fats: Math.round((selectedFact.fats || 0) * multiplier * 10) / 10,
+      carbs: Math.round((selectedFact.carbs || 0) * multiplier * 10) / 10,
     };
   }, [selectedFood, amount, unitId]);
 
+  const getDefaultAmount = useCallback((unitName: string) =>
+    ['g', 'ml'].includes(unitName.toLowerCase()) ? '100' : '1',
+  []);
+
   const handleSelectFood = useCallback((food: IFood) => {
     setSelectedFood(food as IFoodExtended);
-    
-    // Check first unit or default to g (1)
-    const firstUnitId = food.units?.[0]?.unitId ?? 1;
-    const unitName = food.units?.[0]?.unit?.name?.toLowerCase() || 'g';
-    
-    setUnitId(firstUnitId);
-    // If unit is pieces/cups/etc, set amount to 1, otherwise 100
-    if (['g', 'ml'].includes(unitName)) {
-      setAmount('100');
-    } else {
-      setAmount('1');
-    }
-  }, []);
+    const firstFact = food.units?.[0];
+    const firstFactUnitId = firstFact?.unitId ?? 1;
+    const unitName = firstFact?.unit?.name?.toLowerCase() || 'g';
+    setUnitId(firstFactUnitId);
+    setAmount(getDefaultAmount(unitName));
+  }, [getDefaultAmount]);
+
+  const handleUnitChange = useCallback((newUnitId: number) => {
+    setUnitId(newUnitId);
+    const unit = units.find(u => u.id === newUnitId);
+    setAmount(getDefaultAmount(unit?.name ?? ''));
+  }, [units, getDefaultAmount]);
+
+  const handleNewFoodServingUnitChange = useCallback((newUnitId: number) => {
+    setNewFoodServingUnitId(newUnitId);
+    const unit = units.find(u => u.id === newUnitId);
+    setNewFoodServingAmount(getDefaultAmount(unit?.name ?? ''));
+  }, [units, getDefaultAmount]);
 
   const handleAddFood = useCallback(async () => {
     const parsedAmount = parseFloat(amount);
     if (!selectedFood || !parsedAmount || parsedAmount <= 0) return;
-
-    let factor = 1;
-    if (selectedFood.units) {
-      const selectedUnit = selectedFood.units.find(u => u.unitId === unitId);
-      if (selectedUnit) factor = Number(selectedUnit.conversionFactor);
-    }
-    const calculatedWeightG = parsedAmount * factor;
 
     if (mode === 'logMeal' && params.mealId) {
       if (params.swapItemId) {
         // Handle swap: add new, then delete old
         await addLogMealItem.mutateAsync({
           mealId: params.mealId,
-          data: { foodId: selectedFood.id, unitId, amount: parsedAmount, calculatedWeightG },
+          data: { foodId: selectedFood.id, unitId, amount: parsedAmount },
         });
         await deleteLogMealItem.mutateAsync(params.swapItemId);
         router.back();
@@ -147,13 +147,12 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
         addLogMealItem.mutate(
           {
             mealId: params.mealId,
-            data: { foodId: selectedFood.id, unitId, amount: parsedAmount, calculatedWeightG },
+            data: { foodId: selectedFood.id, unitId, amount: parsedAmount },
           },
           { onSuccess: () => router.back() },
         );
       }
     } else if (mode === 'planMeal' && params.planId && params.planMealId) {
-      // Plan meals don't support calculatedWeightG in DB/API yet
       const planData = { foodId: selectedFood.id, unitId, amount: parsedAmount };
       
       if (params.swapItemId) {
@@ -189,54 +188,68 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
   }, []);
 
   const handleCreateFood = useCallback(async () => {
-    const cal = parseFloat(newFoodCalories);
-    const prot = parseFloat(newFoodProteins);
-    const fat = parseFloat(newFoodFats);
-    const carb = parseFloat(newFoodCarbs);
+    const cal = parseFloat(newFoodCalories) || 0;
+    const prot = parseFloat(newFoodProteins) || 0;
+    const fat = parseFloat(newFoodFats) || 0;
+    const carb = parseFloat(newFoodCarbs) || 0;
     const servingAmount = parseFloat(newFoodServingAmount);
 
-    if (!newFoodName.trim() || isNaN(cal) || isNaN(prot) || isNaN(fat) || isNaN(carb) || isNaN(servingAmount) || servingAmount <= 0) return;
+    if (!newFoodName.trim() || isNaN(servingAmount) || servingAmount <= 0) return;
 
-    // Normalize to 100g/ml
-    const factor = 100 / servingAmount;
-    
     const food = await createFood.mutateAsync({
       name: newFoodName.trim(),
       brand: newFoodBrand.trim() || undefined,
-      calories: cal * factor,
-      proteins: prot * factor,
-      fats: fat * factor,
-      carbs: carb * factor,
-    });
-
-    // If unit is not grams (1), add it as a food unit
-    if (newFoodServingUnitId !== 1) {
-      await addFoodUnit.mutateAsync({
-        foodId: String(food.id),
-        data: {
+      units: [
+        {
           unitId: newFoodServingUnitId,
-          conversionFactor: servingAmount,
+          amount: servingAmount,
+          calories: cal,
+          proteins: prot,
+          fats: fat,
+          carbs: carb,
         }
-      });
-    }
+      ]
+    });
 
     setShowCreateForm(false);
     
     // Refresh food list or navigate back
     // For now, select it with proper default amount
-    const unitName = units.find(u => u.id === newFoodServingUnitId)?.name?.toLowerCase() || 'g';
     setSelectedFood(food as IFoodExtended);
     setAmount(String(servingAmount));
     setUnitId(newFoodServingUnitId);
     
     resetCreateForm();
-  }, [newFoodName, newFoodBrand, newFoodCalories, newFoodProteins, newFoodFats, newFoodCarbs, newFoodServingAmount, newFoodServingUnitId, createFood, addFoodUnit, resetCreateForm, units]);
+  }, [newFoodName, newFoodBrand, newFoodCalories, newFoodProteins, newFoodFats, newFoodCarbs, newFoodServingAmount, newFoodServingUnitId, createFood, resetCreateForm, units]);
 
   const handleDeleteFood = useCallback(async () => {
     if (!selectedFood) return;
     await deleteFood.mutateAsync(String(selectedFood.id));
     setSelectedFood(null);
   }, [selectedFood, deleteFood]);
+
+  const handleEditFood = useCallback(async (name: string, brand: string, newUnit: NutritionFactData | null) => {
+    if (!selectedFood) return;
+    const updated = await updateFood.mutateAsync({
+      id: String(selectedFood.id),
+      data: {
+        name: name || undefined,
+        brand: brand || undefined,
+        ...(newUnit ? { units: [newUnit] } : {}),
+      },
+    });
+    setSelectedFood(updated as IFoodExtended);
+    setShowEditForm(false);
+  }, [selectedFood, updateFood]);
+
+  const handleDeleteFoodUnit = useCallback(async (unitId: number) => {
+    if (!selectedFood) return;
+    const updated = await deleteFoodUnit.mutateAsync({
+      foodId: String(selectedFood.id),
+      unitId: String(unitId),
+    });
+    setSelectedFood(updated as IFoodExtended);
+  }, [selectedFood, deleteFoodUnit]);
 
   return {
     search,
@@ -249,6 +262,8 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
     setUnitId,
     showCreateForm,
     setShowCreateForm,
+    showEditForm,
+    setShowEditForm,
     newFoodName,
     setNewFoodName,
     newFoodBrand,
@@ -268,14 +283,19 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
     units,
     foodsQuery,
     createFood,
+    updateFood,
     addLogMealItem,
     addPlanMealItem,
     foodList,
     calculatedMacros,
     handleSelectFood,
+    handleUnitChange,
+    handleNewFoodServingUnitChange,
     handleAddFood,
     handleCreateFood,
     handleDeleteFood,
+    handleEditFood,
+    handleDeleteFoodUnit,
     resetCreateForm,
     isCreator,
     insets,
@@ -283,5 +303,6 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
     mode,
     params,
     deleteFood,
+    deleteFoodUnit,
   };
 }

@@ -5,18 +5,32 @@ export interface MacroValues {
   carbs: number;
 }
 
+export interface NutritionFactLike extends MacroValues {
+  unitId: number;
+  amount: number;
+}
+
 export function calcItemMacros(
-  food: MacroValues | null | undefined,
-  amountInGrams: number,
+  nutritionFact: MacroValues | null | undefined,
+  multiplier: number,
 ): MacroValues {
-  if (!food) return { calories: 0, proteins: 0, fats: 0, carbs: 0 };
-  const factor = amountInGrams / 100;
+  if (!nutritionFact) return { calories: 0, proteins: 0, fats: 0, carbs: 0 };
   return {
-    calories: food.calories * factor,
-    proteins: food.proteins * factor,
-    fats: food.fats * factor,
-    carbs: food.carbs * factor,
+    calories: nutritionFact.calories * multiplier,
+    proteins: nutritionFact.proteins * multiplier,
+    fats: nutritionFact.fats * multiplier,
+    carbs: nutritionFact.carbs * multiplier,
   };
+}
+
+export function calcItemMacrosByUnit(
+  foodUnits: NutritionFactLike[] | undefined,
+  unitId: number,
+  amount: number,
+): MacroValues {
+  const fact = foodUnits?.find((u) => u.unitId === unitId);
+  if (!fact) return { calories: 0, proteins: 0, fats: 0, carbs: 0 };
+  return calcItemMacros(fact, amount / Number(fact.amount || 1));
 }
 
 export function sumMacros(values: MacroValues[]): MacroValues {

@@ -19,8 +19,8 @@ export interface MealItemDisplay {
 
 interface MealCardProps {
   meal: ILogMeal & { items?: MealItemDisplay[]; timeSuggestion?: string | null };
-  onAddItem: (mealId: number) => void;
-  onDelete: (mealId: number) => void;
+  onAddItem?: (mealId: number) => void;
+  onDelete?: (mealId: number) => void;
   onDeleteItem?: (itemId: number) => void;
   onEditMeal?: (meal: ILogMeal) => void;
   onEditItem?: (itemId: number) => void;
@@ -39,7 +39,9 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
         hour12: false,
       });
 
-  const items = meal.items ?? [];
+  const items = useMemo(() => {
+    return [...(meal.items ?? [])].sort((a, b) => a.id - b.id);
+  }, [meal.items]);
   const totalCalories = items.reduce((sum, item) => sum + item.calories, 0);
   const totalProteins = items.reduce((sum, item) => sum + item.proteins, 0);
   const totalFats = items.reduce((sum, item) => sum + item.fats, 0);
@@ -62,12 +64,16 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
           </View>
         </View>
         <View style={styles.headerRight}>
-          <Pressable onPress={() => onEditMeal?.(meal as any)} hitSlop={12} style={styles.actionBtn}>
-            <Text style={styles.editBtnIcon}>✏️</Text>
-          </Pressable>
-          <Pressable onPress={() => onDelete(meal.id)} hitSlop={12} style={styles.actionBtn}>
-            <Text style={styles.deleteBtnIcon}>✕</Text>
-          </Pressable>
+          {onEditMeal && (
+            <Pressable onPress={() => onEditMeal(meal as any)} hitSlop={12} style={styles.actionBtn}>
+              <Text style={styles.editBtnIcon}>✏️</Text>
+            </Pressable>
+          )}
+          {onDelete && (
+            <Pressable onPress={() => onDelete(meal.id)} hitSlop={12} style={styles.actionBtn}>
+              <Text style={styles.deleteBtnIcon}>✕</Text>
+            </Pressable>
+          )}
         </View>
       </View>
 
@@ -85,7 +91,7 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
             <View style={styles.itemInfo}>
               <Text style={styles.itemName} numberOfLines={1}>{item.foodName}</Text>
               <Text style={styles.itemAmount}>
-                {item.amount} {item.unitName}
+                {parseFloat(Number(item.amount).toFixed(2))} {item.unitName}
               </Text>
             </View>
             <Text style={styles.itemCal}>{Math.round(item.calories)} kcal</Text>
@@ -107,12 +113,14 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
         </View>
       )}
 
-      <Button
-        title="+ Add Food"
-        variant="secondary"
-        onPress={() => onAddItem(meal.id)}
-        style={styles.addItemBtn}
-      />
+      {onAddItem && (
+        <Button
+          title="+ Add Food"
+          variant="secondary"
+          onPress={() => onAddItem(meal.id)}
+          style={styles.addItemBtn}
+        />
+      )}
     </View>
   );
 }

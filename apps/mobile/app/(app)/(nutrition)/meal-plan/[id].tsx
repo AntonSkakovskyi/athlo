@@ -17,14 +17,16 @@ import {
   MealItemActionSheet,
   DaySummaryFooter,
 } from '@/features/nutrition/components';
-import { calcItemMacros } from '@/features/nutrition/utils/macros';
-import { getVisibilityLabel } from '@/utils/visibility';
+import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
+import { calcItemMacrosByUnit } from '@/features/nutrition/utils/macros';
 import { useMealPlanDetailScreen } from '@/features/nutrition/hooks/useMealPlanDetailScreen';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function MealPlanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
 
   const {
     plan, isLoading, mealTypes, days, currentDay, currentDayMeals, dayMacros,
@@ -34,10 +36,15 @@ export default function MealPlanDetailScreen() {
     handleRemoveMeal, handleEditMeal, handleConfirmEditMeal, handleRemoveItem,
     handleAddFoodToMeal, handleUpdateItem, handleSwapItem, handleEditMealItem,
     handleSaveName, startEditName, isActive, isActivatePending,
+    isSaved, handleSave, isSavePending,
+    editingDesc, descValue, setDescValue, startEditDesc, handleSaveDesc,
     editingMealItem, setEditingMealItem, isUpdateItemPending,
+    currentVisibility, handleVisibilityChange,
   } = useMealPlanDetailScreen(id);
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const isOwner = user?.id === plan?.creatorId;
 
   if (isLoading) {
     return (
@@ -74,7 +81,7 @@ export default function MealPlanDetailScreen() {
       />
 
       <View style={styles.nameSection}>
-        {editingName ? (
+        {editingName && isOwner ? (
           <TextInput
             style={styles.nameInput}
             value={nameValue}
@@ -85,25 +92,63 @@ export default function MealPlanDetailScreen() {
             returnKeyType="done"
           />
         ) : (
-          <Pressable onPress={startEditName}>
+          <Pressable onPress={isOwner ? startEditName : undefined}>
             <Typography variant="h2">{plan.name}</Typography>
           </Pressable>
         )}
-        {plan.description ? (
-          <Typography variant="bodySmall" style={styles.planDesc}>{plan.description}</Typography>
-        ) : null}
-        <Typography variant="caption" style={styles.planMeta}>
-          {plan.totalDays} days · {getVisibilityLabel(plan.visibilityTypeId)}
-        </Typography>
+        {editingDesc && isOwner ? (
+          <TextInput
+            style={styles.descInput}
+            value={descValue}
+            onChangeText={setDescValue}
+            onBlur={handleSaveDesc}
+            autoFocus
+            multiline
+            returnKeyType="done"
+            placeholder="Add description..."
+          />
+        ) : (
+          <Pressable onPress={isOwner ? startEditDesc : undefined}>
+            <Typography
+              variant="body"
+              style={plan.description ? styles.planDesc : styles.planDescPlaceholder}
+            >
+              {plan.description || (isOwner ? 'Tap to add description' : '')}
+            </Typography>
+          </Pressable>
+        )}
+        {isOwner && (
+          <VisibilitySelector
+            value={currentVisibility}
+            onChange={handleVisibilityChange}
+            label="Visibility"
+          />
+        )}
       </View>
 
-      <DayTabsRow days={days} selectedIndex={selectedDayIndex} onSelect={setSelectedDayIndex} onAddDay={handleAddDay} onRemoveDay={handleRemoveDay} />
+      <DayTabsRow 
+        days={days} 
+        selectedIndex={selectedDayIndex} 
+        onSelect={setSelectedDayIndex} 
+        onAddDay={isOwner ? handleAddDay : undefined} 
+        onRemoveDay={isOwner ? handleRemoveDay : undefined} 
+      />
 
       <ScrollView style={styles.dayContent} contentContainerStyle={styles.dayContentInner} showsVerticalScrollIndicator={false}>
         {!currentDay ? (
-          <EmptyState title="No days in this plan" description="Add a day to start planning meals" actionLabel="Add Day" onAction={handleAddDay} />
+          <EmptyState 
+            title="No days in this plan" 
+            description={isOwner ? "Add a day to start planning meals" : "This plan has no days yet"} 
+            actionLabel={isOwner ? "Add Day" : undefined} 
+            onAction={isOwner ? handleAddDay : undefined} 
+          />
         ) : currentDayMeals.length === 0 ? (
-          <EmptyState title="No meals for this day" description="Add a meal to start planning" actionLabel="+ Add Meal" onAction={() => setShowAddMeal(true)} />
+          <EmptyState 
+            title="No meals for this day" 
+            description={isOwner ? "Add a meal to start planning" : "This day has no meals planned"} 
+            actionLabel={isOwner ? "+ Add Meal" : undefined} 
+            onAction={isOwner ? () => setShowAddMeal(true) : undefined} 
+          />
         ) : (
           currentDayMeals.map((meal) => {
             const displayMeal = {
@@ -111,7 +156,7 @@ export default function MealPlanDetailScreen() {
               name: meal.mealType?.name ?? `Meal #${meal.order}`,
               consumedAt: new Date().toISOString(),
               items: meal.items?.map((item) => {
-                const m = calcItemMacros(item.food, item.amount);
+                const m = calcItemMacrosByUnit(item.food?.units, item.unitId, item.amount);
                 return {
                   id: item.id,
                   foodName: item.food?.name ?? 'Unknown',
@@ -125,19 +170,19 @@ export default function MealPlanDetailScreen() {
               <View key={meal.id}>
                 <MealCard
                   meal={displayMeal as any}
-                  onAddItem={() => handleAddFoodToMeal(meal.id)}
-                  onDelete={() => handleRemoveMeal(meal.id)}
-                  onEditMeal={() => handleEditMeal(meal)}
-                  onEditItem={(itemId) => {
+                  onAddItem={isOwner ? handleAddFoodToMeal : undefined}
+                  onDelete={isOwner ? handleRemoveMeal : undefined}
+                  onEditMeal={isOwner ? handleEditMeal : undefined}
+                  onEditItem={isOwner ? (itemId) => {
                     const item = meal.items?.find(i => i.id === itemId);
                     if (item) handleEditMealItem(meal.id, item);
-                  }}
+                  } : undefined}
                 />
               </View>
             );
           })
         )}
-        {currentDay && currentDayMeals.length > 0 && (
+        {currentDay && currentDayMeals.length > 0 && isOwner && (
           <Button title="+ Add Meal" variant="secondary" onPress={() => setShowAddMeal(true)} style={styles.addMealBtn} />
         )}
       </ScrollView>
@@ -146,7 +191,19 @@ export default function MealPlanDetailScreen() {
         <DaySummaryFooter calories={dayMacros.calories} proteins={dayMacros.proteins} fats={dayMacros.fats} carbs={dayMacros.carbs} />
       )}
 
-      {showAddMeal && (
+      {!isOwner && (
+        <View style={styles.saveFooter}>
+          <Button
+            title={isSaved ? '✓ Saved' : '+ Save Plan'}
+            variant={isSaved ? 'secondary' : 'primary'}
+            onPress={handleSave}
+            isLoading={isSavePending}
+            style={styles.saveFooterBtn}
+          />
+        </View>
+      )}
+
+      {showAddMeal && isOwner && (
         <MealFormSheet
           title="Add Meal to Plan"
           confirmLabel="Add"
@@ -157,7 +214,7 @@ export default function MealPlanDetailScreen() {
         />
       )}
 
-      {editingMeal && mealTypes && (
+      {editingMeal && mealTypes && isOwner && (
         <MealFormSheet
           title="Edit Meal"
           confirmLabel="Save Changes"
@@ -171,7 +228,7 @@ export default function MealPlanDetailScreen() {
       )}
 
       <MealItemActionSheet
-        visible={!!editingMealItem}
+        visible={!!editingMealItem && isOwner}
         onClose={() => setEditingMealItem(null)}
         item={editingMealItem?.item as any}
         onUpdate={handleUpdateItem}
@@ -198,9 +255,25 @@ function makeStyles(c: ColorPalette) {
       paddingVertical: spacing.xs,
     },
     planDesc: { marginTop: spacing.xs },
+    planDescPlaceholder: { marginTop: spacing.xs, color: c.textMuted },
+    descInput: {
+      fontSize: fontSize.sm,
+      color: c.text,
+      borderBottomWidth: 1,
+      borderBottomColor: c.primary,
+      paddingVertical: spacing.xs,
+      marginTop: spacing.xs,
+    },
     planMeta: { marginTop: spacing.xs },
     dayContent: { flex: 1 },
     dayContentInner: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
     addMealBtn: { marginTop: spacing.md },
+    saveFooter: {
+      padding: spacing.lg,
+      backgroundColor: c.surface,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+    },
+    saveFooterBtn: { width: '100%' },
   });
 }

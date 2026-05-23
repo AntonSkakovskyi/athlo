@@ -6,7 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
-import type { LogMealItemApi } from '@/hooks/api/useNutritionLogAPI';
+import { calcItemMacrosByUnit, type NutritionFactLike } from '@/features/nutrition/utils/macros';
 
 interface MealItemDisplay {
   id: number;
@@ -16,15 +16,7 @@ interface MealItemDisplay {
     id: number;
     name: string;
     brand?: string | null;
-    calories: number;
-    proteins: number;
-    fats: number;
-    carbs: number;
-    units?: Array<{
-      unitId: number;
-      conversionFactor: number | string;
-      unit?: { id: number; name: string };
-    }>;
+    units?: NutritionFactLike[];
   };
   unit?: { id: number; name: string };
 }
@@ -61,25 +53,14 @@ export function MealItemActionSheet({
   }, [item, visible]);
 
   const calculatedMacros = useMemo(() => {
-    if (!item?.food) return null;
+    if (!item?.food?.units?.length) return null;
     const numericAmount = parseFloat(amount) || 0;
-
-    let factor = 1;
-    if (item.food.units) {
-      const selectedUnit = item.food.units.find(u => u.unitId === unitId);
-      if (selectedUnit) {
-        factor = Number(selectedUnit.conversionFactor);
-      }
-    }
-
-    const totalGrams = numericAmount * factor;
-    const multiplier = totalGrams / 100;
-
+    const macros = calcItemMacrosByUnit(item.food.units, unitId, numericAmount);
     return {
-      calories: Math.round(item.food.calories * multiplier),
-      proteins: Math.round(item.food.proteins * multiplier * 10) / 10,
-      fats: Math.round(item.food.fats * multiplier * 10) / 10,
-      carbs: Math.round(item.food.carbs * multiplier * 10) / 10,
+      calories: Math.round(macros.calories),
+      proteins: Math.round(macros.proteins * 10) / 10,
+      fats: Math.round(macros.fats * 10) / 10,
+      carbs: Math.round(macros.carbs * 10) / 10,
     };
   }, [item, amount, unitId]);
 

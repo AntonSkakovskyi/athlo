@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { confirmDestructive } from '@/utils/alerts';
 import type { IMealPlan } from '@athlo/shared';
+import { VisibilityType } from '@athlo/shared';
+import { VISIBILITY_ENUM_TO_ID } from '@/utils/visibility';
 import {
   useGetMealPlanById,
   useUpdateMealPlan,
@@ -15,8 +17,12 @@ import {
   useUpdatePlanMealItem,
   useGetMealTypes,
   useGetActiveMealPlan,
+  useGetSavedMealPlans,
+  useSaveMealPlan,
+  useUnsaveMealPlan,
 } from '@/features/nutrition/hooks';
-import { calcItemMacros, sumMacros } from '@/features/nutrition/utils/macros';
+import { calcItemMacrosByUnit, sumMacros } from '@/features/nutrition/utils/macros';
+import type { NutritionFactLike } from '@/features/nutrition/utils/macros';
 
 export interface MealPlanWithRelations extends IMealPlan {
   days?: PlanDayWithMeals[];
@@ -45,7 +51,7 @@ export interface PlanMealItemWithRelations {
   foodId: number;
   unitId: number;
   amount: number;
-  food?: { id: number; name: string; calories: number; proteins: number; fats: number; carbs: number };
+  food?: { id: number; name: string; brand: string | null; units?: NutritionFactLike[] };
   unit?: { id: number; name: string };
 }
 
@@ -55,6 +61,9 @@ export function useMealPlanDetailScreen(id: string) {
   const { data: plan, isLoading: isPlanLoading } = useGetMealPlanById(id);
   const { data: mealTypes } = useGetMealTypes();
   const { data: activePlan, isLoading: isActivePlanLoading } = useGetActiveMealPlan();
+  const { data: savedPlans } = useGetSavedMealPlans();
+  const savePlan = useSaveMealPlan();
+  const unsavePlan = useUnsaveMealPlan();
   const updatePlan = useUpdateMealPlan();
   const activatePlan = useActivateMealPlan();
   const addDay = useAddPlanDay();
@@ -70,6 +79,8 @@ export function useMealPlanDetailScreen(id: string) {
   const [editingMeal, setEditingMeal] = useState<PlanMealWithItems | null>(null);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState('');
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [descValue, setDescValue] = useState('');
 
   const [editingMealItem, setEditingMealItem] = useState<{ mealId: number; item: PlanMealItemWithRelations } | null>(null);
 
@@ -88,7 +99,7 @@ export function useMealPlanDetailScreen(id: string) {
 
   const dayMacros = useMemo(() => {
     const all = currentDayMeals.flatMap(
-      (meal) => meal.items?.map((item) => calcItemMacros(item.food, item.amount)) ?? [],
+      (meal) => meal.items?.map((item) => calcItemMacrosByUnit(item.food?.units, item.unitId, item.amount)) ?? [],
     );
     return sumMacros(all);
   }, [currentDayMeals]);
@@ -117,7 +128,7 @@ export function useMealPlanDetailScreen(id: string) {
     addMeal.mutate({
       planId: id,
       dayId: String(currentDay.id),
-      data: { mealTypeId, order, timeSuggestion: timeSuggestion || null },
+      data: { mealTypeId, order, timeSuggestion: timeSuggestion || undefined },
     });
     setShowAddMeal(false);
   };
@@ -134,7 +145,7 @@ export function useMealPlanDetailScreen(id: string) {
     await updateMeal.mutateAsync({ 
       planId: id, 
       mealId: String(mealId), 
-      data: { ...data, timeSuggestion: data.timeSuggestion || null } 
+      data: { ...data, timeSuggestion: data.timeSuggestion || undefined }
     });
     setEditingMeal(null);
   };
@@ -180,6 +191,17 @@ export function useMealPlanDetailScreen(id: string) {
     } as never);
   };
 
+  const currentVisibility = useMemo((): VisibilityType => {
+    const vid = (plan as IMealPlan | undefined)?.visibilityTypeId;
+    if (vid === 2) return VisibilityType.PUBLIC;
+    if (vid === 3) return VisibilityType.FRIENDS_ONLY;
+    return VisibilityType.PRIVATE;
+  }, [(plan as IMealPlan | undefined)?.visibilityTypeId]);
+
+  const handleVisibilityChange = (value: VisibilityType) => {
+    updatePlan.mutate({ id, data: { visibilityTypeId: VISIBILITY_ENUM_TO_ID[value] } });
+  };
+
   const handleSaveName = () => {
     if (nameValue.trim() && nameValue.trim() !== plan?.name) {
       updatePlan.mutate({ id, data: { name: nameValue.trim() } });
@@ -192,7 +214,29 @@ export function useMealPlanDetailScreen(id: string) {
     setEditingName(true);
   };
 
+  const startEditDesc = () => {
+    setDescValue(plan?.description ?? '');
+    setEditingDesc(true);
+  };
+
+  const handleSaveDesc = () => {
+    const trimmed = descValue.trim();
+    if (trimmed !== (plan?.description ?? '')) {
+      updatePlan.mutate({ id, data: { description: trimmed } });
+    }
+    setEditingDesc(false);
+  };
+
   const isActive = activePlan?.mealPlanId === Number(id);
+  const isSaved = savedPlans?.some((p) => p.id === Number(id)) ?? false;
+
+  const handleSave = () => {
+    if (isSaved) {
+      unsavePlan.mutate(id);
+    } else {
+      savePlan.mutate(id);
+    }
+  };
 
   return {
     plan,
@@ -225,10 +269,20 @@ export function useMealPlanDetailScreen(id: string) {
     handleAddFoodToMeal,
     handleSaveName,
     startEditName,
+    editingDesc,
+    descValue,
+    setDescValue,
+    startEditDesc,
+    handleSaveDesc,
     isActive,
     isActivatePending: activatePlan.isPending,
+    isSaved,
+    handleSave,
+    isSavePending: savePlan.isPending || unsavePlan.isPending,
     editingMealItem,
     setEditingMealItem,
     isUpdateItemPending: updateItem.isPending,
+    currentVisibility,
+    handleVisibilityChange,
   };
 }

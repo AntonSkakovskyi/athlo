@@ -85,30 +85,17 @@ export function useNutritionHistoryScreen() {
     return Math.round(history.reduce((sum, d) => sum + d.waterMl, 0) / history.length);
   }, [history]);
 
-  const caloriesData = useMemo(() => {
-    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.calories }));
-    return scope === '3M' ? aggregateWeekly(daily) : daily;
-  }, [history, scope]);
+  const caloriesRaw = useMemo(() => (history ?? []).map((d) => ({ date: d.date, value: d.calories })), [history]);
+  const proteinRaw  = useMemo(() => (history ?? []).map((d) => ({ date: d.date, value: d.proteins })), [history]);
+  const fatRaw      = useMemo(() => (history ?? []).map((d) => ({ date: d.date, value: d.fats })), [history]);
+  const carbRaw     = useMemo(() => (history ?? []).map((d) => ({ date: d.date, value: d.carbs })), [history]);
+  const waterRaw    = useMemo(() => (history ?? []).map((d) => ({ date: d.date, value: d.waterMl })), [history]);
 
-  const proteinData = useMemo(() => {
-    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.proteins }));
-    return scope === '3M' ? aggregateWeekly(daily) : daily;
-  }, [history, scope]);
-
-  const fatData = useMemo(() => {
-    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.fats }));
-    return scope === '3M' ? aggregateWeekly(daily) : daily;
-  }, [history, scope]);
-
-  const carbData = useMemo(() => {
-    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.carbs }));
-    return scope === '3M' ? aggregateWeekly(daily) : daily;
-  }, [history, scope]);
-
-  const waterData = useMemo(() => {
-    const daily = (history ?? []).map((d) => ({ date: d.date, value: d.waterMl }));
-    return scope === '3M' ? aggregateWeekly(daily) : daily;
-  }, [history, scope]);
+  const caloriesData = useMemo(() => scope === '3M' ? aggregateWeekly(caloriesRaw) : caloriesRaw, [caloriesRaw, scope]);
+  const proteinData  = useMemo(() => scope === '3M' ? aggregateWeekly(proteinRaw)  : proteinRaw,  [proteinRaw,  scope]);
+  const fatData      = useMemo(() => scope === '3M' ? aggregateWeekly(fatRaw)      : fatRaw,      [fatRaw,      scope]);
+  const carbData     = useMemo(() => scope === '3M' ? aggregateWeekly(carbRaw)     : carbRaw,     [carbRaw,     scope]);
+  const waterData    = useMemo(() => scope === '3M' ? aggregateWeekly(waterRaw)    : waterRaw,    [waterRaw,    scope]);
 
   return {
     router,
@@ -119,10 +106,10 @@ export function useNutritionHistoryScreen() {
     isLoading,
     avgCalories,
     avgWater,
-    caloriesData,
-    proteinData,
-    fatData,
-    carbData,
-    waterData,
+    caloriesData, caloriesRaw,
+    proteinData,  proteinRaw,
+    fatData,      fatRaw,
+    carbData,     carbRaw,
+    waterData,    waterRaw,
   };
 }

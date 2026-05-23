@@ -23,13 +23,15 @@ export default function MealPlansScreen() {
   const insets = useSafeAreaInsets();
   const {
     isLoading, activePlanId, activeTab, setActiveTab, search, setSearch,
-    myGroups, publicPlans, friendsGroups,
+    myGroups, publicGroups, friendsGroups,
     showCreate, setShowCreate,
     name, setName, description, setDescription, totalDays, setTotalDays,
     visibility, setVisibility,
     handleCreate, handleDelete, handleActivate, handleDeactivate,
     handleSave, handleUnsave, isCreatePending, router,
+    savedPlanIds,
   } = useMealPlansScreen();
+
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -40,7 +42,7 @@ export default function MealPlansScreen() {
       variant={variant}
       isActive={plan.id === activePlanId}
       onOpen={() => router.push(`/(app)/(nutrition)/meal-plan/${plan.id}` as never)}
-      onActivate={() => handleActivate(plan.id)}
+      onActivate={() => handleActivate(plan.id, plan.totalDays ?? 0)}
       onDeactivate={handleDeactivate}
       onSave={variant === 'public' ? () => handleSave(plan.id) : undefined}
       onUnsave={variant === 'saved' ? () => handleUnsave(plan.id) : undefined}
@@ -54,7 +56,7 @@ export default function MealPlansScreen() {
     }
 
     if (activeTab === 0) {
-      const hasContent = myGroups.owned.length > 0 || myGroups.saved.length > 0;
+      const hasContent = myGroups.owned.length > 0 || myGroups.friendSaved.length > 0 || myGroups.publicGeneralSaved.length > 0;
       if (!hasContent && !showCreate) {
         return (
           <EmptyState
@@ -71,15 +73,20 @@ export default function MealPlansScreen() {
           data={[]}
           renderItem={() => null}
           ListHeaderComponent={
-            <View>
+            <View style={styles.listContainer}>
               {myGroups.owned.length > 0 && (
                 <CollapsibleSection title="My Plans" count={myGroups.owned.length} initiallyExpanded>
                   {myGroups.owned.map(p => renderPlan(p, 'my'))}
                 </CollapsibleSection>
               )}
-              {myGroups.saved.length > 0 && (
-                <CollapsibleSection title="Saved Plans" count={myGroups.saved.length} initiallyExpanded>
-                  {myGroups.saved.map(p => renderPlan(p, 'saved'))}
+              {myGroups.friendSaved.length > 0 && (
+                <CollapsibleSection title="Friends' Plans" count={myGroups.friendSaved.length}>
+                  {myGroups.friendSaved.map(p => renderPlan(p, 'saved'))}
+                </CollapsibleSection>
+              )}
+              {myGroups.publicGeneralSaved.length > 0 && (
+                <CollapsibleSection title="Public & General" count={myGroups.publicGeneralSaved.length}>
+                  {myGroups.publicGeneralSaved.map(p => renderPlan(p, 'saved'))}
                 </CollapsibleSection>
               )}
             </View>
@@ -90,13 +97,30 @@ export default function MealPlansScreen() {
     }
 
     if (activeTab === 1) {
+      const unsavedGeneral = publicGroups.general.filter(p => !savedPlanIds.has(p.id));
+      const unsavedPublic = publicGroups.public.filter(p => !savedPlanIds.has(p.id));
+      const hasContent = unsavedGeneral.length > 0 || unsavedPublic.length > 0;
+
       return (
         <InfiniteList
-          data={publicPlans}
-          renderItem={({ item }) => renderPlan(item, 'public')}
-          keyExtractor={(item) => String(item.id)}
-          ListEmptyComponent={
-            <EmptyState title="No public plans" description="Try searching for something else" />
+          data={[]}
+          renderItem={() => null}
+          ListHeaderComponent={
+            <View style={styles.listContainer}>
+              {unsavedGeneral.length > 0 && (
+                <CollapsibleSection title="General" count={unsavedGeneral.length} initiallyExpanded>
+                  {unsavedGeneral.map(p => renderPlan(p, 'public'))}
+                </CollapsibleSection>
+              )}
+              {unsavedPublic.length > 0 && (
+                <CollapsibleSection title="Public Plans" count={unsavedPublic.length} initiallyExpanded>
+                  {unsavedPublic.map(p => renderPlan(p, 'public'))}
+                </CollapsibleSection>
+              )}
+              {!hasContent && (
+                <EmptyState title="No public plans" description="Try searching for something else" />
+              )}
+            </View>
           }
           contentContainerStyle={styles.list}
         />
@@ -104,22 +128,32 @@ export default function MealPlansScreen() {
     }
 
     if (activeTab === 2) {
-      if (friendsGroups.length === 0) {
-        return (
-          <EmptyState
-            title="No friend plans"
-            description="Your friends haven't shared any meal plans yet"
-          />
-        );
-      }
+      const unsavedFriendGroups = friendsGroups
+        .map(group => ({
+          ...group,
+          plans: group.plans.filter(p => !savedPlanIds.has(p.id)),
+        }))
+        .filter(group => group.plans.length > 0);
 
       return (
         <InfiniteList
           data={[]}
           renderItem={() => null}
           ListHeaderComponent={
-            <View>
-              {friendsGroups.map(group => (
+            <View style={styles.listContainer}>
+              <Button
+                title="+ Add Friend"
+                variant="ghost-primary"
+                onPress={() => router.push({ pathname: '/(app)/(profile)/friends', params: { tab: 'find' } } as any)}
+                style={styles.addFriendBtn}
+              />
+              {unsavedFriendGroups.length === 0 && (
+                <EmptyState
+                  title="No friend plans"
+                  description="Your friends haven't shared any meal plans yet"
+                />
+              )}
+              {unsavedFriendGroups.map(group => (
                 <CollapsibleSection
                   key={group.friend.id}
                   title={group.friend.nickname || 'Friend'}
@@ -146,7 +180,7 @@ export default function MealPlansScreen() {
         rightAction={
           <Button
             title={showCreate ? 'Cancel' : '+ Create'}
-            variant="ghost"
+            variant="ghost-primary"
             onPress={() => setShowCreate(!showCreate)}
           />
         }
@@ -171,7 +205,7 @@ export default function MealPlansScreen() {
         <View style={styles.createCard}>
           <Input label="Plan Name" value={name} onChangeText={setName} placeholder="e.g. Cutting Plan" />
           <Input label="Description (optional)" value={description} onChangeText={setDescription} placeholder="Describe your plan" />
-          <Input label="Total Days" value={totalDays} onChangeText={setTotalDays} keyboardType="numeric" placeholder="7" />
+          <Input label="Total Days" value={totalDays} onChangeText={setTotalDays} keyboardType="numeric" placeholder="1" />
 
           <VisibilitySelector value={visibility} onChange={setVisibility} />
 
@@ -187,6 +221,7 @@ export default function MealPlansScreen() {
 function makeStyles(c: ColorPalette) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: c.background },
+    listContainer: { gap: spacing.md },
     segmentWrap: { paddingHorizontal: spacing.lg, marginBottom: spacing.md },
     searchWrap: { paddingHorizontal: spacing.lg, marginBottom: spacing.sm },
     searchInput: { marginBottom: 0 },
@@ -202,5 +237,6 @@ function makeStyles(c: ColorPalette) {
     createBtn: { marginTop: spacing.md },
     list: { paddingHorizontal: spacing.lg, paddingBottom: 100 },
     loader: { marginTop: 40 },
+    addFriendBtn: { marginBottom: spacing.md },
   });
 }

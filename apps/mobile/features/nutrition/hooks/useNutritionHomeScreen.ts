@@ -21,7 +21,7 @@ import {
   type LogMealItemApi,
 } from '@/features/nutrition/hooks';
 import type { MealItemDisplay } from '@/features/nutrition/components/MealCard/MealCard';
-import { calcItemMacros, sumMacros } from '@/features/nutrition/utils/macros';
+import { calcItemMacrosByUnit, sumMacros } from '@/features/nutrition/utils/macros';
 
 export interface SelectedPlanItem {
   foodId: number;
@@ -36,7 +36,7 @@ interface PlanMealItemWithRelations {
   foodId: number;
   unitId: number;
   amount: number;
-  food?: { id: number; name: string; calories: number; proteins: number; fats: number; carbs: number; brand: string | null };
+  food?: { id: number; name: string; brand: string | null; units?: import('@/features/nutrition/utils/macros').NutritionFactLike[] };
   unit?: { id: number; name: string };
 }
 
@@ -218,7 +218,7 @@ export function useNutritionHomeScreen() {
     [router],
   );
 
-  // Which plan day matches the currently viewed date
+  // Which plan day matches the currently viewed date + cycle info
   const activePlanCurrentDay = useMemo(() => {
     if (!activePlan?.startedAt || !activePlanDetails) return null;
     const days = (activePlanDetails as unknown as { days?: Array<{ id: number; dayNumber: number; meals?: PlanMealWithItems[] }> }).days;
@@ -231,6 +231,21 @@ export function useNutritionHomeScreen() {
     const totalDays = activePlanDetails.totalDays || days.length;
     const planDayNumber = (daysSince % totalDays) + 1;
     return days.find((d) => d.dayNumber === planDayNumber) ?? null;
+  }, [activePlan, activePlanDetails, date]);
+
+  const activePlanCycleInfo = useMemo(() => {
+    if (!activePlan?.startedAt || !activePlanDetails?.totalDays) return null;
+    const totalDays = activePlanDetails.totalDays;
+    const startDate = new Date(activePlan.startedAt);
+    startDate.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(date + 'T00:00:00');
+    const daysSince = Math.floor((selectedDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysSince < 0) return null;
+    return {
+      cycleNumber: Math.floor(daysSince / totalDays) + 1,
+      planDayNumber: (daysSince % totalDays) + 1,
+      totalDays,
+    };
   }, [activePlan, activePlanDetails, date]);
 
   const planDayMeals = useMemo((): PlanMealWithItems[] => {
@@ -290,7 +305,7 @@ export function useNutritionHomeScreen() {
   const planDayMacros = useMemo(() => {
     if (!planDayMeals.length) return null;
     const all = planDayMeals.flatMap(
-      (meal) => meal.items?.map((item) => calcItemMacros(item.food, item.amount)) ?? [],
+      (meal) => meal.items?.map((item) => calcItemMacrosByUnit(item.food?.units, item.unitId, item.amount)) ?? [],
     );
     return sumMacros(all);
   }, [planDayMeals]);
@@ -334,8 +349,7 @@ export function useNutritionHomeScreen() {
       ...meal,
       items: (meal.items ?? []).map(
         (item): MealItemDisplay & { proteins: number; fats: number; carbs: number } => {
-          const weightG = Number(item.calculatedWeightG ?? item.amount);
-          const macros = calcItemMacros(item.food, weightG);
+          const macros = calcItemMacrosByUnit(item.food?.units, item.unitId, item.amount);
           return {
             id: item.id,
             foodName: item.food?.name ?? 'Unknown food',
@@ -358,6 +372,7 @@ export function useNutritionHomeScreen() {
     mealTypes,
     activePlan,
     activePlanDetails,
+    activePlanCycleInfo,
     planDayMeals,
     goals,
     meals,

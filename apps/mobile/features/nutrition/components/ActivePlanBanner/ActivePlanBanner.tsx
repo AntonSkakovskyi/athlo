@@ -5,19 +5,34 @@ import { borderRadius, spacing } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 
+interface CycleInfo {
+  cycleNumber: number;
+  planDayNumber: number;
+  totalDays: number;
+}
+
 interface ActivePlanBannerProps {
   userMealPlan: IUserMealPlan;
   planName?: string;
+  cycleInfo?: CycleInfo;
   onPress: () => void;
   onApplyToday?: () => void;
 }
 
-export function ActivePlanBanner({ userMealPlan, planName, onPress }: ActivePlanBannerProps) {
+export function ActivePlanBanner({ userMealPlan, planName, cycleInfo, onPress }: ActivePlanBannerProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const startDate = new Date(userMealPlan.startedAt);
-  const now = new Date();
-  const daysDiff = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+  const dayLabel = cycleInfo
+    ? cycleInfo.cycleNumber > 1
+      ? `Cycle ${cycleInfo.cycleNumber} · Day ${cycleInfo.planDayNumber} of ${cycleInfo.totalDays}`
+      : `Day ${cycleInfo.planDayNumber} of ${cycleInfo.totalDays}`
+    : (() => {
+        const startDate = new Date(userMealPlan.startedAt);
+        const now = new Date();
+        const daysDiff = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        return `Day ${daysDiff}`;
+      })();
 
   return (
     <View style={styles.outerContainer}>
@@ -26,7 +41,7 @@ export function ActivePlanBanner({ userMealPlan, planName, onPress }: ActivePlan
           <Text style={styles.icon}>📋</Text>
           <View>
             <Text style={styles.planName}>{planName ?? 'Active Meal Plan'}</Text>
-            <Text style={styles.dayInfo}>Day {daysDiff}</Text>
+            <Text style={styles.dayInfo}>{dayLabel}</Text>
           </View>
         </View>
         <Text style={styles.chevron}>›</Text>
