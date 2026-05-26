@@ -120,7 +120,7 @@ export function useExerciseDetailScreen() {
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .map((record) => ({
         ...record,
-        sets: (record.sets ?? []).map((s) => ({
+        sets: (record.sets ?? []).filter((s) => s.isCompleted).map((s) => ({
           ...s,
           weight: s.weight != null ? Number(s.weight) : undefined,
           reps: s.reps != null ? Number(s.reps) : undefined,

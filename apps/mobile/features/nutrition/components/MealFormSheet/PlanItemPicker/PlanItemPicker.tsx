@@ -4,6 +4,7 @@ import { spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import type { PlanMealWithItems } from '@/features/nutrition/hooks/useNutritionHomeScreen';
+import { calcItemMacrosByUnit } from '@/features/nutrition/utils/macros';
 
 interface PlanItemPickerProps {
   planMeal: PlanMealWithItems;
@@ -48,7 +49,7 @@ export function PlanItemPicker({
               </View>
               {item.food && (
                 <Text style={styles.itemCal}>
-                  {Math.round((item.food.calories * item.amount) / 100)} kcal
+                  {Math.round(calcItemMacrosByUnit(item.food.units, item.unitId, item.amount).calories)} kcal
                 </Text>
               )}
             </Pressable>

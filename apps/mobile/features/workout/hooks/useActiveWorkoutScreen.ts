@@ -15,6 +15,7 @@ import {
   useUpdateWorkout,
 } from '@/hooks/api';
 import type { SetRowData } from '@/features/workout/components/ActiveExerciseCard/SetRow/SetRow';
+import type { ILastPerformance } from '@athlo/shared';
 
 export function useActiveWorkoutScreen() {
   const insets = useSafeAreaInsets();
@@ -53,6 +54,13 @@ export function useActiveWorkoutScreen() {
   // API hooks for sets and exercises
   const updateLogExercise = useUpdateLogExercise(workoutId);
 
+  // Refs must be declared before any useMemo/useEffect that reads them.
+  const addedLogExerciseIds = useRef(new Set<number>());
+  // Cache last-performance data across multiple batch fetches to avoid re-fetching
+  // for exercises already loaded when a new exercise is added.
+  const lastPerfCache = useRef<Record<number, ILastPerformance>>({});
+  const fetchedLastPerfIds = useRef(new Set<number>());
+
   const exerciseIds = useMemo(
     () =>
       workoutQuery.data?.logExercises
@@ -61,7 +69,14 @@ export function useActiveWorkoutScreen() {
     [workoutQuery.data],
   );
 
-  const lastPerfQuery = useGetBatchLastPerformance(exerciseIds);
+  // Only fetch last-perf for exercise IDs we haven't fetched yet.
+  // Prevents re-fetching already-cached exercises when a new one is added.
+  const newExerciseIds = useMemo(
+    () => exerciseIds.filter((id) => !fetchedLastPerfIds.current.has(id)),
+    [exerciseIds],
+  );
+
+  const lastPerfQuery = useGetBatchLastPerformance(newExerciseIds);
 
   const isLoadingExercises =
     workoutQuery.isLoading ||
@@ -81,10 +96,16 @@ export function useActiveWorkoutScreen() {
     return () => clearInterval(interval);
   }, [isActive, workout]);
 
-  const addedLogExerciseIds = useRef(new Set<number>());
+  // Accumulate last-perf results into the cache so they survive query key changes.
+  useEffect(() => {
+    if (!lastPerfQuery.data) return;
+    Object.assign(lastPerfCache.current, lastPerfQuery.data);
+    newExerciseIds.forEach((id) => fetchedLastPerfIds.current.add(id));
+  }, [lastPerfQuery.data, newExerciseIds]);
 
   useEffect(() => {
-    if (exerciseIds.length > 0 && !lastPerfQuery.isSuccess && !lastPerfQuery.isError) return;
+    // Only wait for in-flight last-perf if there are genuinely new exercises to fetch for.
+    if (newExerciseIds.length > 0 && !lastPerfQuery.isSuccess && !lastPerfQuery.isError) return;
     if (workoutQuery.data?.logExercises?.length) {
       const existingIds = new Set(exercises.map((e) => e.logExerciseId));
       for (const ex of workoutQuery.data.logExercises.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))) {
@@ -92,7 +113,8 @@ export function useActiveWorkoutScreen() {
 
         addedLogExerciseIds.current.add(ex.id);
         const trackingType = getTrackingType(ex.exercise?.trackingTypeId);
-        const prevSets = lastPerfQuery.data?.[ex.exerciseId]?.sets ?? [];
+        // Use accumulated cache — data for old exercises is available immediately.
+        const prevSets = lastPerfCache.current[ex.exerciseId]?.sets ?? [];
         
         const sortedLogSets = [...(ex.sets ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
@@ -146,7 +168,7 @@ export function useActiveWorkoutScreen() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [workoutQuery.data, lastPerfQuery.data, lastPerfQuery.isSuccess, lastPerfQuery.isError, exerciseIds, exercises]);
+  }, [workoutQuery.data, lastPerfQuery.data, lastPerfQuery.isSuccess, lastPerfQuery.isError, newExerciseIds, exercises]);
 
   const updateExercise = useCallback(
     (index: number, data: Partial<{ notes: string; restTime: number; showNotes: boolean }>) => {
