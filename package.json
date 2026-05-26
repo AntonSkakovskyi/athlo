@@ -9,6 +9,8 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "babel-preset-expo": "~55.0.22",
+    "expo-router": "~55.0.15",
     "prettier": "^3.7.4",
     "turbo": "^2.8.20",
     "typescript": "5.9.2"
@@ -25,7 +27,8 @@
     "date-fns": "^4.2.1",
     "expo": "~55.0.25",
     "react": "19.2.0",
-    "react-native": "0.83.6"
+    "react-native": "0.83.6",
+    "rxjs": "^7.8.1"
   },
   "version": "1.0.0"
 }
