@@ -8,6 +8,13 @@ Table "users" {
   "full_name" VARCHAR(255) [not null]
   "nickname" VARCHAR(255) [unique, not null]
   "password_hash" VARCHAR(255) [not null]
+  "avatar" TEXT
+  "gender" VARCHAR(50)
+  "age" INTEGER
+  "height" INTEGER
+  "weight" DECIMAL(10,2)
+  "activity_level" VARCHAR(50)
+  "fitness_goal" VARCHAR(50)
 
   Indexes {
     id [pk]
@@ -335,30 +342,25 @@ Table "foods" {
   "id" INTEGER [unique, not null, increment]
   "name" VARCHAR(255) [not null]
   "brand" VARCHAR(255)
+  "image_url" VARCHAR(512)
+  "creator_id" INTEGER
+  "deleted_at" TIMESTAMPTZ
+
+  Indexes {
+    id [pk]
+    (name, brand) [unique, name: "idx_foods_system_name", note: "WHERE creator_id IS NULL"]
+  }
+}
+
+Table "nutrition_facts" {
+  "id" INTEGER [unique, not null, increment]
+  "food_id" INTEGER [not null]
+  "unit_id" INTEGER [not null]
+  "amount" DECIMAL(10,2) [not null, check: `amount > 0`, default: 1.00]
   "calories" DECIMAL(10,2) [not null, check: `calories >= 0`, default: 0.00]
   "proteins" DECIMAL(10,2) [not null, check: `proteins >= 0`, default: 0.00]
   "fats" DECIMAL(10,2) [not null, check: `fats >= 0`, default: 0.00]
   "carbs" DECIMAL(10,2) [not null, check: `carbs >= 0`, default: 0.00]
-  "fiber" DECIMAL(10,2) [check: `fiber >= 0`, default: 0.00]
-  "sugar" DECIMAL(10,2) [check: `sugar >= 0`, default: 0.00]
-  "sodium_mg" DECIMAL(10,2) [check: `sodium_mg >= 0`, default: 0.00]
-  "serving_size_g" DECIMAL(10,2) [check: `serving_size_g > 0`]
-  "image_url" VARCHAR(512)
-  "barcode" VARCHAR(50)
-  "creator_id" INTEGER
-
-  Indexes {
-    id [pk]
-    barcode [unique, name: "idx_foods_barcode"]
-    (name, brand) [unique, name: "idx_foods_system_name"]
-  }
-}
-
-Table "food_units" {
-  "id" INTEGER [unique, not null, increment]
-  "food_id" INTEGER [not null]
-  "unit_id" INTEGER [not null]
-  "conversion_factor" DECIMAL(10,2) [not null]
 
   Indexes {
     id [pk]
@@ -380,7 +382,7 @@ Table "meal_plans" {
   "visibility_type_id" INTEGER [not null, default: 1]
   "name" VARCHAR(255) [not null]
   "description" TEXT
-  "total_days" INTEGER [check: `total_days > 0`, default: 1]
+  "total_days" INTEGER [check: `total_days >= 0`, default: 0]
 
   Indexes {
     id [pk]
@@ -431,7 +433,7 @@ Table "user_meal_plans" {
 
   Indexes {
     id [pk]
-    user_id [unique, name: "idx_unique_active_user_plan"]
+    user_id [unique, name: "idx_unique_active_user_plan", note: "WHERE is_active = true"]
   }
 }
 
@@ -538,5 +540,5 @@ Ref: "units"."id" < "log_meal_items"."unit_id"
 Ref: "users"."id" < "water_logs"."user_id" [delete: cascade]
 
 Ref: "users"."id" < "foods"."creator_id" [delete: set null]
-Ref: "foods"."id" < "food_units"."food_id" [delete: cascade]
-Ref: "units"."id" < "food_units"."unit_id" [delete: cascade]
+Ref: "foods"."id" < "nutrition_facts"."food_id" [delete: cascade]
+Ref: "units"."id" < "nutrition_facts"."unit_id"
