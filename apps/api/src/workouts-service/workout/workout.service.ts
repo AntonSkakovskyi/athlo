@@ -12,7 +12,7 @@ import { UpdateWorkoutDto } from '../dto/workout/update-workout.dto';
 import { CompleteWorkoutDto } from '../dto/workout/complete-workout.dto';
 import { WorkoutStatus } from '@athlo/shared';
 import { LogSetEntity } from '../entities/log-set.entity';
-import { ILastPerformance, VisibilityType } from '@athlo/shared';
+import { ILastPerformance } from '@athlo/shared';
 import { AchievementService } from '../achievement/achievement.service';
 import { FriendService } from '../../user-service/friends/friend.service';
 

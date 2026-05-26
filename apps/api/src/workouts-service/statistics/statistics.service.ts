@@ -190,7 +190,7 @@ export class StatisticsService {
         totalReps: completedSets.reduce((sum, s) => sum + s.reps, 0),
         bestDuration: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.duration)) : null,
         bestDistance: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.distance)) : null,
-        sets: le.sets.map((s) => ({
+        sets: completedSets.map((s) => ({
           id: s.id,
           logExerciseId: s.logExerciseId,
           order: s.order,
