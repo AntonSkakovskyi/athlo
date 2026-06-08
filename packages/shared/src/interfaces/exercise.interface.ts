@@ -9,4 +9,6 @@ export interface IExercise {
   imageUrl?: string | null;
   gifUrl?: string | null;
   instructions?: string | null;
+  deletedAt?: Date | null;
+  hasLoggedHistory?: boolean;
 }
