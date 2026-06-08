@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import type { IPlanMeal } from '@athlo/shared';
 import { PlanDayEntity } from './plan-day.entity';
 import { MealTypeEntity } from './meal-type.entity';
@@ -29,6 +36,8 @@ export class PlanMealEntity implements IPlanMeal {
   @JoinColumn({ name: 'meal_type_id' })
   mealType: MealTypeEntity;
 
-  @OneToMany(() => PlanMealItemEntity, (item) => item.planMeal, { cascade: true })
+  @OneToMany(() => PlanMealItemEntity, (item) => item.planMeal, {
+    cascade: true,
+  })
   items: PlanMealItemEntity[];
 }

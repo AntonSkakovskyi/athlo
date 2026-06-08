@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
+} from 'typeorm';
 import type { IPlanDay } from '@athlo/shared';
 import { MealPlanEntity } from './meal-plan.entity';
 import { PlanMealEntity } from './plan-meal.entity';

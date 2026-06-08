@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import type { INutritionFact } from '@athlo/shared';
 import { FoodEntity } from './food.entity';
 import { UnitEntity } from '../../user-service/body-metrics/entities/unit.entity';

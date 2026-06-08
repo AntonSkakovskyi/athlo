@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import type { ILogMeal } from '@athlo/shared';
 import { UserEntity } from '../../user-service/user/entities/user.entity';
 import { MealTypeEntity } from './meal-type.entity';
@@ -21,7 +29,11 @@ export class LogMealEntity implements ILogMeal {
   @Column({ name: 'original_plan_meal_id', type: 'int', nullable: true })
   originalPlanMealId: number | null;
 
-  @CreateDateColumn({ name: 'consumed_at', type: 'timestamptz' })
+  @Column({
+    name: 'consumed_at',
+    type: 'timestamptz',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   consumedAt: Date;
 
   @Column({ name: 'day_log_date', type: 'date', default: () => 'CURRENT_DATE' })

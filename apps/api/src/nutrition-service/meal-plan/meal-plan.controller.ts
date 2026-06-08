@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { MealPlanService } from './meal-plan.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
@@ -9,7 +20,13 @@ import { CreatePlanMealDto } from '../dto/meal-plan/create-plan-meal.dto';
 import { CreatePlanMealItemDto } from '../dto/meal-plan/create-plan-meal-item.dto';
 import { UpdatePlanMealItemDto } from '../dto/meal-plan/update-plan-meal-item.dto';
 import { UpdatePlanMealDto } from '../dto/meal-plan/update-plan-meal.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ActivateMealPlanDto } from '../dto/meal-plan/activate-meal-plan.dto';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Meal Plans')
 @ApiBearerAuth()
@@ -79,14 +96,22 @@ export class MealPlanController {
     @CurrentUser('id') currentUserId: number,
     @Param('userId', ParseIntPipe) targetUserId: number,
   ) {
-    return this.mealPlanService.findMealPlansForUser(currentUserId, targetUserId);
+    return this.mealPlanService.findMealPlansForUser(
+      currentUserId,
+      targetUserId,
+    );
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get a meal plan by ID with days, meals, and items' })
+  @ApiOperation({
+    summary: 'Get a meal plan by ID with days, meals, and items',
+  })
   @ApiResponse({ status: 200, description: 'Meal plan data' })
   @ApiResponse({ status: 404, description: 'Meal plan not found' })
-  findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.mealPlanService.findOne(id, userId);
   }
 
@@ -104,7 +129,10 @@ export class MealPlanController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a meal plan' })
   @ApiResponse({ status: 200, description: 'Meal plan deleted' })
-  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.mealPlanService.remove(id, userId);
   }
 
@@ -211,8 +239,12 @@ export class MealPlanController {
   @Post(':id/activate')
   @ApiOperation({ summary: 'Activate a meal plan' })
   @ApiResponse({ status: 201, description: 'Meal plan activated' })
-  activatePlan(@Param('id', ParseIntPipe) planId: number, @CurrentUser('id') userId: number) {
-    return this.mealPlanService.activatePlan(userId, planId);
+  activatePlan(
+    @Param('id', ParseIntPipe) planId: number,
+    @CurrentUser('id') userId: number,
+    @Body() dto: ActivateMealPlanDto,
+  ) {
+    return this.mealPlanService.activatePlan(userId, planId, dto);
   }
 
   @Post('deactivate')
@@ -225,14 +257,20 @@ export class MealPlanController {
   @Post(':id/save')
   @ApiOperation({ summary: 'Save a meal plan' })
   @ApiResponse({ status: 201, description: 'Meal plan saved' })
-  savePlan(@Param('id', ParseIntPipe) planId: number, @CurrentUser('id') userId: number) {
+  savePlan(
+    @Param('id', ParseIntPipe) planId: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.mealPlanService.savePlan(planId, userId);
   }
 
   @Delete(':id/save')
   @ApiOperation({ summary: 'Unsave a meal plan' })
   @ApiResponse({ status: 200, description: 'Meal plan unsaved' })
-  unsavePlan(@Param('id', ParseIntPipe) planId: number, @CurrentUser('id') userId: number) {
+  unsavePlan(
+    @Param('id', ParseIntPipe) planId: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.mealPlanService.unsavePlan(planId, userId);
   }
 }

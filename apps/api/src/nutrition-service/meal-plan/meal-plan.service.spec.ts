@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { MealPlanService } from './meal-plan.service';
 import { MealPlanEntity } from '../entities/meal-plan.entity';
 import { PlanDayEntity } from '../entities/plan-day.entity';
@@ -36,11 +40,26 @@ describe('MealPlanService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MealPlanService,
-        { provide: getRepositoryToken(MealPlanEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(PlanDayEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(PlanMealEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(PlanMealItemEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(UserMealPlanEntity), useValue: createMockRepository() },
+        {
+          provide: getRepositoryToken(MealPlanEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(PlanDayEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(PlanMealEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(PlanMealItemEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(UserMealPlanEntity),
+          useValue: createMockRepository(),
+        },
         { provide: FriendService, useValue: mockFriendService },
       ],
     }).compile();
@@ -71,7 +90,12 @@ describe('MealPlanService', () => {
 
     it('should create the correct number of days when totalDays > 0', async () => {
       const dto = { name: '3-Day Plan', totalDays: 3 };
-      const savedPlan = { id: 2, creatorId: 1, name: '3-Day Plan', totalDays: 3 };
+      const savedPlan = {
+        id: 2,
+        creatorId: 1,
+        name: '3-Day Plan',
+        totalDays: 3,
+      };
       mealPlanRepo.create.mockReturnValue(savedPlan);
       mealPlanRepo.save.mockResolvedValue(savedPlan);
       planDayRepo.create.mockImplementation((d) => d);
@@ -80,8 +104,14 @@ describe('MealPlanService', () => {
       await service.create(1, dto);
 
       expect(planDayRepo.create).toHaveBeenCalledTimes(3);
-      expect(planDayRepo.create).toHaveBeenCalledWith({ mealPlanId: 2, dayNumber: 1 });
-      expect(planDayRepo.create).toHaveBeenCalledWith({ mealPlanId: 2, dayNumber: 3 });
+      expect(planDayRepo.create).toHaveBeenCalledWith({
+        mealPlanId: 2,
+        dayNumber: 1,
+      });
+      expect(planDayRepo.create).toHaveBeenCalledWith({
+        mealPlanId: 2,
+        dayNumber: 3,
+      });
     });
 
     it('should default to totalDays=0 when not provided', async () => {
@@ -118,7 +148,11 @@ describe('MealPlanService', () => {
     });
 
     it('should throw ForbiddenException for PRIVATE plan when not creator', async () => {
-      mealPlanRepo.findOne.mockResolvedValue({ id: 1, creatorId: 2, visibilityTypeId: 1 });
+      mealPlanRepo.findOne.mockResolvedValue({
+        id: 1,
+        creatorId: 2,
+        visibilityTypeId: 1,
+      });
 
       await expect(service.findOne(1, 1)).rejects.toThrow(ForbiddenException);
     });
@@ -135,7 +169,11 @@ describe('MealPlanService', () => {
     });
 
     it('should throw ForbiddenException for FRIENDS_ONLY plan when not a friend', async () => {
-      mealPlanRepo.findOne.mockResolvedValue({ id: 1, creatorId: 2, visibilityTypeId: 3 });
+      mealPlanRepo.findOne.mockResolvedValue({
+        id: 1,
+        creatorId: 2,
+        visibilityTypeId: 3,
+      });
       mockFriendService.isFriend.mockResolvedValue(false);
 
       await expect(service.findOne(1, 5)).rejects.toThrow(ForbiddenException);
@@ -179,13 +217,17 @@ describe('MealPlanService', () => {
       mealPlanRepo.findOne.mockResolvedValue({ id: 1, creatorId: 1 });
       planDayRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.removeDay(1, 99, 1)).rejects.toThrow(NotFoundException);
+      await expect(service.removeDay(1, 99, 1)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when not the plan owner', async () => {
       mealPlanRepo.findOne.mockResolvedValue({ id: 1, creatorId: 2 });
 
-      await expect(service.removeDay(1, 5, 1)).rejects.toThrow(ForbiddenException);
+      await expect(service.removeDay(1, 5, 1)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 

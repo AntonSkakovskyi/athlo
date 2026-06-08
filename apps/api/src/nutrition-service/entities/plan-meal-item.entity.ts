@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import type { IPlanMealItem } from '@athlo/shared';
 import { PlanMealEntity } from './plan-meal.entity';
 import { FoodEntity } from './food.entity';
@@ -21,7 +27,9 @@ export class PlanMealItemEntity implements IPlanMealItem {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   amount: number;
 
-  @ManyToOne(() => PlanMealEntity, (meal) => meal.items, { onDelete: 'CASCADE' })
+  @ManyToOne(() => PlanMealEntity, (meal) => meal.items, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'plan_meal_id' })
   planMeal: PlanMealEntity;
 

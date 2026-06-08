@@ -11,7 +11,10 @@ describe('MealTypeService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MealTypeService,
-        { provide: getRepositoryToken(MealTypeEntity), useValue: { find: jest.fn() } },
+        {
+          provide: getRepositoryToken(MealTypeEntity),
+          useValue: { find: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -23,7 +26,10 @@ describe('MealTypeService', () => {
 
   describe('findAll', () => {
     it('should return meal types ordered by id', async () => {
-      const types = [{ id: 1, name: 'Breakfast' }, { id: 2, name: 'Lunch' }];
+      const types = [
+        { id: 1, name: 'Breakfast' },
+        { id: 2, name: 'Lunch' },
+      ];
       mealTypeRepo.find.mockResolvedValue(types);
 
       const result = await service.findAll();

@@ -8,7 +8,14 @@ import { LogMealItemEntity } from '../entities/log-meal-item.entity';
 import { PlanMealItemEntity } from '../entities/plan-meal-item.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([FoodEntity, NutritionFactEntity, LogMealItemEntity, PlanMealItemEntity])],
+  imports: [
+    TypeOrmModule.forFeature([
+      FoodEntity,
+      NutritionFactEntity,
+      LogMealItemEntity,
+      PlanMealItemEntity,
+    ]),
+  ],
   controllers: [FoodController],
   providers: [FoodService],
   exports: [FoodService],

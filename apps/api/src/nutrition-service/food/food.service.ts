@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, ILike } from 'typeorm';
 import { FoodEntity } from '../entities/food.entity';
@@ -61,7 +65,7 @@ export class FoodService {
   }
 
   async findOne(id: number) {
-    const food = await this.foodRepository.findOne({ 
+    const food = await this.foodRepository.findOne({
       where: { id },
       relations: ['units', 'units.unit'],
     });
@@ -105,15 +109,21 @@ export class FoodService {
     }
   }
 
-  async addNutritionFact(foodId: number, userId: number, dto: AddNutritionFactDto) {
+  async addNutritionFact(
+    foodId: number,
+    userId: number,
+    dto: AddNutritionFactDto,
+  ) {
     const food = await this.findOne(foodId);
 
     if (food.creatorId && food.creatorId !== userId && userId !== 0) {
-      throw new ForbiddenException('Only the creator can add units to this food');
+      throw new ForbiddenException(
+        'Only the creator can add units to this food',
+      );
     }
 
     const existing = await this.nutritionFactRepository.findOne({
-      where: { foodId, unitId: dto.unitId }
+      where: { foodId, unitId: dto.unitId },
     });
 
     if (existing) {
@@ -142,7 +152,9 @@ export class FoodService {
     const food = await this.findOne(foodId);
 
     if (food.creatorId && food.creatorId !== userId) {
-      throw new ForbiddenException('Only the creator can remove units from this food');
+      throw new ForbiddenException(
+        'Only the creator can remove units from this food',
+      );
     }
 
     const fact = await this.nutritionFactRepository.findOne({
@@ -150,7 +162,9 @@ export class FoodService {
     });
 
     if (!fact) {
-      throw new NotFoundException(`Nutrition fact for unit ${unitId} not found`);
+      throw new NotFoundException(
+        `Nutrition fact for unit ${unitId} not found`,
+      );
     }
 
     await this.nutritionFactRepository.remove(fact);

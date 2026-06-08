@@ -28,11 +28,26 @@ describe('NutritionLogService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         NutritionLogService,
-        { provide: getRepositoryToken(LogMealEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(LogMealItemEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(WaterLogEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(UserEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(BodyMetricEntity), useValue: createMockRepository() },
+        {
+          provide: getRepositoryToken(LogMealEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(LogMealItemEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(WaterLogEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(UserEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(BodyMetricEntity),
+          useValue: createMockRepository(),
+        },
       ],
     }).compile();
 
@@ -61,13 +76,17 @@ describe('NutritionLogService', () => {
     it('should throw NotFoundException when meal not found', async () => {
       logMealRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.getMealById(999, 1)).rejects.toThrow(NotFoundException);
+      await expect(service.getMealById(999, 1)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when meal belongs to another user', async () => {
       logMealRepo.findOne.mockResolvedValue({ id: 1, userId: 2, items: [] });
 
-      await expect(service.getMealById(1, 1)).rejects.toThrow(ForbiddenException);
+      await expect(service.getMealById(1, 1)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -95,7 +114,9 @@ describe('NutritionLogService', () => {
     it('should throw ForbiddenException when meal belongs to another user', async () => {
       logMealRepo.findOne.mockResolvedValue({ id: 1, userId: 2, items: [] });
 
-      await expect(service.addMealItem(1, 1, { foodId: 5, unitId: 2, amount: 100 })).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.addMealItem(1, 1, { foodId: 5, unitId: 2, amount: 100 }),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -103,7 +124,13 @@ describe('NutritionLogService', () => {
 
   describe('updateMealItem', () => {
     it('should update amount when user owns the meal', async () => {
-      const item = { id: 1, logMealId: 1, logMeal: { userId: 1 }, amount: 100, unitId: 2 };
+      const item = {
+        id: 1,
+        logMealId: 1,
+        logMeal: { userId: 1 },
+        amount: 100,
+        unitId: 2,
+      };
       logMealItemRepo.findOne.mockResolvedValue(item);
       logMealItemRepo.save.mockResolvedValue({ ...item, amount: 200 });
 
@@ -116,13 +143,20 @@ describe('NutritionLogService', () => {
     it('should throw NotFoundException when item not found', async () => {
       logMealItemRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.updateMealItem(999, 1, {})).rejects.toThrow(NotFoundException);
+      await expect(service.updateMealItem(999, 1, {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when item belongs to another user', async () => {
-      logMealItemRepo.findOne.mockResolvedValue({ id: 1, logMeal: { userId: 2 } });
+      logMealItemRepo.findOne.mockResolvedValue({
+        id: 1,
+        logMeal: { userId: 2 },
+      });
 
-      await expect(service.updateMealItem(1, 1, {})).rejects.toThrow(ForbiddenException);
+      await expect(service.updateMealItem(1, 1, {})).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -140,9 +174,14 @@ describe('NutritionLogService', () => {
     });
 
     it('should throw ForbiddenException when item belongs to another user', async () => {
-      logMealItemRepo.findOne.mockResolvedValue({ id: 1, logMeal: { userId: 2 } });
+      logMealItemRepo.findOne.mockResolvedValue({
+        id: 1,
+        logMeal: { userId: 2 },
+      });
 
-      await expect(service.removeMealItem(1, 1)).rejects.toThrow(ForbiddenException);
+      await expect(service.removeMealItem(1, 1)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -157,7 +196,10 @@ describe('NutritionLogService', () => {
 
       const result = await service.addWaterLog(1, dto);
 
-      expect(waterLogRepo.create).toHaveBeenCalledWith({ userId: 1, amountMl: 500 });
+      expect(waterLogRepo.create).toHaveBeenCalledWith({
+        userId: 1,
+        amountMl: 500,
+      });
       expect(result).toEqual(log);
     });
   });
@@ -176,7 +218,9 @@ describe('NutritionLogService', () => {
     it('should throw ForbiddenException when log belongs to another user', async () => {
       waterLogRepo.findOne.mockResolvedValue({ id: 1, userId: 2 });
 
-      await expect(service.updateWaterLog(1, 1, { amountMl: 200 })).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.updateWaterLog(1, 1, { amountMl: 200 }),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -194,7 +238,9 @@ describe('NutritionLogService', () => {
     it('should throw ForbiddenException when log belongs to another user', async () => {
       waterLogRepo.findOne.mockResolvedValue({ id: 1, userId: 2 });
 
-      await expect(service.removeWaterLog(1, 1)).rejects.toThrow(ForbiddenException);
+      await expect(service.removeWaterLog(1, 1)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -207,22 +253,42 @@ describe('NutritionLogService', () => {
       // foodUnit: 100g serving = 200 cal, 10g protein, 5g fat, 30g carbs
       // item: amount=50 → multiplier = 50/100 = 0.5
       // expected: 100cal, 5g protein, 2.5g fat, 15g carbs
-      const meals = [{
-        id: 1,
-        consumedAt: new Date(date),
-        items: [{
+      const meals = [
+        {
           id: 1,
-          foodId: 1,
-          unitId: 2,
-          amount: 50,
-          food: {
-            units: [{ unitId: 2, amount: 100, calories: 200, proteins: 10, fats: 5, carbs: 30 }],
-          },
-        }],
-      }];
+          consumedAt: new Date(date),
+          items: [
+            {
+              id: 1,
+              foodId: 1,
+              unitId: 2,
+              amount: 50,
+              food: {
+                units: [
+                  {
+                    unitId: 2,
+                    amount: 100,
+                    calories: 200,
+                    proteins: 10,
+                    fats: 5,
+                    carbs: 30,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ];
       logMealRepo.find.mockResolvedValue(meals);
       waterLogRepo.find.mockResolvedValue([]);
-      userRepo.findOne.mockResolvedValue({ settings: { waterGoal: 2000, proteinGoal: 150, fatGoal: 60, carbGoal: 250 } });
+      userRepo.findOne.mockResolvedValue({
+        settings: {
+          waterGoal: 2000,
+          proteinGoal: 150,
+          fatGoal: 60,
+          carbGoal: 250,
+        },
+      });
 
       const result = await service.getDailySummary(1, date);
 
@@ -234,19 +300,32 @@ describe('NutritionLogService', () => {
     });
 
     it('should skip items with no matching NutritionFact for their unitId', async () => {
-      const meals = [{
-        id: 1,
-        consumedAt: new Date(date),
-        items: [{
+      const meals = [
+        {
           id: 1,
-          foodId: 1,
-          unitId: 99, // no matching unit
-          amount: 100,
-          food: {
-            units: [{ unitId: 1, amount: 100, calories: 200, proteins: 10, fats: 5, carbs: 30 }],
-          },
-        }],
-      }];
+          consumedAt: new Date(date),
+          items: [
+            {
+              id: 1,
+              foodId: 1,
+              unitId: 99, // no matching unit
+              amount: 100,
+              food: {
+                units: [
+                  {
+                    unitId: 1,
+                    amount: 100,
+                    calories: 200,
+                    proteins: 10,
+                    fats: 5,
+                    carbs: 30,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ];
       logMealRepo.find.mockResolvedValue(meals);
       waterLogRepo.find.mockResolvedValue([]);
       userRepo.findOne.mockResolvedValue({ settings: null });
@@ -275,7 +354,10 @@ describe('NutritionLogService', () => {
       logMealRepo.find.mockResolvedValue([]);
       waterLogRepo.find.mockResolvedValue([]);
       userRepo.findOne.mockResolvedValue({ settings: null });
-      bodyMetricRepo.findOne.mockResolvedValue({ value: 80, metricType: { name: 'Body Weight' } });
+      bodyMetricRepo.findOne.mockResolvedValue({
+        value: 80,
+        metricType: { name: 'Body Weight' },
+      });
 
       const result = await service.getDailySummary(1, date);
 
@@ -298,7 +380,12 @@ describe('NutritionLogService', () => {
       logMealRepo.find.mockResolvedValue([]);
       waterLogRepo.find.mockResolvedValue([]);
       userRepo.findOne.mockResolvedValue({
-        settings: { waterGoal: 2500, proteinGoal: 160, fatGoal: 70, carbGoal: 300 },
+        settings: {
+          waterGoal: 2500,
+          proteinGoal: 160,
+          fatGoal: 70,
+          carbGoal: 300,
+        },
       });
 
       const result = await service.getDailySummary(1, date);

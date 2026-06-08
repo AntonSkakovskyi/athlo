@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { LogMealEntity } from '../entities/log-meal.entity';
 import { LogMealItemEntity } from '../entities/log-meal-item.entity';
 import { WaterLogEntity } from '../entities/water-log.entity';
+import { DailyGoalEntity } from '../entities/daily-goal.entity';
 import { UserEntity } from '../../user-service/user/entities/user.entity';
 import { BodyMetricEntity } from '../../user-service/body-metrics/entities/body-metric.entity';
 import { CreateLogMealDto } from '../dto/nutrition-log/create-log-meal.dto';
@@ -22,6 +27,8 @@ export class NutritionLogService {
     private readonly logMealItemRepository: Repository<LogMealItemEntity>,
     @InjectRepository(WaterLogEntity)
     private readonly waterLogRepository: Repository<WaterLogEntity>,
+    @InjectRepository(DailyGoalEntity)
+    private readonly dailyGoalRepository: Repository<DailyGoalEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(BodyMetricEntity)
@@ -72,11 +79,19 @@ export class NutritionLogService {
   }
 
   async updateMeal(id: number, userId: number, dto: UpdateLogMealDto) {
-    const meal = await this.getMealById(id, userId);
-    if (dto.mealTypeId !== undefined) meal.mealTypeId = dto.mealTypeId;
-    if (dto.name !== undefined) meal.name = dto.name;
-    if (dto.consumedAt !== undefined) meal.consumedAt = new Date(dto.consumedAt);
-    return this.logMealRepository.save(meal);
+    await this.getMealById(id, userId); // check existence and ownership
+
+    const updateData: any = {};
+    if (dto.mealTypeId !== undefined) updateData.mealTypeId = dto.mealTypeId;
+    if (dto.name !== undefined) updateData.name = dto.name;
+    if (dto.consumedAt !== undefined)
+      updateData.consumedAt = new Date(dto.consumedAt);
+
+    if (Object.keys(updateData).length > 0) {
+      await this.logMealRepository.update(id, updateData);
+    }
+
+    return this.getMealById(id, userId);
   }
 
   async removeMeal(id: number, userId: number) {
@@ -97,7 +112,11 @@ export class NutritionLogService {
     return this.logMealItemRepository.save(item);
   }
 
-  async updateMealItem(itemId: number, userId: number, dto: UpdateLogMealItemDto) {
+  async updateMealItem(
+    itemId: number,
+    userId: number,
+    dto: UpdateLogMealItemDto,
+  ) {
     const item = await this.logMealItemRepository.findOne({
       where: { id: itemId },
       relations: { logMeal: true },
@@ -176,9 +195,9 @@ export class NutritionLogService {
   async getDailySummary(userId: number, date: string) {
     const meals = await this.getMealsByDate(userId, date);
     const waterLogs = await this.getWaterLogsByDate(userId, date);
-    const user = await this.userRepository.findOne({ 
+    const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['settings']
+      relations: ['settings'],
     });
 
     let calculatedWaterGoal: number | null = user?.settings?.waterGoal ?? null;
@@ -192,6 +211,22 @@ export class NutritionLogService {
       if (latestWeight) {
         calculatedWaterGoal = Math.round(Number(latestWeight.value) * 35);
       }
+    }
+
+    let dailyGoal = await this.dailyGoalRepository.findOne({
+      where: { userId, date: new Date(date) },
+    });
+
+    if (!dailyGoal) {
+      dailyGoal = this.dailyGoalRepository.create({
+        userId,
+        date: new Date(date),
+        waterGoal: calculatedWaterGoal,
+        proteinGoal: user?.settings?.proteinGoal ?? null,
+        fatGoal: user?.settings?.fatGoal ?? null,
+        carbGoal: user?.settings?.carbGoal ?? null,
+      });
+      await this.dailyGoalRepository.save(dailyGoal);
     }
 
     let totalCalories = 0;
@@ -220,10 +255,10 @@ export class NutritionLogService {
       totalFats: Math.round(totalFats * 100) / 100,
       totalCarbs: Math.round(totalCarbs * 100) / 100,
       totalWaterMl,
-      waterGoal: calculatedWaterGoal,
-      proteinGoal: user?.settings?.proteinGoal ?? null,
-      fatGoal: user?.settings?.fatGoal ?? null,
-      carbGoal: user?.settings?.carbGoal ?? null,
+      waterGoal: dailyGoal.waterGoal,
+      proteinGoal: dailyGoal.proteinGoal,
+      fatGoal: dailyGoal.fatGoal,
+      carbGoal: dailyGoal.carbGoal,
       mealsCount: meals.length,
       meals,
       waterLogs,
@@ -248,12 +283,27 @@ export class NutritionLogService {
     });
 
     // Group by date
-    const dayMap = new Map<string, { calories: number; proteins: number; fats: number; carbs: number; waterMl: number }>();
+    const dayMap = new Map<
+      string,
+      {
+        calories: number;
+        proteins: number;
+        fats: number;
+        carbs: number;
+        waterMl: number;
+      }
+    >();
 
     for (const meal of meals) {
       const date = new Date(meal.consumedAt).toISOString().split('T')[0];
       if (!dayMap.has(date)) {
-        dayMap.set(date, { calories: 0, proteins: 0, fats: 0, carbs: 0, waterMl: 0 });
+        dayMap.set(date, {
+          calories: 0,
+          proteins: 0,
+          fats: 0,
+          carbs: 0,
+          waterMl: 0,
+        });
       }
       const day = dayMap.get(date)!;
       for (const item of meal.items) {
@@ -270,7 +320,13 @@ export class NutritionLogService {
     for (const log of waterLogs) {
       const date = new Date(log.consumedAt).toISOString().split('T')[0];
       if (!dayMap.has(date)) {
-        dayMap.set(date, { calories: 0, proteins: 0, fats: 0, carbs: 0, waterMl: 0 });
+        dayMap.set(date, {
+          calories: 0,
+          proteins: 0,
+          fats: 0,
+          carbs: 0,
+          waterMl: 0,
+        });
       }
       dayMap.get(date)!.waterMl += log.amountMl;
     }
@@ -281,7 +337,13 @@ export class NutritionLogService {
     while (cursor <= rangeEnd) {
       const dateStr = cursor.toISOString().split('T')[0];
       if (!dayMap.has(dateStr)) {
-        dayMap.set(dateStr, { calories: 0, proteins: 0, fats: 0, carbs: 0, waterMl: 0 });
+        dayMap.set(dateStr, {
+          calories: 0,
+          proteins: 0,
+          fats: 0,
+          carbs: 0,
+          waterMl: 0,
+        });
       }
       cursor.setDate(cursor.getDate() + 1);
     }

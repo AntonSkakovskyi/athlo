@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { NutritionLogService } from './nutrition-log.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
@@ -8,7 +19,13 @@ import { CreateWaterLogDto } from '../dto/nutrition-log/create-water-log.dto';
 import { UpdateWaterLogDto } from '../dto/nutrition-log/update-water-log.dto';
 import { UpdateLogMealDto } from '../dto/nutrition-log/update-log-meal.dto';
 import { UpdateLogMealItemDto } from '../dto/nutrition-log/update-log-meal-item.dto';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Nutrition Log')
 @ApiBearerAuth()
@@ -20,18 +37,43 @@ export class NutritionLogController {
   // ─── Daily Summary ────────────────────────────────
 
   @Get('summary')
-  @ApiOperation({ summary: 'Get daily nutrition summary (calories, macros, water)' })
-  @ApiQuery({ name: 'date', required: false, description: 'Date in YYYY-MM-DD format' })
+  @ApiOperation({
+    summary: 'Get daily nutrition summary (calories, macros, water)',
+  })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    description: 'Date in YYYY-MM-DD format',
+  })
   @ApiResponse({ status: 200, description: 'Daily nutrition summary' })
-  getDailySummary(@CurrentUser('id') userId: number, @Query('date') date: string) {
-    return this.nutritionLogService.getDailySummary(userId, date || new Date().toISOString().split('T')[0]);
+  getDailySummary(
+    @CurrentUser('id') userId: number,
+    @Query('date') date: string,
+  ) {
+    return this.nutritionLogService.getDailySummary(
+      userId,
+      date || new Date().toISOString().split('T')[0],
+    );
   }
 
   @Get('history')
-  @ApiOperation({ summary: 'Get nutrition history (daily summaries for a date range)' })
-  @ApiQuery({ name: 'from', required: true, description: 'Start date in YYYY-MM-DD format' })
-  @ApiQuery({ name: 'to', required: true, description: 'End date in YYYY-MM-DD format' })
-  @ApiResponse({ status: 200, description: 'Array of daily nutrition summaries' })
+  @ApiOperation({
+    summary: 'Get nutrition history (daily summaries for a date range)',
+  })
+  @ApiQuery({
+    name: 'from',
+    required: true,
+    description: 'Start date in YYYY-MM-DD format',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: true,
+    description: 'End date in YYYY-MM-DD format',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Array of daily nutrition summaries',
+  })
   getHistory(
     @CurrentUser('id') userId: number,
     @Query('from') from: string,
@@ -51,17 +93,30 @@ export class NutritionLogController {
 
   @Get('meals')
   @ApiOperation({ summary: 'Get logged meals by date' })
-  @ApiQuery({ name: 'date', required: false, description: 'Date in YYYY-MM-DD format' })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    description: 'Date in YYYY-MM-DD format',
+  })
   @ApiResponse({ status: 200, description: 'List of logged meals' })
-  getMealsByDate(@CurrentUser('id') userId: number, @Query('date') date: string) {
-    return this.nutritionLogService.getMealsByDate(userId, date || new Date().toISOString().split('T')[0]);
+  getMealsByDate(
+    @CurrentUser('id') userId: number,
+    @Query('date') date: string,
+  ) {
+    return this.nutritionLogService.getMealsByDate(
+      userId,
+      date || new Date().toISOString().split('T')[0],
+    );
   }
 
   @Get('meals/:id')
   @ApiOperation({ summary: 'Get a logged meal by ID' })
   @ApiResponse({ status: 200, description: 'Logged meal data' })
   @ApiResponse({ status: 404, description: 'Meal not found' })
-  getMealById(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  getMealById(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.nutritionLogService.getMealById(id, userId);
   }
 
@@ -79,7 +134,10 @@ export class NutritionLogController {
   @Delete('meals/:id')
   @ApiOperation({ summary: 'Delete a logged meal' })
   @ApiResponse({ status: 200, description: 'Meal deleted' })
-  removeMeal(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  removeMeal(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.nutritionLogService.removeMeal(id, userId);
   }
 
@@ -122,16 +180,29 @@ export class NutritionLogController {
   @Post('water')
   @ApiOperation({ summary: 'Log water intake' })
   @ApiResponse({ status: 201, description: 'Water log created' })
-  addWaterLog(@CurrentUser('id') userId: number, @Body() dto: CreateWaterLogDto) {
+  addWaterLog(
+    @CurrentUser('id') userId: number,
+    @Body() dto: CreateWaterLogDto,
+  ) {
     return this.nutritionLogService.addWaterLog(userId, dto);
   }
 
   @Get('water')
   @ApiOperation({ summary: 'Get water logs by date' })
-  @ApiQuery({ name: 'date', required: false, description: 'Date in YYYY-MM-DD format' })
+  @ApiQuery({
+    name: 'date',
+    required: false,
+    description: 'Date in YYYY-MM-DD format',
+  })
   @ApiResponse({ status: 200, description: 'List of water logs' })
-  getWaterLogsByDate(@CurrentUser('id') userId: number, @Query('date') date: string) {
-    return this.nutritionLogService.getWaterLogsByDate(userId, date || new Date().toISOString().split('T')[0]);
+  getWaterLogsByDate(
+    @CurrentUser('id') userId: number,
+    @Query('date') date: string,
+  ) {
+    return this.nutritionLogService.getWaterLogsByDate(
+      userId,
+      date || new Date().toISOString().split('T')[0],
+    );
   }
 
   @Patch('water/:id')
@@ -148,7 +219,10 @@ export class NutritionLogController {
   @Delete('water/:id')
   @ApiOperation({ summary: 'Delete a water log' })
   @ApiResponse({ status: 200, description: 'Water log deleted' })
-  removeWaterLog(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  removeWaterLog(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.nutritionLogService.removeWaterLog(id, userId);
   }
 }

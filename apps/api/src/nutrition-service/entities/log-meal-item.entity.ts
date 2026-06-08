@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import type { ILogMealItem } from '@athlo/shared';
 import { LogMealEntity } from './log-meal.entity';
 import { FoodEntity } from './food.entity';
