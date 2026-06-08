@@ -29,7 +29,7 @@ function getFirstDayOfMonth(year: number, month: number): number {
 function getYearRange(): number[] {
   const currentYear = new Date().getFullYear();
   const years: number[] = [];
-  for (let y = currentYear - 5; y <= currentYear + 1; y++) {
+  for (let y = currentYear - 20; y <= currentYear; y++) {
     years.push(y);
   }
   return years;

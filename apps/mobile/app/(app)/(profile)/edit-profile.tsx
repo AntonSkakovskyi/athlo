@@ -65,6 +65,7 @@ export default function EditProfileScreen() {
     hasChanges,
     handleSave,
     updateProfile,
+    fieldErrors,
   } = useEditProfileScreen();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -115,6 +116,7 @@ export default function EditProfileScreen() {
             value={fullName}
             onChangeText={setFullName}
             placeholder="Enter your full name"
+            error={fieldErrors.fullName}
             containerStyle={styles.lastInputInCard}
           />
           <Input
@@ -122,6 +124,7 @@ export default function EditProfileScreen() {
             value={nickname}
             onChangeText={setNickname}
             placeholder="Enter your nickname"
+            error={fieldErrors.nickname}
             containerStyle={styles.lastInputInCard}
           />
           <View style={styles.inputGroup}>

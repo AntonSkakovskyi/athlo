@@ -10,8 +10,8 @@ export function useProfileScreen() {
   const router = useRouter();
 
   const { data: profile, isLoading: profileLoading } = useGetProfile();
-  const { data: summary } = useStatisticsSummary();
-  const { data: friends } = useGetFriends();
+  const { data: summary, isLoading: summaryLoading } = useStatisticsSummary();
+  const { data: friends, isLoading: friendsLoading } = useGetFriends();
   const workoutsQuery = useInfiniteWorkouts(WorkoutStatus.COMPLETED);
 
   const displayedWorkouts = useMemo(
@@ -31,7 +31,9 @@ export function useProfileScreen() {
     profile,
     profileLoading,
     summary,
+    summaryLoading,
     friends,
+    friendsLoading,
     workoutsQuery,
     displayedWorkouts,
     handleLoadMore,

@@ -4,14 +4,14 @@ import { spacing } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
-import { useStatisticsScreen } from '@/features/profile/hooks/useStatisticsScreen';
+import { useBodyMetricsScreen } from '@/features/profile/hooks/useBodyMetricsScreen';
 import { BodyMetricsTab } from '@/features/profile/components/BodyMetricsTab/BodyMetricsTab';
 
-export default function StatisticsScreen() {
+export default function BodyMetricsScreen() {
   const {
     insets,
     router,
-  } = useStatisticsScreen();
+  } = useBodyMetricsScreen();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 

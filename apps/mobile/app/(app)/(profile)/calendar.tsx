@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, Modal } from 'react-native';
+import { useMemo, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
@@ -8,6 +8,7 @@ import { WorkoutHistoryCard } from '@/features/workout/components';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
+import { BottomSheet } from '@/components/ui';
 import { formatDurationRange, formatDate, computeVolume } from '@/utils/workout';
 import { formatFullDate } from '@/utils/date';
 import { CalendarGrid } from '../../../features/profile/components/CalendarGrid/CalendarGrid';
@@ -39,6 +40,16 @@ export default function CalendarScreen() {
   } = useCalendarScreen();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const yearScrollRef = useRef<ScrollView>(null);
+  const YEAR_ITEM_HEIGHT = 46; // paddingVertical 12*2 + fontSize ~22
+  useEffect(() => {
+    if (!yearPickerVisible) return;
+    const idx = yearRange.indexOf(currentMonth.year);
+    if (idx < 0) return;
+    const offset = Math.max(0, idx * YEAR_ITEM_HEIGHT - YEAR_ITEM_HEIGHT * 2);
+    setTimeout(() => yearScrollRef.current?.scrollTo({ y: offset, animated: false }), 50);
+  }, [yearPickerVisible, yearRange, currentMonth.year]);
 
   return (
     <ScrollView
@@ -101,60 +112,48 @@ export default function CalendarScreen() {
       </View>
 
       {/* Month Picker Modal */}
-      <Modal
+      <BottomSheet
         visible={monthPickerVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setMonthPickerVisible(false)}
+        onClose={() => setMonthPickerVisible(false)}
+        title="Select Month"
+        maxHeight="50%"
       >
-        <Pressable style={styles.sheetOverlay} onPress={() => setMonthPickerVisible(false)}>
-          <Pressable style={styles.sheetContent} onPress={() => {}}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Select Month</Text>
-            <View style={styles.monthGrid}>
-              {MONTH_SHORT.map((name, i) => (
-                <Pressable
-                  key={name}
-                  style={[styles.monthGridItem, i === currentMonth.month && styles.monthGridItemActive]}
-                  onPress={() => handleSelectMonth(i)}
-                >
-                  <Text style={[styles.monthGridText, i === currentMonth.month && styles.monthGridTextActive]}>
-                    {name}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
+        <View style={styles.monthGrid}>
+          {MONTH_SHORT.map((name, i) => (
+            <Pressable
+              key={name}
+              style={[styles.monthGridItem, i === currentMonth.month && styles.monthGridItemActive]}
+              onPress={() => handleSelectMonth(i)}
+            >
+              <Text style={[styles.monthGridText, i === currentMonth.month && styles.monthGridTextActive]}>
+                {name}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </BottomSheet>
 
       {/* Year Picker Modal */}
-      <Modal
+      <BottomSheet
         visible={yearPickerVisible}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setYearPickerVisible(false)}
+        onClose={() => setYearPickerVisible(false)}
+        title="Select Year"
+        maxHeight="50%"
       >
-        <Pressable style={styles.sheetOverlay} onPress={() => setYearPickerVisible(false)}>
-          <Pressable style={styles.sheetContent} onPress={() => {}}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Select Year</Text>
-            <ScrollView style={styles.yearList} showsVerticalScrollIndicator={false}>
-              {yearRange.map((year) => (
-                <Pressable
-                  key={year}
-                  style={[styles.yearItem, year === currentMonth.year && styles.yearItemActive]}
-                  onPress={() => handleSelectYear(year)}
-                >
-                  <Text style={[styles.yearItemText, year === currentMonth.year && styles.yearItemTextActive]}>
-                    {year}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-          </Pressable>
-        </Pressable>
-      </Modal>
+        <ScrollView ref={yearScrollRef} style={styles.yearList} showsVerticalScrollIndicator={false}>
+          {yearRange.map((year) => (
+            <Pressable
+              key={year}
+              style={[styles.yearItem, year === currentMonth.year && styles.yearItemActive]}
+              onPress={() => handleSelectYear(year)}
+            >
+              <Text style={[styles.yearItemText, year === currentMonth.year && styles.yearItemTextActive]}>
+                {year}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </BottomSheet>
     </ScrollView>
   );
 }
@@ -178,36 +177,10 @@ function makeStyles(c: ColorPalette) {
     loader: {
       marginVertical: spacing.xl,
     },
-    sheetOverlay: {
-      flex: 1,
-      backgroundColor: c.overlay,
-      justifyContent: 'flex-end',
-    },
-    sheetContent: {
-      backgroundColor: c.surface,
-      borderTopLeftRadius: borderRadius.xl,
-      borderTopRightRadius: borderRadius.xl,
-      paddingHorizontal: spacing.xl,
-      paddingBottom: spacing['4xl'],
-      maxHeight: '50%',
-    },
-    sheetHandle: {
-      width: 40,
-      height: 4,
-      borderRadius: borderRadius.xs,
-      backgroundColor: c.border,
-      alignSelf: 'center',
-      marginTop: spacing.md,
-      marginBottom: spacing.lg,
-    },
-    sheetTitle: {
-      fontSize: fontSize.xl,
-      fontWeight: fontWeight.bold,
-      color: c.text,
-      textAlign: 'center',
-      marginBottom: spacing.xl,
-    },
     monthGrid: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.lg,
+      justifyContent: 'center',
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: spacing.sm,
@@ -233,6 +206,8 @@ function makeStyles(c: ColorPalette) {
     },
     yearList: {
       maxHeight: 300,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.lg,
     },
     yearItem: {
       paddingVertical: spacing.md,

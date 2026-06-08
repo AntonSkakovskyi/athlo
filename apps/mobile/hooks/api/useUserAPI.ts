@@ -37,8 +37,8 @@ export const useUpdateUserProfile = () => {
       return response.data;
     },
     onSuccess: (data) => {
-      queryClient.setQueryData(profileKeys.all, data);
-      queryClient.invalidateQueries({ queryKey: profileKeys.all });
+      queryClient.setQueryData(profileKeys.me, data);
+      queryClient.invalidateQueries({ queryKey: profileKeys.me });
       queryClient.invalidateQueries({ queryKey: ['nutrition-log'] });
     },
   });

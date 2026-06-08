@@ -8,6 +8,7 @@ import { BarChartBlock } from '@/components/ui/BarChartBlock/BarChartBlock';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { WorkoutHistoryList } from '@/features/workout/components';
 import { useProfileScreen } from '@/features/profile/hooks/useProfileScreen';
 import { usePerformanceChart } from '@/features/profile/hooks/usePerformanceChart';
@@ -19,7 +20,9 @@ export default function ProfileScreen() {
     profile,
     profileLoading,
     summary,
+    summaryLoading,
     friends,
+    friendsLoading,
     workoutsQuery,
     displayedWorkouts,
     handleLoadMore,
@@ -30,6 +33,7 @@ export default function ProfileScreen() {
     setPerfPeriod,
     perfMetricIndex,
     setPerfMetricIndex,
+    statsLoading,
     aggregatedData,
     currentPerfMetric,
     formatPerformanceValue,
@@ -60,12 +64,20 @@ export default function ProfileScreen() {
         <Text style={styles.fullName}>{profile?.fullName}</Text>
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{summary?.totalWorkouts ?? 0}</Text>
+            {summaryLoading ? (
+              <Spinner size="small" style={styles.statSpinner} />
+            ) : (
+              <Text style={styles.statValue}>{summary?.totalWorkouts ?? 0}</Text>
+            )}
             <Text style={styles.statLabel}>Workouts</Text>
           </View>
           <View style={styles.statDivider} />
           <Pressable style={styles.statItem} onPress={() => router.push('/(app)/(profile)/friends')}>
-            <Text style={styles.statValue}>{friends?.length ?? 0}</Text>
+            {friendsLoading ? (
+              <Spinner size="small" style={styles.statSpinner} />
+            ) : (
+              <Text style={styles.statValue}>{friends?.length ?? 0}</Text>
+            )}
             <Text style={styles.statLabel}>Friends</Text>
           </Pressable>
         </View>
@@ -83,6 +95,7 @@ export default function ProfileScreen() {
           metrics={PERFORMANCE_METRICS}
           activeMetric={perfMetricIndex}
           onMetricChange={setPerfMetricIndex}
+          isLoading={statsLoading}
         />
       </View>
 
@@ -91,7 +104,7 @@ export default function ProfileScreen() {
           <View style={styles.navRow}>
             <NavCard variant="compact" icon="📅" title="Calendar" description="Training calendar" onPress={() => router.push('/(app)/(profile)/calendar')} />
             <View style={styles.navGap} />
-            <NavCard variant="compact" icon="📈" title="Metrics" description="Workout stats" onPress={() => router.push('/(app)/(profile)/statistics')} />
+            <NavCard variant="compact" icon="📈" title="Body Metrics" description="Track measurements" onPress={() => router.push('/(app)/(profile)/body-metrics')} />
           </View>
           <View style={styles.navRowGap} />
           <View style={styles.navRow}>
@@ -165,7 +178,8 @@ function makeStyles(c: ColorPalette) {
     statValue: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, color: c.text },
     statLabel: { fontSize: fontSize.sm, color: c.textMuted, marginTop: spacing.xxs },
     statDivider: { width: 1, height: 32, backgroundColor: c.border },
-    section: { marginBottom: spacing['2xl'] },
+    statSpinner: { height: 32, justifyContent: 'center' },
+    section: { marginBottom: spacing.lg },
     navGrid: {},
     navRow: { flexDirection: 'row' },
     navGap: { width: spacing.md },

@@ -4,15 +4,19 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Gender, ActivityLevel, FitnessGoal } from '@athlo/shared';
 import { useGetProfile, useUpdateProfile } from '@/hooks/api/useProfileAPI';
+import { useToast } from '@/contexts/ToastContext';
+import { validateFieldsMap, validateFields, required, minLength, minNumber, optionalMinNumber } from '@/utils/validation';
 
 export function useEditProfileScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const { data: profile, isLoading } = useGetProfile();
   const updateProfile = useUpdateProfile();
 
   const [fullName, setFullName] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [nickname, setNickname] = useState('');
   const [avatar, setAvatar] = useState<string | null>(null);
 
@@ -106,15 +110,26 @@ export function useEditProfileScreen() {
   }, []);
 
   const handleSave = () => {
-    // Only send goals if they were explicitly changed, or send nulls to trigger server-side recalc
-    // Actually, following the "Smart Overwrite" plan: 
-    // if goals are unchanged from profile, we don't send them in the DTO if we want the server to recalculate.
-    // BUT the user might want to KEEP their manual goals even if they change weight.
-    
-    // To implement "Smart Overwrite" as defined: 
-    // "if any anthropometry field is updated AND explicit goals are NOT provided in the same request, recalculate"
-    
-    const goalsChanged = 
+    setFieldErrors({});
+
+    const inlineErrors = validateFieldsMap([
+      { key: 'fullName', value: fullName, rules: [required('Full name'), minLength('Full name', 2)] },
+      { key: 'nickname', value: nickname, rules: [required('Nickname'), minLength('Nickname', 2)] },
+    ]);
+    if (inlineErrors) { setFieldErrors(inlineErrors); return; }
+
+    const numericError = validateFields([
+      { value: age, rules: [required('Age'), minNumber('Age', 1)] },
+      { value: height, rules: [required('Height'), minNumber('Height', 1)] },
+      { value: weight, rules: [required('Weight'), minNumber('Weight', 0.1)] },
+      { value: waterGoalInput, rules: [optionalMinNumber('Water goal', 1)] },
+      { value: proteinInput, rules: [optionalMinNumber('Protein', 0)] },
+      { value: fatInput, rules: [optionalMinNumber('Fats', 0)] },
+      { value: carbInput, rules: [optionalMinNumber('Carbs', 0)] },
+    ]);
+    if (numericError) { showToast({ title: numericError, variant: 'error' }); return; }
+
+    const goalsChanged =
       waterGoalValue !== (profile?.waterGoal ?? null) ||
       proteinValue !== (profile?.proteinGoal ?? null) ||
       fatValue !== (profile?.fatGoal ?? null) ||
@@ -177,5 +192,6 @@ export function useEditProfileScreen() {
     hasChanges,
     updateProfile,
     handleSave,
+    fieldErrors,
   };
 }

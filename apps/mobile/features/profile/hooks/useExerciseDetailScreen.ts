@@ -1,12 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import type { IExerciseProgressRecord } from '@athlo/shared';
 import { TrackingType } from '@athlo/shared';
+import { useAuth } from '@/contexts/AuthContext';
 import { useExerciseProgress } from '@/features/profile/hooks';
 import { getScopeRange } from '@/utils/date';
-import { useGetExerciseById } from '@/hooks/api';
+import { useGetExerciseById, useUpdateExercise, useDeleteExercise } from '@/hooks/api';
 import { useGetExerciseRecordHistory } from '@/hooks/api/useAchievementAPI';
+import { useGetTrackingTypes, useGetMuscles, useGetEquipments } from '@/hooks/api';
 
 type Scope = '3m' | '1y' | 'all';
 
@@ -27,7 +30,11 @@ function getMetricsForType(trackingType: string): string[] {
     case 'REPS_ONLY':
       return REPS_METRICS;
     case 'TIME_BASED':
+      return ['Best Duration'];
+    case 'DISTANCE_AND_TIME':
       return TIME_METRICS;
+    case 'DISTANCE_ONLY':
+      return ['Best Distance'];
     default:
       return WEIGHT_METRICS;
   }
@@ -70,6 +77,7 @@ export function formatMetricValue(value: number, metricName: string): string {
 export function useExerciseDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
   const params = useLocalSearchParams<{
     exerciseId: string;
     exerciseName: string;
@@ -80,6 +88,7 @@ export function useExerciseDetailScreen() {
 
   const [periodLabel, setPeriodLabel] = useState('3 Months');
   const [metricIndex, setMetricIndex] = useState(0);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const scope = SCOPE_MAP[periodLabel] ?? '3m';
   const { from, to } = getScopeRange(scope);
@@ -87,6 +96,15 @@ export function useExerciseDetailScreen() {
   const { data: exercise } = useGetExerciseById(exerciseId);
   const { data: progress, isLoading } = useExerciseProgress(exerciseId, from, to);
   const { data: prHistory, isLoading: isLoadingPRs } = useGetExerciseRecordHistory(exerciseId);
+
+  const trackingTypesQuery = useGetTrackingTypes();
+  const musclesQuery = useGetMuscles();
+  const equipmentsQuery = useGetEquipments();
+
+  const updateExercise = useUpdateExercise();
+  const deleteExercise = useDeleteExercise();
+
+  const isOwner = Boolean(user && exercise?.userId === user.id);
 
   const trackingType = (progress?.trackingType || exercise?.trackingType?.name || params.trackingType || 'WEIGHT_AND_REPS') as TrackingType;
 
@@ -133,6 +151,54 @@ export function useExerciseDetailScreen() {
       }));
   }, [progress]);
 
+  const handleUpdate = useCallback(
+    async (data: {
+      name?: string;
+      description?: string;
+      trackingTypeId?: number;
+      equipmentId?: number | null;
+      muscles?: { muscleId: number; isPrimary: boolean }[];
+    }) => {
+      try {
+        await updateExercise.mutateAsync({ id: exerciseId, data });
+        setShowEditModal(false);
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : 'Failed to update exercise';
+        Alert.alert('Error', msg);
+      }
+    },
+    [updateExercise, exerciseId],
+  );
+
+  const handleDelete = useCallback(() => {
+    Alert.alert(
+      'Delete Exercise',
+      'Are you sure you want to delete this exercise? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteExercise.mutateAsync(exerciseId);
+              router.back();
+            } catch (err: unknown) {
+              const msg =
+                err instanceof Error
+                  ? err.message
+                  : 'Failed to delete exercise';
+              Alert.alert('Error', msg);
+            }
+          },
+        },
+      ],
+    );
+  }, [deleteExercise, exerciseId, router]);
+
   return {
     insets,
     router,
@@ -156,5 +222,15 @@ export function useExerciseDetailScreen() {
     formatMetricValue,
     PERIOD_LABELS,
     trackingType,
+    isOwner,
+    showEditModal,
+    setShowEditModal,
+    updateExercise,
+    deleteExercise,
+    handleUpdate,
+    handleDelete,
+    trackingTypesQuery,
+    musclesQuery,
+    equipmentsQuery,
   };
 }

@@ -1,7 +1,16 @@
-import { useState, useMemo } from 'react';
-import { useGetMetricTypes, useCreateBodyMetric, useGetBodyMetrics, useDeleteBodyMetric } from '@/hooks/api/useBodyMetricAPI';
+import { useState, useMemo, useEffect } from 'react';
+import type { IBodyMetric } from '@athlo/shared';
+import {
+  useGetMetricTypes,
+  useCreateBodyMetric,
+  useGetBodyMetrics,
+  useDeleteBodyMetric,
+  useUpdateBodyMetric,
+} from '@/hooks/api/useBodyMetricAPI';
 import { useBodyMetricProgress } from '@/features/profile/hooks';
 import { getScopeRange } from '@/utils/date';
+import { useToast } from '@/contexts/ToastContext';
+import { validateFields, required, minNumber } from '@/utils/validation';
 
 type Scope = '3m' | '1y' | 'all';
 
@@ -14,8 +23,10 @@ const SCOPE_MAP: Record<string, Scope> = {
 export const PERIOD_LABELS = ['3 Months', '1 Year', 'All Time'];
 
 export function useBodyMetricsTab() {
+  const { showToast } = useToast();
   const { data: metricTypes, isLoading: metricTypesLoading } = useGetMetricTypes();
   const createMetric = useCreateBodyMetric();
+  const updateMetric = useUpdateBodyMetric();
   const deleteMetric = useDeleteBodyMetric();
 
   // State
@@ -24,9 +35,10 @@ export function useBodyMetricsTab() {
   const [metricSheetVisible, setMetricSheetVisible] = useState(false);
   const [value, setValue] = useState('');
   const [date, setDate] = useState(new Date());
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   // Set default metric to Body Weight
-  useMemo(() => {
+  useEffect(() => {
     if (!selectedMetricId && metricTypes && metricTypes.length > 0) {
       const weightMetric = metricTypes.find(t => t.name === 'Body Weight');
       if (weightMetric) setSelectedMetricId(weightMetric.id);
@@ -53,22 +65,50 @@ export function useBodyMetricsTab() {
   const { data: metricsHistory } = useGetBodyMetrics(selectedMetricIdStr || undefined);
 
   const handleSave = async () => {
-    if (!selectedMetricType || !value) return;
+    if (!selectedMetricType) return;
+
+    const error = validateFields([
+      { value, rules: [required('Value'), minNumber('Value', 0.01)] },
+    ]);
+    if (error) { showToast({ title: error, variant: 'error' }); return; }
 
     try {
       const parsedValue = parseFloat(value);
       if (!isNaN(parsedValue) && parsedValue > 0) {
-        await createMetric.mutateAsync({
-          metricTypeId: selectedMetricType.id,
-          value: parsedValue,
-          recordedAt: date.toISOString(),
-        });
+        if (editingId) {
+          await updateMetric.mutateAsync({
+            id: String(editingId),
+            data: {
+              value: parsedValue,
+              recordedAt: date.toISOString(),
+            },
+          });
+          setEditingId(null);
+        } else {
+          await createMetric.mutateAsync({
+            metricTypeId: selectedMetricType.id,
+            value: parsedValue,
+            recordedAt: date.toISOString(),
+          });
+        }
         setValue('');
         setDate(new Date());
       }
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleEdit = (metric: IBodyMetric) => {
+    setEditingId(metric.id);
+    setValue(String(metric.value));
+    setDate(new Date(metric.recordedAt));
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setValue('');
+    setDate(new Date());
   };
 
   const handleDelete = (id: number) => {
@@ -93,7 +133,10 @@ export function useBodyMetricsTab() {
     metricsHistory,
     handleSave,
     handleDelete,
-    createMetricPending: createMetric.isPending,
+    handleEdit,
+    cancelEdit,
+    editingId,
+    createMetricPending: createMetric.isPending || updateMetric.isPending,
     PERIOD_LABELS,
   };
 }

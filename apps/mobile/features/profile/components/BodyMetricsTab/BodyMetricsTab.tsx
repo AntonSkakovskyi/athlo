@@ -32,6 +32,9 @@ export function BodyMetricsTab() {
     metricsHistory,
     handleSave,
     handleDelete,
+    handleEdit,
+    cancelEdit,
+    editingId,
     createMetricPending,
     PERIOD_LABELS,
   } = useBodyMetricsTab();
@@ -80,9 +83,9 @@ export function BodyMetricsTab() {
         </View>
       )}
 
-      {/* Add New Entry Form */}
+      {/* Add/Edit Entry Form */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Log New Entry</Text>
+        <Text style={styles.sectionTitle}>{editingId ? 'Edit Entry' : 'Log New Entry'}</Text>
         <View style={styles.formRow}>
           <View style={styles.formCol}>
             <Input
@@ -101,14 +104,24 @@ export function BodyMetricsTab() {
             />
           </View>
         </View>
-        <Button
-          title="Add Entry"
-          variant="primary"
-          onPress={handleSave}
-          isLoading={createMetricPending}
-          disabled={!value || !selectedMetricId}
-          style={styles.addBtn}
-        />
+        <View style={styles.formActions}>
+          <Button
+            title={editingId ? 'Update Entry' : 'Add Entry'}
+            variant="primary"
+            onPress={handleSave}
+            isLoading={createMetricPending}
+            disabled={!value || !selectedMetricId}
+            style={styles.addBtn}
+          />
+          {editingId && (
+            <Button
+              title="Cancel"
+              variant="outline"
+              onPress={cancelEdit}
+              style={styles.cancelBtn}
+            />
+          )}
+        </View>
       </View>
 
       {/* History List */}
@@ -125,9 +138,14 @@ export function BodyMetricsTab() {
                   {new Date(metric.recordedAt).toLocaleDateString()}
                 </Text>
               </View>
-              <Pressable onPress={() => handleDelete(metric.id)} hitSlop={10}>
-                <Text style={styles.deleteBtn}>✕</Text>
-              </Pressable>
+              <View style={styles.historyActions}>
+                <Pressable onPress={() => handleEdit(metric)} hitSlop={10} style={styles.actionBtn}>
+                  <Ionicons name="pencil" size={18} color={colors.primary} />
+                </Pressable>
+                <Pressable onPress={() => handleDelete(metric.id)} hitSlop={10} style={styles.actionBtn}>
+                  <Ionicons name="trash" size={18} color={colors.danger} />
+                </Pressable>
+              </View>
             </View>
           ))
         ) : (
@@ -223,12 +241,23 @@ function makeStyles(c: ColorPalette) {
       alignItems: 'flex-start',
     },
     formCol: {
+      justifyContent: 'center',
       flex: 1,
+      height: 50
     },
     noMargin: {
       marginBottom: 0,
     },
+    formActions: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
     addBtn: {
+      flex: 1,
+      marginTop: spacing.xs,
+    },
+    cancelBtn: {
+      flex: 1,
       marginTop: spacing.xs,
     },
     historySection: {
@@ -256,6 +285,13 @@ function makeStyles(c: ColorPalette) {
       fontSize: fontSize.xs,
       color: c.textMuted,
       marginTop: 2,
+    },
+    historyActions: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    actionBtn: {
+      padding: spacing.xs,
     },
     deleteBtn: {
       fontSize: 18,

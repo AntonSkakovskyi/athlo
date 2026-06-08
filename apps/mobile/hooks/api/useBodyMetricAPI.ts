@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { IBodyMetric, IMetricType } from '@athlo/shared';
+import type { IBodyMetric, IMetricType, IUnit } from '@athlo/shared';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
 import { bodyMetricKeys } from '@/api/queries/query-keys';
@@ -55,6 +55,7 @@ export const useCreateBodyMetric = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bodyMetricKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['statistics'] });
     },
   });
 };
@@ -74,6 +75,7 @@ export const useUpdateBodyMetric = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bodyMetricKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['statistics'] });
     },
   });
 };
@@ -87,6 +89,7 @@ export const useDeleteBodyMetric = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bodyMetricKeys.all });
+      queryClient.invalidateQueries({ queryKey: ['statistics'] });
     },
   });
 };

@@ -228,6 +228,9 @@ function makeStyles(c: ColorPalette) {
     dayTextDisabled: {
       color: c.textMuted,
     },
+    dayCircleDisabled: {
+      opacity: 0.5,
+    },
     dayCellDisabled: {
       opacity: 0.3,
     },
