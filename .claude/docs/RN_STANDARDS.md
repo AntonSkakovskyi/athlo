@@ -316,8 +316,10 @@ Before writing any primitive:
 
 ## 11. Clean Code Principles
 
-- **DRY:** Extract repeated logic into hooks/utils
-- **KISS:** Prefer simple, readable solutions
+- **Utility-First:** Before implementing any pure logic helper (date formatting, time calculations, string manipulation), check if a utility already exists in `apps/mobile/utils/`. If it doesn't, create it there to ensure reusability across the app.
+- **Icon Standardization:** Never use inline emojis or hardcoded icon strings in components. Always add new icons to `apps/mobile/utils/icons.ts` and import them from the `ICONS` constant. This ensures a consistent look and feel and simplifies global icon updates.
+- **DRY:** Extract repeated logic into hooks/utils.
+- **KISS:** Prefer simple, readable solutions.
 - **Single Responsibility:** One purpose per file
 - **Optional Chaining & Nullish Coalescing:** Use `?.` and `??`
 - **No magic values:** Extract to `constants/`
