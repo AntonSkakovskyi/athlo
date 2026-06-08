@@ -1,18 +1,22 @@
 import { Slot } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../contexts/AuthContext';
+import { ToastProvider } from '../contexts/ToastContext';
 import { ActiveWorkoutProvider } from '../contexts/ActiveWorkoutContext';
-import { ThemeProvider } from '../contexts/ThemeContext';
+import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { SplashScreen as ThemedSplashScreen } from '../components/ui';
 import * as SplashScreen from 'expo-splash-screen';
 import { Animated, View, StyleSheet } from 'react-native';
 import { useRef, useCallback, useEffect, useState } from 'react';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-export default function RootLayout() {
+function RootLayoutContent() {
+  const { colors, resolvedScheme } = useTheme();
   const [appReady, setAppReady] = useState(false);
   const [splashAnimationComplete, setSplashAnimationComplete] = useState(false);
   const scale = useRef(new Animated.Value(0.85)).current;
@@ -41,26 +45,53 @@ export default function RootLayout() {
     }
   }, [appReady, scale, opacity]);
 
+  const navigationTheme = resolvedScheme === 'dark' ? DarkTheme : DefaultTheme;
+  const themedNavigation = {
+    ...navigationTheme,
+    colors: {
+      ...navigationTheme.colors,
+      background: colors.background,
+      card: colors.surface,
+      text: colors.text,
+      border: colors.border,
+      primary: colors.primary,
+    },
+  };
+
   if (!appReady) {
-    return null;
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]} />
+    );
   }
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <AuthProvider>
+    <View style={[styles.container, { backgroundColor: colors.background }]} onLayout={onLayoutRootView}>
+      <NavigationThemeProvider value={themedNavigation}>
+        <AuthProvider>
+          <ToastProvider>
             <ActiveWorkoutProvider>
               <Slot />
             </ActiveWorkoutProvider>
-          </AuthProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </NavigationThemeProvider>
 
-          {!splashAnimationComplete && (
-            <ThemedSplashScreen opacity={opacity} scale={scale} />
-          )}
+      {!splashAnimationComplete && (
+        <ThemedSplashScreen opacity={opacity} scale={scale} />
+      )}
+    </View>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <RootLayoutContent />
         </ThemeProvider>
       </QueryClientProvider>
-    </View>
+    </SafeAreaProvider>
   );
 }
 
@@ -69,3 +100,4 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
+

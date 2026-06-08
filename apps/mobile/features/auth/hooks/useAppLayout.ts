@@ -8,8 +8,8 @@ export function useAppLayout() {
   
   const { data: profile, isLoading: isProfileLoading } = useGetProfile();
 
-  const needsOnboarding = 
-    profile && (profile.waterGoal === null || profile.proteinGoal === null);
+  const needsOnboarding =
+    profile && (!profile.age || !profile.height || !profile.weight);
 
   return {
     token,

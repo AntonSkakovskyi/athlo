@@ -8,6 +8,8 @@ import { spacing, borderRadius, fontSize } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { useUpdateProfile } from '@/hooks/api/useProfileAPI';
+import { useToast } from '@/contexts/ToastContext';
+import { validateFields, required, minNumber, maxNumber } from '@/utils/validation';
 
 const ACTIVITY_LEVELS: { id: ActivityLevel; label: string; desc: string }[] = [
   { id: ActivityLevel.SEDENTARY, label: 'Sedentary', desc: 'Little to no exercise' },
@@ -37,6 +39,7 @@ export default function OnboardingScreen() {
   const [height, setHeight] = useState('');
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>(ActivityLevel.MODERATE);
   const [goal, setGoal] = useState<FitnessGoal>(FitnessGoal.MAINTAIN);
+  const { showToast } = useToast();
 
   const handleNext = () => {
     if (step < 3) {
@@ -51,6 +54,13 @@ export default function OnboardingScreen() {
   };
 
   const handleComplete = async () => {
+    const error = validateFields([
+      { value: age, rules: [required('Age'), minNumber('Age', 1), maxNumber('Age', 120)] },
+      { value: height, rules: [required('Height'), minNumber('Height', 1)] },
+      { value: weight, rules: [required('Weight'), minNumber('Weight', 0.1)] },
+    ]);
+    if (error) { showToast({ title: error, variant: 'error' }); return; }
+
     const ageNum = parseInt(age, 10);
     const weightNum = parseFloat(weight);
     const heightNum = parseInt(height, 10);

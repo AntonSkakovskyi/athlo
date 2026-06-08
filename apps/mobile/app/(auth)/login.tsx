@@ -10,6 +10,7 @@ import { spacing, fontSize } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { useMemo } from 'react';
+import { validateFieldsMap, required, minLength, isEmail } from '@/utils/validation';
 
 function extractErrorMessages(error: unknown): string[] {
   if (error instanceof AxiosError) {
@@ -29,9 +30,18 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleLogin = async () => {
     setErrors([]);
+    setFieldErrors({});
+
+    const validation = validateFieldsMap([
+      { key: 'email', value: email, rules: [required('Email'), isEmail()] },
+      { key: 'password', value: password, rules: [required('Password'), minLength('Password', 6)] },
+    ]);
+    if (validation) { setFieldErrors(validation); return; }
+
     try {
       const { user, token } = await loginMutation.mutateAsync({ email, password });
       await setSession(user, token);
@@ -41,8 +51,8 @@ export default function LoginScreen() {
     }
   };
 
-  const emailError = errors.find((e) => e.toLowerCase().includes('email'));
-  const passwordError = errors.find((e) => e.toLowerCase().includes('password'));
+  const emailError = fieldErrors.email || errors.find((e) => e.toLowerCase().includes('email'));
+  const passwordError = fieldErrors.password || errors.find((e) => e.toLowerCase().includes('password'));
   const generalError = !emailError && !passwordError && errors[0];
 
   return (
