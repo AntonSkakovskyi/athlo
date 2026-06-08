@@ -20,7 +20,7 @@ describe('MuscleController', () => {
     }).compile();
 
     controller = module.get<MuscleController>(MuscleController);
-    service = module.get(MuscleService) as jest.Mocked<MuscleService>;
+    service = module.get(MuscleService);
   });
 
   afterEach(() => jest.clearAllMocks());

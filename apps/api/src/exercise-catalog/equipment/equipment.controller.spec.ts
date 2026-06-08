@@ -23,7 +23,7 @@ describe('EquipmentController', () => {
     }).compile();
 
     controller = module.get<EquipmentController>(EquipmentController);
-    service = module.get(EquipmentService) as jest.Mocked<EquipmentService>;
+    service = module.get(EquipmentService);
   });
 
   afterEach(() => jest.clearAllMocks());

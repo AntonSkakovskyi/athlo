@@ -1,10 +1,25 @@
-import { Controller, Get, Post, Patch, Delete, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { EquipmentService } from './equipment.service';
 import { CreateEquipmentDto } from '../dto/create-equipment.dto';
 import { UpdateEquipmentDto } from '../dto/update-equipment.dto';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Equipment')
 @ApiBearerAuth()
@@ -45,7 +60,10 @@ export class EquipmentController {
   @ApiResponse({ status: 200, description: 'Equipment deleted successfully' })
   @ApiResponse({ status: 403, description: 'Can only delete own equipment' })
   @ApiResponse({ status: 404, description: 'Equipment not found' })
-  remove(@CurrentUser('id') userId: number, @Param('id', ParseIntPipe) id: number) {
+  remove(
+    @CurrentUser('id') userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     return this.equipmentService.remove(id, userId);
   }
 }

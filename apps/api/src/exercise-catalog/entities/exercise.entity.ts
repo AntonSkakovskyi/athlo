@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 import type { IExercise } from '@athlo/shared';
 import { EquipmentEntity } from './equipment.entity';
 import { TrackingTypeEntity } from './tracking-type.entity';
@@ -53,6 +61,13 @@ export class ExerciseEntity implements IExercise {
   @ManyToOne(() => VisibilityTypeEntity)
   @JoinColumn({ name: 'visibility_type_id' })
   visibilityType: VisibilityTypeEntity;
+
+  @DeleteDateColumn({
+    name: 'deleted_at',
+    type: 'timestamp with time zone',
+    nullable: true,
+  })
+  deletedAt: Date | null;
 
   @OneToMany(() => ExerciseMuscleEntity, (em) => em.exercise)
   exerciseMuscles: ExerciseMuscleEntity[];

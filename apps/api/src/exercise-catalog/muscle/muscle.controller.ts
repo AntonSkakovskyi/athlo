@@ -1,7 +1,12 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { MuscleService } from './muscle.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Muscles')
 @ApiBearerAuth()

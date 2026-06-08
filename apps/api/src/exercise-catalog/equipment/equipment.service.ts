@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull } from 'typeorm';
 import { EquipmentEntity } from '../entities/equipment.entity';
@@ -15,10 +19,7 @@ export class EquipmentService {
   findAll(userId?: number) {
     if (userId) {
       return this.equipmentRepository.find({
-        where: [
-          { userId: IsNull() },
-          { userId },
-        ],
+        where: [{ userId: IsNull() }, { userId }],
         order: { name: 'ASC' },
       });
     }

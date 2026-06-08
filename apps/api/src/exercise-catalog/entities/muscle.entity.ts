@@ -15,6 +15,11 @@ export class MuscleEntity implements IMuscle {
   @Column({ name: 'image_url', type: 'varchar', length: 512, nullable: true })
   imageUrl: string | null;
 
-  @Column({ name: 'image_url_secondary', type: 'varchar', length: 512, nullable: true })
+  @Column({
+    name: 'image_url_secondary',
+    type: 'varchar',
+    length: 512,
+    nullable: true,
+  })
   imageUrlSecondary: string | null;
 }

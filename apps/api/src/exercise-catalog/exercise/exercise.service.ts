@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, Brackets } from 'typeorm';
 import { WorkoutStatus } from '@athlo/shared';
 import { ExerciseEntity } from '../entities/exercise.entity';
 import { ExerciseMuscleEntity } from '../entities/exercise-muscle.entity';
+import { LogExerciseEntity } from '../../workouts-service/entities/log-exercise.entity';
+import { TemplateExerciseEntity } from '../../workouts-service/entities/template-exercise.entity';
 import { GetExercisesQueryDto } from '../dto/get-exercises-query.dto';
 import { CreateExerciseDto } from '../dto/create-exercise.dto';
 import { UpdateExerciseDto } from '../dto/update-exercise.dto';
@@ -15,6 +22,10 @@ export class ExerciseService {
     private readonly exerciseRepository: Repository<ExerciseEntity>,
     @InjectRepository(ExerciseMuscleEntity)
     private readonly exerciseMuscleRepository: Repository<ExerciseMuscleEntity>,
+    @InjectRepository(LogExerciseEntity)
+    private readonly logExerciseRepository: Repository<LogExerciseEntity>,
+    @InjectRepository(TemplateExerciseEntity)
+    private readonly templateExerciseRepository: Repository<TemplateExerciseEntity>,
   ) {}
 
   async findAll(query: GetExercisesQueryDto, userId?: number) {
@@ -25,12 +36,15 @@ export class ExerciseService {
       .leftJoinAndSelect('exercise.equipment', 'equipment')
       .leftJoinAndSelect('exercise.trackingType', 'trackingType')
       .leftJoinAndSelect('exercise.exerciseMuscles', 'exerciseMuscles')
-      .leftJoinAndSelect('exerciseMuscles.muscle', 'muscle');
+      .leftJoinAndSelect('exerciseMuscles.muscle', 'muscle')
+      .andWhere('exercise.deletedAt IS NULL');
 
     if (userId) {
       qb.andWhere(
         new Brackets((sub) => {
-          sub.where('exercise.userId IS NULL').orWhere('exercise.userId = :userId', { userId });
+          sub
+            .where('exercise.userId IS NULL')
+            .orWhere('exercise.userId = :userId', { userId });
         }),
       );
     } else {
@@ -40,7 +54,8 @@ export class ExerciseService {
     if (search) {
       qb.andWhere(
         new Brackets((sub) => {
-          sub.where('exercise.name ILIKE :search', { search: `%${search}%` })
+          sub
+            .where('exercise.name ILIKE :search', { search: `%${search}%` })
             .orWhere('equipment.name ILIKE :search', { search: `%${search}%` })
             .orWhere('muscle.name ILIKE :search', { search: `%${search}%` });
         }),
@@ -64,11 +79,17 @@ export class ExerciseService {
         return subQuery
           .select('COUNT(ls_sub.id)', 'count')
           .from('log_sets', 'ls_sub')
-          .innerJoin('log_exercises', 'le_sub', 'le_sub.id = ls_sub.log_exercise_id')
+          .innerJoin(
+            'log_exercises',
+            'le_sub',
+            'le_sub.id = ls_sub.log_exercise_id',
+          )
           .innerJoin('workouts', 'w_sub', 'w_sub.id = le_sub.workout_id')
           .where('le_sub.exercise_id = exercise.id')
           .andWhere('w_sub.user_id = :userId', { userId })
-          .andWhere('w_sub.status = :status', { status: WorkoutStatus.COMPLETED })
+          .andWhere('w_sub.status = :status', {
+            status: WorkoutStatus.COMPLETED,
+          })
           .andWhere('ls_sub.is_completed = true');
       }, 'frequency');
       qb.orderBy('frequency', 'DESC');
@@ -98,10 +119,13 @@ export class ExerciseService {
         .groupBy('le.exercise_id')
         .getRawMany();
 
-      const statsMap = stats.reduce((acc, s) => {
-        acc[s.exerciseId] = s;
-        return acc;
-      }, {} as Record<number, { totalSets: number; totalWorkouts: number }>);
+      const statsMap = stats.reduce(
+        (acc, s) => {
+          acc[s.exerciseId] = s;
+          return acc;
+        },
+        {} as Record<number, { totalSets: number; totalWorkouts: number }>,
+      );
 
       data.forEach((ex) => {
         (ex as any).totalSets = statsMap[ex.id]?.totalSets || 0;
@@ -128,6 +152,7 @@ export class ExerciseService {
         trackingType: true,
         exerciseMuscles: { muscle: true },
       },
+      withDeleted: false,
     });
 
     if (!exercise) {
@@ -137,6 +162,11 @@ export class ExerciseService {
     if (exercise.userId !== null && exercise.userId !== userId) {
       throw new NotFoundException(`Exercise with ID ${id} not found`);
     }
+
+    const logSetsCount = await this.logExerciseRepository.count({
+      where: { exerciseId: id },
+    });
+    (exercise as any).hasLoggedHistory = logSetsCount > 0;
 
     return exercise;
   }
@@ -178,10 +208,27 @@ export class ExerciseService {
       throw new ForbiddenException('You can only update your own exercises');
     }
 
+    if (
+      dto.trackingTypeId !== undefined &&
+      dto.trackingTypeId !== exercise.trackingTypeId
+    ) {
+      const logCount = await this.logExerciseRepository.count({
+        where: { exerciseId: id },
+      });
+      if (logCount > 0) {
+        throw new ConflictException(
+          'Cannot change tracking type — exercise has logged history',
+        );
+      }
+    }
+
     if (dto.name !== undefined) exercise.name = dto.name;
-    if (dto.description !== undefined) exercise.description = dto.description ?? null;
-    if (dto.equipmentId !== undefined) exercise.equipmentId = dto.equipmentId ?? null;
-    if (dto.trackingTypeId !== undefined) exercise.trackingTypeId = dto.trackingTypeId;
+    if (dto.description !== undefined)
+      exercise.description = dto.description ?? null;
+    if (dto.equipmentId !== undefined)
+      exercise.equipmentId = dto.equipmentId ?? null;
+    if (dto.trackingTypeId !== undefined)
+      exercise.trackingTypeId = dto.trackingTypeId;
 
     await this.exerciseRepository.save(exercise);
 
@@ -214,7 +261,16 @@ export class ExerciseService {
       throw new ForbiddenException('You can only delete your own exercises');
     }
 
-    await this.exerciseRepository.remove(exercise);
+    const [logCount, templateCount] = await Promise.all([
+      this.logExerciseRepository.count({ where: { exerciseId: id } }),
+      this.templateExerciseRepository.count({ where: { exerciseId: id } }),
+    ]);
+
+    if (logCount > 0 || templateCount > 0) {
+      await this.exerciseRepository.softDelete(id);
+    } else {
+      await this.exerciseRepository.remove(exercise);
+    }
 
     return { message: 'Exercise deleted successfully' };
   }

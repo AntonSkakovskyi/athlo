@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsInt, IsArray, ValidateNested, IsBoolean, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsInt,
+  IsArray,
+  ValidateNested,
+  IsBoolean,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -7,12 +16,18 @@ export class ExerciseMuscleDto {
   @IsInt()
   muscleId: number;
 
-  @ApiPropertyOptional({ description: 'Whether this is a primary muscle', default: true })
+  @ApiPropertyOptional({
+    description: 'Whether this is a primary muscle',
+    default: true,
+  })
   @IsOptional()
   @IsBoolean()
   isPrimary?: boolean = true;
 
-  @ApiPropertyOptional({ description: 'Impact percentage (1-100)', default: 100 })
+  @ApiPropertyOptional({
+    description: 'Impact percentage (1-100)',
+    default: 100,
+  })
   @IsOptional()
   @IsInt()
   @Min(1)
@@ -39,7 +54,10 @@ export class CreateExerciseDto {
   @IsInt()
   trackingTypeId: number;
 
-  @ApiPropertyOptional({ description: 'Muscles targeted by this exercise', type: [ExerciseMuscleDto] })
+  @ApiPropertyOptional({
+    description: 'Muscles targeted by this exercise',
+    type: [ExerciseMuscleDto],
+  })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

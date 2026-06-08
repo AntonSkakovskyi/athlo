@@ -64,7 +64,12 @@ describe('ExerciseService', () => {
 
       // Assert
       expect(result.data).toEqual(mockExercises);
-      expect(result.meta).toEqual({ page: 1, limit: 20, total: 1, totalPages: 1 });
+      expect(result.meta).toEqual({
+        page: 1,
+        limit: 20,
+        total: 1,
+        totalPages: 1,
+      });
     });
 
     it('should apply search filter when provided', async () => {
@@ -220,7 +225,10 @@ describe('ExerciseService', () => {
       // Arrange
       const existingExercise = { id: 1, name: 'Old Name', userId: 1 };
       exerciseRepo.findOne.mockResolvedValue(existingExercise);
-      exerciseRepo.save.mockResolvedValue({ ...existingExercise, name: 'New Name' });
+      exerciseRepo.save.mockResolvedValue({
+        ...existingExercise,
+        name: 'New Name',
+      });
 
       // Act
       await service.update(1, 1, { name: 'New Name' });
@@ -236,7 +244,9 @@ describe('ExerciseService', () => {
       exerciseRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.update(999, 1, { name: 'X' })).rejects.toThrow(NotFoundException);
+      await expect(service.update(999, 1, { name: 'X' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when exercise belongs to another user', async () => {
@@ -244,7 +254,9 @@ describe('ExerciseService', () => {
       exerciseRepo.findOne.mockResolvedValue({ id: 1, userId: 2 });
 
       // Act & Assert
-      await expect(service.update(1, 1, { name: 'X' })).rejects.toThrow(ForbiddenException);
+      await expect(service.update(1, 1, { name: 'X' })).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should replace muscles when muscles array is provided', async () => {
@@ -257,7 +269,9 @@ describe('ExerciseService', () => {
       exerciseMuscleRepo.save.mockResolvedValue([]);
 
       // Act
-      await service.update(1, 1, { muscles: [{ muscleId: 2, isPrimary: false, impactPercentage: 50 }] });
+      await service.update(1, 1, {
+        muscles: [{ muscleId: 2, isPrimary: false, impactPercentage: 50 }],
+      });
 
       // Assert
       expect(exerciseMuscleRepo.delete).toHaveBeenCalledWith({ exerciseId: 1 });

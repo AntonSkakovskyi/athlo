@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import type { IExerciseMuscle } from '@athlo/shared';
 import { ExerciseEntity } from './exercise.entity';
 import { MuscleEntity } from './muscle.entity';
@@ -20,7 +26,9 @@ export class ExerciseMuscleEntity implements IExerciseMuscle {
   @Column({ name: 'is_primary', default: true })
   isPrimary: boolean;
 
-  @ManyToOne(() => ExerciseEntity, (exercise) => exercise.exerciseMuscles, { onDelete: 'CASCADE' })
+  @ManyToOne(() => ExerciseEntity, (exercise) => exercise.exerciseMuscles, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'exercise_id' })
   exercise: ExerciseEntity;
 

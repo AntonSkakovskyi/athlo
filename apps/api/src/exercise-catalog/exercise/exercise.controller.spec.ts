@@ -24,7 +24,7 @@ describe('ExerciseController', () => {
     }).compile();
 
     controller = module.get<ExerciseController>(ExerciseController);
-    service = module.get(ExerciseService) as jest.Mocked<ExerciseService>;
+    service = module.get(ExerciseService);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -34,7 +34,10 @@ describe('ExerciseController', () => {
       // Arrange
       const query = { page: 1, limit: 20 };
       const userId = 1;
-      const expected = { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 0 } };
+      const expected = {
+        data: [],
+        meta: { page: 1, limit: 20, total: 0, totalPages: 0 },
+      };
       service.findAll.mockResolvedValue(expected);
 
       // Act

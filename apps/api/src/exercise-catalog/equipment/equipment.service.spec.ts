@@ -78,7 +78,10 @@ describe('EquipmentService', () => {
       const result = await service.create(userId, dto);
 
       // Assert
-      expect(equipmentRepo.create).toHaveBeenCalledWith({ name: dto.name, userId });
+      expect(equipmentRepo.create).toHaveBeenCalledWith({
+        name: dto.name,
+        userId,
+      });
       expect(equipmentRepo.save).toHaveBeenCalledWith(mockEquipment);
       expect(result).toEqual(mockEquipment);
     });
@@ -105,15 +108,23 @@ describe('EquipmentService', () => {
       equipmentRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.update(999, 1, { name: 'X' })).rejects.toThrow(NotFoundException);
+      await expect(service.update(999, 1, { name: 'X' })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when equipment belongs to another user', async () => {
       // Arrange
-      equipmentRepo.findOne.mockResolvedValue({ id: 1, name: 'Band', userId: 2 });
+      equipmentRepo.findOne.mockResolvedValue({
+        id: 1,
+        name: 'Band',
+        userId: 2,
+      });
 
       // Act & Assert
-      await expect(service.update(1, 1, { name: 'X' })).rejects.toThrow(ForbiddenException);
+      await expect(service.update(1, 1, { name: 'X' })).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -142,7 +153,11 @@ describe('EquipmentService', () => {
 
     it('should throw ForbiddenException when equipment belongs to another user', async () => {
       // Arrange
-      equipmentRepo.findOne.mockResolvedValue({ id: 1, name: 'Band', userId: 2 });
+      equipmentRepo.findOne.mockResolvedValue({
+        id: 1,
+        name: 'Band',
+        userId: 2,
+      });
 
       // Act & Assert
       await expect(service.remove(1, 1)).rejects.toThrow(ForbiddenException);

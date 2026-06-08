@@ -1,11 +1,27 @@
-import { Controller, Get, Post, Patch, Delete, Query, Param, Body, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Query,
+  Param,
+  Body,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { ExerciseService } from './exercise.service';
 import { GetExercisesQueryDto } from '../dto/get-exercises-query.dto';
 import { CreateExerciseDto } from '../dto/create-exercise.dto';
 import { UpdateExerciseDto } from '../dto/update-exercise.dto';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Exercises')
 @ApiBearerAuth()
@@ -17,7 +33,10 @@ export class ExerciseController {
   @Get()
   @ApiOperation({ summary: 'Get exercises with pagination and filtering' })
   @ApiResponse({ status: 200, description: 'Paginated list of exercises' })
-  findAll(@CurrentUser('id') userId: number, @Query() query: GetExercisesQueryDto) {
+  findAll(
+    @CurrentUser('id') userId: number,
+    @Query() query: GetExercisesQueryDto,
+  ) {
     return this.exerciseService.findAll(query, userId);
   }
 
@@ -25,7 +44,10 @@ export class ExerciseController {
   @ApiOperation({ summary: 'Get exercise by ID' })
   @ApiResponse({ status: 200, description: 'Exercise found' })
   @ApiResponse({ status: 404, description: 'Exercise not found' })
-  findById(@CurrentUser('id') userId: number, @Param('id', ParseIntPipe) id: number) {
+  findById(
+    @CurrentUser('id') userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     return this.exerciseService.findById(id, userId);
   }
 
@@ -54,7 +76,10 @@ export class ExerciseController {
   @ApiResponse({ status: 200, description: 'Exercise deleted successfully' })
   @ApiResponse({ status: 403, description: 'Can only delete own exercises' })
   @ApiResponse({ status: 404, description: 'Exercise not found' })
-  remove(@CurrentUser('id') userId: number, @Param('id', ParseIntPipe) id: number) {
+  remove(
+    @CurrentUser('id') userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
     return this.exerciseService.remove(id, userId);
   }
 }
