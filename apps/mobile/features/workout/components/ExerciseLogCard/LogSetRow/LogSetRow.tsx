@@ -21,14 +21,14 @@ export interface LogSetData {
   isPR?: boolean;
   achievementId?: number | null;
   achievement?: any | null;
-  previousWeight?: number;
-  previousReps?: number;
-  previousDuration?: number;
-  previousDistance?: number;
-  placeholderWeight?: number;
-  placeholderReps?: number;
-  placeholderDuration?: number;
-  placeholderDistance?: number;
+  previousWeight?: number | null;
+  previousReps?: number | null;
+  previousDuration?: number | null;
+  previousDistance?: number | null;
+  placeholderWeight?: number | null;
+  placeholderReps?: number | null;
+  placeholderDuration?: number | null;
+  placeholderDistance?: number | null;
 }
 
 interface LogSetRowProps {
@@ -95,11 +95,18 @@ export function LogSetRow({
         if (!hasReps && !hasPlaceholderReps) {
           isEmptyWithoutPlaceholder = true;
         }
-      } else if (trackingType === TrackingType.TIME_BASED) {
+      } else if (trackingType === TrackingType.TIME_BASED || trackingType === TrackingType.DISTANCE_AND_TIME) {
         const hasDuration = set.duration != null;
         const hasPlaceholderDuration = set.placeholderDuration != null;
-        
+
         if (!hasDuration && !hasPlaceholderDuration) {
+          isEmptyWithoutPlaceholder = true;
+        }
+      } else if (trackingType === TrackingType.DISTANCE_ONLY) {
+        const hasDistance = set.distance != null;
+        const hasPlaceholderDistance = set.placeholderDistance != null;
+
+        if (!hasDistance && !hasPlaceholderDistance) {
           isEmptyWithoutPlaceholder = true;
         }
       }
@@ -118,6 +125,10 @@ export function LogSetRow({
         if (set.reps === undefined && set.placeholderReps !== undefined) updates.reps = set.placeholderReps;
       } else if (trackingType === TrackingType.TIME_BASED) {
         if (set.duration === undefined && set.placeholderDuration !== undefined) updates.duration = set.placeholderDuration;
+      } else if (trackingType === TrackingType.DISTANCE_AND_TIME) {
+        if (set.duration === undefined && set.placeholderDuration !== undefined) updates.duration = set.placeholderDuration;
+        if (set.distance === undefined && set.placeholderDistance !== undefined) updates.distance = set.placeholderDistance;
+      } else if (trackingType === TrackingType.DISTANCE_ONLY) {
         if (set.distance === undefined && set.placeholderDistance !== undefined) updates.distance = set.placeholderDistance;
       }
 
@@ -152,8 +163,7 @@ export function LogSetRow({
           onOpenTimePicker={onOpenTimePicker}
         />
 
-        {/* Fixed-width Action Slot to prevent shifting */}
-        <View style={styles.actionSlot}>
+        <View style={styles.checkboxCell}>
           {showCheckbox && (
             <Pressable
               style={[styles.checkbox, set.isCompleted && styles.checked]}
@@ -162,7 +172,9 @@ export function LogSetRow({
               {set.isCompleted && <Text style={styles.checkmark}>✓</Text>}
             </Pressable>
           )}
+        </View>
 
+        <View style={styles.actionsCell}>
           {!isEditing && set.isPR && (
             <Pressable onPress={onPRPress} style={styles.prTrophy}>
               <Text style={styles.trophyIcon}>🏆</Text>
@@ -193,7 +205,7 @@ function makeStyles(c: ColorPalette) {
       alignItems: 'center',
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.xs,
-      gap: spacing.xs,
+      justifyContent: 'space-between',
     },
     rowCompleted: {
       backgroundColor: c.primaryLight,
@@ -217,12 +229,16 @@ function makeStyles(c: ColorPalette) {
       color: c.textMuted,
       textAlign: 'center',
     },
-    actionSlot: {
+    checkboxCell: {
+      width: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    actionsCell: {
+      width: 36,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'flex-end',
-      gap: spacing.xs,
-      minWidth: 100,
+      justifyContent: 'center',
     },
     checkbox: {
       width: 32,

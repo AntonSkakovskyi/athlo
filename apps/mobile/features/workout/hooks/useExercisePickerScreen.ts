@@ -2,16 +2,18 @@ import { useState, useMemo, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { getTrackingType } from '@/utils/workout';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
-import { ExerciseWithRelations, useCreateLogExercise, useCreateTemplateExercise, useGetEquipments, useGetMuscles, useInfiniteExercises, useDeleteLogExercise } from '@/hooks/api';
+import { ExerciseWithRelations, useCreateLogExercise, useCreateTemplateExercise, useGetEquipments, useGetMuscles, useInfiniteExercises, useDeleteLogExercise, useCreateExercise, useGetTrackingTypes } from '@/hooks/api';
 
 export function useExercisePickerScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const params = useLocalSearchParams<{ 
-    workoutId?: string; 
+  const { user } = useAuth();
+  const params = useLocalSearchParams<{
+    workoutId?: string;
     templateId?: string;
     replaceLogExerciseId?: string;
     replaceOrder?: string;
@@ -28,9 +30,10 @@ export function useExercisePickerScreen() {
   const [selectedEquipmentId, setSelectedEquipmentId] = useState<number | null>(null);
   const [selectedExercises, setSelectedExercises] = useState<Map<number, ExerciseWithRelations>>(new Map());
   const [isAdding, setIsAdding] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const { exercises: activeExercises, addExercise, replaceExercise, workout: activeWorkout } = useActiveWorkout();
-  const isEditingActiveWorkout = activeWorkout?.id === Number(params.workoutId);
+  const isEditingActiveWorkout = !!activeWorkout?.id && String(activeWorkout.id) === String(params.workoutId);
 
   const filters = useMemo(() => {
     const f: Record<string, unknown> = {};
@@ -53,6 +56,8 @@ export function useExercisePickerScreen() {
   const exercisesQuery = useInfiniteExercises(filters);
   const equipmentsQuery = useGetEquipments();
   const musclesQuery = useGetMuscles();
+  const trackingTypesQuery = useGetTrackingTypes();
+  const createExercise = useCreateExercise();
 
   const createLogExercise = useCreateLogExercise(params.workoutId ?? String(activeWorkout?.id ?? ''));
   const deleteLogExercise = useDeleteLogExercise(params.workoutId ?? String(activeWorkout?.id ?? ''));
@@ -109,157 +114,36 @@ export function useExercisePickerScreen() {
     try {
       const workoutId = params.workoutId ?? (activeWorkout?.id ? String(activeWorkout.id) : null);
 
-      // Fetch last performance for all selected exercises to pre-fill
-      let lastPerformances: Record<number, any> = {};
-      try {
-        const lpResponse = await apiClient.post(apiRoutes.lastPerformance.batch, {
-          exerciseIds: selectedList.map(ex => ex.id)
-        });
-        lastPerformances = lpResponse.data;
-      } catch (e) {
-        console.error('Failed to fetch last performances:', e);
-      }
-
       if (workoutId) {
         if (isReplaceMode && params.replaceLogExerciseId) {
           // 1. Delete old
           await deleteLogExercise.mutateAsync(params.replaceLogExerciseId);
           // 2. Create new with same order
           const ex = selectedList[0];
-          const logExercise = await createLogExercise.mutateAsync({
+          await createLogExercise.mutateAsync({
             exerciseId: ex.id,
             order: Number(params.replaceOrder ?? 1),
           });
-
-          const lp = lastPerformances[ex.id];
-          const trackingType = getTrackingType(ex.trackingTypeId);
-
-          if (isEditingActiveWorkout) {
-            const setsWithIds: any[] = [];
-            if (lp?.sets?.length) {
-              for (const s of lp.sets) {
-                const setResp = await apiClient.post(apiRoutes.lastPerformance.batch, {
-                  exerciseIds: [ex.id] // Re-using batch for consistency or could use single
-                });
-                // Wait, I should just use the lp I already have
-                const dbSet = await apiClient.post(apiRoutes.workouts.sets(workoutId, String(logExercise.id)), {
-                  order: s.order,
-                  weight: undefined,
-                  reps: undefined,
-                  isCompleted: false,
-                });
-                setsWithIds.push({
-                  id: dbSet.data.id,
-                  order: s.order,
-                  isCompleted: false,
-                  previousWeight: s.weight,
-                  previousReps: s.reps,
-                  previousDuration: s.duration,
-                  previousDistance: s.distance,
-                  placeholderWeight: s.weight,
-                  placeholderReps: s.reps,
-                  placeholderDuration: s.duration,
-                  placeholderDistance: s.distance,
-                });
-              }
-            }
-            
-            replaceExercise(Number(params.replaceOrder ?? 1) - 1, {
-              logExerciseId: logExercise.id,
-              exerciseId: ex.id,
-              exerciseName: ex.name,
-              trackingType,
-              restTime: 0,
-              sets: setsWithIds.length > 0 ? setsWithIds : [{ order: 1, isCompleted: false }],
-            });
-          } else {
-            // Past workout summary replacement
-            if (lp?.sets?.length) {
-              for (const s of lp.sets) {
-                await apiClient.post(apiRoutes.workouts.sets(workoutId, String(logExercise.id)), {
-                  order: s.order,
-                  weight: s.weight,
-                  reps: s.reps,
-                  duration: s.duration,
-                  distance: s.distance,
-                  isCompleted: true,
-                });
-              }
-            }
-          }
+          // We don't fetch sets here anymore, useActiveWorkoutScreen will handle it
         } else {
           const startingOrder = params.nextOrder ? Number(params.nextOrder) : activeExercises.length + 1;
           
-          for (let i = 0; i < selectedList.length; i++) {
-            const ex = selectedList[i];
-            const logExercise = await createLogExercise.mutateAsync({
+          // Use Promise.all to create exercises in parallel
+          await Promise.all(selectedList.map((ex, i) => 
+            createLogExercise.mutateAsync({
               exerciseId: ex.id,
               order: startingOrder + i,
-            });
-
-            const lp = lastPerformances[ex.id];
-            const trackingType = getTrackingType(ex.trackingTypeId);
-
-            if (isEditingActiveWorkout) {
-              const setsWithIds: any[] = [];
-              if (lp?.sets?.length) {
-                for (const s of lp.sets) {
-                  const setResp = await apiClient.post(apiRoutes.workouts.sets(workoutId, String(logExercise.id)), {
-                    order: s.order,
-                    weight: undefined,
-                    reps: undefined,
-                    isCompleted: false,
-                  });
-                  setsWithIds.push({
-                    id: setResp.data.id,
-                    order: s.order,
-                    isCompleted: false,
-                    previousWeight: s.weight,
-                    previousReps: s.reps,
-                    previousDuration: s.duration,
-                    previousDistance: s.distance,
-                    placeholderWeight: s.weight,
-                    placeholderReps: s.reps,
-                    placeholderDuration: s.duration,
-                    placeholderDistance: s.distance,
-                  });
-                }
-              }
-
-              addExercise({
-                logExerciseId: logExercise.id,
-                exerciseId: ex.id,
-                exerciseName: ex.name,
-                trackingType,
-                restTime: 0,
-                sets: setsWithIds.length > 0 ? setsWithIds : [{ order: 1, isCompleted: false }],
-              });
-            } else {
-              // Past workout summary editing
-              if (lp?.sets?.length) {
-                for (const s of lp.sets) {
-                  await apiClient.post(apiRoutes.workouts.sets(workoutId, String(logExercise.id)), {
-                    order: s.order,
-                    weight: s.weight,
-                    reps: s.reps,
-                    duration: s.duration,
-                    distance: s.distance,
-                    isCompleted: true,
-                  });
-                }
-              }
-            }
-          }
+            })
+          ));
         }
       } else if (params.templateId) {
         const startingOrder = params.nextOrder ? Number(params.nextOrder) : 1;
-        for (let i = 0; i < selectedList.length; i++) {
-          const ex = selectedList[i];
-          await createTemplateExercise.mutateAsync({
+        await Promise.all(selectedList.map((ex, i) => 
+          createTemplateExercise.mutateAsync({
             exerciseId: ex.id,
             order: startingOrder + i,
-          });
-        }
+          })
+        ));
       }
 
       router.back();
@@ -270,18 +154,38 @@ export function useExercisePickerScreen() {
     }
   }, [
     selectedExercises,
-    exerciseList,
     params,
     activeWorkout,
     activeExercises,
-    isEditingActiveWorkout,
     createLogExercise,
     deleteLogExercise,
     isReplaceMode,
     createTemplateExercise,
-    addExercise,
     router,
   ]);
+
+  const handleCreateExercise = useCallback(
+    async (data: {
+      name: string;
+      description?: string;
+      trackingTypeId: number;
+      equipmentId?: number;
+      muscles: { muscleId: number; isPrimary: boolean }[];
+    }) => {
+      try {
+        const newExercise = await createExercise.mutateAsync(data);
+        setShowCreateModal(false);
+        setSelectedExercises((prev) => {
+          const next = new Map(prev);
+          next.set(newExercise.id, newExercise as ExerciseWithRelations);
+          return next;
+        });
+      } catch (error) {
+        console.error('Failed to create exercise:', error);
+      }
+    },
+    [createExercise],
+  );
 
   return {
     workoutId: params.workoutId,
@@ -296,6 +200,7 @@ export function useExercisePickerScreen() {
     exercisesQuery,
     musclesQuery,
     equipmentsQuery,
+    trackingTypesQuery,
     exerciseList,
     hasFilters,
     toggleMuscle,
@@ -305,5 +210,10 @@ export function useExercisePickerScreen() {
     clearFilters,
     insets,
     router,
+    user,
+    showCreateModal,
+    setShowCreateModal,
+    createExercise,
+    handleCreateExercise,
   };
 }

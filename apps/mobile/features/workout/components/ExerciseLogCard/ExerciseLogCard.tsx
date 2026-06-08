@@ -170,7 +170,7 @@ export function ExerciseLogCard({
             : 'Set Actions'
         }
       >
-        {onMoveSet && selectedSetIndex !== null && sets[selectedSetIndex] && selectedSetIndex > 0 && (
+        {onMoveSet && selectedSetIndex !== null && selectedSetIndex > 0 && (
           <BottomSheetItem
             icon="⬆️"
             label="Move Up"
@@ -180,7 +180,7 @@ export function ExerciseLogCard({
             }}
           />
         )}
-        {onMoveSet && selectedSetIndex !== null && sets[selectedSetIndex] && selectedSetIndex < sets.length - 1 && (
+        {onMoveSet && selectedSetIndex !== null && selectedSetIndex < sets.length - 1 && (
           <BottomSheetItem
             icon="⬇️"
             label="Move Down"
@@ -216,28 +216,35 @@ export function ExerciseLogCard({
       )}
 
       <View style={styles.columnHeaders}>
-        <Text style={[styles.colHeader, { width: 24 }]}>#</Text>
+        <Text style={styles.colNum}>#</Text>
         {(mode === 'active' || (mode === 'summary' && isEditing)) && (
-          <Text style={[styles.colHeader, { width: 60 }]}>Prev</Text>
+          <Text style={styles.colPrev}>Prev</Text>
         )}
         {trackingType === TrackingType.WEIGHT_AND_REPS && (
           <>
-            <Text style={[styles.colHeader, { flex: 1 }]}>kg</Text>
-            <Text style={[styles.colHeader, { flex: 1 }]}>Reps</Text>
+            <Text style={styles.colInput}>kg</Text>
+            <Text style={styles.colInput}>Reps</Text>
           </>
         )}
         {trackingType === TrackingType.REPS_ONLY && (
-          <Text style={[styles.colHeader, { flex: 2 }]}>Reps</Text>
+          <Text style={styles.colInputWide}>Reps</Text>
         )}
         {trackingType === TrackingType.TIME_BASED && (
+          <Text style={styles.colInputWide}>Time</Text>
+        )}
+        {trackingType === TrackingType.DISTANCE_AND_TIME && (
           <>
-            <Text style={[styles.colHeader, { flex: 1 }]}>Time</Text>
-            <Text style={[styles.colHeader, { flex: 1 }]}>Dist</Text>
+            <Text style={styles.colInput}>Time</Text>
+            <Text style={styles.colInput}>Dist</Text>
           </>
         )}
-        <Text style={[styles.colHeader, { width: 80 }]}>
+        {trackingType === TrackingType.DISTANCE_ONLY && (
+          <Text style={styles.colInputWide}>Distance</Text>
+        )}
+        <Text style={styles.colCheck}>
           {mode === 'active' ? '✓' : ''}
         </Text>
+        <View style={styles.colActions} />
       </View>
       {sets?.map((set, index) => (
         <LogSetRow
@@ -304,7 +311,7 @@ function makeStyles(c: ColorPalette) {
       alignItems: 'center',
       paddingHorizontal: spacing.xs,
       paddingBottom: spacing.xs,
-      gap: spacing.xs,
+      justifyContent: 'space-between',
     },
     colHeader: {
       fontSize: fontSize.sm,
@@ -312,6 +319,50 @@ function makeStyles(c: ColorPalette) {
       color: c.textMuted,
       textAlign: 'center',
       textTransform: 'uppercase',
+    },
+    colNum: {
+      width: 24,
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+      textAlign: 'center',
+    },
+    colPrev: {
+      width: 60,
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+      textAlign: 'center',
+    },
+    colInput: {
+      flex: 1,
+      maxWidth: 80,
+      minWidth: 65,
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+      textAlign: 'center',
+      textTransform: 'uppercase',
+    },
+    colInputWide: {
+      flex: 2,
+      maxWidth: 160,
+      minWidth: 130,
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+      textAlign: 'center',
+      textTransform: 'uppercase',
+    },
+    colCheck: {
+      width: 44,
+      fontSize: fontSize.sm,
+      fontWeight: fontWeight.semibold,
+      color: c.textMuted,
+      textAlign: 'center',
+    },
+    colActions: {
+      width: 36,
     },
     addSetBtn: {
       marginTop: spacing.sm,

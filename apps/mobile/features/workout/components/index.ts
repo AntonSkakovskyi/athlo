@@ -1,4 +1,7 @@
 export * from './ActiveExerciseCard/ActiveExerciseCard';
+export * from './MusclePicker/MusclePicker';
+export * from './CreateExerciseModal/CreateExerciseModal';
+export * from './EditExerciseModal/EditExerciseModal';
 export * from './EquipmentFilter/EquipmentFilter';
 export * from './DurationPicker/DurationPicker';
 export * from './ExerciseLogCard/ExerciseLogCard';

@@ -95,20 +95,26 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
 
   const replaceExercise = useCallback(
     (index: number, exercise: Omit<ActiveExercise, 'order' | 'showNotes' | 'sets' | 'notes'> & { sets?: SetRowData[]; notes?: string }) => {
-      setState((prev) => ({
-        ...prev,
-        exercises: prev.exercises.map((e, i) =>
-          i === index
-            ? {
-                ...exercise,
-                order: i + 1,
-                showNotes: false,
-                notes: exercise.notes ?? '',
-                sets: exercise.sets ?? [{ order: 1, isCompleted: false }],
-              }
-            : e,
-        ),
-      }));
+      setState((prev) => {
+        const newExercise = {
+          ...exercise,
+          order: index + 1,
+          showNotes: false,
+          notes: exercise.notes ?? '',
+          sets: exercise.sets ?? [{ order: 1, isCompleted: false }],
+        };
+
+        return {
+          ...prev,
+          exercises: prev.exercises
+            .map((e, i) => (i === index ? newExercise : e))
+            .filter((e, i) => {
+              if (i === index) return true;
+              if (exercise.logExerciseId != null && e.logExerciseId === exercise.logExerciseId) return false;
+              return true;
+            }),
+        };
+      });
     },
     [],
   );

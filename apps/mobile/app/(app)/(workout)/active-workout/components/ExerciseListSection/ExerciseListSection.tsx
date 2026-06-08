@@ -1,16 +1,19 @@
-import { ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { spacing } from '@/constants/theme';
+import { useTheme } from '@/contexts/ThemeContext';
 import { ExerciseLogCard } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { Button } from '@/components/ui/Button/Button';
+import { Card, Typography } from '@/components/ui';
 import type { ActiveExercise } from '@/contexts/ActiveWorkoutContext';
 import type { LogSetData } from '@/features/workout/components/ExerciseLogCard/LogSetRow/LogSetRow';
 
 interface ExerciseListSectionProps {
   exercises: ActiveExercise[];
   isLoadingExercises: boolean;
+  isInitializing?: boolean;
   workoutId: string;
   onAddExercise: () => void;
   onUpdateExercise: (exIdx: number, data: Partial<ActiveExercise>) => void;
@@ -18,6 +21,7 @@ interface ExerciseListSectionProps {
   onDeleteSet: (exIdx: number, setIdx: number) => void;
   onToggleSetComplete: (exIdx: number, setIdx: number) => void;
   onAddSet: (exIdx: number) => void;
+  onMoveSet?: (exIdx: number, direction: 'up' | 'down', setIdx: number) => void;
   onRestTimer: (restTime: number) => void;
   onDeleteExercise: (exIdx: number) => void;
   onMoveExercise: (exIdx: number, direction: 'up' | 'down') => void;
@@ -27,6 +31,7 @@ interface ExerciseListSectionProps {
 export function ExerciseListSection({
   exercises,
   isLoadingExercises,
+  isInitializing,
   workoutId,
   onAddExercise,
   onUpdateExercise,
@@ -34,12 +39,14 @@ export function ExerciseListSection({
   onDeleteSet,
   onToggleSetComplete,
   onAddSet,
+  onMoveSet,
   onRestTimer,
   onDeleteExercise,
   onMoveExercise,
   onPRPress,
 }: ExerciseListSectionProps) {
   const router = useRouter();
+  const { colors } = useTheme();
 
   return (
     <ScrollView
@@ -49,7 +56,7 @@ export function ExerciseListSection({
     >
       {isLoadingExercises ? (
         <Spinner style={{ marginTop: spacing['5xl'] }} />
-      ) : exercises.length === 0 ? (
+      ) : exercises.length === 0 && !isInitializing ? (
         <EmptyState
           title="No exercises yet"
           description="Add an exercise to begin"
@@ -57,42 +64,53 @@ export function ExerciseListSection({
           onAction={onAddExercise}
         />
       ) : (
-        exercises.map((ex, exIdx) => (
-          <ExerciseLogCard
-            key={ex.logExerciseId ?? `local-${exIdx}`}
-            exerciseName={ex.exerciseName}
-            trackingType={ex.trackingType}
-            mode="active"
-            sets={ex.sets}
-            notes={ex.notes}
-            showNotes={ex.showNotes}
-            restTime={ex.restTime}
-            onToggleNotes={() => onUpdateExercise(exIdx, { showNotes: !ex.showNotes })}
-            onNotesChange={(text) => onUpdateExercise(exIdx, { notes: text })}
-            onUpdateSet={(setIdx, data) => onUpdateSet(exIdx, setIdx, data)}
-            onDeleteSet={(setIdx) => onDeleteSet(exIdx, setIdx)}
-            onToggleSetComplete={(setIdx) => onToggleSetComplete(exIdx, setIdx)}
-            onAddSet={() => onAddSet(exIdx)}
-            onRestTimer={ex.restTime > 0 ? () => onRestTimer(ex.restTime) : undefined}
-            onDeleteExercise={() => onDeleteExercise(exIdx)}
-            onMoveUp={exIdx > 0 ? () => onMoveExercise(exIdx, 'up') : undefined}
-            onMoveDown={exIdx < exercises.length - 1 ? () => onMoveExercise(exIdx, 'down') : undefined}
-            onChangeExercise={() => {
-              router.push({
-                pathname: '/(app)/(workout)/exercise-picker',
-                params: {
-                  workoutId,
-                  replaceLogExerciseId: String(ex.logExerciseId),
-                  replaceOrder: String(exIdx + 1),
-                },
-              });
-            }}
-            onPRPress={(setIdx) => onPRPress(exIdx, setIdx)}
-          />
-        ))
+        <>
+          {exercises.map((ex, exIdx) => (
+            <ExerciseLogCard
+              key={ex.logExerciseId ?? `local-${exIdx}`}
+              exerciseName={ex.exerciseName}
+              trackingType={ex.trackingType}
+              mode="active"
+              sets={ex.sets}
+              notes={ex.notes}
+              showNotes={ex.showNotes}
+              restTime={ex.restTime}
+              onToggleNotes={() => onUpdateExercise(exIdx, { showNotes: !ex.showNotes })}
+              onNotesChange={(text) => onUpdateExercise(exIdx, { notes: text })}
+              onUpdateSet={(setIdx, data) => onUpdateSet(exIdx, setIdx, data)}
+              onToggleSetComplete={(setIdx) => onToggleSetComplete(exIdx, setIdx)}
+              onAddSet={() => onAddSet(exIdx)}
+              onDeleteSet={(setIdx) => onDeleteSet(exIdx, setIdx)}
+              onMoveSet={(setIdx, direction) => onMoveSet?.(exIdx, direction, setIdx)}
+              onRestTimer={ex.restTime > 0 ? () => onRestTimer(ex.restTime) : undefined}
+              onDeleteExercise={() => onDeleteExercise(exIdx)}
+              onMoveUp={exIdx > 0 ? () => onMoveExercise(exIdx, 'up') : undefined}
+              onMoveDown={exIdx < exercises.length - 1 ? () => onMoveExercise(exIdx, 'down') : undefined}
+              onChangeExercise={() => {
+                router.push({
+                  pathname: '/(app)/(workout)/exercise-picker',
+                  params: {
+                    workoutId,
+                    replaceLogExerciseId: String(ex.logExerciseId),
+                    replaceOrder: String(exIdx + 1),
+                  },
+                });
+              }}
+              onPRPress={(setIdx) => onPRPress(exIdx, setIdx)}
+            />
+          ))}
+          {isInitializing && (
+            <Card style={styles.loadingCard}>
+              <Spinner size="small" />
+              <Typography variant="bodySmall" color={colors.textMuted} style={{ marginLeft: spacing.sm }}>
+                Initializing exercise...
+              </Typography>
+            </Card>
+          )}
+        </>
       )}
 
-      {exercises.length > 0 && (
+      {(exercises.length > 0 || isInitializing) && (
         <Button
           title="+ Add Exercise"
           variant="ghost"
@@ -115,6 +133,14 @@ const styles = StyleSheet.create({
   addExerciseBtn: {
     marginTop: spacing.md,
     marginBottom: spacing.lg,
+  },
+  loadingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+    marginBottom: spacing.md,
+    opacity: 0.7,
   },
 });
 

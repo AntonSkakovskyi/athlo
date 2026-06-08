@@ -4,13 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { confirmDestructive, showErrorAlert } from '@/utils/alerts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
-import { useDeleteTemplate, useDeleteTemplateExercise, useGetTemplateById, useStartFromTemplate, useUpdateTemplate, useUpdateTemplateExercise } from '@/hooks/api';
+import { useDeleteTemplate, useDeleteTemplateExercise, useGetTemplateById, useStartFromTemplate, useUpdateTemplate, useUpdateTemplateExercise, useSaveTemplate, useUnsaveTemplate, useGetSavedTemplates } from '@/hooks/api';
 import { useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/contexts/ToastContext';
 import apiClient from '@/api/api-client';
 import { templateKeys } from '@/api/queries/query-keys';
 import { getTrackingType } from '@/utils/workout';
 import { VisibilityType } from '@athlo/shared';
 import { VISIBILITY_ENUM_TO_ID } from '@/utils/visibility';
+import { validateFields, required } from '@/utils/validation';
 
 export function useTemplateDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -24,8 +26,33 @@ export function useTemplateDetailScreen() {
   const startFromTemplate = useStartFromTemplate();
   const deleteExercise = useDeleteTemplateExercise(id);
   const updateExercise = useUpdateTemplateExercise(id);
+  const saveTemplate = useSaveTemplate();
+  const unsaveTemplate = useUnsaveTemplate();
+  const savedTemplatesQuery = useGetSavedTemplates();
 
+  const { showToast } = useToast();
   const { startWorkout, isActive } = useActiveWorkout();
+
+  const isSaved = useMemo(() => {
+    const saved = (savedTemplatesQuery.data ?? []) as Array<{ workoutTemplateId: number }>;
+    return saved.some((s) => s.workoutTemplateId === Number(id));
+  }, [savedTemplatesQuery.data, id]);
+
+  const handleSave = useCallback(() => {
+    if (isSaved) {
+      unsaveTemplate.mutate(id);
+    } else {
+      saveTemplate.mutate(id, {
+        onSuccess: () => {
+          showToast({
+            title: 'Template Saved!',
+            description: 'The workout template has been added to your library. Go to the "My" tab to use it.',
+            icon: '📁',
+          });
+        },
+      });
+    }
+  }, [isSaved, id, saveTemplate, unsaveTemplate, showToast]);
 
   const [editName, setEditName] = useState<string | null>(null);
   const [editDesc, setEditDesc] = useState<string | null>(null);
@@ -143,11 +170,16 @@ export function useTemplateDetailScreen() {
       setEditName(null);
       return;
     }
+    const error = validateFields([
+      { value: editName ?? '', rules: [required('Template name')] },
+    ]);
+    if (error) { showToast({ title: error, variant: 'error' }); return; }
+
     updateTemplate.mutate(
       { id, data: { name: editName } },
       { onSuccess: () => setEditName(null) },
     );
-  }, [editName, typedTemplate, updateTemplate, id]);
+  }, [editName, typedTemplate, updateTemplate, id, showToast]);
 
   const handleSaveDesc = useCallback(() => {
     if (editDesc === null) return;
@@ -240,6 +272,9 @@ export function useTemplateDetailScreen() {
     handleVisibilityChange,
     startFromTemplatePending: startFromTemplate.isPending,
     deleteTemplatePending: deleteTemplate.isPending,
+    isSaved,
+    handleSave,
+    isSavePending: saveTemplate.isPending || unsaveTemplate.isPending,
     insets,
     router,
   };

@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection/CollapsibleSection';
 import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
 import { useTemplatesScreen } from '@/features/workout/hooks/useTemplatesScreen';
+import { ICONS } from '@/utils/icons';
 
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 
@@ -42,8 +43,8 @@ export default function TemplatesScreen() {
     insets,
     router,
     savedTemplateIds,
-    saveTemplate,
-    unsaveTemplate,
+    handleSave,
+    handleUnsave,
   } = useTemplatesScreen();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -86,7 +87,7 @@ export default function TemplatesScreen() {
                     'saved',
                     s.workoutTemplate?.creatorNickname,
                     undefined,
-                    () => unsaveTemplate.mutate(String(s.workoutTemplate!.id)),
+                    () => handleUnsave(s.workoutTemplate!.id),
                   ))}
                 </CollapsibleSection>
               )}
@@ -97,7 +98,7 @@ export default function TemplatesScreen() {
                     'saved',
                     s.workoutTemplate?.creatorNickname,
                     undefined,
-                    () => unsaveTemplate.mutate(String(s.workoutTemplate!.id)),
+                    () => handleUnsave(s.workoutTemplate!.id),
                   ))}
                 </CollapsibleSection>
               )}
@@ -125,7 +126,7 @@ export default function TemplatesScreen() {
                     t as any,
                     'public',
                     undefined,
-                    () => saveTemplate.mutate(String(t.id)),
+                    () => handleSave(t.id),
                   ))}
                 </CollapsibleSection>
               )}
@@ -135,7 +136,7 @@ export default function TemplatesScreen() {
                     t as any,
                     'public',
                     t.creatorNickname,
-                    () => saveTemplate.mutate(String(t.id)),
+                    () => handleSave(t.id),
                   ))}
                 </CollapsibleSection>
               )}
@@ -169,12 +170,6 @@ export default function TemplatesScreen() {
           renderItem={() => null}
           ListHeaderComponent={
             <View style={styles.listContainer}>
-              <Button
-                title="+ Add Friend"
-                variant="ghost-primary"
-                onPress={() => router.push({ pathname: '/(app)/(profile)/friends', params: { tab: 'find' } })}
-                style={styles.addFriendBtn}
-              />
               {unsavedFriendGroups.length === 0 && (
                 <EmptyState
                   title="No friend templates"
@@ -191,10 +186,16 @@ export default function TemplatesScreen() {
                     t,
                     'public',
                     group.friend.nickname,
-                    () => saveTemplate.mutate(String(t.id)),
+                    () => handleSave(t.id),
                   ))}
                 </CollapsibleSection>
               ))}
+              <Button
+                title="+ Add Friend"
+                variant="ghost-primary"
+                onPress={() => router.push({ pathname: '/(app)/(profile)/friends', params: { tab: 'find' } })}
+                style={styles.addFriendBtn}
+              />
             </View>
           }
           contentContainerStyle={styles.list}
@@ -212,7 +213,7 @@ export default function TemplatesScreen() {
         onBack={() => router.back()}
         rightAction={
           <Button
-            title={showCreate ? 'Cancel' : '+ Create'}
+            title={showCreate ? 'Cancel' : `${ICONS.activate} Create`}
             variant="ghost-primary"
             onPress={() => setShowCreate(!showCreate)}
           />

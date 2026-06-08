@@ -15,10 +15,10 @@ export interface SetRowData {
   duration?: number | null;
   distance?: number | null;
   isCompleted: boolean;
-  previousWeight?: number;
-  previousReps?: number;
-  previousDuration?: number;
-  previousDistance?: number;
+  previousWeight?: number | null;
+  previousReps?: number | null;
+  previousDuration?: number | null;
+  previousDistance?: number | null;
 }
 
 interface SetRowProps {
@@ -42,7 +42,13 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
     if (trackingType === TrackingType.REPS_ONLY) {
       return set.previousReps ? `${set.previousReps}` : '—';
     }
-    // TIME_BASED
+    if (trackingType === TrackingType.TIME_BASED) {
+      return set.previousDuration ? formatSeconds(set.previousDuration) : '—';
+    }
+    if (trackingType === TrackingType.DISTANCE_ONLY) {
+      return set.previousDistance ? `${set.previousDistance}m` : '—';
+    }
+    // DISTANCE_AND_TIME
     const dur = set.previousDuration ? formatSeconds(set.previousDuration) : '';
     const dist = set.previousDistance ? `${set.previousDistance}m` : '';
     return dur || dist ? `${dur} ${dist}`.trim() : '—';
@@ -55,41 +61,73 @@ export function SetRow({ set, trackingType, onUpdate, onToggleComplete }: SetRow
 
       {trackingType === TrackingType.WEIGHT_AND_REPS && (
         <>
-          <NumericInput
-            placeholder="kg"
-            value={set.weight != null ? String(set.weight) : ''}
-            onChangeText={(t) => onUpdate({ weight: t ? Number(t) : null })}
-          />
-          <NumericInput
-            placeholder="reps"
-            value={set.reps != null ? String(set.reps) : ''}
-            onChangeText={(t) => onUpdate({ reps: t ? Number(t) : null })}
-          />
+          <View style={styles.inputWrap}>
+            <NumericInput
+              placeholder="kg"
+              value={set.weight != null ? String(set.weight) : ''}
+              onChangeText={(t) => onUpdate({ weight: t ? Number(t) : null })}
+            />
+          </View>
+          <View style={styles.inputWrap}>
+            <NumericInput
+              placeholder="reps"
+              value={set.reps != null ? String(set.reps) : ''}
+              onChangeText={(t) => onUpdate({ reps: t ? Number(t) : null })}
+            />
+          </View>
         </>
       )}
 
       {trackingType === TrackingType.REPS_ONLY && (
-        <NumericInput
-          wide
-          placeholder="reps"
-          value={set.reps != null ? String(set.reps) : ''}
-          onChangeText={(t) => onUpdate({ reps: t ? Number(t) : null })}
-        />
+        <View style={styles.inputWrapWide}>
+          <NumericInput
+            wide
+            placeholder="reps"
+            value={set.reps != null ? String(set.reps) : ''}
+            onChangeText={(t) => onUpdate({ reps: t ? Number(t) : null })}
+          />
+        </View>
       )}
 
       {trackingType === TrackingType.TIME_BASED && (
-        <>
+        <View style={styles.inputWrapWide}>
           <NumericInput
+            wide
             placeholder="sec"
             value={set.duration != null ? String(set.duration) : ''}
             onChangeText={(t) => onUpdate({ duration: t ? Number(t) : null })}
           />
+        </View>
+      )}
+
+      {trackingType === TrackingType.DISTANCE_AND_TIME && (
+        <>
+          <View style={styles.inputWrap}>
+            <NumericInput
+              placeholder="sec"
+              value={set.duration != null ? String(set.duration) : ''}
+              onChangeText={(t) => onUpdate({ duration: t ? Number(t) : null })}
+            />
+          </View>
+          <View style={styles.inputWrap}>
+            <NumericInput
+              placeholder="m"
+              value={set.distance != null ? String(set.distance) : ''}
+              onChangeText={(t) => onUpdate({ distance: t ? Number(t) : null })}
+            />
+          </View>
+        </>
+      )}
+
+      {trackingType === TrackingType.DISTANCE_ONLY && (
+        <View style={styles.inputWrapWide}>
           <NumericInput
+            wide
             placeholder="m"
             value={set.distance != null ? String(set.distance) : ''}
             onChangeText={(t) => onUpdate({ distance: t ? Number(t) : null })}
           />
-        </>
+        </View>
       )}
 
       <Pressable
@@ -128,6 +166,16 @@ function makeStyles(c: ColorPalette) {
       fontSize: fontSize.sm,
       color: c.textMuted,
       textAlign: 'center',
+    },
+    inputWrap: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    inputWrapWide: {
+      flex: 2,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     checkbox: {
       width: 32,

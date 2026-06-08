@@ -10,6 +10,7 @@ export interface ExerciseWithRelations extends IExercise {
   exerciseMuscles?: { isPrimary: boolean; muscle: { id: number; name: string } }[];
   totalSets?: number;
   totalWorkouts?: number;
+  hasLoggedHistory?: boolean;
 }
 
 interface ExerciseFilters {
@@ -84,7 +85,7 @@ interface CreateExerciseData {
 interface UpdateExerciseData {
   name?: string;
   description?: string;
-  equipmentId?: number;
+  equipmentId?: number | null;
   trackingTypeId?: number;
   muscles?: ExerciseMuscleData[];
 }
@@ -111,8 +112,9 @@ export const useUpdateExercise = () => {
       const response = await apiClient.patch<IExercise>(apiRoutes.exercises.update(id), data);
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, { id }) => {
       queryClient.invalidateQueries({ queryKey: exerciseKeys.all });
+      queryClient.invalidateQueries({ queryKey: exerciseKeys.byId(id) });
     },
   });
 };
@@ -125,8 +127,9 @@ export const useDeleteExercise = () => {
       const response = await apiClient.delete(apiRoutes.exercises.delete(id));
       return response.data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: exerciseKeys.all });
+      queryClient.removeQueries({ queryKey: exerciseKeys.byId(id) });
     },
   });
 };

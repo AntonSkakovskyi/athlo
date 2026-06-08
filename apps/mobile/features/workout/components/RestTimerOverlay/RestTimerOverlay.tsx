@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Pressable,
   Animated,
-  Modal,
   Vibration,
 } from 'react-native';
 import { borderRadius, fontSize, fontWeight, spacing } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
+import { BottomSheet } from '@/components/ui';
 import { TimerDisplay } from './TimerDisplay';
 
 interface RestTimerProps {
@@ -21,7 +21,7 @@ interface RestTimerProps {
 
 export function RestTimerOverlay({ visible, initialSeconds, onClose }: RestTimerProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = makeStyles(colors);
   const [remaining, setRemaining] = useState(initialSeconds);
   const [totalDuration, setTotalDuration] = useState(initialSeconds);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -81,60 +81,47 @@ export function RestTimerOverlay({ visible, initialSeconds, onClose }: RestTimer
   });
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.backdrop}>
-        <View style={styles.container}>
-          {/* Title */}
-          <Text style={styles.title}>Rest Timer</Text>
+    <BottomSheet
+      visible={visible}
+      onClose={onClose}
+      title="Rest Timer"
+      scrollable={false}
+      showCancel={false}
+    >
+      <View style={styles.container}>
+        {/* Timer display */}
+        <TimerDisplay remaining={remaining} formatTime={formatTime} />
 
-          {/* Timer display */}
-          <TimerDisplay remaining={remaining} formatTime={formatTime} />
+        {/* Progress bar */}
+        <View style={styles.progressTrack}>
+          <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
+        </View>
 
-          {/* Progress bar */}
-          <View style={styles.progressTrack}>
-            <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
-          </View>
-
-          {/* Adjust buttons */}
-          <View style={styles.adjustRow}>
-            <Pressable style={styles.adjustBtn} onPress={() => adjustTime(-15)}>
-              <Text style={styles.adjustText}>-15s</Text>
-            </Pressable>
-            <Pressable style={styles.adjustBtn} onPress={() => adjustTime(15)}>
-              <Text style={styles.adjustText}>+15s</Text>
-            </Pressable>
-          </View>
-
-          {/* Skip / Close */}
-          <Pressable style={styles.skipBtn} onPress={onClose}>
-            <Text style={styles.skipText}>{remaining === 0 ? 'Close' : 'Skip'}</Text>
+        {/* Adjust buttons */}
+        <View style={styles.adjustRow}>
+          <Pressable style={styles.adjustBtn} onPress={() => adjustTime(-15)}>
+            <Text style={styles.adjustText}>-15s</Text>
+          </Pressable>
+          <Pressable style={styles.adjustBtn} onPress={() => adjustTime(15)}>
+            <Text style={styles.adjustText}>+15s</Text>
           </Pressable>
         </View>
+
+        {/* Skip / Close */}
+        <Pressable style={styles.skipBtn} onPress={onClose}>
+          <Text style={styles.skipText}>{remaining === 0 ? 'Close' : 'Skip'}</Text>
+        </Pressable>
       </View>
-    </Modal>
+    </BottomSheet>
   );
 }
 
 function makeStyles(c: ColorPalette) {
   return StyleSheet.create({
-    backdrop: {
-      flex: 1,
-      backgroundColor: c.overlay,
-      justifyContent: 'flex-end',
-    },
     container: {
-      backgroundColor: c.surface,
-      borderTopLeftRadius: borderRadius.xl,
-      borderTopRightRadius: borderRadius.xl,
-      padding: spacing['3xl'],
-      paddingBottom: 48,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xl,
       alignItems: 'center',
-    },
-    title: {
-      fontSize: fontSize.lg,
-      fontWeight: fontWeight.bold,
-      color: c.text,
-      marginBottom: spacing['2xl'],
     },
     progressTrack: {
       width: '100%',

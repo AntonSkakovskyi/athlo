@@ -80,10 +80,16 @@ export function ActiveExerciseCard({
           <Text style={[styles.colHeader, { flex: 2 }]}>Reps</Text>
         )}
         {trackingType === TrackingType.TIME_BASED && (
+          <Text style={[styles.colHeader, { flex: 2 }]}>Time</Text>
+        )}
+        {trackingType === TrackingType.DISTANCE_AND_TIME && (
           <>
             <Text style={[styles.colHeader, { flex: 1 }]}>Time</Text>
             <Text style={[styles.colHeader, { flex: 1 }]}>Dist</Text>
           </>
+        )}
+        {trackingType === TrackingType.DISTANCE_ONLY && (
+          <Text style={[styles.colHeader, { flex: 2 }]}>Distance</Text>
         )}
         <Text style={[styles.colHeader, { width: 32 }]}>✓</Text>
       </View>

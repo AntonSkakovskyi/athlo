@@ -3,13 +3,13 @@ import {
   View,
   Text,
   StyleSheet,
-  Modal,
   ScrollView,
 } from 'react-native';
 import { borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
+import { BottomSheet } from '@/components/ui';
 import { MetricsForm } from './MetricsForm';
 
 interface FinishWorkoutModalProps {
@@ -59,54 +59,55 @@ export function FinishWorkoutModal({
     });
   };
 
+  const footer = (
+    <View style={styles.actions}>
+      <Button
+        title="Finish Workout"
+        variant="primary"
+        onPress={handleFinish}
+        isLoading={isLoading}
+        style={styles.actionBtn}
+      />
+      <Button
+        title="Go Back"
+        variant="ghost"
+        onPress={onCancel}
+        style={styles.actionBtn}
+      />
+    </View>
+  );
+
   return (
-    <Modal visible={visible} transparent animationType="slide">
-      <View style={styles.backdrop}>
-        <View style={styles.container}>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {/* Header */}
-            <Text style={styles.title}>Finish Workout</Text>
-
-            {/* Summary Preview */}
-            <View style={styles.summaryRow}>
-              <SummaryItem icon="⏱️" value={duration} label="Duration" />
-              <SummaryItem icon="🏋️" value={`${volume.toLocaleString()} kg`} label="Volume" />
-              <SummaryItem icon="✅" value={`${completedSets}/${totalSets}`} label="Sets" />
-            </View>
-
-            <MetricsForm
-              rpe={rpe}
-              setRpe={setRpe}
-              feeling={feeling}
-              setFeeling={setFeeling}
-              calories={calories}
-              setCalories={setCalories}
-              avgHr={avgHr}
-              setAvgHr={setAvgHr}
-              maxHr={maxHr}
-              setMaxHr={setMaxHr}
-            />
-          </ScrollView>
-
-          {/* Actions */}
-          <View style={styles.actions}>
-            <Button
-              title="Finish Workout"
-              variant="primary"
-              onPress={handleFinish}
-              isLoading={isLoading}
-              style={styles.actionBtn}
-            />
-            <Button
-              title="Go Back"
-              variant="ghost"
-              onPress={onCancel}
-              style={styles.actionBtn}
-            />
-          </View>
+    <BottomSheet
+      visible={visible}
+      onClose={onCancel}
+      title="Finish Workout"
+      footer={footer}
+      maxHeight="85%"
+      scrollable={false}
+    >
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
+        {/* Summary Preview */}
+        <View style={styles.summaryRow}>
+          <SummaryItem icon="⏱️" value={duration} label="Duration" />
+          <SummaryItem icon="🏋️" value={`${volume.toLocaleString()} kg`} label="Volume" />
+          <SummaryItem icon="✅" value={`${completedSets}/${totalSets}`} label="Sets" />
         </View>
-      </View>
-    </Modal>
+
+        <MetricsForm
+          rpe={rpe}
+          setRpe={setRpe}
+          feeling={feeling}
+          setFeeling={setFeeling}
+          calories={calories}
+          setCalories={setCalories}
+          avgHr={avgHr}
+          setAvgHr={setAvgHr}
+          maxHr={maxHr}
+          setMaxHr={setMaxHr}
+        />
+      </ScrollView>
+    </BottomSheet>
   );
 }
 
@@ -124,25 +125,8 @@ function SummaryItem({ icon, value, label }: { icon: string; value: string; labe
 
 function makeStyles(c: ColorPalette) {
   return StyleSheet.create({
-    backdrop: {
-      flex: 1,
-      backgroundColor: c.overlay,
-      justifyContent: 'flex-end',
-    },
-    container: {
-      backgroundColor: c.surface,
-      borderTopLeftRadius: borderRadius.xl,
-      borderTopRightRadius: borderRadius.xl,
-      padding: spacing['3xl'],
-      paddingBottom: 48,
-      maxHeight: '85%',
-    },
-    title: {
-      fontSize: fontSize.xl,
-      fontWeight: fontWeight.bold,
-      color: c.text,
-      textAlign: 'center',
-      marginBottom: spacing.xl,
+    content: {
+      paddingHorizontal: spacing.lg,
     },
     // Summary
     summaryRow: {
@@ -173,7 +157,8 @@ function makeStyles(c: ColorPalette) {
     // Actions
     actions: {
       gap: spacing.sm,
-      marginTop: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.sm,
     },
     actionBtn: {
       width: '100%',

@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { spacing } from '@/constants/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { showAlert, showErrorAlert } from '@/utils/alerts';
 import {
   useGetMyTemplates,
   useGetPublicTemplates,
@@ -17,6 +18,7 @@ import type { IWorkoutTemplate } from '@athlo/shared';
 import { VisibilityType } from '@athlo/shared';
 import { VISIBILITY_ENUM_TO_ID } from '@/utils/visibility';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import TemplateCard from '../components/TemplateCard/TemplateCard';
 
 export function useTemplatesScreen() {
@@ -68,6 +70,28 @@ export function useTemplatesScreen() {
         router.replace('/(app)/(workout)/active-workout');
       },
     });
+  };
+
+  const { showToast } = useToast();
+
+  const handleSave = (id: number) => {
+    saveTemplate.mutate(String(id), {
+      onSuccess: () => {
+        showToast({
+          title: 'Template Saved!',
+          description: 'The workout template has been added to your library. Go to the "My" tab to use it.',
+          icon: '📁',
+        });
+      },
+      onError: (err) => {
+        showErrorAlert('Failed to save template. Please try again.');
+        console.error('Save template error:', err);
+      }
+    });
+  };
+
+  const handleUnsave = (id: number) => {
+    unsaveTemplate.mutate(String(id));
   };
 
   const savedTemplateIds = useMemo(() => {
@@ -176,8 +200,8 @@ export function useTemplatesScreen() {
     insets,
     router,
     savedTemplateIds,
-    saveTemplate,
-    unsaveTemplate,
+    handleSave,
+    handleUnsave,
   };
 }
 

@@ -7,7 +7,7 @@ import { WorkoutHeaderBar } from './active-workout/components/WorkoutHeaderBar/W
 import { ExerciseListSection } from './active-workout/components/ExerciseListSection/ExerciseListSection';
 import { StatsBar, RestTimerOverlay } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
-import { BottomSheet, AchievementToast } from '@/components/ui';
+import { BottomSheet, Toast } from '@/components/ui';
 import { formatHMS, formatSeconds } from '@/utils/time';
 import { useActiveWorkoutScreen } from '@/features/workout/hooks/useActiveWorkoutScreen';
 import { useMemo, useState } from 'react';
@@ -27,6 +27,7 @@ export default function ActiveWorkoutScreen() {
     toggleSetComplete,
     deleteExercise,
     moveExercise,
+    reorderSets,
     elapsed,
     editName,
     setEditName,
@@ -36,6 +37,7 @@ export default function ActiveWorkoutScreen() {
     newAchievement,
     setNewAchievement,
     isLoadingExercises,
+    isInitializing,
     handleFinish,
     handleRestTimer,
     handleCancel,
@@ -81,9 +83,13 @@ export default function ActiveWorkoutScreen() {
       } else if (ex.trackingType === 'REPS_ONLY') {
         if (set.reps != null) recordDetails = `${set.reps} reps`;
       } else if (ex.trackingType === 'TIME_BASED') {
+        if (set.duration != null) recordDetails = formatSeconds(set.duration);
+      } else if (ex.trackingType === 'DISTANCE_AND_TIME') {
         const dur = set.duration ? formatSeconds(set.duration) : '';
         const dist = set.distance ? `${set.distance}m` : '';
         recordDetails = [dur, dist].filter(Boolean).join(' ');
+      } else if (ex.trackingType === 'DISTANCE_ONLY') {
+        if (set.distance != null) recordDetails = `${set.distance}m`;
       }
 
       setPrAchievement({
@@ -120,6 +126,7 @@ export default function ActiveWorkoutScreen() {
       <ExerciseListSection
         exercises={exercises}
         isLoadingExercises={isLoadingExercises}
+        isInitializing={isInitializing}
         workoutId={String(workout.id)}
         onAddExercise={handleAddExercise}
         onUpdateExercise={updateExercise}
@@ -127,6 +134,7 @@ export default function ActiveWorkoutScreen() {
         onDeleteSet={deleteSet}
         onToggleSetComplete={toggleSetComplete}
         onAddSet={addSet}
+        onMoveSet={reorderSets}
         onRestTimer={handleRestTimer}
         onDeleteExercise={deleteExercise}
         onMoveExercise={moveExercise}
@@ -171,10 +179,11 @@ export default function ActiveWorkoutScreen() {
         </View>
       </BottomSheet>
 
-      <AchievementToast
+      <Toast
         visible={!!newAchievement}
         title={newAchievement?.title || ''}
         description={newAchievement?.description}
+        variant="achievement"
         onClose={() => setNewAchievement(null)}
       />
     </View>

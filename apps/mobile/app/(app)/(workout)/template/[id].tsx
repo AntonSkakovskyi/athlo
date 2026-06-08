@@ -27,6 +27,7 @@ export default function TemplateDetailScreen() {
     handleUpdateSet, handleAddSet, handleDeleteSet,
     currentVisibility, handleVisibilityChange,
     startFromTemplatePending, deleteTemplatePending,
+    isSaved, handleSave, isSavePending,
     insets, router,
   } = useTemplateDetailScreen();
   const { colors } = useTheme();
@@ -123,7 +124,13 @@ export default function TemplateDetailScreen() {
         {isOwner ? (
           <Button title="Delete" variant="danger" onPress={handleDelete} isLoading={deleteTemplatePending} style={styles.deleteButton} />
         ) : (
-          <Button title="Save Template" variant="secondary" onPress={() => {}} style={styles.deleteButton} />
+          <Button
+            title={isSaved ? '✓ Saved' : '+ Save Template'}
+            variant={isSaved ? 'secondary' : 'primary'}
+            onPress={handleSave}
+            isLoading={isSavePending}
+            style={styles.footerButton}
+          />
         )}
       </View>
 

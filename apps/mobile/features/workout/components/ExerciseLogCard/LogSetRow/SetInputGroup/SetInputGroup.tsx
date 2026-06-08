@@ -6,6 +6,7 @@ import type { ColorPalette } from '@/constants/colors';
 import { NumericInput } from '@/components/ui';
 import { TrackingType } from '@athlo/shared';
 import { formatSeconds } from '@/utils/time';
+import { ICONS } from '@/utils/icons';
 import type { LogSetData } from '../LogSetRow';
 
 interface SetInputGroupProps {
@@ -26,7 +27,7 @@ export function SetInputGroup({
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const formatValue = (val?: number, unit: string = '') => {
+  const formatValue = (val?: number | null, unit: string = '') => {
     if (val == null) return '—';
     if (unit === 'time') return formatSeconds(val);
     return `${val}${unit}`;
@@ -80,6 +81,27 @@ export function SetInputGroup({
 
   if (trackingType === TrackingType.TIME_BASED) {
     return (
+      <View style={styles.inputWrapWide}>
+        {isViewOnly ? (
+          <Text style={styles.valueText}>{formatValue(set.duration, 'time')}</Text>
+        ) : (
+          <Pressable onPress={onOpenTimePicker} style={styles.timePickerBtn}>
+            <Text style={[styles.timeText, !set.duration && styles.timePlaceholder]}>
+              {set.duration 
+                ? formatSeconds(set.duration) 
+                : set.placeholderDuration 
+                  ? formatSeconds(set.placeholderDuration) 
+                  : '0:00'}
+            </Text>
+            <Text style={styles.timeIcon}>{ICONS.time}</Text>
+          </Pressable>
+        )}
+      </View>
+    );
+  }
+
+  if (trackingType === TrackingType.DISTANCE_AND_TIME) {
+    return (
       <>
         <View style={styles.inputWrap}>
           {isViewOnly ? (
@@ -87,9 +109,13 @@ export function SetInputGroup({
           ) : (
             <Pressable onPress={onOpenTimePicker} style={styles.timePickerBtn}>
               <Text style={[styles.timeText, !set.duration && styles.timePlaceholder]}>
-                {set.duration ? formatSeconds(set.duration) : '0:00'}
+                {set.duration 
+                  ? formatSeconds(set.duration) 
+                  : set.placeholderDuration 
+                    ? formatSeconds(set.placeholderDuration) 
+                    : '0:00'}
               </Text>
-              <Text style={styles.timeIcon}>⏱️</Text>
+              <Text style={styles.timeIcon}>{ICONS.time}</Text>
             </Pressable>
           )}
         </View>
@@ -108,6 +134,23 @@ export function SetInputGroup({
     );
   }
 
+  if (trackingType === TrackingType.DISTANCE_ONLY) {
+    return (
+      <View style={styles.inputWrapWide}>
+        {isViewOnly ? (
+          <Text style={styles.valueText}>{formatValue(set.distance, 'm')}</Text>
+        ) : (
+          <NumericInput
+            wide
+            placeholder={set.placeholderDistance != null ? String(set.placeholderDistance) : 'm'}
+            value={set.distance != null ? String(set.distance) : ''}
+            onChangeText={(t) => onUpdate({ distance: t ? Number(t) : null })}
+          />
+        )}
+      </View>
+    );
+  }
+
   return null;
 }
 
@@ -115,11 +158,15 @@ function makeStyles(c: ColorPalette) {
   return StyleSheet.create({
     inputWrap: {
       flex: 1,
+      maxWidth: 80,
+      minWidth: 65,
       alignItems: 'center',
       justifyContent: 'center',
     },
     inputWrapWide: {
       flex: 2,
+      maxWidth: 160,
+      minWidth: 130,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -136,7 +183,7 @@ function makeStyles(c: ColorPalette) {
       paddingHorizontal: spacing.sm,
       borderRadius: borderRadius.sm,
       gap: spacing.xs,
-      minWidth: 80,
+      width: '100%',
       justifyContent: 'center',
     },
     timeText: {

@@ -13,7 +13,7 @@ import { MetricsRow } from './workout-summary/components/MetricsRow/MetricsRow';
 import { getTrackingType } from '@/utils/workout';
 import { formatSeconds } from '@/utils/time';
 import { VISIBILITY_ENUM_TO_ID, getVisibilityIcon } from '@/utils/visibility';
-import { BottomSheet, AchievementToast } from '@/components/ui';
+import { BottomSheet, Toast } from '@/components/ui';
 import { useState, useMemo } from 'react';
 
 
@@ -100,9 +100,13 @@ export default function WorkoutSummaryScreen() {
       } else if (trackingType === 'REPS_ONLY') {
         if (set.reps != null) recordDetails = `${set.reps} reps`;
       } else if (trackingType === 'TIME_BASED') {
+        if (set.duration != null) recordDetails = formatSeconds(set.duration);
+      } else if (trackingType === 'DISTANCE_AND_TIME') {
         const dur = set.duration ? formatSeconds(set.duration) : '';
         const dist = set.distance ? `${set.distance}m` : '';
         recordDetails = [dur, dist].filter(Boolean).join(' ');
+      } else if (trackingType === 'DISTANCE_ONLY') {
+        if (set.distance != null) recordDetails = `${set.distance}m`;
       }
 
       setPrAchievement({
@@ -383,10 +387,11 @@ export default function WorkoutSummaryScreen() {
         )}
       </ScrollView>
 
-      <AchievementToast
+      <Toast
         visible={!!newAchievement}
         title={newAchievement?.title || ''}
         description={newAchievement?.description}
+        variant="achievement"
         onClose={() => setNewAchievement(null)}
       />
     </View>

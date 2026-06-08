@@ -8,6 +8,8 @@ import { formatHMS, formatSeconds } from '@/utils/time';
 import { showErrorAlert } from '@/utils/alerts';
 import apiClient from '@/api/api-client';
 import {
+  useDeleteLogExercise,
+  useDeleteLogSet,
   useDeleteWorkout,
   useGetBatchLastPerformance,
   useGetWorkoutById,
@@ -34,6 +36,7 @@ export function useActiveWorkoutScreen() {
     updateSet: updateSetLocal,
     removeSet: removeSetLocal,
     reorderExercises: reorderExercisesLocal,
+    reorderSets: reorderSetsLocal,
     toggleSetComplete: toggleSetCompleteLocal,
     endWorkout,
     removeExercise,
@@ -53,6 +56,8 @@ export function useActiveWorkoutScreen() {
 
   // API hooks for sets and exercises
   const updateLogExercise = useUpdateLogExercise(workoutId);
+  const deleteLogExercise = useDeleteLogExercise(workoutId);
+  const deleteLogSet = useDeleteLogSet(workoutId);
 
   // Refs must be declared before any useMemo/useEffect that reads them.
   const addedLogExerciseIds = useRef(new Set<number>());
@@ -103,68 +108,108 @@ export function useActiveWorkoutScreen() {
     newExerciseIds.forEach((id) => fetchedLastPerfIds.current.add(id));
   }, [lastPerfQuery.data, newExerciseIds]);
 
+  const initializingIds = useRef(new Set<number>());
+  const [isInitializing, setIsInitializing] = useState(false);
+
   useEffect(() => {
     // Only wait for in-flight last-perf if there are genuinely new exercises to fetch for.
     if (newExerciseIds.length > 0 && !lastPerfQuery.isSuccess && !lastPerfQuery.isError) return;
     if (workoutQuery.data?.logExercises?.length) {
       const existingIds = new Set(exercises.map((e) => e.logExerciseId));
-      for (const ex of workoutQuery.data.logExercises.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))) {
-        if (existingIds.has(ex.id) || addedLogExerciseIds.current.has(ex.id)) continue;
+      let newlyAdded = false;
 
-        addedLogExerciseIds.current.add(ex.id);
+      for (const ex of workoutQuery.data.logExercises.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))) {
+        if (existingIds.has(ex.id) || addedLogExerciseIds.current.has(ex.id) || initializingIds.current.has(ex.id)) continue;
+
+        newlyAdded = true;
+        initializingIds.current.add(ex.id);
+        setIsInitializing(true);
         const trackingType = getTrackingType(ex.exercise?.trackingTypeId);
+        
         // Use accumulated cache — data for old exercises is available immediately.
         const prevSets = lastPerfCache.current[ex.exerciseId]?.sets ?? [];
-        
         const sortedLogSets = [...(ex.sets ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-        addExercise({
-          logExerciseId: ex.id,
-          exerciseId: ex.exerciseId,
-          exerciseName: ex.exercise?.name ?? `Exercise #${ex.order}`,
-          trackingType,
-          restTime: ex.restTime ?? 0,
-          notes: ex.notes ?? '',
-          sets: sortedLogSets.length > 0 
-            ? sortedLogSets.map((s, idx) => {
-                const prevPerformanceSet = prevSets[idx];
-                const previousInWorkout = idx > 0 ? sortedLogSets[idx-1] : null;
+        const initExercise = async () => {
+          let setsToUse = sortedLogSets;
+          
+          // If no sets exist in DB, create initial sets based on last performance
+          if (sortedLogSets.length === 0 && prevSets.length > 0) {
+            try {
+              const createdSets = await Promise.all(
+                prevSets.map(s => 
+                  apiClient.post(`workouts/${workoutId}/exercises/${ex.id}/sets`, {
+                    order: s.order,
+                    isCompleted: false,
+                  })
+                )
+              );
+              setsToUse = createdSets.map(r => r.data);
+            } catch (e) {
+              console.error('Failed to initialize sets for exercise:', ex.id, e);
+            }
+          }
 
-                return {
-                  id: s.id,
-                  order: s.order,
-                  weight: s.weight,
-                  reps: s.reps,
-                  duration: s.duration,
-                  distance: s.distance,
-                  isCompleted: s.isCompleted,
-                  isPR: s.isPR,
-                  achievementId: s.achievementId,
-                  achievement: s.achievement,
-                  previousWeight: prevPerformanceSet?.weight,
-                  previousReps: prevPerformanceSet?.reps,
-                  previousDuration: prevPerformanceSet?.duration,
-                  previousDistance: prevPerformanceSet?.distance,
-                  // Placeholders
-                  placeholderWeight: previousInWorkout?.weight ?? prevPerformanceSet?.weight,
-                  placeholderReps: previousInWorkout?.reps ?? prevPerformanceSet?.reps,
-                  placeholderDuration: previousInWorkout?.duration ?? prevPerformanceSet?.duration,
-                  placeholderDistance: previousInWorkout?.distance ?? prevPerformanceSet?.distance,
-                };
-              })
-            : [{ 
-                order: 1, 
-                isCompleted: false,
-                previousWeight: prevSets[0]?.weight,
-                previousReps: prevSets[0]?.reps,
-                previousDuration: prevSets[0]?.duration,
-                previousDistance: prevSets[0]?.distance,
-                placeholderWeight: prevSets[0]?.weight,
-                placeholderReps: prevSets[0]?.reps,
-                placeholderDuration: prevSets[0]?.duration,
-                placeholderDistance: prevSets[0]?.distance,
-              }],
-        });
+          addedLogExerciseIds.current.add(ex.id);
+          initializingIds.current.delete(ex.id);
+          if (initializingIds.current.size === 0) {
+            setIsInitializing(false);
+          }
+
+          addExercise({
+            logExerciseId: ex.id,
+            exerciseId: ex.exerciseId,
+            exerciseName: ex.exercise?.name ?? `Exercise #${ex.order}`,
+            trackingType,
+            restTime: ex.restTime ?? 0,
+            notes: ex.notes ?? '',
+            sets: setsToUse.length > 0 
+              ? setsToUse.map((s, idx) => {
+                  const prevPerformanceSet = prevSets[idx];
+                  const previousInWorkout = idx > 0 ? setsToUse[idx-1] : null;
+
+                  return {
+                    id: s.id,
+                    order: s.order,
+                    weight: s.weight,
+                    reps: s.reps,
+                    duration: s.duration,
+                    distance: s.distance,
+                    isCompleted: s.isCompleted,
+                    isPR: s.isPR,
+                    achievementId: s.achievementId,
+                    achievement: s.achievement,
+                    previousWeight: prevPerformanceSet?.weight,
+                    previousReps: prevPerformanceSet?.reps,
+                    previousDuration: prevPerformanceSet?.duration,
+                    previousDistance: prevPerformanceSet?.distance,
+                    // Placeholders
+                    placeholderWeight: previousInWorkout?.weight ?? prevPerformanceSet?.weight,
+                    placeholderReps: previousInWorkout?.reps ?? prevPerformanceSet?.reps,
+                    placeholderDuration: previousInWorkout?.duration ?? prevPerformanceSet?.duration,
+                    placeholderDistance: previousInWorkout?.distance ?? prevPerformanceSet?.distance,
+                  };
+                })
+              : [{ 
+                  order: 1, 
+                  isCompleted: false,
+                  previousWeight: prevSets[0]?.weight,
+                  previousReps: prevSets[0]?.reps,
+                  previousDuration: prevSets[0]?.duration,
+                  previousDistance: prevSets[0]?.distance,
+                  placeholderWeight: prevSets[0]?.weight,
+                  placeholderReps: prevSets[0]?.reps,
+                  placeholderDuration: prevSets[0]?.duration,
+                  placeholderDistance: prevSets[0]?.distance,
+                }],
+          });
+        };
+
+        initExercise();
+      }
+
+      if (!newlyAdded && initializingIds.current.size === 0) {
+        setIsInitializing(false);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -236,12 +281,15 @@ export function useActiveWorkoutScreen() {
       const set = ex?.sets[setIndex];
       if (!ex || !set) return;
 
-      if (set.id) {
-        apiClient.delete(`workouts/${workoutId}/exercises/${ex.logExerciseId}/sets/${set.id}`);
+      if (ex.logExerciseId && set.id) {
+        deleteLogSet.mutate({
+          exerciseId: String(ex.logExerciseId),
+          setId: String(set.id),
+        });
       }
       removeSetLocal(exerciseIndex, setIndex);
     },
-    [exercises, workoutId, removeSetLocal],
+    [exercises, deleteLogSet, removeSetLocal],
   );
 
   const moveExercise = useCallback((index: number, direction: 'up' | 'down') => {
@@ -250,15 +298,39 @@ export function useActiveWorkoutScreen() {
     reorderExercisesLocal(index, toIndex);
   }, [exercises.length, reorderExercisesLocal]);
 
+  const reorderSets = useCallback(async (exerciseIndex: number, direction: 'up' | 'down', setIndex: number) => {
+    const toIndex = direction === 'up' ? setIndex - 1 : setIndex + 1;
+    const ex = exercises[exerciseIndex];
+    if (!ex || toIndex < 0 || toIndex >= ex.sets.length) return;
+    
+    // 1. Update local state
+    reorderSetsLocal(exerciseIndex, setIndex, toIndex);
+    
+    // 2. Persist to API
+    if (ex.logExerciseId) {
+      const updatedEx = exercises[exerciseIndex]; // Get fresh sets after local update
+      // We need to update orders for all sets to be safe
+      const updatePromises = updatedEx.sets.map((s, idx) => 
+        apiClient.patch(`workouts/${workoutId}/exercises/${ex.logExerciseId}/sets/${s.id}`, {
+          order: idx + 1
+        })
+      );
+      try {
+        await Promise.all(updatePromises);
+      } catch (e) {
+        console.error('Failed to persist set reordering:', e);
+      }
+    }
+  }, [exercises, reorderSetsLocal, workoutId]);
+
   const deleteExercise = useCallback((index: number) => {
     const ex = exercises[index];
     if (!ex) return;
     if (ex.logExerciseId) {
-      apiClient.delete(`workouts/${workoutId}/exercises/${ex.logExerciseId}`);
-      addedLogExerciseIds.current.delete(ex.logExerciseId);
+      deleteLogExercise.mutate(String(ex.logExerciseId));
     }
     removeExercise(index);
-  }, [exercises, workoutId, removeExercise]);
+  }, [exercises, deleteLogExercise, removeExercise]);
 
   const toggleSetComplete = useCallback(
     (exerciseIndex: number, setIndex: number) => {
@@ -302,9 +374,13 @@ export function useActiveWorkoutScreen() {
                   } else if (ex.trackingType === 'REPS_ONLY') {
                     if (set.reps != null) recordDetails = `${set.reps} reps`;
                   } else if (ex.trackingType === 'TIME_BASED') {
+                    if (set.duration != null) recordDetails = formatSeconds(set.duration);
+                  } else if (ex.trackingType === 'DISTANCE_AND_TIME') {
                     const dur = set.duration ? formatSeconds(set.duration) : '';
                     const dist = set.distance ? `${set.distance}m` : '';
                     recordDetails = [dur, dist].filter(Boolean).join(' ');
+                  } else if (ex.trackingType === 'DISTANCE_ONLY') {
+                    if (set.distance != null) recordDetails = `${set.distance}m`;
                   }
 
                   setNewAchievement({
@@ -341,7 +417,6 @@ export function useActiveWorkoutScreen() {
           if (ex.logExerciseId) {
             try {
               await apiClient.delete(`workouts/${workoutId}/exercises/${ex.logExerciseId}`);
-              addedLogExerciseIds.current.delete(ex.logExerciseId);
             } catch (e) {
               console.error('Failed to prune empty exercise:', e);
             }
@@ -441,6 +516,7 @@ export function useActiveWorkoutScreen() {
     toggleSetComplete,
     deleteExercise,
     moveExercise,
+    reorderSets,
     endWorkout,
     elapsed,
     editName,
@@ -451,6 +527,7 @@ export function useActiveWorkoutScreen() {
     newAchievement,
     setNewAchievement,
     isLoadingExercises,
+    isInitializing,
     handleFinish,
     handleRestTimer,
     handleCancel,

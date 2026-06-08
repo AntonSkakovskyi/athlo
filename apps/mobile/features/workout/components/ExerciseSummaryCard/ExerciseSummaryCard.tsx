@@ -74,10 +74,16 @@ export function ExerciseSummaryCard({ exercise }: ExerciseSummaryCardProps) {
           <Text style={[styles.headerCol, { flex: 1 }]}>Reps</Text>
         )}
         {trackingType === TrackingType.TIME_BASED && (
+          <Text style={[styles.headerCol, { flex: 1 }]}>Time</Text>
+        )}
+        {trackingType === TrackingType.DISTANCE_AND_TIME && (
           <>
             <Text style={[styles.headerCol, { flex: 1 }]}>Time</Text>
             <Text style={[styles.headerCol, { flex: 1 }]}>Distance</Text>
           </>
+        )}
+        {trackingType === TrackingType.DISTANCE_ONLY && (
+          <Text style={[styles.headerCol, { flex: 1 }]}>Distance</Text>
         )}
       </View>
 
@@ -100,6 +106,11 @@ export function ExerciseSummaryCard({ exercise }: ExerciseSummaryCardProps) {
             </Text>
           )}
           {trackingType === TrackingType.TIME_BASED && (
+            <Text style={[styles.setValue, idx === bestSetIndex && styles.bestText]}>
+              {formatTimeDuration(set.duration ?? 0)}
+            </Text>
+          )}
+          {trackingType === TrackingType.DISTANCE_AND_TIME && (
             <>
               <Text style={[styles.setValue, idx === bestSetIndex && styles.bestText]}>
                 {formatTimeDuration(set.duration ?? 0)}
@@ -108,6 +119,11 @@ export function ExerciseSummaryCard({ exercise }: ExerciseSummaryCardProps) {
                 {set.distance ? `${set.distance}m` : '—'}
               </Text>
             </>
+          )}
+          {trackingType === TrackingType.DISTANCE_ONLY && (
+            <Text style={[styles.setValue, idx === bestSetIndex && styles.bestText]}>
+              {set.distance ? `${set.distance}m` : '—'}
+            </Text>
           )}
           {idx === bestSetIndex && <Text style={styles.bestBadge}>🏆</Text>}
         </View>

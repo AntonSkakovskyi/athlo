@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { ICONS } from '@/utils/icons';
+import { BottomSheet } from '@/components/ui';
 import { SetSummaryList } from './SetSummaryList';
 import { StatBadge } from './StatBadge/StatBadge';
 import { MenuItem } from './MenuItem/MenuItem';
@@ -94,39 +95,34 @@ export function WorkoutHistoryCard({
 
       {/* Bottom sheet menu */}
       {hasMenu && (
-        <Modal
+        <BottomSheet
           visible={menuVisible}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setMenuVisible(false)}
+          onClose={() => setMenuVisible(false)}
+          scrollable={false}
         >
-          <Pressable style={styles.overlay} onPress={() => setMenuVisible(false)}>
-            <View style={styles.sheet} onStartShouldSetResponder={() => true}>
-              <View style={styles.sheetHandle} />
+          <View style={styles.sheetBody}>
+            {onSaveAsTemplate && (
+              <MenuItem icon="📋" label="Save as Template" onPress={() => closeAndRun(onSaveAsTemplate)} />
+            )}
+            {onCopyWorkout && (
+              <MenuItem icon="📄" label="Copy Workout" onPress={() => closeAndRun(onCopyWorkout)} />
+            )}
+            {onEdit && (
+              <MenuItem icon="✏️" label="Edit Workout" onPress={() => closeAndRun(onEdit)} />
+            )}
+            {onDelete && (
+              <>
+                <View style={styles.menuDivider} />
+                <MenuItem icon={ICONS.delete} label="Delete Workout" danger onPress={() => closeAndRun(onDelete)} />
+              </>
+            )}
 
-              {onSaveAsTemplate && (
-                <MenuItem icon="📋" label="Save as Template" onPress={() => closeAndRun(onSaveAsTemplate)} />
-              )}
-              {onCopyWorkout && (
-                <MenuItem icon="📄" label="Copy Workout" onPress={() => closeAndRun(onCopyWorkout)} />
-              )}
-              {onEdit && (
-                <MenuItem icon="✏️" label="Edit Workout" onPress={() => closeAndRun(onEdit)} />
-              )}
-              {onDelete && (
-                <>
-                  <View style={styles.menuDivider} />
-                  <MenuItem icon={ICONS.delete} label="Delete Workout" danger onPress={() => closeAndRun(onDelete)} />
-                </>
-              )}
-
-              <View style={styles.menuDivider} />
-              <Pressable style={styles.cancelRow} onPress={() => setMenuVisible(false)}>
-                <Text style={styles.cancelText}>Cancel</Text>
-              </Pressable>
-            </View>
-          </Pressable>
-        </Modal>
+            <View style={styles.menuDivider} />
+            <Pressable style={styles.cancelRow} onPress={() => setMenuVisible(false)}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </BottomSheet>
       )}
     </>
   );
@@ -187,29 +183,9 @@ function makeStyles(c: ColorPalette) {
       backgroundColor: c.border,
       marginVertical: spacing.md,
     },
-    // Modal / bottom sheet
-    overlay: {
-      flex: 1,
-      backgroundColor: c.overlay,
-      justifyContent: 'flex-end',
-    },
-    sheet: {
-      backgroundColor: c.surfaceElevated,
-      borderTopLeftRadius: borderRadius.xl,
-      borderTopRightRadius: borderRadius.xl,
-      paddingTop: spacing.md,
-      paddingBottom: spacing.xl,
+    sheetBody: {
       paddingHorizontal: spacing.lg,
-      borderTopWidth: 1,
-      borderColor: c.border,
-    },
-    sheetHandle: {
-      width: 40,
-      height: 4,
-      backgroundColor: c.border,
-      borderRadius: borderRadius.xs,
-      alignSelf: 'center',
-      marginBottom: spacing.lg,
+      paddingBottom: spacing.sm,
     },
     menuDivider: {
       height: 1,
