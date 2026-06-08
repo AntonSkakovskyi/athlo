@@ -1,17 +1,33 @@
-import { Body, Controller, Delete, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { TemplateExerciseService } from './template-exercise.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateTemplateExerciseDto } from '../dto/template-exercise/create-template-exercise.dto';
 import { UpdateTemplateExerciseDto } from '../dto/template-exercise/update-template-exercise.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Template Exercises')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('templates/:templateId/exercises')
 export class TemplateExerciseController {
-  constructor(private readonly templateExerciseService: TemplateExerciseService) {}
+  constructor(
+    private readonly templateExerciseService: TemplateExerciseService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Add an exercise to a template' })

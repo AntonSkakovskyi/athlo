@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LogExerciseEntity } from '../entities/log-exercise.entity';
@@ -15,8 +19,13 @@ export class LogExerciseService {
     private readonly workoutRepository: Repository<WorkoutEntity>,
   ) {}
 
-  private async validateWorkoutOwnership(workoutId: number, userId: number): Promise<WorkoutEntity> {
-    const workout = await this.workoutRepository.findOne({ where: { id: workoutId } });
+  private async validateWorkoutOwnership(
+    workoutId: number,
+    userId: number,
+  ): Promise<WorkoutEntity> {
+    const workout = await this.workoutRepository.findOne({
+      where: { id: workoutId },
+    });
     if (!workout) {
       throw new NotFoundException(`Workout with ID ${workoutId} not found`);
     }
@@ -40,7 +49,12 @@ export class LogExerciseService {
     return this.logExerciseRepository.save(logExercise);
   }
 
-  async update(id: number, workoutId: number, userId: number, dto: UpdateLogExerciseDto) {
+  async update(
+    id: number,
+    workoutId: number,
+    userId: number,
+    dto: UpdateLogExerciseDto,
+  ) {
     await this.validateWorkoutOwnership(workoutId, userId);
 
     const logExercise = await this.logExerciseRepository.findOne({
@@ -48,7 +62,9 @@ export class LogExerciseService {
     });
 
     if (!logExercise) {
-      throw new NotFoundException(`Log exercise with ID ${id} not found in workout ${workoutId}`);
+      throw new NotFoundException(
+        `Log exercise with ID ${id} not found in workout ${workoutId}`,
+      );
     }
 
     Object.assign(logExercise, dto);
@@ -63,7 +79,9 @@ export class LogExerciseService {
     });
 
     if (!logExercise) {
-      throw new NotFoundException(`Log exercise with ID ${id} not found in workout ${workoutId}`);
+      throw new NotFoundException(
+        `Log exercise with ID ${id} not found in workout ${workoutId}`,
+      );
     }
 
     await this.logExerciseRepository.remove(logExercise);

@@ -1,8 +1,21 @@
-import { Controller, Get, Param, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { StatisticsService } from './statistics.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Statistics')
 @ApiBearerAuth()
@@ -14,8 +27,16 @@ export class StatisticsController {
   @Get('workouts')
   @ApiOperation({ summary: 'Get workout statistics for current user' })
   @ApiResponse({ status: 200, description: 'Workout statistics' })
-  @ApiQuery({ name: 'from', required: false, description: 'Start date (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'to', required: false, description: 'End date (YYYY-MM-DD)' })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    description: 'Start date (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    description: 'End date (YYYY-MM-DD)',
+  })
   getWorkoutStatistics(
     @CurrentUser('id') userId: number,
     @Query('from') from?: string,
@@ -27,9 +48,21 @@ export class StatisticsController {
   @Get('exercises/frequent')
   @ApiOperation({ summary: 'Get exercises sorted by frequency of completion' })
   @ApiResponse({ status: 200, description: 'Frequent exercises list' })
-  @ApiQuery({ name: 'search', required: false, description: 'Search by exercise name' })
-  @ApiQuery({ name: 'page', required: false, description: 'Page number (default: 1)' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Items per page (default: 20)' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search by exercise name',
+  })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Items per page (default: 20)',
+  })
   getFrequentExercises(
     @CurrentUser('id') userId: number,
     @Query('search') search?: string,
@@ -47,29 +80,55 @@ export class StatisticsController {
   @Get('exercises/:exerciseId')
   @ApiOperation({ summary: 'Get exercise progress over time' })
   @ApiResponse({ status: 200, description: 'Exercise progress data' })
-  @ApiQuery({ name: 'from', required: false, description: 'Start date (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'to', required: false, description: 'End date (YYYY-MM-DD)' })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    description: 'Start date (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    description: 'End date (YYYY-MM-DD)',
+  })
   getExerciseProgress(
     @CurrentUser('id') userId: number,
     @Param('exerciseId', ParseIntPipe) exerciseId: number,
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return this.statisticsService.getExerciseProgress(userId, exerciseId, from, to);
+    return this.statisticsService.getExerciseProgress(
+      userId,
+      exerciseId,
+      from,
+      to,
+    );
   }
 
   @Get('body-metrics/:metricTypeId')
   @ApiOperation({ summary: 'Get body metric progress over time' })
   @ApiResponse({ status: 200, description: 'Body metric progress data' })
-  @ApiQuery({ name: 'from', required: false, description: 'Start date (YYYY-MM-DD)' })
-  @ApiQuery({ name: 'to', required: false, description: 'End date (YYYY-MM-DD)' })
+  @ApiQuery({
+    name: 'from',
+    required: false,
+    description: 'Start date (YYYY-MM-DD)',
+  })
+  @ApiQuery({
+    name: 'to',
+    required: false,
+    description: 'End date (YYYY-MM-DD)',
+  })
   getBodyMetricProgress(
     @CurrentUser('id') userId: number,
     @Param('metricTypeId', ParseIntPipe) metricTypeId: number,
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return this.statisticsService.getBodyMetricProgress(userId, metricTypeId, from, to);
+    return this.statisticsService.getBodyMetricProgress(
+      userId,
+      metricTypeId,
+      from,
+      to,
+    );
   }
 
   @Get('summary')

@@ -1,5 +1,12 @@
 import type { IWorkoutTemplate } from '@athlo/shared';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { UserEntity } from '../../user-service/user/entities/user.entity';
 import { TemplateExerciseEntity } from './template-exercise.entity';
 
@@ -24,6 +31,8 @@ export class WorkoutTemplateEntity implements IWorkoutTemplate {
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
-  @OneToMany(() => TemplateExerciseEntity, (te) => te.workoutTemplate, { cascade: true })
+  @OneToMany(() => TemplateExerciseEntity, (te) => te.workoutTemplate, {
+    cascade: true,
+  })
   templateExercises: TemplateExerciseEntity[];
 }

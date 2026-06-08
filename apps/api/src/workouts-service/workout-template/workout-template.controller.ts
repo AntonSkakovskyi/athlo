@@ -1,10 +1,27 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { WorkoutTemplateService } from './workout-template.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateWorkoutTemplateDto } from '../dto/workout-template/create-workout-template.dto';
 import { UpdateWorkoutTemplateDto } from '../dto/workout-template/update-workout-template.dto';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Workout Templates')
 @ApiBearerAuth()
@@ -16,7 +33,10 @@ export class WorkoutTemplateController {
   @Post()
   @ApiOperation({ summary: 'Create a workout template' })
   @ApiResponse({ status: 201, description: 'Template created' })
-  create(@CurrentUser('id') userId: number, @Body() dto: CreateWorkoutTemplateDto) {
+  create(
+    @CurrentUser('id') userId: number,
+    @Body() dto: CreateWorkoutTemplateDto,
+  ) {
     return this.templateService.create(userId, dto);
   }
 
@@ -32,7 +52,10 @@ export class WorkoutTemplateController {
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
   @ApiQuery({ name: 'search', required: false })
-  @ApiResponse({ status: 200, description: 'Paginated list of accessible templates' })
+  @ApiResponse({
+    status: 200,
+    description: 'Paginated list of accessible templates',
+  })
   findPublicTemplates(
     @CurrentUser('id') userId: number,
     @Query('page') page?: string,
@@ -68,7 +91,10 @@ export class WorkoutTemplateController {
     @CurrentUser('id') currentUserId: number,
     @Param('userId', ParseIntPipe) targetUserId: number,
   ) {
-    return this.templateService.findTemplatesForUser(currentUserId, targetUserId);
+    return this.templateService.findTemplatesForUser(
+      currentUserId,
+      targetUserId,
+    );
   }
 
   @Get(':id')
@@ -76,7 +102,10 @@ export class WorkoutTemplateController {
   @ApiResponse({ status: 200, description: 'Template data' })
   @ApiResponse({ status: 404, description: 'Template not found' })
   @ApiResponse({ status: 403, description: 'Access denied' })
-  findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.templateService.findOne(id, userId);
   }
 
@@ -96,15 +125,24 @@ export class WorkoutTemplateController {
   @ApiOperation({ summary: 'Delete a template (owner only)' })
   @ApiResponse({ status: 200, description: 'Template deleted' })
   @ApiResponse({ status: 403, description: 'Only owner can delete' })
-  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.templateService.remove(id, userId);
   }
 
   @Post(':id/save')
   @ApiOperation({ summary: 'Save a public template' })
   @ApiResponse({ status: 201, description: 'Template saved' })
-  @ApiResponse({ status: 400, description: 'Cannot save own template or already saved' })
-  saveTemplate(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot save own template or already saved',
+  })
+  saveTemplate(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.templateService.saveTemplate(id, userId);
   }
 
@@ -112,14 +150,20 @@ export class WorkoutTemplateController {
   @ApiOperation({ summary: 'Unsave a template' })
   @ApiResponse({ status: 200, description: 'Template unsaved' })
   @ApiResponse({ status: 404, description: 'Saved template not found' })
-  unsaveTemplate(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  unsaveTemplate(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.templateService.unsaveTemplate(id, userId);
   }
 
   @Post(':id/start')
   @ApiOperation({ summary: 'Start a workout from a template' })
   @ApiResponse({ status: 201, description: 'Workout created from template' })
-  startFromTemplate(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  startFromTemplate(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.templateService.startFromTemplate(id, userId);
   }
 

@@ -25,13 +25,21 @@ describe('TemplateExerciseService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TemplateExerciseService,
-        { provide: getRepositoryToken(TemplateExerciseEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(WorkoutTemplateEntity), useValue: createMockRepository() },
+        {
+          provide: getRepositoryToken(TemplateExerciseEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(WorkoutTemplateEntity),
+          useValue: createMockRepository(),
+        },
       ],
     }).compile();
 
     service = module.get<TemplateExerciseService>(TemplateExerciseService);
-    templateExerciseRepo = module.get(getRepositoryToken(TemplateExerciseEntity));
+    templateExerciseRepo = module.get(
+      getRepositoryToken(TemplateExerciseEntity),
+    );
     templateRepo = module.get(getRepositoryToken(WorkoutTemplateEntity));
   });
 
@@ -56,13 +64,17 @@ describe('TemplateExerciseService', () => {
     it('should throw NotFoundException when template not found', async () => {
       templateRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.create(999, 1, { exerciseId: 5, order: 1 } as any)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.create(999, 1, { exerciseId: 5, order: 1 } as any),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when user does not own the template', async () => {
       templateRepo.findOne.mockResolvedValue({ id: 1, creatorId: 2 });
 
-      await expect(service.create(1, 1, { exerciseId: 5, order: 1 } as any)).rejects.toThrow(ForbiddenException);
+      await expect(
+        service.create(1, 1, { exerciseId: 5, order: 1 } as any),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 
@@ -84,13 +96,17 @@ describe('TemplateExerciseService', () => {
       setupValidOwnership();
       templateExerciseRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.update(99, 1, 1, {})).rejects.toThrow(NotFoundException);
+      await expect(service.update(99, 1, 1, {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when user does not own the template', async () => {
       templateRepo.findOne.mockResolvedValue({ id: 1, creatorId: 2 });
 
-      await expect(service.update(20, 1, 1, {})).rejects.toThrow(ForbiddenException);
+      await expect(service.update(20, 1, 1, {})).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -118,7 +134,9 @@ describe('TemplateExerciseService', () => {
     it('should throw ForbiddenException when user does not own the template', async () => {
       templateRepo.findOne.mockResolvedValue({ id: 1, creatorId: 2 });
 
-      await expect(service.remove(20, 1, 1)).rejects.toThrow(ForbiddenException);
+      await expect(service.remove(20, 1, 1)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 });

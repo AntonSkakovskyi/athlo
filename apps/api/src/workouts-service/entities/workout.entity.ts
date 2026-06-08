@@ -1,6 +1,14 @@
 import { WorkoutStatus } from '@athlo/shared';
 import type { IWorkout } from '@athlo/shared';
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { UserEntity } from '../../user-service/user/entities/user.entity';
 import { LogExerciseEntity } from './log-exercise.entity';
 
@@ -12,11 +20,13 @@ export class WorkoutEntity implements IWorkout {
   @Column({ name: 'user_id' })
   userId: number;
 
-  @ManyToOne(() => UserEntity, user => user.workouts, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, (user) => user.workouts, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
 
-  @OneToMany(() => LogExerciseEntity, (logExercise) => logExercise.workout, { cascade: true })
+  @OneToMany(() => LogExerciseEntity, (logExercise) => logExercise.workout, {
+    cascade: true,
+  })
   logExercises: LogExerciseEntity[];
 
   @Column({ name: 'visibility_type_id', default: 1 })
@@ -25,10 +35,10 @@ export class WorkoutEntity implements IWorkout {
   @Column({ name: 'name' })
   name: string;
 
-  @Column({ 
+  @Column({
     type: 'varchar',
     length: 50,
-    default: WorkoutStatus.IN_PROGRESS
+    default: WorkoutStatus.IN_PROGRESS,
   })
   status: WorkoutStatus;
 
@@ -41,7 +51,14 @@ export class WorkoutEntity implements IWorkout {
   @Column({ name: 'description', type: 'text', nullable: true })
   description: string | null;
 
-  @Column({ name: 'calories', type: 'decimal', precision: 10, scale: 2, nullable: true, default: 0 })
+  @Column({
+    name: 'calories',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    nullable: true,
+    default: 0,
+  })
   calories: number | null;
 
   @Column({ name: 'avg_heart_rate', type: 'int', nullable: true })

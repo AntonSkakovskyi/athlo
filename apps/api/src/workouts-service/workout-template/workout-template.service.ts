@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, In, Repository } from 'typeorm';
 import { WorkoutTemplateEntity } from '../entities/workout-template.entity';
@@ -49,14 +54,21 @@ export class WorkoutTemplateService {
     return this.templateRepository.find({
       where: { creatorId },
       relations: { templateExercises: { exercise: true, templateSets: true } },
-      order: { templateExercises: { order: 'ASC', templateSets: { order: 'ASC' } } },
+      order: {
+        templateExercises: { order: 'ASC', templateSets: { order: 'ASC' } },
+      },
     });
   }
 
   async findTemplatesForUser(currentUserId: number, targetUserId: number) {
-    const isFriend = await this.friendService.isFriend(currentUserId, targetUserId);
+    const isFriend = await this.friendService.isFriend(
+      currentUserId,
+      targetUserId,
+    );
     const publicVisibilityId = this.getVisibilityId(VisibilityType.PUBLIC);
-    const friendsOnlyVisibilityId = this.getVisibilityId(VisibilityType.FRIENDS_ONLY);
+    const friendsOnlyVisibilityId = this.getVisibilityId(
+      VisibilityType.FRIENDS_ONLY,
+    );
 
     const visibilityIds = [publicVisibilityId];
     if (isFriend) {
@@ -69,13 +81,23 @@ export class WorkoutTemplateService {
         visibilityTypeId: In(visibilityIds),
       },
       relations: { templateExercises: { exercise: true, templateSets: true } },
-      order: { id: 'DESC', templateExercises: { order: 'ASC', templateSets: { order: 'ASC' } } },
+      order: {
+        id: 'DESC',
+        templateExercises: { order: 'ASC', templateSets: { order: 'ASC' } },
+      },
     });
   }
 
-  async findPublicTemplates(userId: number, page = 1, limit = 10, search?: string) {
+  async findPublicTemplates(
+    userId: number,
+    page = 1,
+    limit = 10,
+    search?: string,
+  ) {
     const publicVisibilityId = this.getVisibilityId(VisibilityType.PUBLIC);
-    const friendsOnlyVisibilityId = this.getVisibilityId(VisibilityType.FRIENDS_ONLY);
+    const friendsOnlyVisibilityId = this.getVisibilityId(
+      VisibilityType.FRIENDS_ONLY,
+    );
     const friendIds = await this.friendService.getFriendIds(userId);
 
     const qb = this.templateRepository
@@ -84,10 +106,15 @@ export class WorkoutTemplateService {
       .leftJoinAndSelect('te.exercise', 'exercise')
       .leftJoinAndSelect('te.templateSets', 'ts')
       .leftJoinAndSelect('template.creator', 'creator')
-      .where('(template.creator_id != :userId OR template.creator_id IS NULL)', { userId })
+      .where(
+        '(template.creator_id != :userId OR template.creator_id IS NULL)',
+        { userId },
+      )
       .andWhere(
         new Brackets((qb) => {
-          qb.where('template.visibility_type_id = :publicId', { publicId: publicVisibilityId });
+          qb.where('template.visibility_type_id = :publicId', {
+            publicId: publicVisibilityId,
+          });
           if (friendIds.length > 0) {
             qb.orWhere(
               '(template.visibility_type_id = :friendsId AND template.creator_id IN (:...friendIds))',
@@ -128,7 +155,9 @@ export class WorkoutTemplateService {
     if (friendIds.length === 0) return [];
 
     const publicVisibilityId = this.getVisibilityId(VisibilityType.PUBLIC);
-    const friendsOnlyVisibilityId = this.getVisibilityId(VisibilityType.FRIENDS_ONLY);
+    const friendsOnlyVisibilityId = this.getVisibilityId(
+      VisibilityType.FRIENDS_ONLY,
+    );
 
     const templates = await this.templateRepository.find({
       where: [
@@ -141,8 +170,14 @@ export class WorkoutTemplateService {
           visibilityTypeId: friendsOnlyVisibilityId,
         },
       ],
-      relations: { creator: true, templateExercises: { exercise: true, templateSets: true } },
-      order: { id: 'DESC', templateExercises: { order: 'ASC', templateSets: { order: 'ASC' } } },
+      relations: {
+        creator: true,
+        templateExercises: { exercise: true, templateSets: true },
+      },
+      order: {
+        id: 'DESC',
+        templateExercises: { order: 'ASC', templateSets: { order: 'ASC' } },
+      },
     });
 
     return templates.map((t) => {
@@ -154,8 +189,13 @@ export class WorkoutTemplateService {
   async findOne(id: number, userId: number) {
     const template = await this.templateRepository.findOne({
       where: { id },
-      relations: { templateExercises: { exercise: true, templateSets: true }, creator: true },
-      order: { templateExercises: { order: 'ASC', templateSets: { order: 'ASC' } } },
+      relations: {
+        templateExercises: { exercise: true, templateSets: true },
+        creator: true,
+      },
+      order: {
+        templateExercises: { order: 'ASC', templateSets: { order: 'ASC' } },
+      },
     });
 
     if (!template) {
@@ -165,12 +205,19 @@ export class WorkoutTemplateService {
     const isOwner = template.creatorId === userId;
     if (!isOwner) {
       const publicVisibilityId = this.getVisibilityId(VisibilityType.PUBLIC);
-      const friendsOnlyVisibilityId = this.getVisibilityId(VisibilityType.FRIENDS_ONLY);
+      const friendsOnlyVisibilityId = this.getVisibilityId(
+        VisibilityType.FRIENDS_ONLY,
+      );
 
       if (template.visibilityTypeId === friendsOnlyVisibilityId) {
-        const isFriend = await this.friendService.isFriend(userId, template.creatorId);
+        const isFriend = await this.friendService.isFriend(
+          userId,
+          template.creatorId,
+        );
         if (!isFriend) {
-          throw new ForbiddenException('You do not have access to this template');
+          throw new ForbiddenException(
+            'You do not have access to this template',
+          );
         }
       } else if (template.visibilityTypeId !== publicVisibilityId) {
         throw new ForbiddenException('You do not have access to this template');
@@ -206,7 +253,10 @@ export class WorkoutTemplateService {
       throw new BadRequestException('Template is already saved');
     }
 
-    const saved = this.userTemplateRepository.create({ userId, workoutTemplateId: templateId });
+    const saved = this.userTemplateRepository.create({
+      userId,
+      workoutTemplateId: templateId,
+    });
     return this.userTemplateRepository.save(saved);
   }
 
@@ -225,7 +275,12 @@ export class WorkoutTemplateService {
   async getSavedTemplates(userId: number) {
     const saved = await this.userTemplateRepository.find({
       where: { userId },
-      relations: { workoutTemplate: { templateExercises: { exercise: true, templateSets: true }, creator: true } },
+      relations: {
+        workoutTemplate: {
+          templateExercises: { exercise: true, templateSets: true },
+          creator: true,
+        },
+      },
     });
 
     return saved.map((s) => ({
@@ -257,7 +312,8 @@ export class WorkoutTemplateService {
           order: te.order,
           restTime: te.restTime,
         });
-        const savedLogExercise = await this.logExerciseRepository.save(logExercise);
+        const savedLogExercise =
+          await this.logExerciseRepository.save(logExercise);
 
         if (te.templateSets?.length) {
           const sets = te.templateSets.map((ts) =>
@@ -309,7 +365,8 @@ export class WorkoutTemplateService {
           order: ex.order,
           restTime: ex.restTime,
         });
-        const savedTemplateExercise = await this.templateExerciseRepository.save(templateExercise);
+        const savedTemplateExercise =
+          await this.templateExerciseRepository.save(templateExercise);
 
         if (ex.sets?.length) {
           const templateSets = ex.sets.map((s) =>

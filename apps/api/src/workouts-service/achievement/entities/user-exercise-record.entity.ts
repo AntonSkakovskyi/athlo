@@ -1,4 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique, UpdateDateColumn, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  Unique,
+  UpdateDateColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import type { IUserExerciseRecord } from '@athlo/shared';
 import { UserEntity } from '../../../user-service/user/entities/user.entity';
 import { ExerciseEntity } from '../../../exercise-catalog/entities/exercise.entity';
@@ -22,12 +31,12 @@ export class UserExerciseRecordEntity implements IUserExerciseRecord {
   @Column({ name: 'metric_type', type: 'varchar', length: 50 })
   metricType: string;
 
-  @Column({ 
-    name: 'value', 
-    type: 'decimal', 
-    precision: 10, 
+  @Column({
+    name: 'value',
+    type: 'decimal',
+    precision: 10,
     scale: 2,
-    transformer: new ColumnNumericTransformer()
+    transformer: new ColumnNumericTransformer(),
   })
   value: number;
 

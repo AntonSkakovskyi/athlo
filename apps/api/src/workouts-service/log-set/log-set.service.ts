@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LogSetEntity } from '../entities/log-set.entity';
@@ -20,8 +24,14 @@ export class LogSetService {
     private readonly achievementService: AchievementService,
   ) {}
 
-  private async validateOwnership(workoutId: number, logExerciseId: number, userId: number) {
-    const workout = await this.workoutRepository.findOne({ where: { id: workoutId } });
+  private async validateOwnership(
+    workoutId: number,
+    logExerciseId: number,
+    userId: number,
+  ) {
+    const workout = await this.workoutRepository.findOne({
+      where: { id: workoutId },
+    });
     if (!workout) {
       throw new NotFoundException(`Workout with ID ${workoutId} not found`);
     }
@@ -33,13 +43,20 @@ export class LogSetService {
       where: { id: logExerciseId, workoutId },
     });
     if (!logExercise) {
-      throw new NotFoundException(`Log exercise with ID ${logExerciseId} not found in workout ${workoutId}`);
+      throw new NotFoundException(
+        `Log exercise with ID ${logExerciseId} not found in workout ${workoutId}`,
+      );
     }
 
     return logExercise;
   }
 
-  async create(workoutId: number, logExerciseId: number, userId: number, dto: CreateLogSetDto) {
+  async create(
+    workoutId: number,
+    logExerciseId: number,
+    userId: number,
+    dto: CreateLogSetDto,
+  ) {
     await this.validateOwnership(workoutId, logExerciseId, userId);
 
     const set = this.logSetRepository.create({
@@ -49,7 +66,7 @@ export class LogSetService {
 
     const saved = await this.logSetRepository.save(set);
     await this.achievementService.checkAndUpdateRecords(userId, logExerciseId);
-    
+
     // Return with relations
     return this.logSetRepository.findOne({
       where: { id: saved.id },
@@ -57,7 +74,13 @@ export class LogSetService {
     });
   }
 
-  async update(id: number, workoutId: number, logExerciseId: number, userId: number, dto: UpdateLogSetDto) {
+  async update(
+    id: number,
+    workoutId: number,
+    logExerciseId: number,
+    userId: number,
+    dto: UpdateLogSetDto,
+  ) {
     await this.validateOwnership(workoutId, logExerciseId, userId);
 
     const set = await this.logSetRepository.findOne({
@@ -79,7 +102,12 @@ export class LogSetService {
     });
   }
 
-  async remove(id: number, workoutId: number, logExerciseId: number, userId: number) {
+  async remove(
+    id: number,
+    workoutId: number,
+    logExerciseId: number,
+    userId: number,
+  ) {
     await this.validateOwnership(workoutId, logExerciseId, userId);
 
     const set = await this.logSetRepository.findOne({

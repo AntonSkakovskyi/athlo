@@ -50,9 +50,18 @@ describe('WorkoutService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WorkoutService,
-        { provide: getRepositoryToken(WorkoutEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(LogExerciseEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(LogSetEntity), useValue: createMockRepository() },
+        {
+          provide: getRepositoryToken(WorkoutEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(LogExerciseEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(LogSetEntity),
+          useValue: createMockRepository(),
+        },
         { provide: AchievementService, useValue: mockAchievementService },
         { provide: FriendService, useValue: mockFriendService },
       ],
@@ -95,24 +104,43 @@ describe('WorkoutService', () => {
 
   describe('complete', () => {
     it('should set status to COMPLETED and call checkGlobalAchievements', async () => {
-      const workout = { id: 1, userId: 1, status: WorkoutStatus.IN_PROGRESS, logExercises: [] };
+      const workout = {
+        id: 1,
+        userId: 1,
+        status: WorkoutStatus.IN_PROGRESS,
+        logExercises: [],
+      };
       workoutRepo.findOne.mockResolvedValue(workout);
-      workoutRepo.save.mockResolvedValue({ ...workout, status: WorkoutStatus.COMPLETED });
-      mockAchievementService.checkGlobalAchievements.mockResolvedValue(undefined);
+      workoutRepo.save.mockResolvedValue({
+        ...workout,
+        status: WorkoutStatus.COMPLETED,
+      });
+      mockAchievementService.checkGlobalAchievements.mockResolvedValue(
+        undefined,
+      );
 
       await service.complete(1, 1, {});
 
       expect(workoutRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ status: WorkoutStatus.COMPLETED }),
       );
-      expect(mockAchievementService.checkGlobalAchievements).toHaveBeenCalledWith(1);
+      expect(
+        mockAchievementService.checkGlobalAchievements,
+      ).toHaveBeenCalledWith(1);
     });
 
     it('should set ended_at timestamp', async () => {
-      const workout = { id: 1, userId: 1, status: WorkoutStatus.IN_PROGRESS, logExercises: [] };
+      const workout = {
+        id: 1,
+        userId: 1,
+        status: WorkoutStatus.IN_PROGRESS,
+        logExercises: [],
+      };
       workoutRepo.findOne.mockResolvedValue(workout);
       workoutRepo.save.mockImplementation((w) => Promise.resolve(w));
-      mockAchievementService.checkGlobalAchievements.mockResolvedValue(undefined);
+      mockAchievementService.checkGlobalAchievements.mockResolvedValue(
+        undefined,
+      );
 
       await service.complete(1, 1, {});
 
@@ -125,7 +153,9 @@ describe('WorkoutService', () => {
       const workout = { id: 1, userId: 1, logExercises: [] };
       workoutRepo.findOne.mockResolvedValue(workout);
       workoutRepo.save.mockImplementation((w) => Promise.resolve(w));
-      mockAchievementService.checkGlobalAchievements.mockResolvedValue(undefined);
+      mockAchievementService.checkGlobalAchievements.mockResolvedValue(
+        undefined,
+      );
 
       await service.complete(1, 1, { calories: 500, rpe: 7 });
 
@@ -151,7 +181,14 @@ describe('WorkoutService', () => {
             notes: 'Go heavy',
             restTime: 90,
             sets: [
-              { order: 1, weight: 100, reps: 5, duration: null, distance: null, isCompleted: true },
+              {
+                order: 1,
+                weight: 100,
+                reps: 5,
+                duration: null,
+                distance: null,
+                isCompleted: true,
+              },
             ],
           },
         ],
@@ -180,7 +217,13 @@ describe('WorkoutService', () => {
     });
 
     it('should copy workout without exercises when logExercises is empty', async () => {
-      const original = { id: 1, userId: 1, name: 'Empty', description: '', logExercises: [] };
+      const original = {
+        id: 1,
+        userId: 1,
+        name: 'Empty',
+        description: '',
+        logExercises: [],
+      };
       const savedWorkout = { id: 2, userId: 1, name: 'Empty' };
 
       workoutRepo.findOne
@@ -208,7 +251,11 @@ describe('WorkoutService', () => {
     });
 
     it('should return last performance with sets when workout found', async () => {
-      const workout = { id: 5, name: 'Pull Day', started_at: new Date('2025-06-01') };
+      const workout = {
+        id: 5,
+        name: 'Pull Day',
+        started_at: new Date('2025-06-01'),
+      };
       const sets = [{ order: 1, weight: 80, reps: 8 }];
       const workoutQb = makeQb(workout);
       const setsQb = makeQb(sets);

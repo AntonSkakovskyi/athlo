@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  Unique,
+} from 'typeorm';
 import type { IUserAchievement } from '@athlo/shared';
 import { UserEntity } from '../../../user-service/user/entities/user.entity';
 import { AchievementEntity } from './achievement.entity';

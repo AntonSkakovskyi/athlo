@@ -14,7 +14,9 @@ const createMockRepository = () => ({
   createQueryBuilder: jest.fn(),
 });
 
-const makeQb = (opts: { count?: number; rawOne?: any; rawMany?: any[] } = {}) => {
+const makeQb = (
+  opts: { count?: number; rawOne?: any; rawMany?: any[] } = {},
+) => {
   const qb: any = {
     select: jest.fn().mockReturnThis(),
     addSelect: jest.fn().mockReturnThis(),
@@ -51,11 +53,26 @@ describe('StatisticsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         StatisticsService,
-        { provide: getRepositoryToken(WorkoutEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(LogExerciseEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(LogSetEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(BodyMetricEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(ExerciseEntity), useValue: createMockRepository() },
+        {
+          provide: getRepositoryToken(WorkoutEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(LogExerciseEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(LogSetEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(BodyMetricEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(ExerciseEntity),
+          useValue: createMockRepository(),
+        },
       ],
     }).compile();
 
@@ -136,7 +153,9 @@ describe('StatisticsService', () => {
         .mockReturnValueOnce(makeQb({ rawOne: { total: '5000.5' } }));
       workoutRepo.createQueryBuilder
         .mockReturnValueOnce(makeQb({ rawOne: { totalSeconds: '18000' } }))
-        .mockReturnValueOnce(makeQb({ rawMany: [{ workoutDate: '2025-06-01' }] }));
+        .mockReturnValueOnce(
+          makeQb({ rawMany: [{ workoutDate: '2025-06-01' }] }),
+        );
 
       const result = await service.getSummary(1);
 
@@ -180,12 +199,38 @@ describe('StatisticsService', () => {
           workoutId: 1,
           workout: { started_at: new Date('2025-06-01') },
           sets: [
-            { id: 1, logExerciseId: 10, order: 1, weight: 100, reps: 5, duration: null, distance: null, isCompleted: true, isPR: false, achievementId: null, achievement: null },
-            { id: 2, logExerciseId: 10, order: 2, weight: 80, reps: 8, duration: null, distance: null, isCompleted: true, isPR: false, achievementId: null, achievement: null },
+            {
+              id: 1,
+              logExerciseId: 10,
+              order: 1,
+              weight: 100,
+              reps: 5,
+              duration: null,
+              distance: null,
+              isCompleted: true,
+              isPR: false,
+              achievementId: null,
+              achievement: null,
+            },
+            {
+              id: 2,
+              logExerciseId: 10,
+              order: 2,
+              weight: 80,
+              reps: 8,
+              duration: null,
+              distance: null,
+              isCompleted: true,
+              isPR: false,
+              achievementId: null,
+              achievement: null,
+            },
           ],
         },
       ];
-      logExerciseRepo.createQueryBuilder.mockReturnValue(makeQb({ rawMany: loggedExercises }));
+      logExerciseRepo.createQueryBuilder.mockReturnValue(
+        makeQb({ rawMany: loggedExercises }),
+      );
 
       const result = await service.getExerciseProgress(1, 5);
 
@@ -197,19 +242,47 @@ describe('StatisticsService', () => {
     });
 
     it('should skip incomplete sets when computing heaviestWeight', async () => {
-      exerciseRepo.findOne.mockResolvedValue({ trackingType: { name: 'WEIGHT_AND_REPS' } });
+      exerciseRepo.findOne.mockResolvedValue({
+        trackingType: { name: 'WEIGHT_AND_REPS' },
+      });
 
       const loggedExercises = [
         {
           workoutId: 1,
           workout: { started_at: new Date('2025-06-01') },
           sets: [
-            { id: 1, logExerciseId: 10, order: 1, weight: 150, reps: 3, duration: null, distance: null, isCompleted: false, isPR: false, achievementId: null, achievement: null },
-            { id: 2, logExerciseId: 10, order: 2, weight: 80, reps: 5, duration: null, distance: null, isCompleted: true, isPR: false, achievementId: null, achievement: null },
+            {
+              id: 1,
+              logExerciseId: 10,
+              order: 1,
+              weight: 150,
+              reps: 3,
+              duration: null,
+              distance: null,
+              isCompleted: false,
+              isPR: false,
+              achievementId: null,
+              achievement: null,
+            },
+            {
+              id: 2,
+              logExerciseId: 10,
+              order: 2,
+              weight: 80,
+              reps: 5,
+              duration: null,
+              distance: null,
+              isCompleted: true,
+              isPR: false,
+              achievementId: null,
+              achievement: null,
+            },
           ],
         },
       ];
-      logExerciseRepo.createQueryBuilder.mockReturnValue(makeQb({ rawMany: loggedExercises }));
+      logExerciseRepo.createQueryBuilder.mockReturnValue(
+        makeQb({ rawMany: loggedExercises }),
+      );
 
       const result = await service.getExerciseProgress(1, 5);
 
@@ -217,8 +290,12 @@ describe('StatisticsService', () => {
     });
 
     it('should return empty records when exercise was never logged', async () => {
-      exerciseRepo.findOne.mockResolvedValue({ trackingType: { name: 'WEIGHT_AND_REPS' } });
-      logExerciseRepo.createQueryBuilder.mockReturnValue(makeQb({ rawMany: [] }));
+      exerciseRepo.findOne.mockResolvedValue({
+        trackingType: { name: 'WEIGHT_AND_REPS' },
+      });
+      logExerciseRepo.createQueryBuilder.mockReturnValue(
+        makeQb({ rawMany: [] }),
+      );
 
       const result = await service.getExerciseProgress(1, 99);
 

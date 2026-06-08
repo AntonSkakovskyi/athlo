@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+} from 'typeorm';
 import type { ILogExercise } from '@athlo/shared';
 import { WorkoutEntity } from './workout.entity';
 import { ExerciseEntity } from '../../exercise-catalog/entities/exercise.entity';
@@ -24,7 +31,9 @@ export class LogExerciseEntity implements ILogExercise {
   @Column({ name: 'rest_time', default: 0 })
   restTime: number;
 
-  @ManyToOne(() => WorkoutEntity, (workout) => workout.logExercises, { onDelete: 'CASCADE' })
+  @ManyToOne(() => WorkoutEntity, (workout) => workout.logExercises, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'workout_id' })
   workout: WorkoutEntity;
 

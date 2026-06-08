@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import type { ILogSet } from '@athlo/shared';
 import { LogExerciseEntity } from './log-exercise.entity';
 import { ColumnNumericTransformer } from './utils/column-numeric-transformer';
@@ -18,25 +24,25 @@ export class LogSetEntity implements ILogSet {
     type: 'decimal',
     precision: 10,
     scale: 2,
-    default: 0,
+    nullable: true,
     transformer: new ColumnNumericTransformer(),
   })
-  weight: number;
+  weight: number | null;
 
-  @Column({ default: 0 })
-  reps: number;
+  @Column({ nullable: true })
+  reps: number | null;
 
-  @Column({ default: 0 })
-  duration: number;
+  @Column({ nullable: true })
+  duration: number | null;
 
   @Column({
     type: 'decimal',
     precision: 10,
     scale: 2,
-    default: 0,
+    nullable: true,
     transformer: new ColumnNumericTransformer(),
   })
-  distance: number;
+  distance: number | null;
 
   @Column({ name: 'is_completed', default: false })
   isCompleted: boolean;
@@ -47,7 +53,9 @@ export class LogSetEntity implements ILogSet {
   @Column({ name: 'achievement_id', nullable: true })
   achievementId: number | null;
 
-  @ManyToOne(() => LogExerciseEntity, (logExercise) => logExercise.sets, { onDelete: 'CASCADE' })
+  @ManyToOne(() => LogExerciseEntity, (logExercise) => logExercise.sets, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'log_exercise_id' })
   logExercise: LogExerciseEntity;
 

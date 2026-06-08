@@ -1,8 +1,19 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+} from '@nestjs/common';
 import { AchievementService } from './achievement.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Achievements')
 @ApiBearerAuth()
@@ -27,7 +38,10 @@ export class AchievementController {
 
   @Get('records')
   @ApiOperation({ summary: 'Get all personal records for current user' })
-  @ApiResponse({ status: 200, description: 'List of exercise personal records' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of exercise personal records',
+  })
   getUserExerciseRecords(@CurrentUser('id') userId: number) {
     return this.achievementService.getUserExerciseRecords(userId);
   }

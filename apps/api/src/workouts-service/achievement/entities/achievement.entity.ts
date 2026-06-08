@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import type { IAchievement } from '@athlo/shared';
 import { AchievementType, TrackingMetric } from '@athlo/shared';
 import { ExerciseEntity } from '../../../exercise-catalog/entities/exercise.entity';
@@ -23,7 +29,12 @@ export class AchievementEntity implements IAchievement {
   @Column({ name: 'exercise_id', type: 'int', nullable: true })
   exerciseId: number | null;
 
-  @Column({ name: 'tracking_metric', type: 'varchar', length: 50, nullable: true })
+  @Column({
+    name: 'tracking_metric',
+    type: 'varchar',
+    length: 50,
+    nullable: true,
+  })
   trackingMetric: TrackingMetric | null;
 
   @Column({ name: 'icon_url', type: 'varchar', length: 512, nullable: true })

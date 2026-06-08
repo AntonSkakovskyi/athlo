@@ -33,9 +33,18 @@ describe('LogSetService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LogSetService,
-        { provide: getRepositoryToken(LogSetEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(LogExerciseEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(WorkoutEntity), useValue: createMockRepository() },
+        {
+          provide: getRepositoryToken(LogSetEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(LogExerciseEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(WorkoutEntity),
+          useValue: createMockRepository(),
+        },
         { provide: AchievementService, useValue: mockAchievementService },
       ],
     }).compile();
@@ -63,26 +72,35 @@ describe('LogSetService', () => {
       await service.create(1, 10, 1, dto);
 
       expect(logSetRepo.save).toHaveBeenCalled();
-      expect(mockAchievementService.checkAndUpdateRecords).toHaveBeenCalledWith(1, 10);
+      expect(mockAchievementService.checkAndUpdateRecords).toHaveBeenCalledWith(
+        1,
+        10,
+      );
     });
 
     it('should throw NotFoundException when workout does not exist', async () => {
       workoutRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.create(999, 10, 1, {} as any)).rejects.toThrow(NotFoundException);
+      await expect(service.create(999, 10, 1, {} as any)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when user does not own the workout', async () => {
       workoutRepo.findOne.mockResolvedValue({ id: 1, userId: 2 });
 
-      await expect(service.create(1, 10, 1, {} as any)).rejects.toThrow(ForbiddenException);
+      await expect(service.create(1, 10, 1, {} as any)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw NotFoundException when logExercise not in the workout', async () => {
       workoutRepo.findOne.mockResolvedValue({ id: 1, userId: 1 });
       logExerciseRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.create(1, 99, 1, {} as any)).rejects.toThrow(NotFoundException);
+      await expect(service.create(1, 99, 1, {} as any)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -102,20 +120,27 @@ describe('LogSetService', () => {
       await service.update(20, 1, 10, 1, { reps: 10 });
 
       expect(logSetRepo.save).toHaveBeenCalled();
-      expect(mockAchievementService.checkAndUpdateRecords).toHaveBeenCalledWith(1, 10);
+      expect(mockAchievementService.checkAndUpdateRecords).toHaveBeenCalledWith(
+        1,
+        10,
+      );
     });
 
     it('should throw NotFoundException when set not found', async () => {
       setupValidOwnership();
       logSetRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.update(999, 1, 10, 1, {})).rejects.toThrow(NotFoundException);
+      await expect(service.update(999, 1, 10, 1, {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when user does not own the workout', async () => {
       workoutRepo.findOne.mockResolvedValue({ id: 1, userId: 2 });
 
-      await expect(service.update(20, 1, 10, 1, {})).rejects.toThrow(ForbiddenException);
+      await expect(service.update(20, 1, 10, 1, {})).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 
@@ -132,20 +157,27 @@ describe('LogSetService', () => {
       await service.remove(20, 1, 10, 1);
 
       expect(logSetRepo.remove).toHaveBeenCalledWith(set);
-      expect(mockAchievementService.checkAndUpdateRecords).toHaveBeenCalledWith(1, 10);
+      expect(mockAchievementService.checkAndUpdateRecords).toHaveBeenCalledWith(
+        1,
+        10,
+      );
     });
 
     it('should throw NotFoundException when set not found', async () => {
       setupValidOwnership();
       logSetRepo.findOne.mockResolvedValue(null);
 
-      await expect(service.remove(999, 1, 10, 1)).rejects.toThrow(NotFoundException);
+      await expect(service.remove(999, 1, 10, 1)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when user does not own the workout', async () => {
       workoutRepo.findOne.mockResolvedValue({ id: 1, userId: 2 });
 
-      await expect(service.remove(20, 1, 10, 1)).rejects.toThrow(ForbiddenException);
+      await expect(service.remove(20, 1, 10, 1)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 });

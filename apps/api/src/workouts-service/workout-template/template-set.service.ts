@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TemplateSetEntity } from '../entities/template-set.entity';
@@ -18,8 +22,14 @@ export class TemplateSetService {
     private readonly templateRepository: Repository<WorkoutTemplateEntity>,
   ) {}
 
-  private async validateOwnership(templateId: number, templateExerciseId: number, userId: number) {
-    const template = await this.templateRepository.findOne({ where: { id: templateId } });
+  private async validateOwnership(
+    templateId: number,
+    templateExerciseId: number,
+    userId: number,
+  ) {
+    const template = await this.templateRepository.findOne({
+      where: { id: templateId },
+    });
     if (!template) {
       throw new NotFoundException(`Template with ID ${templateId} not found`);
     }
@@ -31,13 +41,20 @@ export class TemplateSetService {
       where: { id: templateExerciseId, workoutTemplateId: templateId },
     });
     if (!exercise) {
-      throw new NotFoundException(`Template exercise with ID ${templateExerciseId} not found in template ${templateId}`);
+      throw new NotFoundException(
+        `Template exercise with ID ${templateExerciseId} not found in template ${templateId}`,
+      );
     }
 
     return exercise;
   }
 
-  async create(templateId: number, templateExerciseId: number, userId: number, dto: CreateTemplateSetDto) {
+  async create(
+    templateId: number,
+    templateExerciseId: number,
+    userId: number,
+    dto: CreateTemplateSetDto,
+  ) {
     await this.validateOwnership(templateId, templateExerciseId, userId);
 
     const set = this.templateSetRepository.create({
@@ -48,7 +65,13 @@ export class TemplateSetService {
     return this.templateSetRepository.save(set);
   }
 
-  async update(id: number, templateId: number, templateExerciseId: number, userId: number, dto: UpdateTemplateSetDto) {
+  async update(
+    id: number,
+    templateId: number,
+    templateExerciseId: number,
+    userId: number,
+    dto: UpdateTemplateSetDto,
+  ) {
     await this.validateOwnership(templateId, templateExerciseId, userId);
 
     const set = await this.templateSetRepository.findOne({
@@ -63,7 +86,12 @@ export class TemplateSetService {
     return this.templateSetRepository.save(set);
   }
 
-  async remove(id: number, templateId: number, templateExerciseId: number, userId: number) {
+  async remove(
+    id: number,
+    templateId: number,
+    templateExerciseId: number,
+    userId: number,
+  ) {
     await this.validateOwnership(templateId, templateExerciseId, userId);
 
     const set = await this.templateSetRepository.findOne({

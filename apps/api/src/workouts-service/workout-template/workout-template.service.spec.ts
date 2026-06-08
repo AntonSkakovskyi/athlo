@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { WorkoutTemplateService } from './workout-template.service';
 import { WorkoutTemplateEntity } from '../entities/workout-template.entity';
 import { UserWorkoutTemplateEntity } from '../entities/saved-template.entity';
@@ -38,20 +42,43 @@ describe('WorkoutTemplateService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WorkoutTemplateService,
-        { provide: getRepositoryToken(WorkoutTemplateEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(UserWorkoutTemplateEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(WorkoutEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(LogExerciseEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(LogSetEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(TemplateExerciseEntity), useValue: createMockRepository() },
-        { provide: getRepositoryToken(TemplateSetEntity), useValue: createMockRepository() },
+        {
+          provide: getRepositoryToken(WorkoutTemplateEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(UserWorkoutTemplateEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(WorkoutEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(LogExerciseEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(LogSetEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(TemplateExerciseEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(TemplateSetEntity),
+          useValue: createMockRepository(),
+        },
         { provide: FriendService, useValue: mockFriendService },
       ],
     }).compile();
 
     service = module.get<WorkoutTemplateService>(WorkoutTemplateService);
     templateRepo = module.get(getRepositoryToken(WorkoutTemplateEntity));
-    userTemplateRepo = module.get(getRepositoryToken(UserWorkoutTemplateEntity));
+    userTemplateRepo = module.get(
+      getRepositoryToken(UserWorkoutTemplateEntity),
+    );
     workoutRepo = module.get(getRepositoryToken(WorkoutEntity));
     logExerciseRepo = module.get(getRepositoryToken(LogExerciseEntity));
     logSetRepo = module.get(getRepositoryToken(LogSetEntity));
@@ -63,7 +90,12 @@ describe('WorkoutTemplateService', () => {
 
   describe('findOne', () => {
     it('should return template to the owner regardless of visibility', async () => {
-      const template = { id: 1, creatorId: 1, visibilityTypeId: 1, templateExercises: [] };
+      const template = {
+        id: 1,
+        creatorId: 1,
+        visibilityTypeId: 1,
+        templateExercises: [],
+      };
       templateRepo.findOne.mockResolvedValue(template);
 
       const result = await service.findOne(1, 1);
@@ -72,7 +104,12 @@ describe('WorkoutTemplateService', () => {
     });
 
     it('should return PUBLIC template to any user', async () => {
-      const template = { id: 1, creatorId: 2, visibilityTypeId: 2, templateExercises: [] };
+      const template = {
+        id: 1,
+        creatorId: 2,
+        visibilityTypeId: 2,
+        templateExercises: [],
+      };
       templateRepo.findOne.mockResolvedValue(template);
 
       const result = await service.findOne(1, 5);
@@ -81,13 +118,22 @@ describe('WorkoutTemplateService', () => {
     });
 
     it('should throw ForbiddenException for PRIVATE template when not owner', async () => {
-      templateRepo.findOne.mockResolvedValue({ id: 1, creatorId: 2, visibilityTypeId: 1 });
+      templateRepo.findOne.mockResolvedValue({
+        id: 1,
+        creatorId: 2,
+        visibilityTypeId: 1,
+      });
 
       await expect(service.findOne(1, 5)).rejects.toThrow(ForbiddenException);
     });
 
     it('should return FRIENDS_ONLY template to a friend', async () => {
-      const template = { id: 1, creatorId: 2, visibilityTypeId: 3, templateExercises: [] };
+      const template = {
+        id: 1,
+        creatorId: 2,
+        visibilityTypeId: 3,
+        templateExercises: [],
+      };
       templateRepo.findOne.mockResolvedValue(template);
       mockFriendService.isFriend.mockResolvedValue(true);
 
@@ -98,7 +144,11 @@ describe('WorkoutTemplateService', () => {
     });
 
     it('should throw ForbiddenException for FRIENDS_ONLY template when not a friend', async () => {
-      templateRepo.findOne.mockResolvedValue({ id: 1, creatorId: 2, visibilityTypeId: 3 });
+      templateRepo.findOne.mockResolvedValue({
+        id: 1,
+        creatorId: 2,
+        visibilityTypeId: 3,
+      });
       mockFriendService.isFriend.mockResolvedValue(false);
 
       await expect(service.findOne(1, 5)).rejects.toThrow(ForbiddenException);
@@ -127,7 +177,13 @@ describe('WorkoutTemplateService', () => {
             order: 1,
             restTime: 60,
             templateSets: [
-              { order: 1, weight: 100, reps: 5, duration: null, distance: null },
+              {
+                order: 1,
+                weight: 100,
+                reps: 5,
+                duration: null,
+                distance: null,
+              },
             ],
           },
         ],
@@ -138,7 +194,10 @@ describe('WorkoutTemplateService', () => {
       templateRepo.findOne.mockResolvedValue(template);
       workoutRepo.create.mockReturnValue(savedWorkout);
       workoutRepo.save.mockResolvedValue(savedWorkout);
-      workoutRepo.findOne.mockResolvedValue({ ...savedWorkout, logExercises: [] });
+      workoutRepo.findOne.mockResolvedValue({
+        ...savedWorkout,
+        logExercises: [],
+      });
       logExerciseRepo.create.mockReturnValue({ workoutId: 5, exerciseId: 10 });
       logExerciseRepo.save.mockResolvedValue(savedLogExercise);
       logSetRepo.create.mockImplementation((d) => d);
@@ -154,13 +213,23 @@ describe('WorkoutTemplateService', () => {
     });
 
     it('should create workout without exercises when template has none', async () => {
-      const template = { id: 1, creatorId: 1, visibilityTypeId: 2, name: 'Empty', description: '', templateExercises: [] };
+      const template = {
+        id: 1,
+        creatorId: 1,
+        visibilityTypeId: 2,
+        name: 'Empty',
+        description: '',
+        templateExercises: [],
+      };
       const savedWorkout = { id: 5, userId: 1, name: 'Empty' };
 
       templateRepo.findOne.mockResolvedValue(template);
       workoutRepo.create.mockReturnValue(savedWorkout);
       workoutRepo.save.mockResolvedValue(savedWorkout);
-      workoutRepo.findOne.mockResolvedValue({ ...savedWorkout, logExercises: [] });
+      workoutRepo.findOne.mockResolvedValue({
+        ...savedWorkout,
+        logExercises: [],
+      });
 
       await service.startFromTemplate(1, 1);
 
@@ -173,20 +242,42 @@ describe('WorkoutTemplateService', () => {
 
   describe('saveTemplate', () => {
     it('should throw BadRequestException when user tries to save own template', async () => {
-      templateRepo.findOne.mockResolvedValue({ id: 1, creatorId: 1, visibilityTypeId: 2, templateExercises: [] });
+      templateRepo.findOne.mockResolvedValue({
+        id: 1,
+        creatorId: 1,
+        visibilityTypeId: 2,
+        templateExercises: [],
+      });
 
-      await expect(service.saveTemplate(1, 1)).rejects.toThrow(BadRequestException);
+      await expect(service.saveTemplate(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw BadRequestException when template is already saved', async () => {
-      templateRepo.findOne.mockResolvedValue({ id: 1, creatorId: 2, visibilityTypeId: 2, templateExercises: [] });
-      userTemplateRepo.findOne.mockResolvedValue({ userId: 1, workoutTemplateId: 1 });
+      templateRepo.findOne.mockResolvedValue({
+        id: 1,
+        creatorId: 2,
+        visibilityTypeId: 2,
+        templateExercises: [],
+      });
+      userTemplateRepo.findOne.mockResolvedValue({
+        userId: 1,
+        workoutTemplateId: 1,
+      });
 
-      await expect(service.saveTemplate(1, 1)).rejects.toThrow(BadRequestException);
+      await expect(service.saveTemplate(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should save template when all checks pass', async () => {
-      const template = { id: 1, creatorId: 2, visibilityTypeId: 2, templateExercises: [] };
+      const template = {
+        id: 1,
+        creatorId: 2,
+        visibilityTypeId: 2,
+        templateExercises: [],
+      };
       const saved = { userId: 1, workoutTemplateId: 1 };
       templateRepo.findOne.mockResolvedValue(template);
       userTemplateRepo.findOne.mockResolvedValue(null);

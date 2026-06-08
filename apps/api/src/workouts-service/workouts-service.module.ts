@@ -7,6 +7,13 @@ import { StatisticsModule } from './statistics/statistics.module';
 import { AchievementModule } from './achievement/achievement.module';
 
 @Module({
-  imports: [WorkoutModule, LogExerciseModule, LogSetModule, WorkoutTemplateModule, StatisticsModule, AchievementModule],
+  imports: [
+    WorkoutModule,
+    LogExerciseModule,
+    LogSetModule,
+    WorkoutTemplateModule,
+    StatisticsModule,
+    AchievementModule,
+  ],
 })
 export class WorkoutsServiceModule {}

@@ -1,4 +1,8 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TemplateExerciseEntity } from '../entities/template-exercise.entity';
@@ -16,7 +20,9 @@ export class TemplateExerciseService {
   ) {}
 
   private async validateTemplateOwnership(templateId: number, userId: number) {
-    const template = await this.templateRepository.findOne({ where: { id: templateId } });
+    const template = await this.templateRepository.findOne({
+      where: { id: templateId },
+    });
     if (!template) {
       throw new NotFoundException(`Template with ID ${templateId} not found`);
     }
@@ -26,7 +32,11 @@ export class TemplateExerciseService {
     return template;
   }
 
-  async create(templateId: number, userId: number, dto: CreateTemplateExerciseDto) {
+  async create(
+    templateId: number,
+    userId: number,
+    dto: CreateTemplateExerciseDto,
+  ) {
     await this.validateTemplateOwnership(templateId, userId);
 
     const exercise = this.templateExerciseRepository.create({
@@ -39,7 +49,12 @@ export class TemplateExerciseService {
     return this.templateExerciseRepository.save(exercise);
   }
 
-  async update(id: number, templateId: number, userId: number, dto: UpdateTemplateExerciseDto) {
+  async update(
+    id: number,
+    templateId: number,
+    userId: number,
+    dto: UpdateTemplateExerciseDto,
+  ) {
     await this.validateTemplateOwnership(templateId, userId);
 
     const exercise = await this.templateExerciseRepository.findOne({
@@ -47,7 +62,9 @@ export class TemplateExerciseService {
     });
 
     if (!exercise) {
-      throw new NotFoundException(`Template exercise with ID ${id} not found in template ${templateId}`);
+      throw new NotFoundException(
+        `Template exercise with ID ${id} not found in template ${templateId}`,
+      );
     }
 
     Object.assign(exercise, dto);
@@ -62,7 +79,9 @@ export class TemplateExerciseService {
     });
 
     if (!exercise) {
-      throw new NotFoundException(`Template exercise with ID ${id} not found in template ${templateId}`);
+      throw new NotFoundException(
+        `Template exercise with ID ${id} not found in template ${templateId}`,
+      );
     }
 
     await this.templateExerciseRepository.remove(exercise);

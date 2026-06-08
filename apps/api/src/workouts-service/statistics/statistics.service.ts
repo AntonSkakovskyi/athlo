@@ -70,7 +70,10 @@ export class StatisticsService {
     // Total duration seconds
     const totalDurationResult = await this.workoutRepo
       .createQueryBuilder('w')
-      .select('COALESCE(SUM(EXTRACT(EPOCH FROM (w.ended_at - w.started_at))), 0)', 'totalSeconds')
+      .select(
+        'COALESCE(SUM(EXTRACT(EPOCH FROM (w.ended_at - w.started_at))), 0)',
+        'totalSeconds',
+      )
       .where('w.user_id = :userId', { userId })
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
       .andWhere('w.ended_at IS NOT NULL')
@@ -106,7 +109,10 @@ export class StatisticsService {
       .createQueryBuilder('w')
       .select('w.started_at::date::text', 'date')
       .addSelect('COUNT(DISTINCT w.id)::int', 'workoutsCount')
-      .addSelect('COUNT(ls.id) FILTER (WHERE ls.is_completed = true)::int', 'totalSets')
+      .addSelect(
+        'COUNT(ls.id) FILTER (WHERE ls.is_completed = true)::int',
+        'totalSets',
+      )
       .addSelect(
         'COALESCE(SUM(DISTINCT EXTRACT(EPOCH FROM (w.ended_at - w.started_at)) / 60), 0)',
         'totalDurationMinutes',
@@ -143,7 +149,9 @@ export class StatisticsService {
         date: r.date,
         workoutsCount: parseInt(r.workoutsCount, 10),
         totalSets: parseInt(r.totalSets, 10),
-        totalDurationMinutes: parseFloat(parseFloat(r.totalDurationMinutes).toFixed(1)),
+        totalDurationMinutes: parseFloat(
+          parseFloat(r.totalDurationMinutes).toFixed(1),
+        ),
         totalVolume: parseFloat(r.totalVolume),
         totalReps: parseInt(r.totalReps, 10),
       })),
@@ -184,12 +192,29 @@ export class StatisticsService {
       return {
         date: le.workout.started_at.toISOString().split('T')[0],
         workoutId: le.workoutId,
-        heaviestWeight: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.weight)) : null,
-        bestSetVolume: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.weight * s.reps)) : null,
-        totalVolume: completedSets.reduce((sum, s) => sum + s.weight * s.reps, 0),
-        totalReps: completedSets.reduce((sum, s) => sum + s.reps, 0),
-        bestDuration: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.duration)) : null,
-        bestDistance: completedSets.length > 0 ? Math.max(...completedSets.map((s) => s.distance)) : null,
+        heaviestWeight:
+          completedSets.length > 0
+            ? Math.max(...completedSets.map((s) => s.weight ?? 0))
+            : null,
+        bestSetVolume:
+          completedSets.length > 0
+            ? Math.max(
+                ...completedSets.map((s) => (s.weight ?? 0) * (s.reps ?? 0)),
+              )
+            : null,
+        totalVolume: completedSets.reduce(
+          (sum, s) => sum + (s.weight ?? 0) * (s.reps ?? 0),
+          0,
+        ),
+        totalReps: completedSets.reduce((sum, s) => sum + (s.reps ?? 0), 0),
+        bestDuration:
+          completedSets.length > 0
+            ? Math.max(...completedSets.map((s) => s.duration ?? 0))
+            : null,
+        bestDistance:
+          completedSets.length > 0
+            ? Math.max(...completedSets.map((s) => s.distance ?? 0))
+            : null,
         sets: completedSets.map((s) => ({
           id: s.id,
           logExerciseId: s.logExerciseId,
@@ -218,7 +243,10 @@ export class StatisticsService {
     page = 1,
     limit = 20,
     search?: string,
-  ): Promise<{ data: IFrequentExercise[]; meta: { page: number; limit: number; total: number } }> {
+  ): Promise<{
+    data: IFrequentExercise[];
+    meta: { page: number; limit: number; total: number };
+  }> {
     const offset = (page - 1) * limit;
 
     const qb = this.logSetRepo
@@ -257,7 +285,10 @@ export class StatisticsService {
       .where('w.user_id = :userId', { userId })
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
       .andWhere('ls.is_completed = true')
-      .andWhere(search ? 'e.name ILIKE :search' : '1=1', search ? { search: `%${search}%` } : {})
+      .andWhere(
+        search ? 'e.name ILIKE :search' : '1=1',
+        search ? { search: `%${search}%` } : {},
+      )
       .getRawOne();
 
     const total = parseInt(countResult?.count ?? '0', 10);
@@ -279,11 +310,14 @@ export class StatisticsService {
         .andWhere('em.is_primary = true')
         .getRawMany();
 
-      muscleMap = muscles.reduce((acc, m) => {
-        if (!acc[m.exerciseId]) acc[m.exerciseId] = [];
-        acc[m.exerciseId].push(m.muscleName);
-        return acc;
-      }, {} as Record<number, string[]>);
+      muscleMap = muscles.reduce(
+        (acc, m) => {
+          if (!acc[m.exerciseId]) acc[m.exerciseId] = [];
+          acc[m.exerciseId].push(m.muscleName);
+          return acc;
+        },
+        {} as Record<number, string[]>,
+      );
     }
 
     return {
@@ -313,11 +347,17 @@ export class StatisticsService {
 
     let dateWhere = {};
     if (from && to) {
-      dateWhere = { recordedAt: Between(new Date(from), new Date(to)) };
+      const toDate = new Date(to);
+      toDate.setUTCHours(23, 59, 59, 999);
+      dateWhere = { recordedAt: Between(new Date(from), toDate) };
     } else if (from) {
-      dateWhere = { recordedAt: Between(new Date(from), new Date('2100-01-01')) };
+      dateWhere = {
+        recordedAt: Between(new Date(from), new Date('2100-01-01')),
+      };
     } else if (to) {
-      dateWhere = { recordedAt: Between(new Date('1970-01-01'), new Date(to)) };
+      const toDate = new Date(to);
+      toDate.setUTCHours(23, 59, 59, 999);
+      dateWhere = { recordedAt: Between(new Date('1970-01-01'), toDate) };
     }
 
     const metrics = await this.bodyMetricRepo.find({
@@ -389,7 +429,10 @@ export class StatisticsService {
     // Total duration seconds
     const totalDurationResult = await this.workoutRepo
       .createQueryBuilder('w')
-      .select('COALESCE(SUM(EXTRACT(EPOCH FROM (w.ended_at - w.started_at))), 0)', 'totalSeconds')
+      .select(
+        'COALESCE(SUM(EXTRACT(EPOCH FROM (w.ended_at - w.started_at))), 0)',
+        'totalSeconds',
+      )
       .where('w.user_id = :userId', { userId })
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
       .andWhere('w.ended_at IS NOT NULL')
@@ -403,7 +446,9 @@ export class StatisticsService {
       totalExercisesPerformed: totalExercisesResult,
       totalSets,
       totalWeightLifted: parseFloat(totalWeightResult?.total ?? '0'),
-      totalDurationSeconds: parseFloat(totalDurationResult?.totalSeconds ?? '0'),
+      totalDurationSeconds: parseFloat(
+        totalDurationResult?.totalSeconds ?? '0',
+      ),
       currentStreak,
     };
   }
@@ -452,7 +497,9 @@ export class StatisticsService {
     }
     if (to) {
       parts.push(`${column} <= :toDate`);
-      params.toDate = new Date(to);
+      const toDate = new Date(to);
+      toDate.setUTCHours(23, 59, 59, 999);
+      params.toDate = toDate;
     }
 
     return {

@@ -28,8 +28,16 @@ import { UserServiceModule } from '../../user-service/user-service.module';
     ]),
     UserServiceModule,
   ],
-  controllers: [WorkoutTemplateController, TemplateExerciseController, TemplateSetController],
-  providers: [WorkoutTemplateService, TemplateExerciseService, TemplateSetService],
+  controllers: [
+    WorkoutTemplateController,
+    TemplateExerciseController,
+    TemplateSetController,
+  ],
+  providers: [
+    WorkoutTemplateService,
+    TemplateExerciseService,
+    TemplateSetService,
+  ],
   exports: [WorkoutTemplateService],
 })
 export class WorkoutTemplateModule {}

@@ -45,7 +45,10 @@ export class WorkoutService {
     page = 1,
     limit = 10,
   ) {
-    const isFriend = await this.friendService.isFriend(currentUserId, targetUserId);
+    const isFriend = await this.friendService.isFriend(
+      currentUserId,
+      targetUserId,
+    );
     const visibilityIds = [2]; // PUBLIC
     if (isFriend) {
       visibilityIds.push(3); // FRIENDS_ONLY
@@ -206,7 +209,8 @@ export class WorkoutService {
           notes: ex.notes,
           restTime: ex.restTime,
         });
-        const savedLogExercise = await this.logExerciseRepository.save(logExercise);
+        const savedLogExercise =
+          await this.logExerciseRepository.save(logExercise);
 
         if (ex.sets?.length) {
           const sets = ex.sets.map((s) =>
@@ -256,7 +260,7 @@ export class WorkoutService {
     return {
       workoutId: workout.id,
       workoutName: workout.name,
-      date: (workout.started_at as Date).toISOString().split('T')[0],
+      date: workout.started_at.toISOString().split('T')[0],
       sets,
     };
   }

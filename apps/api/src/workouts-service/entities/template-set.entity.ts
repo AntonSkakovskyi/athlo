@@ -1,5 +1,11 @@
 import type { ITemplateSet } from '@athlo/shared';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { TemplateExerciseEntity } from './template-exercise.entity';
 import { ColumnNumericTransformer } from './utils/column-numeric-transformer';
 
@@ -18,27 +24,29 @@ export class TemplateSetEntity implements ITemplateSet {
     type: 'decimal',
     precision: 10,
     scale: 2,
-    default: 0,
+    nullable: true,
     transformer: new ColumnNumericTransformer(),
   })
-  weight: number;
+  weight: number | null;
 
-  @Column({ default: 0 })
-  reps: number;
+  @Column({ nullable: true })
+  reps: number | null;
 
-  @Column({ default: 0 })
-  duration: number;
+  @Column({ nullable: true })
+  duration: number | null;
 
   @Column({
     type: 'decimal',
     precision: 10,
     scale: 2,
-    default: 0,
+    nullable: true,
     transformer: new ColumnNumericTransformer(),
   })
-  distance: number;
+  distance: number | null;
 
-  @ManyToOne(() => TemplateExerciseEntity, (te) => te.templateSets, { onDelete: 'CASCADE' })
+  @ManyToOne(() => TemplateExerciseEntity, (te) => te.templateSets, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'template_exercise_id' })
   templateExercise: TemplateExerciseEntity;
 }

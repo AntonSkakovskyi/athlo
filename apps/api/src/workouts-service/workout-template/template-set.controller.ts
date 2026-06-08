@@ -1,10 +1,24 @@
-import { Body, Controller, Delete, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { TemplateSetService } from './template-set.service';
 import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateTemplateSetDto } from '../dto/template-set/create-template-set.dto';
 import { UpdateTemplateSetDto } from '../dto/template-set/update-template-set.dto';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Template Sets')
 @ApiBearerAuth()
@@ -22,7 +36,12 @@ export class TemplateSetController {
     @CurrentUser('id') userId: number,
     @Body() dto: CreateTemplateSetDto,
   ) {
-    return this.templateSetService.create(templateId, templateExerciseId, userId, dto);
+    return this.templateSetService.create(
+      templateId,
+      templateExerciseId,
+      userId,
+      dto,
+    );
   }
 
   @Patch(':id')
@@ -35,7 +54,13 @@ export class TemplateSetController {
     @CurrentUser('id') userId: number,
     @Body() dto: UpdateTemplateSetDto,
   ) {
-    return this.templateSetService.update(id, templateId, templateExerciseId, userId, dto);
+    return this.templateSetService.update(
+      id,
+      templateId,
+      templateExerciseId,
+      userId,
+      dto,
+    );
   }
 
   @Delete(':id')
@@ -47,6 +72,11 @@ export class TemplateSetController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser('id') userId: number,
   ) {
-    return this.templateSetService.remove(id, templateId, templateExerciseId, userId);
+    return this.templateSetService.remove(
+      id,
+      templateId,
+      templateExerciseId,
+      userId,
+    );
   }
 }
