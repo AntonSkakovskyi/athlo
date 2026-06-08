@@ -21,7 +21,7 @@ describe('UserController', () => {
     }).compile();
 
     controller = module.get<UserController>(UserController);
-    service = module.get(UserService) as jest.Mocked<UserService>;
+    service = module.get(UserService);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -30,7 +30,12 @@ describe('UserController', () => {
     it('should call userService.getProfile with userId', async () => {
       // Arrange
       const userId = 1;
-      const expected = { id: 1, email: 'a@b.com', fullName: 'Test', nickname: 'tester' };
+      const expected = {
+        id: 1,
+        email: 'a@b.com',
+        fullName: 'Test',
+        nickname: 'tester',
+      };
       service.getProfile.mockResolvedValue(expected as any);
 
       // Act
@@ -47,7 +52,12 @@ describe('UserController', () => {
       // Arrange
       const userId = 1;
       const dto = { fullName: 'New Name' };
-      const expected = { id: 1, email: 'a@b.com', fullName: 'New Name', nickname: 'tester' };
+      const expected = {
+        id: 1,
+        email: 'a@b.com',
+        fullName: 'New Name',
+        nickname: 'tester',
+      };
       service.updateProfile.mockResolvedValue(expected as any);
 
       // Act

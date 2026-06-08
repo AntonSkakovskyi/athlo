@@ -50,10 +50,21 @@ describe('UserService', () => {
   describe('create', () => {
     it('should hash password and create a new user', async () => {
       // Arrange
-      const dto = { email: 'test@test.com', password: '123456', fullName: 'Test', nickname: 'tester' };
+      const dto = {
+        email: 'test@test.com',
+        password: '123456',
+        fullName: 'Test',
+        nickname: 'tester',
+      };
       const hashedPassword = 'hashed_password';
       mockBcrypt.hash.mockResolvedValue(hashedPassword as never);
-      const createdUser = { id: 1, email: dto.email, fullName: dto.fullName, nickname: dto.nickname, password_hash: hashedPassword };
+      const createdUser = {
+        id: 1,
+        email: dto.email,
+        fullName: dto.fullName,
+        nickname: dto.nickname,
+        password_hash: hashedPassword,
+      };
       userRepo.create.mockReturnValue(createdUser);
       userRepo.save.mockResolvedValue(createdUser);
 
@@ -98,7 +109,10 @@ describe('UserService', () => {
       const result = await service.findOne(1);
 
       // Assert
-      expect(userRepo.findOne).toHaveBeenCalledWith({ where: { id: 1 }, relations: ['settings'] });
+      expect(userRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
+        relations: ['settings'],
+      });
       expect(result).toEqual(user);
     });
 
@@ -121,7 +135,9 @@ describe('UserService', () => {
       const result = await service.findByEmail('test@test.com');
 
       // Assert
-      expect(userRepo.findOne).toHaveBeenCalledWith({ where: { email: 'test@test.com' } });
+      expect(userRepo.findOne).toHaveBeenCalledWith({
+        where: { email: 'test@test.com' },
+      });
       expect(result).toEqual(user);
     });
 
@@ -140,7 +156,13 @@ describe('UserService', () => {
   describe('getProfile', () => {
     it('should return user profile without password_hash', async () => {
       // Arrange
-      const user = { id: 1, email: 'a@b.com', fullName: 'Test', nickname: 'tester', password_hash: 'secret' };
+      const user = {
+        id: 1,
+        email: 'a@b.com',
+        fullName: 'Test',
+        nickname: 'tester',
+        password_hash: 'secret',
+      };
       userRepo.findOne.mockResolvedValue(user);
 
       // Act
@@ -163,8 +185,21 @@ describe('UserService', () => {
   describe('updateProfile', () => {
     it('should update profile fields and return without password_hash', async () => {
       // Arrange
-      const user = { id: 1, email: 'a@b.com', fullName: 'Old', nickname: 'old', password_hash: 'secret' };
-      const existingSettings = { id: 1, userId: 1, waterGoal: 2000, proteinGoal: null, fatGoal: null, carbGoal: null };
+      const user = {
+        id: 1,
+        email: 'a@b.com',
+        fullName: 'Old',
+        nickname: 'old',
+        password_hash: 'secret',
+      };
+      const existingSettings = {
+        id: 1,
+        userId: 1,
+        waterGoal: 2000,
+        proteinGoal: null,
+        fatGoal: null,
+        carbGoal: null,
+      };
       userRepo.findOne.mockResolvedValue(user);
       settingRepo.findOne.mockResolvedValue(existingSettings);
       settingRepo.save.mockResolvedValue(existingSettings);
@@ -181,13 +216,22 @@ describe('UserService', () => {
 
     it('should create settings when none exist and apply explicit goals', async () => {
       // Arrange
-      const user = { id: 1, email: 'a@b.com', fullName: 'Test', nickname: 'tester', password_hash: 'secret' };
+      const user = {
+        id: 1,
+        email: 'a@b.com',
+        fullName: 'Test',
+        nickname: 'tester',
+        password_hash: 'secret',
+      };
       const newSettings = { userId: 1 };
       userRepo.findOne.mockResolvedValue(user);
       settingRepo.findOne.mockResolvedValue(null);
       settingRepo.create.mockReturnValue(newSettings);
       settingRepo.save.mockResolvedValue({ ...newSettings, waterGoal: 2500 });
-      userRepo.save.mockResolvedValue({ ...user, settings: { waterGoal: 2500 } });
+      userRepo.save.mockResolvedValue({
+        ...user,
+        settings: { waterGoal: 2500 },
+      });
 
       // Act
       const result = await service.updateProfile(1, { waterGoal: 2500 });

@@ -1,4 +1,12 @@
-import { IsOptional, IsString, MinLength, MaxLength, IsInt, IsEnum, IsNumber } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  MinLength,
+  MaxLength,
+  IsInt,
+  IsEnum,
+  IsNumber,
+} from 'class-validator';
 import { Gender, ActivityLevel, FitnessGoal } from '@athlo/shared';
 
 export class UpdateProfileDto {

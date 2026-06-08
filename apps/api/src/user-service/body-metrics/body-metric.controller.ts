@@ -1,10 +1,27 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { BodyMetricService } from './body-metric.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreateBodyMetricDto } from './dto/create-body-metric.dto';
 import { UpdateBodyMetricDto } from './dto/update-body-metric.dto';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Body Metrics')
 @ApiBearerAuth()
@@ -36,7 +53,11 @@ export class BodyMetricController {
 
   @Get()
   @ApiOperation({ summary: 'Get all body metrics for current user' })
-  @ApiQuery({ name: 'metricTypeId', required: false, description: 'Filter by metric type ID' })
+  @ApiQuery({
+    name: 'metricTypeId',
+    required: false,
+    description: 'Filter by metric type ID',
+  })
   @ApiResponse({ status: 200, description: 'List of body metrics' })
   findAll(
     @CurrentUser('id') userId: number,
@@ -52,7 +73,10 @@ export class BodyMetricController {
   @ApiOperation({ summary: 'Get a specific body metric entry' })
   @ApiResponse({ status: 200, description: 'Body metric data' })
   @ApiResponse({ status: 404, description: 'Body metric not found' })
-  findOne(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.bodyMetricService.findOne(id, userId);
   }
 
@@ -61,7 +85,7 @@ export class BodyMetricController {
   @ApiResponse({ status: 200, description: 'Body metric updated' })
   @ApiResponse({ status: 404, description: 'Body metric not found' })
   update(
-    @Param('id',  ) id: number,
+    @Param('id') id: number,
     @CurrentUser('id') userId: number,
     @Body() dto: UpdateBodyMetricDto,
   ) {
@@ -72,7 +96,10 @@ export class BodyMetricController {
   @ApiOperation({ summary: 'Delete a body metric entry' })
   @ApiResponse({ status: 200, description: 'Body metric deleted' })
   @ApiResponse({ status: 404, description: 'Body metric not found' })
-  remove(@Param('id', ParseIntPipe) id: number, @CurrentUser('id') userId: number) {
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser('id') userId: number,
+  ) {
     return this.bodyMetricService.remove(id, userId);
   }
 }

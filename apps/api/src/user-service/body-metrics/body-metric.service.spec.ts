@@ -66,7 +66,10 @@ describe('BodyMetricService', () => {
 
   describe('getUnits', () => {
     it('should return all units', async () => {
-      const mockUnits = [{ id: 1, name: 'kg' }, { id: 2, name: 'lb' }];
+      const mockUnits = [
+        { id: 1, name: 'kg' },
+        { id: 2, name: 'lb' },
+      ];
       unitRepo.find.mockResolvedValue(mockUnits);
 
       const result = await service.getUnits();
@@ -203,7 +206,9 @@ describe('BodyMetricService', () => {
       bodyMetricRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.update(999, 1, { value: 80 })).rejects.toThrow(NotFoundException);
+      await expect(service.update(999, 1, { value: 80 })).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when metric belongs to another user', async () => {
@@ -211,7 +216,9 @@ describe('BodyMetricService', () => {
       bodyMetricRepo.findOne.mockResolvedValue({ id: 1, userId: 2, value: 75 });
 
       // Act & Assert
-      await expect(service.update(1, 1, { value: 80 })).rejects.toThrow(ForbiddenException);
+      await expect(service.update(1, 1, { value: 80 })).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 

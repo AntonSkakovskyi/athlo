@@ -2,9 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { IUserProfile, calculateGoals, AnthropometryData } from '@athlo/shared';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { Repository } from 'typeorm';
+import { Repository, MoreThanOrEqual } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
 import { UserSettingEntity } from './entities/user-setting.entity';
+import { DailyGoalEntity } from '../../nutrition-service/entities/daily-goal.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 
@@ -15,9 +16,11 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserSettingEntity)
     private readonly settingRepository: Repository<UserSettingEntity>,
+    @InjectRepository(DailyGoalEntity)
+    private readonly dailyGoalRepository: Repository<DailyGoalEntity>,
   ) {}
 
-  async create(createUserDto: CreateUserDto){
+  async create(createUserDto: CreateUserDto) {
     const { password, ...rest } = createUserDto;
     const passwordHash = await bcrypt.hash(password, 10);
     const user = this.userRepository.create({
@@ -27,7 +30,7 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  async findAll(){
+  async findAll() {
     return await this.userRepository.find();
   }
 
@@ -40,7 +43,10 @@ export class UserService {
   }
 
   private async findOneById(id: number) {
-    return this.userRepository.findOne({ where: { id }, relations: ['settings'] });
+    return this.userRepository.findOne({
+      where: { id },
+      relations: ['settings'],
+    });
   }
 
   async findByEmail(email: string): Promise<UserEntity | null> {
@@ -62,21 +68,34 @@ export class UserService {
   async searchUsers(query: string, currentUserId: number) {
     return this.userRepository
       .createQueryBuilder('user')
-      .where('(user.nickname ILIKE :query OR user.fullName ILIKE :query)', { query: `%${query}%` })
+      .where('(user.nickname ILIKE :query OR user.fullName ILIKE :query)', {
+        query: `%${query}%`,
+      })
       .andWhere('user.id != :currentUserId', { currentUserId })
       .limit(20)
       .getMany()
       .then((users) => users.map(({ password_hash, ...u }) => u));
   }
 
-  async updateProfile(id: number, dto: UpdateProfileDto): Promise<IUserProfile> {
+  async updateProfile(
+    id: number,
+    dto: UpdateProfileDto,
+  ): Promise<IUserProfile> {
     const user = await this.findOne(id);
-    const { 
-      waterGoal, proteinGoal, fatGoal, carbGoal, 
-      gender, age, height, weight, activityLevel, fitnessGoal,
-      ...userDto 
+    const {
+      waterGoal,
+      proteinGoal,
+      fatGoal,
+      carbGoal,
+      gender,
+      age,
+      height,
+      weight,
+      activityLevel,
+      fitnessGoal,
+      ...userDto
     } = dto;
-    
+
     // Update basic user info and anthropometry
     Object.assign(user, userDto);
     if (gender !== undefined) user.gender = gender;
@@ -86,13 +105,25 @@ export class UserService {
     if (activityLevel !== undefined) user.activityLevel = activityLevel;
     if (fitnessGoal !== undefined) user.fitnessGoal = fitnessGoal;
 
-    let settings = await this.settingRepository.findOne({ where: { userId: id } });
+    let settings = await this.settingRepository.findOne({
+      where: { userId: id },
+    });
     if (!settings) {
       settings = this.settingRepository.create({ userId: id });
     }
 
-    const hasExplicitGoals = waterGoal !== undefined || proteinGoal !== undefined || fatGoal !== undefined || carbGoal !== undefined;
-    const hasAnthropometryChanges = gender !== undefined || age !== undefined || height !== undefined || weight !== undefined || activityLevel !== undefined || fitnessGoal !== undefined;
+    const hasExplicitGoals =
+      waterGoal !== undefined ||
+      proteinGoal !== undefined ||
+      fatGoal !== undefined ||
+      carbGoal !== undefined;
+    const hasAnthropometryChanges =
+      gender !== undefined ||
+      age !== undefined ||
+      height !== undefined ||
+      weight !== undefined ||
+      activityLevel !== undefined ||
+      fitnessGoal !== undefined;
 
     // Recalculate goals if anthropometry changed and no explicit goals were provided
     if (hasAnthropometryChanges && !hasExplicitGoals) {
@@ -105,7 +136,14 @@ export class UserService {
         goal: user.fitnessGoal || dto.fitnessGoal,
       } as AnthropometryData;
 
-      if (calcData.gender && calcData.age && calcData.height && calcData.weight && calcData.activityLevel && calcData.goal) {
+      if (
+        calcData.gender &&
+        calcData.age &&
+        calcData.height &&
+        calcData.weight &&
+        calcData.activityLevel &&
+        calcData.goal
+      ) {
         const calculated = calculateGoals(calcData);
         settings.waterGoal = calculated.waterGoal;
         settings.proteinGoal = calculated.proteinGoal;
@@ -124,7 +162,24 @@ export class UserService {
     user.settings = settings;
 
     const saved = await this.userRepository.save(user);
-    const { password_hash, settings: savedSettings, workouts, ...profile } = saved;
+
+    // If goals were updated, delete future daily goals so they are recreated with new values
+    if (hasExplicitGoals || hasAnthropometryChanges) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      await this.dailyGoalRepository.delete({
+        userId: id,
+        date: MoreThanOrEqual(today),
+      });
+    }
+
+    const {
+      password_hash,
+      settings: savedSettings,
+      workouts,
+      ...profile
+    } = saved;
     return {
       ...profile,
       waterGoal: savedSettings?.waterGoal ?? null,

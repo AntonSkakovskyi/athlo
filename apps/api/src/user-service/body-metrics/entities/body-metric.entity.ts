@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import type { IBodyMetric } from '@athlo/shared';
 import { UserEntity } from '../../user/entities/user.entity';
 import { MetricTypeEntity } from './metric-type.entity';

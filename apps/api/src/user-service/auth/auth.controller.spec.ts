@@ -21,7 +21,7 @@ describe('AuthController', () => {
     }).compile();
 
     controller = module.get<AuthController>(AuthController);
-    service = module.get(AuthService) as jest.Mocked<AuthService>;
+    service = module.get(AuthService);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -29,8 +29,16 @@ describe('AuthController', () => {
   describe('register', () => {
     it('should call authService.register with registerDto', async () => {
       // Arrange
-      const registerDto = { email: 'test@test.com', password: '123456', fullName: 'Test', nickname: 'tester' };
-      const expected = { user: { id: 1, email: 'test@test.com' }, token: 'jwt-token' };
+      const registerDto = {
+        email: 'test@test.com',
+        password: '123456',
+        fullName: 'Test',
+        nickname: 'tester',
+      };
+      const expected = {
+        user: { id: 1, email: 'test@test.com' },
+        token: 'jwt-token',
+      };
       service.register.mockResolvedValue(expected as any);
 
       // Act
@@ -46,7 +54,10 @@ describe('AuthController', () => {
     it('should call authService.login with loginDto', async () => {
       // Arrange
       const loginDto = { email: 'test@test.com', password: '123456' };
-      const expected = { user: { id: 1, email: 'test@test.com' }, token: 'jwt-token' };
+      const expected = {
+        user: { id: 1, email: 'test@test.com' },
+        token: 'jwt-token',
+      };
       service.login.mockResolvedValue(expected as any);
 
       // Act

@@ -1,6 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { FriendService } from './friend.service';
 import { UserFriendEntity } from './entities/user-friend.entity';
 import { UserEntity } from '../user/entities/user.entity';
@@ -46,7 +51,11 @@ describe('FriendService', () => {
       // Arrange
       userRepo.findOne.mockResolvedValue({ id: 2, email: 'friend@test.com' });
       friendRepo.findOne.mockResolvedValue(null);
-      friendRepo.create.mockReturnValue({ userId: 1, friendId: 2, status: FriendRequestStatus.PENDING });
+      friendRepo.create.mockReturnValue({
+        userId: 1,
+        friendId: 2,
+        status: FriendRequestStatus.PENDING,
+      });
       friendRepo.save.mockResolvedValue({});
 
       // Act
@@ -63,7 +72,9 @@ describe('FriendService', () => {
 
     it('should throw BadRequestException when sending request to yourself', async () => {
       // Act & Assert
-      await expect(service.sendRequest(1, 1)).rejects.toThrow(BadRequestException);
+      await expect(service.sendRequest(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw NotFoundException when friend user does not exist', async () => {
@@ -71,34 +82,52 @@ describe('FriendService', () => {
       userRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.sendRequest(1, 999)).rejects.toThrow(NotFoundException);
+      await expect(service.sendRequest(1, 999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ConflictException when already friends', async () => {
       // Arrange
       userRepo.findOne.mockResolvedValue({ id: 2 });
-      friendRepo.findOne.mockResolvedValue({ status: FriendRequestStatus.ACCEPTED });
+      friendRepo.findOne.mockResolvedValue({
+        status: FriendRequestStatus.ACCEPTED,
+      });
 
       // Act & Assert
-      await expect(service.sendRequest(1, 2)).rejects.toThrow(ConflictException);
+      await expect(service.sendRequest(1, 2)).rejects.toThrow(
+        ConflictException,
+      );
     });
 
     it('should throw ConflictException when request already exists', async () => {
       // Arrange
       userRepo.findOne.mockResolvedValue({ id: 2 });
-      friendRepo.findOne.mockResolvedValue({ status: FriendRequestStatus.PENDING });
+      friendRepo.findOne.mockResolvedValue({
+        status: FriendRequestStatus.PENDING,
+      });
 
       // Act & Assert
-      await expect(service.sendRequest(1, 2)).rejects.toThrow(ConflictException);
+      await expect(service.sendRequest(1, 2)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
   describe('acceptRequest', () => {
     it('should accept a pending friend request', async () => {
       // Arrange
-      const request = { id: 1, userId: 2, friendId: 1, status: FriendRequestStatus.PENDING };
+      const request = {
+        id: 1,
+        userId: 2,
+        friendId: 1,
+        status: FriendRequestStatus.PENDING,
+      };
       friendRepo.findOne.mockResolvedValue(request);
-      friendRepo.save.mockResolvedValue({ ...request, status: FriendRequestStatus.ACCEPTED });
+      friendRepo.save.mockResolvedValue({
+        ...request,
+        status: FriendRequestStatus.ACCEPTED,
+      });
 
       // Act
       const result = await service.acceptRequest(1, 1);
@@ -115,30 +144,51 @@ describe('FriendService', () => {
       friendRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.acceptRequest(1, 999)).rejects.toThrow(NotFoundException);
+      await expect(service.acceptRequest(1, 999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when request is not sent to the user', async () => {
       // Arrange
-      friendRepo.findOne.mockResolvedValue({ id: 1, userId: 3, friendId: 2, status: FriendRequestStatus.PENDING });
+      friendRepo.findOne.mockResolvedValue({
+        id: 1,
+        userId: 3,
+        friendId: 2,
+        status: FriendRequestStatus.PENDING,
+      });
 
       // Act & Assert
-      await expect(service.acceptRequest(1, 1)).rejects.toThrow(ForbiddenException);
+      await expect(service.acceptRequest(1, 1)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw BadRequestException when request is not pending', async () => {
       // Arrange
-      friendRepo.findOne.mockResolvedValue({ id: 1, userId: 2, friendId: 1, status: FriendRequestStatus.ACCEPTED });
+      friendRepo.findOne.mockResolvedValue({
+        id: 1,
+        userId: 2,
+        friendId: 1,
+        status: FriendRequestStatus.ACCEPTED,
+      });
 
       // Act & Assert
-      await expect(service.acceptRequest(1, 1)).rejects.toThrow(BadRequestException);
+      await expect(service.acceptRequest(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
   describe('rejectRequest', () => {
     it('should reject a pending friend request', async () => {
       // Arrange
-      const request = { id: 1, userId: 2, friendId: 1, status: FriendRequestStatus.PENDING };
+      const request = {
+        id: 1,
+        userId: 2,
+        friendId: 1,
+        status: FriendRequestStatus.PENDING,
+      };
       friendRepo.findOne.mockResolvedValue(request);
       friendRepo.remove.mockResolvedValue(request);
 
@@ -155,30 +205,51 @@ describe('FriendService', () => {
       friendRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.rejectRequest(1, 999)).rejects.toThrow(NotFoundException);
+      await expect(service.rejectRequest(1, 999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when request is not sent to the user', async () => {
       // Arrange
-      friendRepo.findOne.mockResolvedValue({ id: 1, userId: 3, friendId: 2, status: FriendRequestStatus.PENDING });
+      friendRepo.findOne.mockResolvedValue({
+        id: 1,
+        userId: 3,
+        friendId: 2,
+        status: FriendRequestStatus.PENDING,
+      });
 
       // Act & Assert
-      await expect(service.rejectRequest(1, 1)).rejects.toThrow(ForbiddenException);
+      await expect(service.rejectRequest(1, 1)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw BadRequestException when request is not pending', async () => {
       // Arrange
-      friendRepo.findOne.mockResolvedValue({ id: 1, userId: 2, friendId: 1, status: FriendRequestStatus.ACCEPTED });
+      friendRepo.findOne.mockResolvedValue({
+        id: 1,
+        userId: 2,
+        friendId: 1,
+        status: FriendRequestStatus.ACCEPTED,
+      });
 
       // Act & Assert
-      await expect(service.rejectRequest(1, 1)).rejects.toThrow(BadRequestException);
+      await expect(service.rejectRequest(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
   describe('cancelRequest', () => {
     it('should cancel a pending sent request', async () => {
       // Arrange
-      const request = { id: 1, userId: 1, friendId: 2, status: FriendRequestStatus.PENDING };
+      const request = {
+        id: 1,
+        userId: 1,
+        friendId: 2,
+        status: FriendRequestStatus.PENDING,
+      };
       friendRepo.findOne.mockResolvedValue(request);
       friendRepo.remove.mockResolvedValue(request);
 
@@ -195,30 +266,51 @@ describe('FriendService', () => {
       friendRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.cancelRequest(1, 999)).rejects.toThrow(NotFoundException);
+      await expect(service.cancelRequest(1, 999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw ForbiddenException when request was not sent by the user', async () => {
       // Arrange
-      friendRepo.findOne.mockResolvedValue({ id: 1, userId: 2, friendId: 1, status: FriendRequestStatus.PENDING });
+      friendRepo.findOne.mockResolvedValue({
+        id: 1,
+        userId: 2,
+        friendId: 1,
+        status: FriendRequestStatus.PENDING,
+      });
 
       // Act & Assert
-      await expect(service.cancelRequest(1, 1)).rejects.toThrow(ForbiddenException);
+      await expect(service.cancelRequest(1, 1)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw BadRequestException when request is not pending', async () => {
       // Arrange
-      friendRepo.findOne.mockResolvedValue({ id: 1, userId: 1, friendId: 2, status: FriendRequestStatus.ACCEPTED });
+      friendRepo.findOne.mockResolvedValue({
+        id: 1,
+        userId: 1,
+        friendId: 2,
+        status: FriendRequestStatus.ACCEPTED,
+      });
 
       // Act & Assert
-      await expect(service.cancelRequest(1, 1)).rejects.toThrow(BadRequestException);
+      await expect(service.cancelRequest(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
   describe('removeFriend', () => {
     it('should remove a friendship and return success message', async () => {
       // Arrange
-      const friendship = { id: 1, userId: 1, friendId: 2, status: FriendRequestStatus.ACCEPTED };
+      const friendship = {
+        id: 1,
+        userId: 1,
+        friendId: 2,
+        status: FriendRequestStatus.ACCEPTED,
+      };
       friendRepo.findOne.mockResolvedValue(friendship);
       friendRepo.remove.mockResolvedValue(friendship);
 
@@ -232,7 +324,9 @@ describe('FriendService', () => {
 
     it('should throw BadRequestException when trying to remove yourself', async () => {
       // Act & Assert
-      await expect(service.removeFriend(1, 1)).rejects.toThrow(BadRequestException);
+      await expect(service.removeFriend(1, 1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw NotFoundException when friendship does not exist', async () => {
@@ -240,7 +334,9 @@ describe('FriendService', () => {
       friendRepo.findOne.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.removeFriend(1, 2)).rejects.toThrow(NotFoundException);
+      await expect(service.removeFriend(1, 2)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -254,7 +350,12 @@ describe('FriendService', () => {
           friendId: 2,
           status: FriendRequestStatus.ACCEPTED,
           user: { id: 1, fullName: 'Me', nickname: 'me', email: 'me@test.com' },
-          friend: { id: 2, fullName: 'Friend', nickname: 'friend', email: 'friend@test.com' },
+          friend: {
+            id: 2,
+            fullName: 'Friend',
+            nickname: 'friend',
+            email: 'friend@test.com',
+          },
         },
       ];
       friendRepo.find.mockResolvedValue(friendships);
@@ -264,7 +365,12 @@ describe('FriendService', () => {
 
       // Assert
       expect(result).toEqual([
-        { id: 2, fullName: 'Friend', nickname: 'friend', email: 'friend@test.com' },
+        {
+          id: 2,
+          fullName: 'Friend',
+          nickname: 'friend',
+          email: 'friend@test.com',
+        },
       ]);
     });
 
@@ -290,7 +396,12 @@ describe('FriendService', () => {
           friendId: 1,
           status: FriendRequestStatus.PENDING,
           createdAt: new Date('2025-01-01'),
-          user: { id: 2, fullName: 'Sender', nickname: 'sender', email: 'sender@test.com' },
+          user: {
+            id: 2,
+            fullName: 'Sender',
+            nickname: 'sender',
+            email: 'sender@test.com',
+          },
         },
       ];
       friendRepo.find.mockResolvedValue(requests);
@@ -322,7 +433,12 @@ describe('FriendService', () => {
           friendId: 3,
           status: FriendRequestStatus.PENDING,
           createdAt: new Date('2025-01-01'),
-          friend: { id: 3, fullName: 'Target', nickname: 'target', email: 'target@test.com' },
+          friend: {
+            id: 3,
+            fullName: 'Target',
+            nickname: 'target',
+            email: 'target@test.com',
+          },
         },
       ];
       friendRepo.find.mockResolvedValue(requests);

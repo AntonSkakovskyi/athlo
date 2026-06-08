@@ -25,7 +25,7 @@ describe('BodyMetricController', () => {
     }).compile();
 
     controller = module.get<BodyMetricController>(BodyMetricController);
-    service = module.get(BodyMetricService) as jest.Mocked<BodyMetricService>;
+    service = module.get(BodyMetricService);
   });
 
   afterEach(() => jest.clearAllMocks());

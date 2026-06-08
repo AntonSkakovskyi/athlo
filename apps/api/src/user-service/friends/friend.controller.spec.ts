@@ -27,7 +27,7 @@ describe('FriendController', () => {
     }).compile();
 
     controller = module.get<FriendController>(FriendController);
-    service = module.get(FriendService) as jest.Mocked<FriendService>;
+    service = module.get(FriendService);
   });
 
   afterEach(() => jest.clearAllMocks());

@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FriendRequestStatus } from '@athlo/shared';
@@ -19,7 +25,9 @@ export class FriendService {
       throw new BadRequestException('Cannot send a friend request to yourself');
     }
 
-    const friendUser = await this.userRepository.findOne({ where: { id: friendId } });
+    const friendUser = await this.userRepository.findOne({
+      where: { id: friendId },
+    });
     if (!friendUser) {
       throw new NotFoundException(`User with ID ${friendId} not found`);
     }
@@ -35,7 +43,9 @@ export class FriendService {
       if (existing.status === FriendRequestStatus.ACCEPTED) {
         throw new ConflictException('You are already friends with this user');
       }
-      throw new ConflictException('A friend request already exists between you and this user');
+      throw new ConflictException(
+        'A friend request already exists between you and this user',
+      );
     }
 
     const request = this.friendRepository.create({
@@ -49,9 +59,13 @@ export class FriendService {
   }
 
   async acceptRequest(userId: number, requestId: number) {
-    const request = await this.friendRepository.findOne({ where: { id: requestId } });
+    const request = await this.friendRepository.findOne({
+      where: { id: requestId },
+    });
     if (!request) {
-      throw new NotFoundException(`Friend request with ID ${requestId} not found`);
+      throw new NotFoundException(
+        `Friend request with ID ${requestId} not found`,
+      );
     }
 
     if (request.friendId !== userId) {
@@ -69,9 +83,13 @@ export class FriendService {
   }
 
   async rejectRequest(userId: number, requestId: number) {
-    const request = await this.friendRepository.findOne({ where: { id: requestId } });
+    const request = await this.friendRepository.findOne({
+      where: { id: requestId },
+    });
     if (!request) {
-      throw new NotFoundException(`Friend request with ID ${requestId} not found`);
+      throw new NotFoundException(
+        `Friend request with ID ${requestId} not found`,
+      );
     }
 
     if (request.friendId !== userId) {
@@ -88,9 +106,13 @@ export class FriendService {
   }
 
   async cancelRequest(userId: number, requestId: number) {
-    const request = await this.friendRepository.findOne({ where: { id: requestId } });
+    const request = await this.friendRepository.findOne({
+      where: { id: requestId },
+    });
     if (!request) {
-      throw new NotFoundException(`Friend request with ID ${requestId} not found`);
+      throw new NotFoundException(
+        `Friend request with ID ${requestId} not found`,
+      );
     }
 
     if (request.userId !== userId) {
@@ -114,7 +136,11 @@ export class FriendService {
     const friendship = await this.friendRepository.findOne({
       where: [
         { userId, friendId, status: FriendRequestStatus.ACCEPTED },
-        { userId: friendId, friendId: userId, status: FriendRequestStatus.ACCEPTED },
+        {
+          userId: friendId,
+          friendId: userId,
+          status: FriendRequestStatus.ACCEPTED,
+        },
       ],
     });
     if (!friendship) {
@@ -192,7 +218,11 @@ export class FriendService {
     const friendship = await this.friendRepository.findOne({
       where: [
         { userId, friendId: otherUserId, status: FriendRequestStatus.ACCEPTED },
-        { userId: otherUserId, friendId: userId, status: FriendRequestStatus.ACCEPTED },
+        {
+          userId: otherUserId,
+          friendId: userId,
+          status: FriendRequestStatus.ACCEPTED,
+        },
       ],
     });
     return !!friendship;
@@ -205,6 +235,10 @@ export class FriendService {
         { friendId: userId, status: FriendRequestStatus.ACCEPTED },
       ],
     });
-    return Array.from(new Set(friendships.map((f) => (f.userId === userId ? f.friendId : f.userId))));
+    return Array.from(
+      new Set(
+        friendships.map((f) => (f.userId === userId ? f.friendId : f.userId)),
+      ),
+    );
   }
 }

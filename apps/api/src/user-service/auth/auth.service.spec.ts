@@ -37,8 +37,8 @@ describe('AuthService', () => {
     }).compile();
 
     authService = module.get<AuthService>(AuthService);
-    mockUserService = module.get(UserService) as any;
-    mockJwtService = module.get(JwtService) as any;
+    mockUserService = module.get(UserService);
+    mockJwtService = module.get(JwtService);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -46,8 +46,18 @@ describe('AuthService', () => {
   describe('register', () => {
     it('should register a new user and return user with token', async () => {
       // Arrange
-      const registerDto = { email: 'test@test.com', password: '123456', fullName: 'Test', nickname: 'tester' };
-      const createdUser = { id: 1, email: 'test@test.com', fullName: 'Test', nickname: 'tester' };
+      const registerDto = {
+        email: 'test@test.com',
+        password: '123456',
+        fullName: 'Test',
+        nickname: 'tester',
+      };
+      const createdUser = {
+        id: 1,
+        email: 'test@test.com',
+        fullName: 'Test',
+        nickname: 'tester',
+      };
       mockUserService.findByEmail.mockResolvedValue(null);
       mockUserService.create.mockResolvedValue(createdUser as any);
       mockJwtService.sign.mockReturnValue('jwt-token');
@@ -56,7 +66,9 @@ describe('AuthService', () => {
       const result = await authService.register(registerDto);
 
       // Assert
-      expect(mockUserService.findByEmail).toHaveBeenCalledWith(registerDto.email);
+      expect(mockUserService.findByEmail).toHaveBeenCalledWith(
+        registerDto.email,
+      );
       expect(mockUserService.create).toHaveBeenCalledWith(registerDto);
       expect(result.user).toEqual(createdUser);
       expect(result.token).toBe('jwt-token');
@@ -64,11 +76,21 @@ describe('AuthService', () => {
 
     it('should throw ConflictException when email already exists', async () => {
       // Arrange
-      const registerDto = { email: 'existing@test.com', password: '123456', fullName: 'Test', nickname: 'tester' };
-      mockUserService.findByEmail.mockResolvedValue({ id: 1, email: 'existing@test.com' } as any);
+      const registerDto = {
+        email: 'existing@test.com',
+        password: '123456',
+        fullName: 'Test',
+        nickname: 'tester',
+      };
+      mockUserService.findByEmail.mockResolvedValue({
+        id: 1,
+        email: 'existing@test.com',
+      } as any);
 
       // Act & Assert
-      await expect(authService.register(registerDto)).rejects.toThrow(ConflictException);
+      await expect(authService.register(registerDto)).rejects.toThrow(
+        ConflictException,
+      );
     });
   });
 
@@ -76,7 +98,13 @@ describe('AuthService', () => {
     it('should return user without password_hash and token on valid credentials', async () => {
       // Arrange
       const loginDto = { email: 'user@test.com', password: '123456' };
-      const user = { id: 1, email: 'user@test.com', fullName: 'Test', nickname: 'tester', password_hash: 'hashed' };
+      const user = {
+        id: 1,
+        email: 'user@test.com',
+        fullName: 'Test',
+        nickname: 'tester',
+        password_hash: 'hashed',
+      };
       mockUserService.findByEmail.mockResolvedValue(user as any);
       mockBcrypt.compare.mockResolvedValue(true as never);
       mockJwtService.sign.mockReturnValue('jwt-token');
@@ -96,7 +124,9 @@ describe('AuthService', () => {
       mockUserService.findByEmail.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(authService.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(authService.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should throw UnauthorizedException when password is invalid', async () => {
@@ -107,7 +137,9 @@ describe('AuthService', () => {
       mockBcrypt.compare.mockResolvedValue(false as never);
 
       // Act & Assert
-      await expect(authService.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(authService.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 });

@@ -1,7 +1,13 @@
-import { IUser, Gender, ActivityLevel, FitnessGoal } from "@athlo/shared";
-import { WorkoutEntity } from "../../../workouts-service/entities/workout.entity";
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { UserSettingEntity } from "./user-setting.entity";
+import { IUser, Gender, ActivityLevel, FitnessGoal } from '@athlo/shared';
+import { WorkoutEntity } from '../../../workouts-service/entities/workout.entity';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { UserSettingEntity } from './user-setting.entity';
 
 @Entity({ name: 'users' })
 export class UserEntity implements IUser {
@@ -35,15 +41,25 @@ export class UserEntity implements IUser {
   @Column({ name: 'weight', type: 'float', nullable: true })
   weight?: number;
 
-  @Column({ name: 'activity_level', type: 'enum', enum: ActivityLevel, nullable: true })
+  @Column({
+    name: 'activity_level',
+    type: 'enum',
+    enum: ActivityLevel,
+    nullable: true,
+  })
   activityLevel?: ActivityLevel;
 
-  @Column({ name: 'fitness_goal', type: 'enum', enum: FitnessGoal, nullable: true })
+  @Column({
+    name: 'fitness_goal',
+    type: 'enum',
+    enum: FitnessGoal,
+    nullable: true,
+  })
   fitnessGoal?: FitnessGoal;
 
-  @OneToMany(() => WorkoutEntity, workout => workout.user)
+  @OneToMany(() => WorkoutEntity, (workout) => workout.user)
   workouts: WorkoutEntity[];
 
-  @OneToOne(() => UserSettingEntity, setting => setting.user)
+  @OneToOne(() => UserSettingEntity, (setting) => setting.user)
   settings: UserSettingEntity;
 }

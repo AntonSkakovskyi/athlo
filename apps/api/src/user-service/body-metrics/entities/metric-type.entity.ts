@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import type { IMetricType } from '@athlo/shared';
 import { UnitEntity } from './unit.entity';
 
@@ -7,7 +13,7 @@ export class MetricTypeEntity implements IMetricType {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'unit_id'})
+  @Column({ name: 'unit_id' })
   unitId: number;
 
   @Column()
