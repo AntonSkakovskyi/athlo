@@ -140,7 +140,11 @@ export function useNutritionHomeScreen() {
 
   const handleConfirmEditMeal = useCallback(
     async (mealId: number, data: { mealTypeId?: number; name?: string; consumedAt?: string }) => {
-      await updateMeal.mutateAsync({ id: String(mealId), data });
+      const { mealTypeId, name, consumedAt } = data;
+      await updateMeal.mutateAsync({ 
+        id: String(mealId), 
+        data: { mealTypeId, name, consumedAt } 
+      });
       setEditingMeal(null);
     },
     [updateMeal],
@@ -235,12 +239,19 @@ export function useNutritionHomeScreen() {
 
   const activePlanCycleInfo = useMemo(() => {
     if (!activePlan?.startedAt || !activePlanDetails?.totalDays) return null;
+    
     const totalDays = activePlanDetails.totalDays;
     const startDate = new Date(activePlan.startedAt);
     startDate.setHours(0, 0, 0, 0);
+    
     const selectedDate = new Date(date + 'T00:00:00');
+    selectedDate.setHours(0, 0, 0, 0);
+    
     const daysSince = Math.floor((selectedDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Plan is not active yet on this date
     if (daysSince < 0) return null;
+    
     return {
       cycleNumber: Math.floor(daysSince / totalDays) + 1,
       planDayNumber: (daysSince % totalDays) + 1,
@@ -402,6 +413,9 @@ export function useNutritionHomeScreen() {
     handleApplyPlanDay,
     isCreateMealPending: createMeal.isPending,
     isUpdateItemPending: updateMealItem.isPending,
+    isAddWaterPending: addWater.isPending,
+    isUpdateWaterPending: updateWater.isPending,
+    isDeleteWaterPending: deleteWater.isPending,
     editingMealItem,
     setEditingMealItem,
     router,

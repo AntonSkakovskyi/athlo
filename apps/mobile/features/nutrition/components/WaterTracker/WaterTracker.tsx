@@ -8,6 +8,8 @@ import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { ProgressBar } from '@/components/ui';
 import { WaterLogEntry } from './WaterLogEntry';
+import { useToast } from '@/contexts/ToastContext';
+import { validateFields, positiveInteger } from '@/utils/validation';
 import { WaterQuickAdd } from './WaterQuickAdd/WaterQuickAdd';
 import { WaterFormSection } from './WaterFormSection/WaterFormSection';
 
@@ -19,6 +21,9 @@ interface WaterTrackerProps {
   onAddWater: (ml: number, consumedAt?: string) => void;
   onUpdateWater: (id: number, amountMl: number, consumedAt?: string) => void;
   onDeleteWater: (id: number) => void;
+  isAddingWater?: boolean;
+  isUpdatingWater?: boolean;
+  isDeletingWater?: boolean;
 }
 
 function buildConsumedAt(date: string, hour?: string, minute?: string): string {
@@ -38,8 +43,12 @@ export function WaterTracker({
   onAddWater,
   onUpdateWater,
   onDeleteWater,
+  isAddingWater = false,
+  isUpdatingWater = false,
+  isDeletingWater = false,
 }: WaterTrackerProps) {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [showCustom, setShowCustom] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
@@ -58,6 +67,11 @@ export function WaterTracker({
 
   const handleCustomAdd = () => {
     if (!hasGoal) return;
+    const error = validateFields([
+      { value: customAmount, rules: [positiveInteger('Water amount')] },
+    ]);
+    if (error) { showToast({ title: error, variant: 'error' }); return; }
+
     const ml = parseInt(customAmount, 10);
     if (ml > 0) {
       let isoTime: string | undefined;
@@ -146,7 +160,7 @@ export function WaterTracker({
           <Text style={styles.noGoalText}>Please set your water goal or update your body weight in settings to start tracking water.</Text>
           <Button
             title="Update Metrics"
-            onPress={() => router.push('/(app)/(profile)/statistics?tab=body_metrics')}
+            onPress={() => router.push('/(app)/(profile)/body-metrics?tab=body_metrics')}
             style={styles.updateMetricsBtn}
           />
         </View>
@@ -171,6 +185,8 @@ export function WaterTracker({
               onAdd={handleCustomAdd}
               onDelete={handleDelete}
               onCancel={resetForm}
+              isLoading={editingLogId !== null ? isUpdatingWater : isAddingWater}
+              isDeleting={isDeletingWater}
             />
           )}
         </>

@@ -5,6 +5,7 @@ import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
+import { formatClockTime, formatTimeSuggestion } from '@/utils/time';
 
 export interface MealItemDisplay {
   id: number;
@@ -22,7 +23,7 @@ interface MealCardProps {
   onAddItem?: (mealId: number) => void;
   onDelete?: (mealId: number) => void;
   onDeleteItem?: (itemId: number) => void;
-  onEditMeal?: (meal: ILogMeal) => void;
+  onEditMeal?: (meal: any) => void;
   onEditItem?: (itemId: number) => void;
   onEditTime?: (mealId: number) => void;
 }
@@ -31,13 +32,10 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const mealTime = meal.timeSuggestion
-    ? meal.timeSuggestion
-    : new Date(meal.consumedAt).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      });
+  const mealTime = useMemo(() => {
+    if (meal.timeSuggestion) return formatTimeSuggestion(meal.timeSuggestion);
+    return formatClockTime(meal.consumedAt);
+  }, [meal.timeSuggestion, meal.consumedAt]);
 
   const items = useMemo(() => {
     return [...(meal.items ?? [])].sort((a, b) => a.id - b.id);
@@ -58,7 +56,7 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
             <Text style={styles.mealName}>{meal.name ?? 'Meal'}</Text>
             <Pressable onPress={() => onEditTime?.(meal.id)} disabled={!onEditTime}>
               <Text style={styles.mealTime}>
-                {meal.timeSuggestion ? meal.timeSuggestion : onEditTime ? '+ Set time' : mealTime}
+                {meal.timeSuggestion ? formatTimeSuggestion(meal.timeSuggestion) : onEditTime ? '+ Set time' : mealTime}
               </Text>
             </Pressable>
           </View>

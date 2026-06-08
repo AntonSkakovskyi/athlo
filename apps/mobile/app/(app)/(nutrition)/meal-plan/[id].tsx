@@ -16,11 +16,13 @@ import {
   MealFormSheet,
   MealItemActionSheet,
   DaySummaryFooter,
+  ActivationDayPickerModal,
 } from '@/features/nutrition/components';
 import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
 import { calcItemMacrosByUnit } from '@/features/nutrition/utils/macros';
 import { useMealPlanDetailScreen } from '@/features/nutrition/hooks/useMealPlanDetailScreen';
 import { useAuth } from '@/contexts/AuthContext';
+import { ICONS } from '@/utils/icons';
 
 export default function MealPlanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,10 +38,12 @@ export default function MealPlanDetailScreen() {
     handleRemoveMeal, handleEditMeal, handleConfirmEditMeal, handleRemoveItem,
     handleAddFoodToMeal, handleUpdateItem, handleSwapItem, handleEditMealItem,
     handleSaveName, startEditName, isActive, isActivatePending,
+    handleDeactivate, isDeactivatePending,
     isSaved, handleSave, isSavePending,
     editingDesc, descValue, setDescValue, startEditDesc, handleSaveDesc,
     editingMealItem, setEditingMealItem, isUpdateItemPending,
     currentVisibility, handleVisibilityChange,
+    showActivationModal, setShowActivationModal,
   } = useMealPlanDetailScreen(id);
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -68,15 +72,23 @@ export default function MealPlanDetailScreen() {
         title=""
         onBack={() => router.back()}
         rightAction={
-          !isActive ? (
+          isActive ? (
             <Button
-              title="▶ Activate"
+              title="Deactivate"
+              variant="danger"
+              onPress={handleDeactivate}
+              isLoading={isDeactivatePending}
+              style={styles.activateBtn}
+            />
+          ) : (
+            <Button
+              title={`${ICONS.activate} Activate`}
               variant="primary"
-              onPress={handleActivate}
+              onPress={() => setShowActivationModal(true)}
               isLoading={isActivatePending}
               style={styles.activateBtn}
             />
-          ) : undefined
+          )
         }
       />
 
@@ -235,6 +247,14 @@ export default function MealPlanDetailScreen() {
         onDelete={() => editingMealItem && handleRemoveItem(editingMealItem.item.id)}
         onSwap={handleSwapItem}
         isUpdating={isUpdateItemPending}
+      />
+
+      <ActivationDayPickerModal
+        visible={showActivationModal}
+        totalDays={days.length}
+        planName={plan.name}
+        onClose={() => setShowActivationModal(false)}
+        onConfirm={handleActivate}
       />
     </View>
   );

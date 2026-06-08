@@ -4,10 +4,13 @@ import { confirmDestructive } from '@/utils/alerts';
 import type { IMealPlan } from '@athlo/shared';
 import { VisibilityType } from '@athlo/shared';
 import { VISIBILITY_ENUM_TO_ID } from '@/utils/visibility';
+import { useToast } from '@/contexts/ToastContext';
+import { ICONS } from '@/utils/icons';
 import {
   useGetMealPlanById,
   useUpdateMealPlan,
   useActivateMealPlan,
+  useDeactivateMealPlan,
   useAddPlanDay,
   useRemovePlanDay,
   useAddPlanMeal,
@@ -66,6 +69,7 @@ export function useMealPlanDetailScreen(id: string) {
   const unsavePlan = useUnsaveMealPlan();
   const updatePlan = useUpdateMealPlan();
   const activatePlan = useActivateMealPlan();
+  const deactivatePlan = useDeactivateMealPlan();
   const addDay = useAddPlanDay();
   const removeDay = useRemovePlanDay();
   const addMeal = useAddPlanMeal();
@@ -83,6 +87,7 @@ export function useMealPlanDetailScreen(id: string) {
   const [descValue, setDescValue] = useState('');
 
   const [editingMealItem, setEditingMealItem] = useState<{ mealId: number; item: PlanMealItemWithRelations } | null>(null);
+  const [showActivationModal, setShowActivationModal] = useState(false);
 
   const days = useMemo(() => {
     const rawDays = (plan as MealPlanWithRelations | undefined)?.days;
@@ -104,8 +109,12 @@ export function useMealPlanDetailScreen(id: string) {
     return sumMacros(all);
   }, [currentDayMeals]);
 
-  const handleActivate = () => {
-    activatePlan.mutate(id);
+  const handleActivate = (startDay?: number) => {
+    activatePlan.mutate({ id, startDay });
+  };
+
+  const handleDeactivate = () => {
+    deactivatePlan.mutate();
   };
 
   const handleAddDay = () => {
@@ -227,6 +236,7 @@ export function useMealPlanDetailScreen(id: string) {
     setEditingDesc(false);
   };
 
+  const { showToast } = useToast();
   const isActive = activePlan?.mealPlanId === Number(id);
   const isSaved = savedPlans?.some((p) => p.id === Number(id)) ?? false;
 
@@ -234,7 +244,15 @@ export function useMealPlanDetailScreen(id: string) {
     if (isSaved) {
       unsavePlan.mutate(id);
     } else {
-      savePlan.mutate(id);
+      savePlan.mutate(id, {
+        onSuccess: () => {
+          showToast({
+            title: 'Plan Saved!',
+            description: 'The meal plan has been added to your library. Go to the "My" tab to use it.',
+            icon: ICONS.folder,
+          });
+        },
+      });
     }
   };
 
@@ -276,6 +294,8 @@ export function useMealPlanDetailScreen(id: string) {
     handleSaveDesc,
     isActive,
     isActivatePending: activatePlan.isPending,
+    handleDeactivate,
+    isDeactivatePending: deactivatePlan.isPending,
     isSaved,
     handleSave,
     isSavePending: savePlan.isPending || unsavePlan.isPending,
@@ -284,5 +304,7 @@ export function useMealPlanDetailScreen(id: string) {
     isUpdateItemPending: updateItem.isPending,
     currentVisibility,
     handleVisibilityChange,
+    showActivationModal,
+    setShowActivationModal,
   };
 }

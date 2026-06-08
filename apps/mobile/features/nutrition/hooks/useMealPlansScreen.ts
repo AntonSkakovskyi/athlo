@@ -16,6 +16,8 @@ import {
   useUnsaveMealPlan,
 } from '@/features/nutrition/hooks';
 import { VISIBILITY_ENUM_TO_ID } from '@/utils/visibility';
+import { ICONS } from '@/utils/icons';
+import { useToast } from '@/contexts/ToastContext';
 
 export function useMealPlansScreen() {
   const router = useRouter();
@@ -46,6 +48,8 @@ export function useMealPlansScreen() {
   const [description, setDescription] = useState('');
   const [totalDays, setTotalDays] = useState('1');
   const [visibility, setVisibility] = useState<VisibilityType>(VisibilityType.PRIVATE);
+  const [showActivationModal, setShowActivationModal] = useState(false);
+  const [currentActivatingPlan, setCurrentActivatingPlan] = useState<{ id: number; name: string; totalDays: number } | null>(null);
 
   const activePlanId = activePlanQuery.data?.mealPlanId;
 
@@ -134,20 +138,39 @@ export function useMealPlansScreen() {
     confirmDestructive('Delete meal plan?', 'This action cannot be undone.', () => deletePlan.mutate(String(id)));
   };
 
-  const handleActivate = (id: number, totalDays: number) => {
+  const handleActivate = (id: number, startDay?: number) => {
+    activatePlan.mutate({ id: String(id), startDay });
+  };
+
+  const openActivationModal = (id: number, name: string, totalDays: number) => {
     if (totalDays === 0) {
       showAlert('Plan has no days', 'Add at least one day to this plan before activating it.');
       return;
     }
-    activatePlan.mutate(String(id));
+    setCurrentActivatingPlan({ id, name, totalDays });
+    setShowActivationModal(true);
   };
+
+  const { showToast } = useToast();
 
   const handleDeactivate = () => {
     deactivatePlan.mutate();
   };
 
   const handleSave = (id: number) => {
-    savePlan.mutate(String(id));
+    savePlan.mutate(String(id), {
+      onSuccess: () => {
+        showToast({
+          title: 'Plan Saved!',
+          description: 'The meal plan has been added to your library. Go to the "My" tab to use it.',
+          icon: ICONS.folder,
+        });
+      },
+      onError: (err) => {
+        showErrorAlert('Failed to save meal plan. Please try again.');
+        console.error('Save plan error:', err);
+      }
+    });
   };
 
   const handleUnsave = (id: number) => {
@@ -179,6 +202,10 @@ export function useMealPlansScreen() {
     handleCreate,
     handleDelete,
     handleActivate,
+    openActivationModal,
+    showActivationModal,
+    setShowActivationModal,
+    currentActivatingPlan,
     handleDeactivate,
     handleSave,
     handleUnsave,

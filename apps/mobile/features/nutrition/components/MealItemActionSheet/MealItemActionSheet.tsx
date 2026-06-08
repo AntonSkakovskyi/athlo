@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { BottomSheet } from '@/components/ui/BottomSheet/BottomSheet';
 import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
@@ -7,6 +7,8 @@ import type { ColorPalette } from '@/constants/colors';
 import { Input } from '@/components/ui/Input/Input';
 import { Button } from '@/components/ui/Button/Button';
 import { calcItemMacrosByUnit, type NutritionFactLike } from '@/features/nutrition/utils/macros';
+import { useToast } from '@/contexts/ToastContext';
+import { validateFields, required, minNumber } from '@/utils/validation';
 
 interface MealItemDisplay {
   id: number;
@@ -41,6 +43,7 @@ export function MealItemActionSheet({
   isUpdating,
 }: MealItemActionSheetProps) {
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [amount, setAmount] = useState('');
   const [unitId, setUnitId] = useState<number>(1);
@@ -64,69 +67,75 @@ export function MealItemActionSheet({
     };
   }, [item, amount, unitId]);
 
-  if (!item) return null;
-
-  const hasChanges = parseFloat(amount) !== item.amount || unitId !== item.unitId;
+  const hasChanges = item ? parseFloat(amount) !== item.amount || unitId !== item.unitId : false;
 
   return (
     <BottomSheet visible={visible} onClose={onClose}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.foodName}>{item.food?.name}</Text>
-          <Text style={styles.brandName}>{item.food?.brand || 'Generic'}</Text>
-        </View>
-
-        {calculatedMacros && (
-          <View style={styles.macroRow}>
-            <MacroBox label="kcal" value={calculatedMacros.calories} color={colors.text} />
-            <MacroBox label="Protein" value={calculatedMacros.proteins} color={colors.info} />
-            <MacroBox label="Fats" value={calculatedMacros.fats} color={colors.warning} />
-            <MacroBox label="Carbs" value={calculatedMacros.carbs} color={colors.success} />
+      {item && (
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.foodName}>{item.food?.name}</Text>
+            <Text style={styles.brandName}>{item.food?.brand || 'Generic'}</Text>
           </View>
-        )}
 
-        <View style={styles.inputSection}>
-          <View style={styles.inputWrap}>
-            <Input
-              label="Amount"
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-              placeholder="0"
-            />
-          </View>
-          <View style={styles.unitWrap}>
-            <Text style={styles.unitLabel}>Unit</Text>
-            <View style={styles.unitSelector}>
-              <View style={[styles.unitBadge, styles.unitBadgeActive]}>
-                <Text style={styles.unitTextActive}>{item.unit?.name || 'g'}</Text>
+          {calculatedMacros && (
+            <View style={styles.macroRow}>
+              <MacroBox label="kcal" value={calculatedMacros.calories} color={colors.text} />
+              <MacroBox label="Protein" value={calculatedMacros.proteins} color={colors.info} />
+              <MacroBox label="Fats" value={calculatedMacros.fats} color={colors.warning} />
+              <MacroBox label="Carbs" value={calculatedMacros.carbs} color={colors.success} />
+            </View>
+          )}
+
+          <View style={styles.inputSection}>
+            <View style={styles.inputWrap}>
+              <Input
+                label="Amount"
+                value={amount}
+                onChangeText={setAmount}
+                keyboardType="numeric"
+                placeholder="0"
+              />
+            </View>
+            <View style={styles.unitWrap}>
+              <Text style={styles.unitLabel}>Unit</Text>
+              <View style={styles.unitSelector}>
+                <View style={[styles.unitBadge, styles.unitBadgeActive]}>
+                  <Text style={styles.unitTextActive}>{item.unit?.name || 'g'}</Text>
+                </View>
               </View>
             </View>
           </View>
-        </View>
 
-        <View style={styles.actions}>
-          <Button
-            title="Save Changes"
-            onPress={() => onUpdate(parseFloat(amount), unitId)}
-            isLoading={isUpdating}
-            disabled={!hasChanges || !amount || parseFloat(amount) <= 0}
-            style={styles.saveBtn}
-          />
+          <View style={styles.actions}>
+            <Button
+              title="Save Changes"
+              onPress={() => {
+                const error = validateFields([
+                  { value: amount, rules: [required('Amount'), minNumber('Amount', 0.01)] },
+                ]);
+                if (error) { showToast({ title: error, variant: 'error' }); return; }
+                onUpdate(parseFloat(amount), unitId);
+              }}
+              isLoading={isUpdating}
+              disabled={!hasChanges || !amount || parseFloat(amount) <= 0}
+              style={styles.saveBtn}
+            />
 
-          <View style={styles.secondaryActions}>
-            <Pressable style={styles.actionItem} onPress={onSwap}>
-              <Text style={styles.actionIcon}>🔄</Text>
-              <Text style={styles.actionText}>Change Product</Text>
-            </Pressable>
+            <View style={styles.secondaryActions}>
+              <Pressable style={styles.actionItem} onPress={onSwap}>
+                <Text style={styles.actionIcon}>🔄</Text>
+                <Text style={styles.actionText}>Change Product</Text>
+              </Pressable>
 
-            <Pressable style={[styles.actionItem, styles.deleteItem]} onPress={onDelete}>
-              <Text style={[styles.actionIcon, { color: colors.danger }]}>🗑️</Text>
-              <Text style={[styles.actionText, { color: colors.danger }]}>Delete from Meal</Text>
-            </Pressable>
+              <Pressable style={[styles.actionItem, styles.deleteItem]} onPress={onDelete}>
+                <Text style={[styles.actionIcon, { color: colors.danger }]}>🗑️</Text>
+                <Text style={[styles.actionText, { color: colors.danger }]}>Delete from Meal</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
-      </View>
+      )}
     </BottomSheet>
   );
 }

@@ -9,7 +9,8 @@ import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection/CollapsibleSection';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
-import { PlanCard } from '@/features/nutrition/components';
+import { PlanCard, ActivationDayPickerModal } from '@/features/nutrition/components';
+import { ICONS } from '@/utils/icons';
 import { borderRadius, spacing } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
@@ -30,6 +31,7 @@ export default function MealPlansScreen() {
     handleCreate, handleDelete, handleActivate, handleDeactivate,
     handleSave, handleUnsave, isCreatePending, router,
     savedPlanIds,
+    openActivationModal, showActivationModal, setShowActivationModal, currentActivatingPlan,
   } = useMealPlansScreen();
 
   const { colors } = useTheme();
@@ -42,7 +44,7 @@ export default function MealPlansScreen() {
       variant={variant}
       isActive={plan.id === activePlanId}
       onOpen={() => router.push(`/(app)/(nutrition)/meal-plan/${plan.id}` as never)}
-      onActivate={() => handleActivate(plan.id, plan.totalDays ?? 0)}
+      onActivate={() => openActivationModal(plan.id, plan.name, plan.totalDays ?? 0)}
       onDeactivate={handleDeactivate}
       onSave={variant === 'public' ? () => handleSave(plan.id) : undefined}
       onUnsave={variant === 'saved' ? () => handleUnsave(plan.id) : undefined}
@@ -141,12 +143,6 @@ export default function MealPlansScreen() {
           renderItem={() => null}
           ListHeaderComponent={
             <View style={styles.listContainer}>
-              <Button
-                title="+ Add Friend"
-                variant="ghost-primary"
-                onPress={() => router.push({ pathname: '/(app)/(profile)/friends', params: { tab: 'find' } } as any)}
-                style={styles.addFriendBtn}
-              />
               {unsavedFriendGroups.length === 0 && (
                 <EmptyState
                   title="No friend plans"
@@ -162,6 +158,12 @@ export default function MealPlansScreen() {
                   {group.plans.map(p => renderPlan(p, 'public'))}
                 </CollapsibleSection>
               ))}
+              <Button
+                title="+ Add Friend"
+                variant="ghost-primary"
+                onPress={() => router.push({ pathname: '/(app)/(profile)/friends', params: { tab: 'find' } } as any)}
+                style={styles.addFriendBtn}
+              />
             </View>
           }
           contentContainerStyle={styles.list}
@@ -179,7 +181,7 @@ export default function MealPlansScreen() {
         onBack={() => router.back()}
         rightAction={
           <Button
-            title={showCreate ? 'Cancel' : '+ Create'}
+            title={showCreate ? 'Cancel' : `${ICONS.activate} Create`}
             variant="ghost-primary"
             onPress={() => setShowCreate(!showCreate)}
           />
@@ -214,6 +216,16 @@ export default function MealPlansScreen() {
       )}
 
       {renderTabContent()}
+
+      {currentActivatingPlan && (
+        <ActivationDayPickerModal
+          visible={showActivationModal}
+          totalDays={currentActivatingPlan.totalDays}
+          planName={currentActivatingPlan.name}
+          onClose={() => setShowActivationModal(false)}
+          onConfirm={(day) => handleActivate(currentActivatingPlan.id, day)}
+        />
+      )}
     </View>
   );
 }

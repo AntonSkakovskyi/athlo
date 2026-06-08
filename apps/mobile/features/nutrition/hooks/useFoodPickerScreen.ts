@@ -19,6 +19,8 @@ import {
   useDeleteFoodUnit,
 } from '@/features/nutrition/hooks';
 import type { NutritionFactData } from '@/hooks/api/useFoodAPI';
+import { useToast } from '@/contexts/ToastContext';
+import { validateFields, validateFieldsMap, required, minNumber, optionalMinNumber } from '@/utils/validation';
 
 type PickerMode = 'logMeal' | 'planMeal';
 
@@ -33,6 +35,7 @@ interface UseFoodPickerScreenParams {
 }
 
 export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParams) {
+  const { showToast } = useToast();
   const params = useLocalSearchParams<{
     mealId?: string;
     planId?: string;
@@ -131,8 +134,13 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
   }, [units, getDefaultAmount]);
 
   const handleAddFood = useCallback(async () => {
+    const addError = validateFields([
+      { value: amount, rules: [required('Amount'), minNumber('Amount', 0.01)] },
+    ]);
+    if (addError) { showToast({ title: addError, variant: 'error' }); return; }
+
     const parsedAmount = parseFloat(amount);
-    if (!selectedFood || !parsedAmount || parsedAmount <= 0) return;
+    if (!selectedFood) return;
 
     if (mode === 'logMeal' && params.mealId) {
       if (params.swapItemId) {
@@ -174,7 +182,7 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
         );
       }
     }
-  }, [selectedFood, amount, unitId, mode, params, addLogMealItem, addPlanMealItem, deleteLogMealItem, removePlanMealItem, router]);
+  }, [selectedFood, amount, unitId, mode, params, addLogMealItem, addPlanMealItem, deleteLogMealItem, removePlanMealItem, router, showToast]);
 
   const resetCreateForm = useCallback(() => {
     setNewFoodName('');
@@ -188,13 +196,21 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
   }, []);
 
   const handleCreateFood = useCallback(async () => {
+    const error = validateFields([
+      { value: newFoodName, rules: [required('Food name')] },
+      { value: newFoodServingAmount, rules: [required('Serving amount'), minNumber('Serving amount', 0.01)] },
+      { value: newFoodCalories, rules: [required('Calories'), minNumber('Calories', 0)] },
+      { value: newFoodProteins, rules: [optionalMinNumber('Protein', 0)] },
+      { value: newFoodFats, rules: [optionalMinNumber('Fats', 0)] },
+      { value: newFoodCarbs, rules: [optionalMinNumber('Carbs', 0)] },
+    ]);
+    if (error) { showToast({ title: error, variant: 'error' }); return; }
+
     const cal = parseFloat(newFoodCalories) || 0;
     const prot = parseFloat(newFoodProteins) || 0;
     const fat = parseFloat(newFoodFats) || 0;
     const carb = parseFloat(newFoodCarbs) || 0;
     const servingAmount = parseFloat(newFoodServingAmount);
-
-    if (!newFoodName.trim() || isNaN(servingAmount) || servingAmount <= 0) return;
 
     const food = await createFood.mutateAsync({
       name: newFoodName.trim(),
@@ -220,7 +236,7 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
     setUnitId(newFoodServingUnitId);
     
     resetCreateForm();
-  }, [newFoodName, newFoodBrand, newFoodCalories, newFoodProteins, newFoodFats, newFoodCarbs, newFoodServingAmount, newFoodServingUnitId, createFood, resetCreateForm, units]);
+  }, [newFoodName, newFoodBrand, newFoodCalories, newFoodProteins, newFoodFats, newFoodCarbs, newFoodServingAmount, newFoodServingUnitId, createFood, resetCreateForm, units, showToast]);
 
   const handleDeleteFood = useCallback(async () => {
     if (!selectedFood) return;
@@ -230,6 +246,11 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
 
   const handleEditFood = useCallback(async (name: string, brand: string, newUnit: NutritionFactData | null) => {
     if (!selectedFood) return;
+    const editError = validateFields([
+      { value: name, rules: [required('Food name')] },
+    ]);
+    if (editError) { showToast({ title: editError, variant: 'error' }); return; }
+
     const updated = await updateFood.mutateAsync({
       id: String(selectedFood.id),
       data: {
@@ -240,7 +261,7 @@ export function useFoodPickerScreen({ insets, router }: UseFoodPickerScreenParam
     });
     setSelectedFood(updated as IFoodExtended);
     setShowEditForm(false);
-  }, [selectedFood, updateFood]);
+  }, [selectedFood, updateFood, showToast]);
 
   const handleDeleteFoodUnit = useCallback(async (unitId: number) => {
     if (!selectedFood) return;

@@ -98,19 +98,25 @@ export function EditFoodModal({
     setFormCarbs('');
   };
 
+  const isValidMacro = (v: string) => v.trim() !== '' && !isNaN(parseFloat(v)) && parseFloat(v) >= 0;
+
+  const isUnitFormValid =
+    name.trim().length > 0 &&
+    parseFloat(formAmount) > 0 &&
+    isValidMacro(formCalories) &&
+    isValidMacro(formProteins) &&
+    isValidMacro(formFats) &&
+    isValidMacro(formCarbs);
+
   const handleSaveUnit = () => {
-    const unit: NutritionFactData | null =
-      parseFloat(formAmount) > 0
-        ? {
-            unitId: formUnitId,
-            amount: parseFloat(formAmount),
-            calories: parseFloat(formCalories) || 0,
-            proteins: parseFloat(formProteins) || 0,
-            fats: parseFloat(formFats) || 0,
-            carbs: parseFloat(formCarbs) || 0,
-          }
-        : null;
-    onSave(name.trim(), brand.trim(), unit);
+    onSave(name.trim(), brand.trim(), {
+      unitId: formUnitId,
+      amount: parseFloat(formAmount),
+      calories: parseFloat(formCalories),
+      proteins: parseFloat(formProteins),
+      fats: parseFloat(formFats),
+      carbs: parseFloat(formCarbs),
+    });
   };
 
   const handleSaveNameBrand = () => {
@@ -245,7 +251,7 @@ export function EditFoodModal({
                 variant="primary"
                 onPress={handleSaveUnit}
                 isLoading={isPending}
-                disabled={!name.trim() || parseFloat(formAmount) <= 0}
+                disabled={!isUnitFormValid}
                 style={styles.saveBtn}
               />
             </>

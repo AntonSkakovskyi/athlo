@@ -9,3 +9,4 @@ export * from './NutritionBarChart/NutritionBarChart';
 export * from './WaterTracker/WaterTracker';
 export * from './MealItemActionSheet/MealItemActionSheet';
 export * from './PlanCard/PlanCard';
+export * from './ActivationDayPickerModal/ActivationDayPickerModal';

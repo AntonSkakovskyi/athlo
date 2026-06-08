@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import type { IUserMealPlan } from '@athlo/shared';
 import { borderRadius, spacing } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
+import { ICONS } from '@/utils/icons';
 import type { ColorPalette } from '@/constants/colors';
 
 interface CycleInfo {
@@ -23,25 +24,23 @@ export function ActivePlanBanner({ userMealPlan, planName, cycleInfo, onPress }:
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const dayLabel = cycleInfo
-    ? cycleInfo.cycleNumber > 1
-      ? `Cycle ${cycleInfo.cycleNumber} · Day ${cycleInfo.planDayNumber} of ${cycleInfo.totalDays}`
-      : `Day ${cycleInfo.planDayNumber} of ${cycleInfo.totalDays}`
-    : (() => {
-        const startDate = new Date(userMealPlan.startedAt);
-        const now = new Date();
-        const daysDiff = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-        return `Day ${daysDiff}`;
-      })();
+  const dayLabel = useMemo(() => {
+    if (!cycleInfo) return '';
+    
+    if (cycleInfo.cycleNumber > 1) {
+      return `Cycle ${cycleInfo.cycleNumber} · Day ${cycleInfo.planDayNumber} of ${cycleInfo.totalDays}`;
+    }
+    return `Day ${cycleInfo.planDayNumber} of ${cycleInfo.totalDays}`;
+  }, [cycleInfo]);
 
   return (
     <View style={styles.outerContainer}>
       <Pressable style={styles.container} onPress={onPress}>
         <View style={styles.left}>
-          <Text style={styles.icon}>📋</Text>
+          <Text style={styles.icon}>{ICONS.mealPlans}</Text>
           <View>
             <Text style={styles.planName}>{planName ?? 'Active Meal Plan'}</Text>
-            <Text style={styles.dayInfo}>{dayLabel}</Text>
+            {dayLabel ? <Text style={styles.dayInfo}>{dayLabel}</Text> : null}
           </View>
         </View>
         <Text style={styles.chevron}>›</Text>

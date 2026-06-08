@@ -162,8 +162,8 @@ export const useActivateMealPlan = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: string) => {
-      const response = await apiClient.post<IUserMealPlan>(apiRoutes.mealPlans.activate(id));
+    mutationFn: async ({ id, startDay }: { id: string; startDay?: number }) => {
+      const response = await apiClient.post<IUserMealPlan>(apiRoutes.mealPlans.activate(id), { startDay });
       return response.data;
     },
     onSuccess: () => {

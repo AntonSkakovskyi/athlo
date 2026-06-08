@@ -34,6 +34,7 @@ export default function NutritionScreen() {
     handleEditMealItem, handleUpdateMealItem, handleSwapMealItem,
     handleAddWater, handleUpdateWater, handleDeleteWater, handleAddFoodToMeal,
     isCreateMealPending, isUpdateItemPending,
+    isAddWaterPending, isUpdateWaterPending, isDeleteWaterPending,
     editingMealItem, setEditingMealItem, router,
   } = useNutritionHomeScreen();
 
@@ -65,11 +66,11 @@ export default function NutritionScreen() {
           maximumDate={new Date()}
         />
 
-        {activePlan?.isActive && (
+        {activePlan?.isActive && activePlanCycleInfo && (
           <ActivePlanBanner
             userMealPlan={activePlan}
             planName={activePlanDetails?.name}
-            cycleInfo={activePlanCycleInfo ?? undefined}
+            cycleInfo={activePlanCycleInfo}
             onPress={() => router.push(`/(app)/(nutrition)/meal-plan/${activePlan.mealPlanId}`)}
           />
         )}
@@ -136,6 +137,9 @@ export default function NutritionScreen() {
                 onAddWater={handleAddWater} 
                 onUpdateWater={handleUpdateWater} 
                 onDeleteWater={handleDeleteWater} 
+                isAddingWater={isAddWaterPending}
+                isUpdatingWater={isUpdateWaterPending}
+                isDeletingWater={isDeleteWaterPending}
               />
             )}
           </>

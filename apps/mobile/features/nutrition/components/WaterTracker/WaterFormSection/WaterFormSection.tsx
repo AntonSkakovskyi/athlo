@@ -21,6 +21,8 @@ interface WaterFormSectionProps {
   onAdd: () => void;
   onDelete: () => void;
   onCancel: () => void;
+  isLoading?: boolean;
+  isDeleting?: boolean;
 }
 
 export function WaterFormSection({
@@ -35,6 +37,8 @@ export function WaterFormSection({
   onAdd,
   onDelete,
   onCancel,
+  isLoading = false,
+  isDeleting = false,
 }: WaterFormSectionProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -66,6 +70,7 @@ export function WaterFormSection({
             variant="primary"
             onPress={onAdd}
             style={styles.customAddBtn}
+            isLoading={isLoading}
           />
         </View>
       </View>

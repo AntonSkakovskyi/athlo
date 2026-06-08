@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, Modal, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
+import { BottomSheet } from '@/components/ui';
 import type { IMealType } from '@athlo/shared';
 import type { PlanMealWithItems, SelectedPlanItem } from '@/features/nutrition/hooks/useNutritionHomeScreen';
 import { MealTypeChips } from './MealTypeChips/MealTypeChips';
@@ -141,29 +142,48 @@ export function MealFormSheet({
     });
   };
 
+  const headerRight = (
+    <TimePickerSection
+      hasTime={hasTime}
+      selectedSeconds={selectedSeconds}
+      timePickerVisible={timePickerVisible}
+      onAddTime={() => { setHasTime(true); setTimePickerVisible(true); }}
+      onClearTime={() => setHasTime(false)}
+      onOpenPicker={() => setTimePickerVisible(true)}
+      onClosePicker={() => setTimePickerVisible(false)}
+      onTimeChange={setSelectedSeconds}
+    />
+  );
+
+  const footer = (
+    <View style={styles.actions}>
+      <Button title="Cancel" variant="ghost" onPress={onClose} style={styles.actionBtn} />
+      <Button
+        title={confirmLabel}
+        variant="primary"
+        onPress={handleConfirm}
+        disabled={!selectedTypeId}
+        isLoading={isLoading}
+        style={styles.actionBtn}
+      />
+    </View>
+  );
+
   return (
-    <Modal visible transparent animationType="slide">
+    <BottomSheet
+      visible={true}
+      onClose={onClose}
+      title={title}
+      headerRight={headerRight}
+      footer={footer}
+      maxHeight="85%"
+      scrollable={false}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.overlay}
+        style={styles.keyboardView}
       >
-        <Pressable style={styles.backdrop} onPress={onClose} />
-        <View style={styles.sheet}>
-          <View style={styles.handle} />
-          <View style={styles.headerRow}>
-            <Text style={styles.title}>{title}</Text>
-            <TimePickerSection
-              hasTime={hasTime}
-              selectedSeconds={selectedSeconds}
-              timePickerVisible={timePickerVisible}
-              onAddTime={() => { setHasTime(true); setTimePickerVisible(true); }}
-              onClearTime={() => setHasTime(false)}
-              onOpenPicker={() => setTimePickerVisible(true)}
-              onClosePicker={() => setTimePickerVisible(false)}
-              onTimeChange={setSelectedSeconds}
-            />
-          </View>
-
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
           {showNameInput && (
             <Input
               label="Meal Name"
@@ -192,61 +212,18 @@ export function MealFormSheet({
           {selectedTypeId && !planMeal && planDayMeals.length > 0 && (
             <Text style={styles.noPlanMeal}>No plan suggestion for this meal type today</Text>
           )}
-
-          <View style={styles.actions}>
-            <Button title="Cancel" variant="ghost" onPress={onClose} style={styles.actionBtn} />
-            <Button
-              title={confirmLabel}
-              variant="primary"
-              onPress={handleConfirm}
-              disabled={!selectedTypeId}
-              isLoading={isLoading}
-              style={styles.actionBtn}
-            />
-          </View>
-        </View>
-
+        </ScrollView>
       </KeyboardAvoidingView>
-    </Modal>
+    </BottomSheet>
   );
 }
 
 function makeStyles(c: ColorPalette) {
   return StyleSheet.create({
-    overlay: {
-      flex: 1,
-      justifyContent: 'flex-end',
+    keyboardView: {
     },
-    backdrop: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: c.overlay,
-    },
-    sheet: {
-      backgroundColor: c.surface,
-      borderTopLeftRadius: borderRadius.xl,
-      borderTopRightRadius: borderRadius.xl,
-      padding: spacing['2xl'],
-      paddingBottom: 40,
-      maxHeight: '85%',
-    },
-    handle: {
-      width: 40,
-      height: 4,
-      borderRadius: 2,
-      backgroundColor: c.borderLight,
-      alignSelf: 'center',
-      marginBottom: spacing.lg,
-    },
-    headerRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: spacing.md,
-    },
-    title: {
-      fontSize: fontSize.xl,
-      fontWeight: fontWeight.bold,
-      color: c.text,
+    scroll: {
+      paddingHorizontal: spacing.lg,
     },
     nameInputContainer: {
       marginBottom: spacing.lg,
@@ -260,7 +237,8 @@ function makeStyles(c: ColorPalette) {
     actions: {
       flexDirection: 'row',
       gap: spacing.md,
-      marginTop: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.sm,
     },
     actionBtn: {
       flex: 1,
