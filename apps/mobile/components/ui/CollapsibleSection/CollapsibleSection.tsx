@@ -39,7 +39,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           <Typography variant="h3" style={styles.title}>
             {title}
           </Typography>
-          {count !== undefined && (
+          {count !== undefined && !isExpanded && (
             <View style={styles.countBadge}>
               <Text style={styles.countText}>{count}</Text>
             </View>

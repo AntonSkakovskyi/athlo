@@ -7,6 +7,7 @@ export * from './useTemplateExerciseAPI';
 export * from './useTemplateSetAPI';
 export * from './useExerciseAPI';
 export * from './useMuscleAPI';
+export * from './useTrackingTypeAPI';
 export * from './useEquipmentAPI';
 export * from './useFoodAPI';
 export * from './useMealPlanAPI';

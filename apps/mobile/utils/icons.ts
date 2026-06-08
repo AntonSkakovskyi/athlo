@@ -8,6 +8,8 @@ export const ICONS = {
   volume: '🏋️',
   reps: '🔄',
   time: '⏱️',
+  distanceAndTime: '🗺️',
+  distanceOnly: '📏',
   nutrition: '🍎',
   workout: '🏋️',
   profile: '👤',
@@ -16,6 +18,9 @@ export const ICONS = {
   metrics: '📈',
   calendar: '📅',
   water: '💧',
+  folder: '📁',
+  activate: '▶',
+  warning: '⚠️',
 } as const;
 
 export interface FeelingOption {

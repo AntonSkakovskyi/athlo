@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Modal, ScrollView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
@@ -10,11 +11,26 @@ interface BottomSheetProps {
   title?: string;
   children: React.ReactNode;
   scrollable?: boolean;
+  showCancel?: boolean;
+  footer?: React.ReactNode;
+  headerRight?: React.ReactNode;
+  maxHeight?: number | string;
 }
 
-export function BottomSheet({ visible, onClose, title, children, scrollable = true }: BottomSheetProps) {
+export function BottomSheet({
+  visible,
+  onClose,
+  title,
+  children,
+  scrollable = true,
+  showCancel = true,
+  footer,
+  headerRight,
+  maxHeight = '80%',
+}: BottomSheetProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const insets = useSafeAreaInsets();
+  const styles = useMemo(() => makeStyles(colors, insets.bottom, maxHeight), [colors, insets.bottom, maxHeight]);
   const ContentContainer = scrollable ? ScrollView : View;
 
   return (
@@ -23,15 +39,19 @@ export function BottomSheet({ visible, onClose, title, children, scrollable = tr
       transparent
       animationType="slide"
       onRequestClose={onClose}
+      statusBarTranslucent
     >
       <View style={styles.outerContainer}>
         <Pressable style={styles.overlay} onPress={onClose} />
         <View style={styles.sheet}>
           <View style={styles.sheetHandle} />
 
-          {title && (
+          {(title || headerRight) && (
             <View style={styles.header}>
-              <Text style={styles.title}>{title}</Text>
+              <View style={styles.headerTitleContainer}>
+                {title && <Text style={styles.title}>{title}</Text>}
+              </View>
+              {headerRight && <View style={styles.headerRight}>{headerRight}</View>}
             </View>
           )}
 
@@ -39,9 +59,13 @@ export function BottomSheet({ visible, onClose, title, children, scrollable = tr
             {children}
           </ContentContainer>
 
-          <Pressable style={styles.cancelBtn} onPress={onClose}>
-            <Text style={styles.cancelText}>Cancel</Text>
-          </Pressable>
+          {footer}
+
+          {showCancel && !footer && (
+            <Pressable style={styles.cancelBtn} onPress={onClose}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </Pressable>
+          )}
         </View>
       </View>
     </Modal>
@@ -57,7 +81,7 @@ interface BottomSheetItemProps {
 
 export function BottomSheetItem({ label, icon, onPress, danger }: BottomSheetItemProps) {
   const { colors } = useTheme();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const styles = useMemo(() => makeStyles(colors, 0, '80%'), [colors]);
 
   return (
     <Pressable
@@ -73,7 +97,7 @@ export function BottomSheetItem({ label, icon, onPress, danger }: BottomSheetIte
   );
 }
 
-function makeStyles(c: ColorPalette) {
+function makeStyles(c: ColorPalette, bottomInset: number, maxHeight: number | string) {
   return StyleSheet.create({
     outerContainer: {
       flex: 1,
@@ -92,8 +116,8 @@ function makeStyles(c: ColorPalette) {
       borderTopLeftRadius: borderRadius.xl,
       borderTopRightRadius: borderRadius.xl,
       paddingTop: spacing.sm,
-      paddingBottom: spacing.xl,
-      maxHeight: '80%',
+      paddingBottom: Math.max(spacing.xl, bottomInset + spacing.md),
+      maxHeight: maxHeight as any,
       borderTopWidth: 1,
       borderColor: c.border,
     },
@@ -106,11 +130,19 @@ function makeStyles(c: ColorPalette) {
       marginBottom: spacing.md,
     },
     header: {
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingHorizontal: spacing.lg,
       paddingBottom: spacing.md,
       borderBottomWidth: 1,
       borderBottomColor: c.border,
       marginBottom: spacing.sm,
+    },
+    headerTitleContainer: {
+      flex: 1,
+    },
+    headerRight: {
+      marginLeft: spacing.md,
     },
     title: {
       fontSize: fontSize.lg,

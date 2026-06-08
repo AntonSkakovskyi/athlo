@@ -26,6 +26,7 @@ export { SplashScreen } from './SplashScreen/SplashScreen';
 export { Tag } from './Tag/Tag';
 export { Typography } from './Typography/Typography';
 export { TimePicker } from './TimePicker/TimePicker';
-export { AchievementToast } from './AchievementToast/AchievementToast';
+export { Toast } from './Toast/Toast';
+export type { ToastVariant, ToastProps } from './Toast/Toast';
 export { VisibilitySelector } from './VisibilitySelector/VisibilitySelector';
 

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ViewStyle } from 'react-native';
 import { borderRadius } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
@@ -8,15 +8,16 @@ interface ProgressBarProps {
   progress: number; // 0..100
   color?: string;
   height?: number;
+  style?: ViewStyle;
 }
 
-export function ProgressBar({ progress, color, height = 6 }: ProgressBarProps) {
+export function ProgressBar({ progress, color, height = 6, style }: ProgressBarProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const fillColor = color ?? colors.primary;
   const clampedProgress = Math.min(100, Math.max(0, progress));
   return (
-    <View style={[styles.track, { height }]}>
+    <View style={[styles.track, { height }, style]}>
       <View style={[styles.fill, { width: `${clampedProgress}%`, backgroundColor: fillColor, height }]} />
     </View>
   );

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, type ViewStyle } from 'react-native';
 import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
@@ -9,15 +9,16 @@ interface ChipProps {
   active?: boolean;
   borderRadius?: number;
   onPress?: () => void;
+  style?: ViewStyle;
 }
 
-export function Chip({ label, active = false, borderRadius, onPress }: ChipProps) {
+export function Chip({ label, active = false, borderRadius, onPress, style }: ChipProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <Pressable
-      style={[styles.chip, active && styles.chipActive, { borderRadius }]}
+      style={[styles.chip, active && styles.chipActive, { borderRadius }, style]}
       onPress={onPress}
     >
       <Text style={[styles.label, active && styles.labelActive]}>{label}</Text>

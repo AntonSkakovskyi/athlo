@@ -23,7 +23,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const resolvedScheme: 'light' | 'dark' =
-    themePreference === 'system' ? deviceScheme : themePreference;
+    themePreference === 'system' 
+      ? (deviceScheme === 'light' ? 'light' : 'dark') 
+      : themePreference;
 
   const colors: ColorPalette = resolvedScheme === 'light' ? lightColors : darkColors;
 

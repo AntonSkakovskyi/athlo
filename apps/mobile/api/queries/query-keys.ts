@@ -5,6 +5,10 @@ export const exerciseKeys = {
   infinite: (filters: Record<string, unknown>) => ['exercises', filters, 'infinite'] as const,
 };
 
+export const trackingTypeKeys = {
+  all: ['tracking-types'] as const,
+};
+
 export const muscleKeys = {
   all: ['muscles'] as const,
 };

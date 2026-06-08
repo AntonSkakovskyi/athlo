@@ -5,18 +5,38 @@ import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export interface AchievementToastProps {
+export type ToastVariant = 'success' | 'error' | 'info' | 'achievement';
+
+const DEFAULT_ICONS: Record<ToastVariant, string> = {
+  achievement: '🏆',
+  error: '⚠️',
+  success: '✅',
+  info: 'ℹ️',
+};
+
+export interface ToastProps {
   visible: boolean;
   title: string;
   description?: string;
+  icon?: string;
+  variant?: ToastVariant;
   onClose: () => void;
 }
 
-export function AchievementToast({ visible, title, description, onClose }: AchievementToastProps) {
+export function Toast({ visible, title, description, icon, variant = 'achievement', onClose }: ToastProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(-150)).current;
+
+  const accentColor = useMemo(() => {
+    switch (variant) {
+      case 'error': return colors.danger;
+      case 'success': return colors.success;
+      case 'info': return colors.primary;
+      case 'achievement': return colors.gold;
+    }
+  }, [variant, colors]);
 
   useEffect(() => {
     if (visible) {
@@ -48,18 +68,21 @@ export function AchievementToast({ visible, title, description, onClose }: Achie
     }).start(() => onClose());
   };
 
+  const displayIcon = icon ?? DEFAULT_ICONS[variant];
+
   return (
     <Animated.View
       style={[
         styles.container,
-        {
-          transform: [{ translateY: slideAnim }],
-        },
+        { transform: [{ translateY: slideAnim }] },
       ]}
       pointerEvents={visible ? 'auto' : 'none'}
     >
-      <Pressable onPress={closeToast} style={styles.content}>
-        <Text style={styles.icon}>🏆</Text>
+      <Pressable
+        onPress={closeToast}
+        style={[styles.content, { borderColor: accentColor, shadowColor: accentColor }]}
+      >
+        <Text style={styles.icon}>{displayIcon}</Text>
         <View style={styles.textWrap}>
           <Text style={styles.title}>{title}</Text>
           {description ? <Text style={styles.description} numberOfLines={2}>{description}</Text> : null}
@@ -88,8 +111,6 @@ function makeStyles(c: ColorPalette) {
       padding: spacing.md,
       borderRadius: borderRadius.lg,
       borderWidth: 2,
-      borderColor: c.gold,
-      shadowColor: c.gold,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
       shadowRadius: 8,

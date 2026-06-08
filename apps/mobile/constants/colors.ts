@@ -1,6 +1,31 @@
 export type ThemePreference = 'light' | 'dark' | 'system';
 
-export const darkColors = {
+export interface ColorPalette {
+  primary: string;
+  primaryDark: string;
+  primaryLight: string;
+  background: string;
+  surface: string;
+  surfaceLight: string;
+  surfaceElevated: string;
+  text: string;
+  textSecondary: string;
+  textMuted: string;
+  danger: string;
+  dangerLight: string;
+  warning: string;
+  success: string;
+  info: string;
+  border: string;
+  borderLight: string;
+  overlay: string;
+  gold: string;
+  black: string;
+  white: string;
+  link: string;
+}
+
+export const darkColors: ColorPalette = {
   primary: '#2BDE6A',
   primaryDark: '#24B857',
   primaryLight: '#2BDE6A33',
@@ -30,9 +55,9 @@ export const darkColors = {
   black: '#000000',
   white: '#FFFFFF',
   link: '#007AFF',
-} as const;
+};
 
-export const lightColors = {
+export const lightColors: ColorPalette = {
   primary: '#2BDE6A',
   primaryDark: '#24B857',
   primaryLight: '#2BDE6A33',
@@ -62,6 +87,4 @@ export const lightColors = {
   black: '#000000',
   white: '#FFFFFF',
   link: '#007AFF',
-} as const;
-
-export type ColorPalette = typeof darkColors;
+};

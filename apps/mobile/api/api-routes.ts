@@ -10,6 +10,9 @@ export const apiRoutes = {
     update: (id: string) => `exercises/${id}`,
     delete: (id: string) => `exercises/${id}`,
   },
+  trackingTypes: {
+    getAll: 'tracking-types',
+  },
   muscles: {
     getAll: 'muscles',
   },

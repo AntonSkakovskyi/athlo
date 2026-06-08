@@ -30,5 +30,21 @@ export function formatDurationSecs(sec: number): string {
 
 /** Date | string → locale "HH:MM" — for log timestamps */
 export function formatClockTime(date: Date | string): string {
-  return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return new Date(date).toLocaleTimeString([], { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false 
+  });
+}
+
+/** "HH:mm:ss" | "HH:mm" → "HH:mm" — for plan time suggestions */
+export function formatTimeSuggestion(time: string | null | undefined): string {
+  if (!time) return '';
+  if (time.includes(':')) {
+    const parts = time.split(':');
+    if (parts.length >= 2) {
+      return `${parts[0]}:${parts[1]}`;
+    }
+  }
+  return time;
 }

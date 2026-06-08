@@ -11,6 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { PeriodSelector } from './PeriodSelector/PeriodSelector';
 import { MetricSelector } from './MetricSelector/MetricSelector';
+import { Spinner } from '../Spinner/Spinner';
 
 interface DataPoint {
   label: string;
@@ -30,6 +31,7 @@ interface BarChartBlockProps {
   metrics?: string[];
   activeMetric?: number;
   onMetricChange?: (index: number) => void;
+  isLoading?: boolean;
 }
 
 const CHART_HEIGHT = 160;
@@ -47,6 +49,7 @@ export function BarChartBlock({
   metrics,
   activeMetric,
   onMetricChange,
+  isLoading,
 }: BarChartBlockProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -99,7 +102,7 @@ export function BarChartBlock({
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.metricLabel}>{metricLabel}</Text>
-          {displayPoint && (
+          {displayPoint && !isLoading && (
             <Text style={styles.headerValue}>
               {formatValue(displayPoint.value)}
               <Text style={styles.headerDate}> · {displayPoint.headerLabel || displayPoint.label}</Text>
@@ -118,7 +121,11 @@ export function BarChartBlock({
       </View>
 
       {/* Chart */}
-      {data.length === 0 ? (
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <Spinner size="small" />
+        </View>
+      ) : data.length === 0 ? (
         <Text style={styles.emptyText}>{emptyText}</Text>
       ) : plotWidth > 0 ? (
         <View style={styles.chartWrapper}>
@@ -167,6 +174,12 @@ function makeStyles(c: ColorPalette) {
       marginBottom: spacing.lg,
       borderWidth: 1,
       borderColor: c.border,
+      minHeight: 250, // Ensure enough height for spinner
+    },
+    loadingContainer: {
+      height: CHART_HEIGHT,
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     header: {
       flexDirection: 'row',

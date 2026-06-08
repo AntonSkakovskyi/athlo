@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { borderRadius, fontSize, spacing } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 
@@ -23,26 +24,35 @@ export function PeriodSelector({
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
-    <View>
-      <Pressable style={styles.periodDropdown} onPress={onToggle}>
-        <Text style={styles.periodText}>{period} ▼</Text>
+    <View style={styles.container}>
+      <Pressable style={styles.trigger} onPress={onToggle}>
+        <Text style={styles.triggerText}>{period}</Text>
+        <Ionicons 
+          name={open ? "chevron-up" : "chevron-down"} 
+          size={14} 
+          color={colors.textMuted} 
+        />
       </Pressable>
+      
       {open && (
-        <View style={styles.periodMenu}>
+        <View style={styles.menu}>
           {periods.map((p) => (
             <Pressable
               key={p}
-              style={[styles.periodItem, p === period && styles.periodItemActive]}
+              style={[styles.item, p === period && styles.itemActive]}
               onPress={() => onSelect(p)}
             >
               <Text
                 style={[
-                  styles.periodItemText,
-                  p === period && styles.periodItemTextActive,
+                  styles.itemText,
+                  p === period && styles.itemTextActive,
                 ]}
               >
                 {p}
               </Text>
+              {p === period && (
+                <Ionicons name="checkmark" size={16} color={colors.primary} />
+              )}
             </Pressable>
           ))}
         </View>
@@ -53,40 +63,57 @@ export function PeriodSelector({
 
 function makeStyles(c: ColorPalette) {
   return StyleSheet.create({
-    periodDropdown: {
-      marginTop: spacing.sm,
-      paddingHorizontal: 10,
-      paddingVertical: spacing.xs,
-      borderRadius: borderRadius.sm,
-      backgroundColor: c.surfaceLight,
+    container: {
+      zIndex: 50,
     },
-    periodText: {
+    trigger: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: borderRadius.lg,
+      backgroundColor: c.surfaceLight,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    triggerText: {
       fontSize: 12,
+      fontWeight: '600',
       color: c.textSecondary,
     },
-    periodMenu: {
+    menu: {
       position: 'absolute',
-      top: 52,
+      top: 40,
       right: 0,
       backgroundColor: c.surfaceElevated,
       borderRadius: borderRadius.md,
+      padding: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 12,
+      elevation: 5,
       borderWidth: 1,
       borderColor: c.border,
-      zIndex: 10,
-      minWidth: 120,
+      minWidth: 140,
     },
-    periodItem: {
-      paddingHorizontal: 14,
+    item: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 12,
       paddingVertical: 10,
+      borderRadius: borderRadius.sm,
     },
-    periodItemActive: {
-      backgroundColor: c.primaryLight,
+    itemActive: {
+      backgroundColor: c.primary + '10',
     },
-    periodItemText: {
+    itemText: {
       fontSize: fontSize.sm,
       color: c.textSecondary,
     },
-    periodItemTextActive: {
+    itemTextActive: {
       color: c.primary,
       fontWeight: '600',
     },
