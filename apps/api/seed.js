@@ -32,7 +32,7 @@ async function insertRow(client, table, data) {
 
 async function seedUsersAndFriends(client) {
   const pwdHash = '$2b$10$oTPuRIChn9z3KsC63c/0a.tIC3OsCgYVAG9Hgrn712fecnLbnfwmW'; // 'password'
-  
+
   // Ensure FRIEND exists
   const fCheck = await client.query(`SELECT id FROM users WHERE email=$1`, ['friend@example.com']);
   if (!fCheck.rows.length) {
@@ -73,7 +73,7 @@ async function seedUsersAndFriends(client) {
 
   // Populate USER_ID 1 if it exists but missing data
   await client.query(
-    `UPDATE users SET 
+    `UPDATE users SET
       gender = COALESCE(gender, 'male'),
       age = COALESCE(age, 25),
       height = COALESCE(height, 182),
@@ -97,8 +97,8 @@ async function seedUsersAndFriends(client) {
   for (const uid of [USER_ID, FRIEND_ID, STRANGER_ID]) {
     const sCheck = await client.query(`SELECT id FROM settings WHERE user_id=$1`, [uid]);
     if (!sCheck.rows.length) {
-      await insertRow(client, 'settings', { 
-        user_id: uid, 
+      await insertRow(client, 'settings', {
+        user_id: uid,
         water_goal: 2500,
         protein_goal: 150,
         fat_goal: 70,
@@ -164,15 +164,16 @@ const EXERCISES = [
   { name: 'Floor Triceps Dip',              tt: 'REPS_ONLY',     eq: null,            pm: 'Triceps',    sm: [] },
   { name: 'Ab Wheel',                       tt: 'REPS_ONLY',     eq: 'Other',         pm: 'Abdominals', sm: [] },
   { name: 'Burpees',                        tt: 'REPS_ONLY',     eq: null,            pm: 'Cardio',     sm: ['Full Body'] },
-  // 49–57  TIME_BASED
+  // 49–55  TIME_BASED (duration only)
   { name: 'Plank',                          tt: 'TIME_BASED',    eq: null,            pm: 'Abdominals', sm: [] },
-  { name: 'Running',                        tt: 'TIME_BASED',    eq: null,            pm: 'Cardio',     sm: [] },
   { name: 'Jump Rope',                      tt: 'TIME_BASED',    eq: 'Other',         pm: 'Cardio',     sm: [] },
-  { name: 'Air Bike',                       tt: 'TIME_BASED',    eq: 'Machine',       pm: 'Cardio',     sm: [] },
   { name: 'Aerobics',                       tt: 'TIME_BASED',    eq: null,            pm: 'Cardio',     sm: [] },
   { name: 'Reverse Plank',                  tt: 'TIME_BASED',    eq: null,            pm: 'Abdominals', sm: [] },
   { name: 'Ab Scissors',                    tt: 'TIME_BASED',    eq: null,            pm: 'Abdominals', sm: [] },
   { name: 'Mountain Climbers',              tt: 'TIME_BASED',    eq: null,            pm: 'Cardio',     sm: ['Abdominals'] },
+  // 55–56  DISTANCE_AND_TIME (duration + distance)
+  { name: 'Running',                        tt: 'DISTANCE_AND_TIME', eq: null,            pm: 'Cardio',     sm: [] },
+  { name: 'Air Bike',                       tt: 'DISTANCE_AND_TIME', eq: 'Machine',       pm: 'Cardio',     sm: [] },
   { name: 'Lateral Raise (Band)',           tt: 'WEIGHT_AND_REPS', eq: 'Resistance Band', pm: 'Shoulders', sm: [] },
 ];
 
@@ -261,7 +262,7 @@ async function seedLookups(client) {
   for (const name of ['PRIVATE', 'PUBLIC', 'FRIENDS_ONLY'])
     vt[name] = await nameId(client, 'visibility_type', name);
 
-  for (const name of ['WEIGHT_AND_REPS', 'REPS_ONLY', 'TIME_BASED'])
+  for (const name of ['WEIGHT_AND_REPS', 'REPS_ONLY', 'TIME_BASED', 'DISTANCE_AND_TIME', 'DISTANCE_ONLY'])
     tt[name] = await nameId(client, 'tracking_types', name);
 
   for (const name of ['g', 'ml', 'pcs', 'cup', 'kg', 'cm', 'kcal'])
@@ -311,6 +312,13 @@ async function seedLookups(client) {
   return { vt, tt, units, mealTypes, muscles, equip, metricTypes };
 }
 
+// Custom exercises owned by USER_ID (showcase the user-created exercise feature)
+const USER_EXERCISES = [
+  { name: 'My Cable Lateral Raise', tt: 'WEIGHT_AND_REPS', eq: 'Machine',        pm: 'Shoulders',  sm: [] },
+  { name: 'Home Band Row',          tt: 'WEIGHT_AND_REPS', eq: 'Resistance Band', pm: 'Upper Back', sm: ['Biceps'] },
+  { name: 'Wall Sit',               tt: 'DISTANCE_AND_TIME',      eq: null,              pm: 'Quadriceps', sm: ['Glutes'] },
+];
+
 async function seedExercises(client, { vt, tt, equip, muscles }, skipEtl = false) {
   if (skipEtl) {
     const r = await client.query(`SELECT id FROM exercises WHERE user_id IS NULL ORDER BY id LIMIT 50`);
@@ -349,7 +357,42 @@ async function seedExercises(client, { vt, tt, equip, muscles }, skipEtl = false
     }
     exIds.push(exId);
   }
-  console.log(`  → ${exIds.length} exercises ready`);
+  console.log(`  → ${exIds.length} system exercises ready`);
+
+  // Seed custom exercises for USER_ID
+  let userExCount = 0;
+  for (const ex of USER_EXERCISES) {
+    const s = await client.query(
+      `SELECT id FROM exercises WHERE LOWER(name)=LOWER($1) AND user_id=$2 LIMIT 1`,
+      [ex.name, USER_ID]
+    );
+    if (s.rows.length) continue;
+
+    const exId = await insertRow(client, 'exercises', {
+      name: ex.name,
+      tracking_type_id: tt[ex.tt],
+      equipment_id: ex.eq ? equip[ex.eq] : null,
+      user_id: USER_ID,
+      visibility_type_id: vt['PRIVATE'],
+    });
+
+    await client.query(
+      `INSERT INTO exercise_muscles (exercise_id, muscle_id, is_primary, impact_percentage)
+       VALUES ($1, $2, true, 100) ON CONFLICT (exercise_id, muscle_id) DO NOTHING`,
+      [exId, muscles[ex.pm]]
+    );
+    for (const sm of ex.sm) {
+      if (!muscles[sm]) continue;
+      await client.query(
+        `INSERT INTO exercise_muscles (exercise_id, muscle_id, is_primary, impact_percentage)
+         VALUES ($1, $2, false, $3) ON CONFLICT (exercise_id, muscle_id) DO NOTHING`,
+        [exId, muscles[sm], Math.floor(60 / ex.sm.length)]
+      );
+    }
+    userExCount++;
+  }
+  if (userExCount > 0) console.log(`  → ${userExCount} custom user exercises seeded`);
+
   return exIds;
 }
 
@@ -436,9 +479,12 @@ async function seedWorkouts(client, { vt }, exIds) {
             setData.reps   = 8 + (s === 1 ? 2 : 0);
           } else if (ex.tt === 'REPS_ONLY') {
             setData.reps   = 8 + wi + s;
-            setData.weight = 0;
+          } else if (ex.tt === 'DISTANCE_ONLY') {
+            setData.distance = 500 + wi * 50;
           } else {
+            // TIME_BASED or DISTANCE_AND_TIME
             setData.duration = 60 + wi * 3;
+            if (ex.tt === 'DISTANCE_AND_TIME') setData.distance = 500 + wi * 50;
           }
           await insertRow(client, 'log_sets', setData);
         }
@@ -497,8 +543,9 @@ async function seedTemplates(client, { vt }, exIds) {
       for (let s = 1; s <= 3; s++) {
         const setData = { template_exercise_id: teId, order: s };
         if (ex.tt === 'WEIGHT_AND_REPS')      { setData.weight = WEIGHT_PROG[exIdx]?.base || 0; setData.reps = 8; }
-        else if (ex.tt === 'REPS_ONLY')     { setData.weight = 0; setData.reps = 10; }
-        else                                { setData.duration = 60; }
+        else if (ex.tt === 'REPS_ONLY')       { setData.weight = 0; setData.reps = 10; }
+        else if (ex.tt === 'DISTANCE_ONLY')   { setData.distance = 500; }
+        else                                  { setData.duration = 60; }
         await insertRow(client, 'template_sets', setData);
       }
     }
@@ -543,8 +590,9 @@ async function seedPublicTemplates(client, { vt }, exIds) {
       for (let s = 1; s <= 3; s++) {
         const setData = { template_exercise_id: teId, order: s };
         if (ex.tt === 'WEIGHT_AND_REPS')      { setData.weight = WEIGHT_PROG[exIdx]?.base || 0; setData.reps = 8; }
-        else if (ex.tt === 'REPS_ONLY')     { setData.weight = 0; setData.reps = 10; }
-        else                                { setData.duration = 60; }
+        else if (ex.tt === 'REPS_ONLY')       { setData.weight = 0; setData.reps = 10; }
+        else if (ex.tt === 'DISTANCE_ONLY')   { setData.distance = 500; }
+        else                                  { setData.duration = 60; }
         await insertRow(client, 'template_sets', setData);
       }
     }
