@@ -14,8 +14,8 @@ raw `pg`) so it mirrors `apps/api/seed.js` and runs without booting Nest.
 2. `apps/api/.env` (or root `.env`) must define:
    - `DATABASE_URL` — same connection string the API uses.
    - `DATABASE_SSL` — `false` for local Docker Postgres.
-   - `USDA_FDC_API_KEY` — required only for `--source=fdc`. Free at
-     <https://api.data.gov/signup/>.
+   - `SPOONACULAR_API_KEY` — required for `--source=spoonacular` (foods + dishes).
+     Free at <https://spoonacular.com/food-api> (150 points/day).
 
 ## Usage
 
@@ -28,11 +28,10 @@ node apps/api/etl/index.js --all
 # individual sources
 node apps/api/etl/index.js --source=wger --limit=850
 node apps/api/etl/index.js --source=exercisedb         # enriches gif_url
-node apps/api/etl/index.js --source=off --categories=cereals,dairy --limit=500
-node apps/api/etl/index.js --source=fdc --datatype=Foundation --limit=300
+node apps/api/etl/index.js --source=spoonacular        # ingredients + dishes (foods)
 
-# preview without touching the DB
-node apps/api/etl/index.js --source=wger --limit=10 --dry-run
+# preview without touching the DB (also caps API points spent)
+node apps/api/etl/index.js --source=spoonacular --limit=10 --dry-run
 ```
 
 ## Raw Dump (Local Files)
@@ -48,8 +47,7 @@ node apps/api/etl/dump.js
 # individual sources
 node apps/api/etl/dump.js --source=wger --limit=100
 node apps/api/etl/dump.js --source=exercisedb
-node apps/api/etl/dump.js --source=off --categories=snacks,beverages --limit=50
-node apps/api/etl/dump.js --source=fdc --datatype=Foundation --limit=100
+node apps/api/etl/dump.js --source=spoonacular --limit=12
 
 # custom output directory
 node apps/api/etl/dump.js --out-dir=./tmp/raw_data
@@ -61,12 +59,11 @@ node apps/api/etl/dump.js --out-dir=./tmp/raw_data
 |---|---|---|---|
 | [wger](https://wger.de/api/v2/exerciseinfo/) | `https://wger.de/api/v2` | 800+ exercises + muscles (with SVG diagrams) | CC-BY-SA 4.0 |
 | [ExerciseDB](https://github.com/exercisedb-org/exercisedb-api) | configurable (`EXERCISEDB_BASE_URL`) | GIF animations, instructions | content varies |
-| [Open Food Facts](https://world.openfoodfacts.org/) | `/api/v2/search` | branded foods + macros + photos | ODbL (data) + CC-BY-SA (images) |
-| [USDA FoodData Central](https://fdc.nal.usda.gov/) | `https://api.nal.usda.gov/fdc/v1` | reference whole foods macros | Public domain (CC0) |
+| [Spoonacular](https://spoonacular.com/food-api) | `https://api.spoonacular.com` | curated whole-food ingredients + composite dishes, macros + photos | proprietary (attribution required) |
 
 > Attribution required for end-user UI: include a credits line such as
-> *"Exercise data: wger (CC-BY-SA 4.0). Food data: Open Food Facts (ODbL) +
-> USDA FoodData Central (public domain)."* in the mobile Settings screen.
+> *"Exercise data: wger (CC-BY-SA 4.0). Food & dish data and images: spoonacular.com."*
+> in the mobile Settings screen.
 
 ## Pipeline behaviour
 
@@ -74,17 +71,20 @@ For each source the pipeline is:
 
 1. **Ensure lookups** — `transform/lookups.js` upserts the static lookup tables
    (`visibility_type`, `tracking_types`, `units`, `exercise_categories`).
-2. **Extract** — paginated GETs through `lib/http.js`, which applies a per-source
-   minimum delay (wger 0.5s, OFF 4s, FDC 4s) and retries 408/429/5xx with
-   exponential backoff (`Retry-After` honoured).
-3. **Transform** — picks the English translation, resolves muscle/equipment ids,
-   strips HTML, infers tracking type (Cardio → `TIME_BASED`, bodyweight →
-   `REPS_ONLY`, else `WEIGHT_AND_REPS`).
+2. **Extract** — GETs through `lib/http.js`, which applies a per-source minimum
+   delay (wger 0.5s, Spoonacular ~1.1s) and retries 408/429/5xx with exponential
+   backoff (`Retry-After` honoured).
+3. **Transform** — exercises: pick the English translation, resolve
+   muscle/equipment ids, strip HTML, infer tracking type. Foods: normalise every
+   row to per-100g macros (dishes converted from per-serving via
+   `weightPerServing`); validate macros (`validateMacros`).
 4. **Load** — `INSERT … ON CONFLICT … DO UPDATE …` inside a single transaction.
    `exercise_muscles` is reconciled by id-diff (delete missing, upsert present).
 5. **GIF enrichment** (`exercisedb` after `wger`) — name-matches via
    normalized form + Levenshtein ≤ 3, updates only `gif_url` (and
    `instructions` if still null).
+6. **Spoonacular** — skips ingredients already in the DB (resume past quota),
+   and treats a `402` as a clean stop so a re-run the next day continues.
 
 ## Idempotency
 
@@ -97,8 +97,8 @@ Re-running any command is a no-op for unchanged rows. Anchors:
 | `equipments` | `LOWER(name) WHERE user_id IS NULL` | wger upsert |
 | `exercises` | partial idx `idx_exercises_system_name` on `LOWER(name) WHERE user_id IS NULL` | wger upsert |
 | `exercise_muscles` | unique `(exercise_id, muscle_id)` | wger upsert |
-| `foods` (OFF + FDC) | partial idx `idx_foods_system_name` on `(LOWER(name), COALESCE(LOWER(brand), '')) WHERE creator_id IS NULL` | both food sources |
-| `nutrition_facts` | unique `(food_id, unit_id)` | both food sources |
+| `foods` (Spoonacular) | partial idx `idx_foods_system_name` on `(LOWER(name), COALESCE(LOWER(brand), '')) WHERE creator_id IS NULL` | ingredients (`brand IS NULL`) + dishes (`brand = 'Dish'`) |
+| `nutrition_facts` | unique `(food_id, unit_id)` | Spoonacular |
 
 User-created rows (`user_id IS NOT NULL` / `creator_id IS NOT NULL`) are never
 touched by the ETL — they live outside the partial unique indexes.
@@ -126,12 +126,11 @@ apps/api/etl/
 ├── sources/
 │   ├── wger.js
 │   ├── exercisedb.js
-│   ├── openfoodfacts.js
-│   └── usda-fdc.js
+│   └── spoonacular.js       # ingredients + dishes (foods)
 └── transform/
     ├── lookups.js           # visibility/tracking/categories/muscle/equipment
     ├── exercise.js          # exercise + exercise_muscles upserts
-    └── food.js              # food + nutrition_facts upserts
+    └── food.js              # food + nutrition_facts upserts (+ validateMacros)
 ```
 
 ## Verification
@@ -163,7 +162,8 @@ Expected after a full `--all` run:
 
 - `exercises WHERE user_id IS NULL` ≥ 800 rows, ≥ 80% with `image_url`.
 - ≥ 50% of those rows pick up a `gif_url` from ExerciseDB.
-- `foods WHERE creator_id IS NULL` matches `--limit` (sum across sources).
+- `foods WHERE creator_id IS NULL` ≈ 130–170 rows (ingredients + dishes), nearly
+  all with `image_url`; dishes carry `brand = 'Dish'`.
 - Re-running any command keeps the row count stable.
 
 ## Known limits
@@ -171,10 +171,11 @@ Expected after a full `--all` run:
 - **wger tracking_type** is heuristic — users can edit individual exercises.
 - **ExerciseDB matching** covers ~50–70% of wger exercises; the rest remain
   without GIFs (acceptable for the demo).
-- **Image hosting** points at wger/OFF CDNs. For production, mirror the
+- **Image hosting** points at wger/Spoonacular CDNs. For production, mirror the
   URLs to S3 — out of scope for this loader.
-- **OFF search API** caps out around 10–15 req/min. For ≥1000 products,
-  switch to the JSONL dump (`openfoodfacts-products.jsonl.gz`) — TBD.
+- **Spoonacular free tier** = 150 points/day. A full foods run sits close to the
+  cap; if a `402` interrupts it, just re-run the next day — already-imported
+  ingredients are skipped and dishes upsert idempotently.
 - **`exercise_categories`** table is kept but no longer wired into `exercises`
   (no `category_id` FK). Future work can re-introduce the column or expose
   categories via a separate join table.

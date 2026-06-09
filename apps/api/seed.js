@@ -1,6 +1,15 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
+const { spawnSync } = require('child_process');
+
+const MAIN_USER = {
+  email: 'skanton3@gmail.com',
+  full_name: 'Anton Skakovskyi',
+  nickname: 'Truba',
+  password: '123456',
+};
 
 let USER_ID = 1;
 let FRIEND_ID;
@@ -12,6 +21,26 @@ function daysAgo(n, hour = 9) {
   d.setDate(d.getDate() - n);
   d.setHours(hour, 0, 0, 0);
   return d;
+}
+
+// ── Simulation helpers (realistic, non-uniform data) ─────────────────────────
+const rand = (min, max) => min + Math.random() * (max - min);
+const randInt = (min, max) => Math.floor(rand(min, max + 1));
+const roundTo = (v, step) => Math.round(v / step) * step;
+const chance = (p) => Math.random() < p;
+
+/**
+ * Working-set weight for session `wi` of `total`, given a per-exercise base and
+ * total expected progression. Produces fast early gains that taper (diminishing
+ * returns), periodic deloads (~every 8th session), and ±2.5 kg noise — so the
+ * curve shows growth, plateaus and the occasional dip rather than a clean line.
+ */
+function sessionWeight(base, prog, wi, total) {
+  const p = total > 1 ? wi / (total - 1) : 1;
+  const trend = base + prog * Math.pow(p, 0.7);
+  const deload = wi > 0 && wi % 8 === 0 ? 0.92 : 1; // periodic back-off week
+  const noise = chance(0.4) ? (chance(0.5) ? 2.5 : -2.5) : 0;
+  return Math.max(roundTo(base * 0.7, 2.5), roundTo(trend * deload + noise, 2.5));
 }
 
 async function nameId(client, table, name) {
@@ -32,6 +61,34 @@ async function insertRow(client, table, data) {
 
 async function seedUsersAndFriends(client) {
   const pwdHash = '$2b$10$oTPuRIChn9z3KsC63c/0a.tIC3OsCgYVAG9Hgrn712fecnLbnfwmW'; // 'password'
+
+  // Ensure the main user exists and matches MAIN_USER details.
+  const mainCheck = await client.query(
+    `SELECT id FROM users WHERE email=$1`,
+    [MAIN_USER.email],
+  );
+  if (!mainCheck.rows.length) {
+    const mainHash = await bcrypt.hash(MAIN_USER.password, 10);
+    USER_ID = await insertRow(client, 'users', {
+      email: MAIN_USER.email,
+      full_name: MAIN_USER.full_name,
+      nickname: MAIN_USER.nickname,
+      password_hash: mainHash,
+      gender: 'male',
+      age: 25,
+      height: 182,
+      weight: 82,
+      activity_level: 'moderate',
+      fitness_goal: 'build_muscle',
+    });
+    console.log(`  → Main user "${MAIN_USER.nickname}" created (id=${USER_ID})`);
+  } else {
+    USER_ID = mainCheck.rows[0].id;
+    await client.query(
+      `UPDATE users SET full_name=$1, nickname=$2 WHERE id=$3`,
+      [MAIN_USER.full_name, MAIN_USER.nickname, USER_ID],
+    );
+  }
 
   // Ensure FRIEND exists
   const fCheck = await client.query(`SELECT id FROM users WHERE email=$1`, ['friend@example.com']);
@@ -201,13 +258,7 @@ const WEIGHT_PROG = {
   30: { base: 40,  prog: 10   }, // Calf Raise
 };
 
-function getWeight(exIdx, wi, total) {
-  const wp = WEIGHT_PROG[exIdx];
-  if (!wp) return 0;
-  return Math.round((wp.base + wp.prog * wi / (total - 1)) / 2.5) * 2.5;
-}
-
-const WORKOUT_SCHEDULE = [84, 81, 77, 74, 70, 67, 63, 60, 56, 53, 49, 46, 42, 39, 35, 32, 28, 25, 21, 18, 14, 10, 5, 1];
+const WORKOUT_SCHEDULE =[84, 81, 77, 74, 70, 67, 63, 60, 56, 53, 49, 46, 42, 39, 35, 32, 28, 25, 21, 18, 14, 10, 5, 1];
 const WORKOUT_TYPES    = ['push','pull','legs','push','pull','legs','push','pull','legs','push','pull','legs',
                           'push','pull','legs','push','pull','legs','push','pull','legs','push','pull','legs'];
 
@@ -224,10 +275,10 @@ const FOODS = [
   { name: 'Salmon',            brand: null,      calories: 208, proteins: 20,  fats: 13,  carbs: 0   },
   { name: 'Whole Wheat Bread', brand: null,      calories: 247, proteins: 13,  fats: 4.2, carbs: 41  },
   { name: 'Pasta',             brand: null,      calories: 371, proteins: 13,  fats: 1.5, carbs: 75  },
-  { name: 'Milk (2%)',         brand: null,      calories: 50,  proteins: 3.4, fats: 2,   carbs: 5   },
+  { name: 'Milk',              brand: null,      calories: 50,  proteins: 3.4, fats: 2,   carbs: 5   },
   { name: 'Cheddar Cheese',    brand: null,      calories: 402, proteins: 25,  fats: 33,  carbs: 1.3 },
   { name: 'Apple',             brand: null,      calories: 52,  proteins: 0.3, fats: 0.2, carbs: 14  },
-  { name: 'Tuna (canned)',     brand: null,      calories: 116, proteins: 26,  fats: 1,   carbs: 0   },
+  { name: 'Tuna',              brand: null,      calories: 116, proteins: 26,  fats: 1,   carbs: 0   },
   { name: 'Peanut Butter',     brand: null,      calories: 588, proteins: 25,  fats: 50,  carbs: 20  },
   { name: 'Olive Oil',         brand: null,      calories: 884, proteins: 0,   fats: 100, carbs: 0   },
   { name: 'Sweet Potato',      brand: null,      calories: 86,  proteins: 1.6, fats: 0.1, carbs: 20  },
@@ -245,6 +296,10 @@ const FOODS = [
   { name: 'Spinach',           brand: null,      calories: 23,  proteins: 2.9, fats: 0.4, carbs: 3.6 },
   { name: 'Blueberries',       brand: null,      calories: 57,  proteins: 0.7, fats: 0.3, carbs: 14  },
   { name: 'Walnuts',           brand: null,      calories: 654, proteins: 15,  fats: 65,  carbs: 14  },
+  { name: 'Egg White',         brand: null,      calories: 52,  proteins: 11,  fats: 0.2, carbs: 0.7 },
+  { name: 'Cod',               brand: null,      calories: 82,  proteins: 18,  fats: 0.7, carbs: 0   },
+  { name: 'Brown Rice',        brand: null,      calories: 123, proteins: 2.7, fats: 1,   carbs: 26  },
+  { name: 'Green Beans',       brand: null,      calories: 31,  proteins: 1.8, fats: 0.2, carbs: 7   },
   { name: 'Greek Salad',       brand: 'Homemade',calories: 120, proteins: 3.5, fats: 9,   carbs: 8   },
   { name: 'Protein Bar',       brand: 'Quest',   calories: 190, proteins: 21,  fats: 7,   carbs: 21  },
   { name: 'Rice Cakes',        brand: null,      calories: 387, proteins: 8,   fats: 2.8, carbs: 82  },
@@ -319,16 +374,11 @@ const USER_EXERCISES = [
   { name: 'Wall Sit',               tt: 'DISTANCE_AND_TIME',      eq: null,              pm: 'Quadriceps', sm: ['Glutes'] },
 ];
 
-async function seedExercises(client, { vt, tt, equip, muscles }, skipEtl = false) {
-  if (skipEtl) {
-    const r = await client.query(`SELECT id FROM exercises WHERE user_id IS NULL ORDER BY id LIMIT 50`);
-    const dbIds = r.rows.map((row) => row.id);
-    if (dbIds.length === 0) throw new Error('--skip-etl: no exercises in DB — run ETL first');
-    const exIds = EXERCISES.map((_, i) => dbIds[i % dbIds.length]);
-    console.log(`  → ${dbIds.length} ETL exercises found, mapped across ${exIds.length} positions`);
-    return exIds;
-  }
-
+async function seedExercises(client, { vt, tt, equip, muscles }) {
+  // The curated set below is the stable anchor the workout simulation depends on
+  // (named exercises with correct tracking types + muscles). The ETL (wger) adds
+  // hundreds more catalog exercises alongside these — they coexist, matched by
+  // the partial unique index on LOWER(name) WHERE user_id IS NULL.
   const exIds = [];
   for (const ex of EXERCISES) {
     const s = await client.query(`SELECT id FROM exercises WHERE LOWER(name)=LOWER($1) AND user_id IS NULL LIMIT 1`, [ex.name]);
@@ -423,18 +473,24 @@ async function seedBodyMetrics(client, { metricTypes }) {
 }
 
 async function seedWorkouts(client, { vt }, exIds) {
-  for (const uid of [USER_ID, STRANGER_ID]) {
+  // The friend trains FRIENDS_ONLY and the stranger PUBLIC, so the social feed
+  // and the "friend's workouts" view have real sessions to demonstrate.
+  const userConfigs = [
+    { uid: USER_ID,     vis: vt['PRIVATE'],      schedule: WORKOUT_SCHEDULE,  types: WORKOUT_TYPES,                              suffix: '' },
+    { uid: FRIEND_ID,   vis: vt['FRIENDS_ONLY'], schedule: [12, 9, 6, 3],     types: ['push', 'pull', 'legs', 'push'],           suffix: ' (Friends Only)' },
+    { uid: STRANGER_ID, vis: vt['PUBLIC'],       schedule: [10, 8, 6, 4, 2],  types: ['push', 'pull', 'legs', 'push', 'pull'],   suffix: ' (Public)' },
+  ];
+  const typeMap = { push: PUSH, pull: PULL, legs: LEGS };
+  const wNames  = { push: 'Push Day', pull: 'Pull Day', legs: 'Leg Day' };
+
+  for (const cfg of userConfigs) {
+    const { uid, vis: visibility, schedule, types, suffix } = cfg;
+    const total = schedule.length;
+
     const existing = await client.query(
       `SELECT COUNT(*) FROM workouts WHERE user_id=$1 AND status='COMPLETED'`, [uid]
     );
-    if (parseInt(existing.rows[0].count) >= 10) continue;
-
-    const typeMap = { push: PUSH, pull: PULL, legs: LEGS };
-    const wNames  = { push: 'Push Day', pull: 'Pull Day', legs: 'Leg Day' };
-    const total = uid === USER_ID ? WORKOUT_SCHEDULE.length : 5;
-    const schedule = uid === USER_ID ? WORKOUT_SCHEDULE : [10, 8, 6, 4, 2];
-    const types = uid === USER_ID ? WORKOUT_TYPES : ['push', 'pull', 'legs', 'push', 'pull'];
-    const visibility = uid === USER_ID ? vt['PRIVATE'] : vt['PUBLIC'];
+    if (parseInt(existing.rows[0].count) >= total) continue;
 
     let wCount = 0;
     for (let wi = 0; wi < total; wi++) {
@@ -447,7 +503,7 @@ async function seedWorkouts(client, { vt }, exIds) {
       const wId = await insertRow(client, 'workouts', {
         user_id:           uid,
         visibility_type_id: visibility,
-        name:              wNames[wType] + (uid === STRANGER_ID ? ' (Public)' : ''),
+        name:              wNames[wType] + suffix,
         status:            'COMPLETED',
         started_at:        startedAt,
         ended_at:          endedAt,
@@ -472,19 +528,25 @@ async function seedWorkouts(client, { vt }, exIds) {
         });
 
         const numSets = order < 2 ? 4 : 3;
+        const wp = WEIGHT_PROG[exIdx];
+        const topWeight = wp ? sessionWeight(wp.base, wp.prog, wi, total) : 0;
         for (let s = 1; s <= numSets; s++) {
-          const setData = { log_exercise_id: leId, order: s, is_completed: true };
+          // Occasionally a final set is left unfinished — realistic, and the
+          // achievement recalc correctly ignores incomplete sets.
+          const completed = !(s === numSets && chance(0.08));
+          const setData = { log_exercise_id: leId, order: s, is_completed: completed };
           if (ex.tt === 'WEIGHT_AND_REPS') {
-            setData.weight = getWeight(exIdx, wi, total);
-            setData.reps   = 8 + (s === 1 ? 2 : 0);
+            // Light top-set noise per set; first set a touch heavier rep range.
+            setData.weight = Math.max(0, topWeight - (s - 1) * (chance(0.5) ? 2.5 : 0));
+            setData.reps   = randInt(s === 1 ? 8 : 6, s === 1 ? 12 : 10);
           } else if (ex.tt === 'REPS_ONLY') {
-            setData.reps   = 8 + wi + s;
+            setData.reps   = randInt(6, 10) + Math.floor(wi / 4); // calisthenics creep up
           } else if (ex.tt === 'DISTANCE_ONLY') {
-            setData.distance = 500 + wi * 50;
+            setData.distance = roundTo(500 + wi * 40 + rand(-50, 80), 10);
           } else {
             // TIME_BASED or DISTANCE_AND_TIME
-            setData.duration = 60 + wi * 3;
-            if (ex.tt === 'DISTANCE_AND_TIME') setData.distance = 500 + wi * 50;
+            setData.duration = Math.round(60 + wi * 3 + rand(-8, 12));
+            if (ex.tt === 'DISTANCE_AND_TIME') setData.distance = roundTo(500 + wi * 45 + rand(-40, 90), 10);
           }
           await insertRow(client, 'log_sets', setData);
         }
@@ -499,8 +561,10 @@ async function seedTemplates(client, { vt }, exIds) {
     { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Push Day', desc: 'Chest, shoulders, triceps',  exList: PUSH },
     { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Pull Day', desc: 'Back and biceps',            exList: PULL },
     { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Leg Day',  desc: 'Quads, hamstrings, glutes',  exList: LEGS },
+    { creatorId: USER_ID,   vis: vt['PRIVATE'],      name: 'Upper Body', desc: 'Full upper-body session: chest, back, shoulders, arms', exList: [0, 4, 3, 22, 7, 25] },
     { creatorId: FRIEND_ID, vis: vt['FRIENDS_ONLY'], name: 'Home Full Body', desc: 'Friend\'s home routine', exList: [36, 39, 40, 45, 49] },
     { creatorId: FRIEND_ID, vis: vt['FRIENDS_ONLY'], name: 'Dumbbell Only',  desc: 'Hypertrophy with DBs', exList: [12, 11, 14, 15, 16] },
+    { creatorId: FRIEND_ID, vis: vt['FRIENDS_ONLY'], name: 'Upper Pump',     desc: 'Friend\'s upper-body pump day', exList: [12, 16, 14, 19, 37] },
     { creatorId: STRANGER_ID, vis: vt['PUBLIC'],     name: 'Stranger\'s Power Plan', desc: 'Public heavy routine', exList: [1, 2, 0, 4, 3] },
   ];
 
@@ -554,11 +618,14 @@ async function seedTemplates(client, { vt }, exIds) {
 }
 
 async function seedPublicTemplates(client, { vt }, exIds) {
-  for (const tpl of [
+  const templates = [
     { name: 'Full Body (Beginner)', desc: 'Fundamental movements for total body development', exList: [1, 0, 4, 11, 29, 37, 49] },
     { name: 'Upper Body Power', desc: 'Heavy compound lifts for upper body strength', exList: [0, 4, 3, 36, 7] },
     { name: 'Lower Body Strength', desc: 'Leg focused strength routine', exList: [1, 2, 27, 30, 50] },
-  ]) {
+    { name: 'Push Pull Legs', desc: 'Classic 6-day PPL split, one session of each', exList: [0, 3, 4, 22, 1, 27] },
+    { name: 'Conditioning Circuit', desc: 'Bodyweight + cardio circuit for conditioning', exList: [47, 48, 49, 54] },
+  ];
+  for (const tpl of templates) {
     const s = await client.query(
       `SELECT id FROM workout_templates WHERE name=$1 AND creator_id IS NULL LIMIT 1`, [tpl.name]
     );
@@ -597,123 +664,179 @@ async function seedPublicTemplates(client, { vt }, exIds) {
       }
     }
   }
-  console.log('  → 3 system public templates ready');
+  console.log('  → 5 global (public) workout templates ready');
 }
 
-async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) {
+// Days of meal/water history to simulate for the showcase user.
+const NUTRITION_DAYS = 42;
+
+/**
+ * Daily intake multiplier for `d` days ago. Tells a 6-week story:
+ *   weeks 0–1 → maintenance, weeks 2–3 → a cut (under-eating), weeks 4–5 → a
+ *   bulk (over-eating). Weekends drift higher, plus small day-to-day noise — so
+ *   the calorie graph has dips, plateaus and spikes rather than a flat line.
+ */
+function intakeFactor(d) {
+  const week = Math.floor((NUTRITION_DAYS - 1 - d) / 7);
+  let base;
+  if (week <= 1) base = 1.0;       // maintenance
+  else if (week <= 3) base = 0.83; // cut → under-eating
+  else base = 1.15;                // bulk → over-eating
+  const dow = daysAgo(d).getDay();
+  if (dow === 0 || dow === 6) base += 0.08; // weekend overeating
+  return base + rand(-0.07, 0.07);
+}
+
+async function seedNutrition(client, { mealTypes, units, vt }) {
   const gId = units['g'];
 
-  // Foods
+  // 1) Resolve foods by name. Reuse ETL rows when present (they carry photos);
+  //    otherwise insert a fallback row + per-100g macros so the seed still works
+  //    standalone (no Spoonacular key). Prefer an ingredient over a same-named dish.
   const foodIds = {};
-  if (skipEtl) {
-    const r = await client.query(`SELECT id FROM foods ORDER BY id LIMIT 50`);
-    const dbIds = r.rows.map((row) => row.id);
-    if (dbIds.length === 0) throw new Error('--skip-etl: no foods in DB — run ETL first');
-    let rr = 0;
-    for (const f of FOODS) {
-      const s = await client.query(`SELECT id FROM foods WHERE LOWER(name) LIKE LOWER($1) LIMIT 1`, [`%${f.name}%`]);
-      foodIds[f.name] = s.rows.length ? s.rows[0].id : dbIds[rr++ % dbIds.length];
-    }
-  } else {
-    for (const f of FOODS) {
-      const s = await client.query(`SELECT id FROM foods WHERE LOWER(name)=LOWER($1) AND COALESCE(creator_id, 0)=COALESCE($2, 0) LIMIT 1`, [f.name, f.creatorId || null]);
-      if (s.rows.length) {
-        foodIds[f.name] = s.rows[0].id;
-      } else {
-        foodIds[f.name] = await insertRow(client, 'foods', {
-          name: f.name, brand: f.brand, creator_id: f.creatorId || null,
-        });
-        // Insert nutrition facts (per 100g)
-        await insertRow(client, 'nutrition_facts', {
-          food_id: foodIds[f.name], unit_id: gId, amount: 100,
-          calories: f.calories, proteins: f.proteins, fats: f.fats, carbs: f.carbs
-        });
-      }
+  for (const f of FOODS) {
+    const s = await client.query(
+      `SELECT id FROM foods
+       WHERE LOWER(name)=LOWER($1) AND COALESCE(creator_id,0)=COALESCE($2,0)
+       ORDER BY (brand IS NULL) DESC LIMIT 1`,
+      [f.name, f.creatorId || null],
+    );
+    if (s.rows.length) {
+      foodIds[f.name] = s.rows[0].id;
+    } else {
+      foodIds[f.name] = await insertRow(client, 'foods', {
+        name: f.name, brand: f.brand, creator_id: f.creatorId || null,
+      });
+      await insertRow(client, 'nutrition_facts', {
+        food_id: foodIds[f.name], unit_id: gId, amount: 100,
+        calories: f.calories, proteins: f.proteins, fats: f.fats, carbs: f.carbs,
+      });
     }
   }
-  console.log(`  → ${Object.keys(foodIds).length} foods ready`);
 
-  // Meal log — 14 days for USER_ID
+  // Composite dishes («страви») loaded by the ETL — sprinkled into logs/plans.
+  const dishRows = await client.query(
+    `SELECT id, name FROM foods WHERE brand='Dish' AND creator_id IS NULL ORDER BY id`,
+  );
+  const dishes = dishRows.rows;
+  const pickDish = () => (dishes.length ? dishes[randInt(0, dishes.length - 1)] : null);
+  console.log(`  → ${Object.keys(foodIds).length} foods ready (+${dishes.length} dishes)`);
+
+  // 2) Meal log — NUTRITION_DAYS for USER_ID with phase-based portions.
   const existingLogs = await client.query(`SELECT COUNT(*) FROM log_meals WHERE user_id=$1`, [USER_ID]);
-  if (parseInt(existingLogs.rows[0].count) < 40) {
+  if (parseInt(existingLogs.rows[0].count) < NUTRITION_DAYS * 2) {
     const DINNER_VARIANTS = [
       [['Beef Steak', 200], ['Sweet Potato', 200], ['Broccoli', 100]],
       [['Salmon', 200],     ['Potato', 200],        ['Broccoli', 100]],
       [['Chicken Breast', 200], ['Pasta', 150],     ['Broccoli', 100]],
-      [['Tuna (canned)', 150],  ['White Rice', 150],['Avocado', 80]],
+      [['Tuna', 150],       ['White Rice', 150],    ['Avocado', 80]],
+      [['Turkey Breast', 200], ['Quinoa', 150],     ['Spinach', 80]],
     ];
     const MEAL_PLAN = [
-      { type: 'Breakfast', items: [['Oats', 80], ['Banana', 120], ['Milk (2%)', 200], ['Greek Yogurt', 150]] },
+      { type: 'Breakfast', items: [['Oats', 80], ['Banana', 120], ['Milk', 200], ['Greek Yogurt', 150]] },
       { type: 'Lunch',     items: [['Chicken Breast', 200], ['White Rice', 150], ['Broccoli', 100], ['Olive Oil', 15]] },
       { type: 'Dinner',    items: null },
-      { type: 'Snack',     items: [['Greek Yogurt', 150], ['Almonds', 30], ['Whey Protein', 30]] },
+      { type: 'Snack',     items: [['Greek Yogurt', 150], ['Almonds', 30], ['Apple', 150]] },
     ];
 
     let mlCount = 0;
-    for (let d = 13; d >= 0; d--) {
+    for (let d = NUTRITION_DAYS - 1; d >= 0; d--) {
+      const factor = intakeFactor(d);
       const logDate = daysAgo(d, 0).toISOString().split('T')[0];
       for (let mi = 0; mi < MEAL_PLAN.length; mi++) {
         const m = MEAL_PLAN[mi];
-        const items = m.type === 'Dinner' ? DINNER_VARIANTS[d % 4] : m.items;
         const mealId = await insertRow(client, 'log_meals', {
           user_id: USER_ID, meal_type_id: mealTypes[m.type],
           consumed_at: daysAgo(d, 7 + mi * 4), day_log_date: logDate,
         });
         mlCount++;
+
+        // ~30% of dinners are a single composite dish instead of plated items.
+        const dish = m.type === 'Dinner' && chance(0.3) ? pickDish() : null;
+        if (dish) {
+          const grams = roundTo(rand(300, 450) * factor, 10);
+          await insertRow(client, 'log_meal_items', {
+            log_meal_id: mealId, food_id: dish.id, unit_id: gId,
+            amount: grams, calculated_weight_g: grams,
+          });
+          continue;
+        }
+
+        const items = m.type === 'Dinner' ? DINNER_VARIANTS[d % DINNER_VARIANTS.length] : m.items;
         for (const [fname, amount] of items) {
           if (!foodIds[fname]) continue;
+          const scaled = Math.max(5, Math.round(amount * factor));
           await insertRow(client, 'log_meal_items', {
             log_meal_id: mealId, food_id: foodIds[fname],
-            unit_id: gId, amount, calculated_weight_g: amount,
+            unit_id: gId, amount: scaled, calculated_weight_g: scaled,
           });
         }
       }
     }
-    console.log(`  → ${mlCount} meal logs for USER_ID`);
+    console.log(`  → ${mlCount} meal logs for USER_ID over ${NUTRITION_DAYS} days`);
   }
 
-  // Water logs
+  // 3) Water logs — NUTRITION_DAYS with day-to-day variation.
   const existingWater = await client.query(`SELECT COUNT(*) FROM water_logs WHERE user_id=$1`, [USER_ID]);
-  if (parseInt(existingWater.rows[0].count) < 40) {
-    const WATER = [[300,8],[500,12],[400,15],[300,18],[500,21]];
-    for (let d = 13; d >= 0; d--) {
-      for (let w = 0; w < 3 + (d % 3); w++) {
-        const [ml, hour] = WATER[w];
+  if (parseInt(existingWater.rows[0].count) < NUTRITION_DAYS * 2) {
+    const WATER = [[300, 8], [500, 12], [400, 15], [300, 18], [500, 21]];
+    for (let d = NUTRITION_DAYS - 1; d >= 0; d--) {
+      const pours = randInt(3, 5);
+      for (let w = 0; w < pours; w++) {
+        const [ml, hour] = WATER[w % WATER.length];
         await client.query(
           `INSERT INTO water_logs (user_id, amount_ml, consumed_at) VALUES ($1, $2, $3)`,
-          [USER_ID, ml, daysAgo(d, hour)]
+          [USER_ID, ml + randInt(-50, 100), daysAgo(d, hour)],
         );
       }
     }
   }
 
-  // Meal plans
+  // 4) Meal plans — 3 for the showcase user (only one active) + friend/stranger/public.
+  const breakfast = (oats, ban) => [['Oats', oats], ['Banana', ban], ['Milk', 200], ['Greek Yogurt', 150]];
+  const planTemplates = {
+    bulk: [
+      { type: 'Breakfast', items: breakfast(100, 150) },
+      { type: 'Lunch',     items: [['Chicken Breast', 220], ['White Rice', 200], ['Broccoli', 120], ['Olive Oil', 15]] },
+      { type: 'Dinner',    items: [['Beef Steak', 220], ['Sweet Potato', 220], ['Spinach', 80]] },
+      { type: 'Snack',     items: [['Greek Yogurt', 200], ['Peanut Butter', 30], ['Apple', 150]] },
+    ],
+    cut: [
+      { type: 'Breakfast', items: [['Egg White', 200], ['Oats', 50], ['Blueberries', 80]] },
+      { type: 'Lunch',     items: [['Chicken Breast', 200], ['Quinoa', 120], ['Spinach', 100]] },
+      { type: 'Dinner',    items: [['Cod', 200], ['Broccoli', 150], ['Olive Oil', 8]] },
+      { type: 'Snack',     items: [['Cottage Cheese', 150], ['Almonds', 20]] },
+    ],
+    maintenance: [
+      { type: 'Breakfast', items: breakfast(70, 120) },
+      { type: 'Lunch',     items: [['Turkey Breast', 200], ['Brown Rice', 150], ['Green Beans', 100]] },
+      { type: 'Dinner',    items: [['Salmon', 180], ['Potato', 200], ['Broccoli', 100]] },
+      { type: 'Snack',     items: [['Greek Yogurt', 150], ['Walnuts', 20], ['Orange', 130]] },
+    ],
+  };
+
   const mealPlanConfigs = [
-    { name: 'Clean Bulk Plan', desc: '7-day high-protein bulk plan', creator: USER_ID, vis: vt['PRIVATE'], assignTo: USER_ID },
-    { name: 'Friend Fat Loss Plan', desc: 'Low carb plan', creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], assignTo: FRIEND_ID },
-    { name: 'Public Keto Guide', desc: 'A standard keto approach', creator: STRANGER_ID, vis: vt['PUBLIC'], assignTo: null },
-    { name: 'Balanced Maintenance', desc: 'Stable calorie maintenance plan', creator: null, vis: vt['PUBLIC'], assignTo: null },
+    // Showcase user — 3 plans (one active).
+    { name: 'Clean Bulk Plan',     desc: '7-day high-protein surplus plan',  creator: USER_ID,   vis: vt['PRIVATE'],      meals: planTemplates.bulk,        assignTo: USER_ID, active: true  },
+    { name: 'Shred / Cut Plan',    desc: 'Higher-protein calorie deficit',   creator: USER_ID,   vis: vt['PRIVATE'],      meals: planTemplates.cut,         assignTo: USER_ID, active: false },
+    { name: 'Maintenance Plan',    desc: 'Balanced everyday eating',         creator: USER_ID,   vis: vt['PRIVATE'],      meals: planTemplates.maintenance, assignTo: USER_ID, active: false },
+    // Friend — 3 plans, FRIENDS_ONLY (one active).
+    { name: 'Friend Fat Loss Plan',desc: 'Low carb fat-loss week',           creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], meals: planTemplates.cut,         assignTo: FRIEND_ID, active: true  },
+    { name: 'Friend Lean Bulk',    desc: 'Gradual lean-gain plan',           creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], meals: planTemplates.bulk,        assignTo: FRIEND_ID, active: false },
+    { name: 'Friend Balanced Week',desc: 'Everyday balanced eating',         creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], meals: planTemplates.maintenance, assignTo: FRIEND_ID, active: false },
+    // Stranger — public.
+    { name: 'Public Keto Guide',   desc: 'A standard keto approach',         creator: STRANGER_ID, vis: vt['PUBLIC'],     meals: planTemplates.maintenance, assignTo: null,    active: false },
+    // Global system plans (no creator) — 3 public starter plans.
+    { name: 'Balanced Maintenance',desc: 'Stable calorie maintenance plan',  creator: null,      vis: vt['PUBLIC'],       meals: planTemplates.maintenance, assignTo: null,    active: false },
+    { name: 'High-Protein Bulk',   desc: 'System surplus plan for muscle gain', creator: null,   vis: vt['PUBLIC'],       meals: planTemplates.bulk,        assignTo: null,    active: false },
+    { name: 'Lean Cut Plan',       desc: 'System deficit plan for fat loss', creator: null,      vis: vt['PUBLIC'],       meals: planTemplates.cut,         assignTo: null,    active: false },
   ];
 
   for (const plan of mealPlanConfigs) {
-    const planEx = plan.creator 
+    const planEx = plan.creator
       ? await client.query(`SELECT id FROM meal_plans WHERE creator_id=$1 AND name=$2 LIMIT 1`, [plan.creator, plan.name])
       : await client.query(`SELECT id FROM meal_plans WHERE creator_id IS NULL AND name=$1 LIMIT 1`, [plan.name]);
-      
     if (planEx.rows.length) continue;
-
-    const DINNER_VAR = [
-      [['Beef Steak', 200], ['Sweet Potato', 200], ['Broccoli', 100]],
-      [['Salmon', 200],     ['Potato', 200],        ['Broccoli', 100]],
-      [['Chicken Breast', 200], ['Pasta', 150],     ['Broccoli', 100]],
-      [['Tuna (canned)', 150],  ['White Rice', 150],['Avocado', 80]],
-    ];
-    const PLAN_MEALS = [
-      { type: 'Breakfast', items: [['Oats', 80], ['Banana', 120], ['Milk (2%)', 200], ['Greek Yogurt', 150]] },
-      { type: 'Lunch',     items: [['Chicken Breast', 200], ['White Rice', 150], ['Broccoli', 100], ['Olive Oil', 15]] },
-      { type: 'Dinner',    items: null },
-      { type: 'Snack',     items: [['Whey Protein', 30], ['Almonds', 30], ['Apple', 150]] },
-    ];
 
     const planId = await insertRow(client, 'meal_plans', {
       creator_id: plan.creator, visibility_type_id: plan.vis,
@@ -722,13 +845,20 @@ async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) 
 
     for (let day = 1; day <= 7; day++) {
       const dayId = await insertRow(client, 'plan_days', { meal_plan_id: planId, day_number: day });
-      for (let mi = 0; mi < PLAN_MEALS.length; mi++) {
-        const m = PLAN_MEALS[mi];
-        const items = m.type === 'Dinner' ? DINNER_VAR[day % 4] : m.items;
+      for (let mi = 0; mi < plan.meals.length; mi++) {
+        const m = plan.meals[mi];
         const pmId = await insertRow(client, 'plan_meals', {
           plan_day_id: dayId, meal_type_id: mealTypes[m.type], order: mi + 1,
         });
-        for (const [fname, amount] of items) {
+        // One day per week swaps dinner for a composite dish, for variety.
+        if (m.type === 'Dinner' && day % 3 === 0 && dishes.length) {
+          const dish = pickDish();
+          await insertRow(client, 'plan_meal_items', {
+            plan_meal_id: pmId, food_id: dish.id, unit_id: gId, amount: 350,
+          });
+          continue;
+        }
+        for (const [fname, amount] of m.items) {
           if (!foodIds[fname]) continue;
           await insertRow(client, 'plan_meal_items', {
             plan_meal_id: pmId, food_id: foodIds[fname], unit_id: gId, amount,
@@ -738,18 +868,21 @@ async function seedNutrition(client, { mealTypes, units, vt }, skipEtl = false) 
     }
 
     if (plan.assignTo) {
+      // The unique partial index allows many inactive links but one active link
+      // per user — so the user "owns" all three plans, with one set active.
       const umpEx = await client.query(
-        `SELECT id FROM user_meal_plans WHERE user_id=$1 LIMIT 1`, [plan.assignTo]
+        `SELECT id FROM user_meal_plans WHERE user_id=$1 AND meal_plan_id=$2 LIMIT 1`,
+        [plan.assignTo, planId],
       );
       if (!umpEx.rows.length) {
         await insertRow(client, 'user_meal_plans', {
-          user_id: plan.assignTo, meal_plan_id: planId, is_active: true,
+          user_id: plan.assignTo, meal_plan_id: planId, is_active: plan.active,
           started_at: new Date().toISOString().split('T')[0],
         });
       }
     }
   }
-  console.log('  → Meal plans ready');
+  console.log('  → Meal plans ready (3 user, 3 friend, 1 stranger, 3 global)');
 }
 
 async function seedAchievements(client, exIds) {
@@ -778,17 +911,20 @@ async function seedAchievements(client, exIds) {
     ['30 Exercises Tried',  'Perform 30 different exercises',                'GLOBAL_EXERCISES', 30,     20, null,       null   ],
   ];
 
+  // Thresholds are tuned to the seeded progression: most unlock part-way through
+  // the 12-week block (so per-exercise badges show), while a couple stay
+  // aspirational ("in progress") for realism. See WEIGHT_PROG for the curves.
   if (exIds && exIds.length > 0) {
     definitions.push(
-      ['100kg Bench Press',   'Lift 100 kg in Bench Press (Barbell)',         'EXERCISE_PERSONAL_RECORD', 100, 21, exIds[0],  'WEIGHT'],
-      ['140kg Squat',         'Squat 140 kg with Barbell',                    'EXERCISE_PERSONAL_RECORD', 140, 22, exIds[1],  'WEIGHT'],
-      ['180kg Deadlift',      'Deadlift 180 kg with Barbell',                 'EXERCISE_PERSONAL_RECORD', 180, 23, exIds[2],  'WEIGHT'],
-      ['60kg Overhead Press', 'Overhead Press 60 kg with Barbell',            'EXERCISE_PERSONAL_RECORD', 60,  24, exIds[3],  'WEIGHT'],
-      ['80kg Bent Over Row',  'Bent Over Row 80 kg with Barbell',             'EXERCISE_PERSONAL_RECORD', 80,  25, exIds[4],  'WEIGHT'],
-      ['80kg Lat Pulldown',   'Lat Pulldown 80 kg on Cable',                  'EXERCISE_PERSONAL_RECORD', 80,  26, exIds[22], 'WEIGHT'],
-      ['120kg Leg Press',     'Leg Press 120 kg on Machine',                  'EXERCISE_PERSONAL_RECORD', 120, 27, exIds[27], 'WEIGHT'],
-      ['40kg Bicep Curl',     'Bicep Curl 40 kg with Barbell',                'EXERCISE_PERSONAL_RECORD', 40,  28, exIds[7],  'WEIGHT'],
-      ['20 Pull Ups',         'Complete 20 pull ups in a single set',         'EXERCISE_PERSONAL_RECORD', 20,  29, exIds[36], 'REPS' ],
+      ['70 kg Bench Press',   'Bench press 70 kg with Barbell',               'EXERCISE_PERSONAL_RECORD', 70,    21, exIds[0],  'WEIGHT'],
+      ['90 kg Squat',         'Squat 90 kg with Barbell',                     'EXERCISE_PERSONAL_RECORD', 90,    22, exIds[1],  'WEIGHT'],
+      ['120 kg Deadlift',     'Deadlift 120 kg with Barbell',                 'EXERCISE_PERSONAL_RECORD', 120,   23, exIds[2],  'WEIGHT'],
+      ['45 kg Overhead Press','Overhead Press 45 kg with Barbell',            'EXERCISE_PERSONAL_RECORD', 45,    24, exIds[3],  'WEIGHT'],
+      ['65 kg Bent Over Row', 'Bent Over Row 65 kg with Barbell',             'EXERCISE_PERSONAL_RECORD', 65,    25, exIds[4],  'WEIGHT'],
+      ['55 kg Lat Pulldown',  'Lat Pulldown 55 kg on Cable',                  'EXERCISE_PERSONAL_RECORD', 55,    26, exIds[22], 'WEIGHT'],
+      ['90 kg Leg Press',     'Leg Press 90 kg on Machine',                   'EXERCISE_PERSONAL_RECORD', 90,    27, exIds[27], 'WEIGHT'],
+      ['32.5 kg Bicep Curl',  'Bicep Curl 32.5 kg with Barbell',              'EXERCISE_PERSONAL_RECORD', 32.5,  28, exIds[7],  'WEIGHT'],
+      ['20 Pull Ups',         'Complete 20 pull ups in a single set',         'EXERCISE_PERSONAL_RECORD', 20,    29, exIds[36], 'REPS' ],
     );
   }
 
@@ -804,35 +940,11 @@ async function seedAchievements(client, exIds) {
     }
   }
 
-  // Personal records
-  const records = [
-    [0,  'WEIGHT',   72.5],
-    [0,  '1RM',      81.4],
-    [1,  'WEIGHT',   95  ],
-    [1,  '1RM',     106.7],
-    [2,  'WEIGHT',   97.5],
-    [2,  '1RM',     104.2],
-    [3,  'WEIGHT',   47.5],
-    [4,  'WEIGHT',   70  ],
-    [7,  'WEIGHT',   35  ],
-    [22, 'WEIGHT',   60  ],
-    [27, 'WEIGHT',  100  ],
-    [36, 'REPS',     15  ],
-    [49, 'DURATION', 180 ],
-  ];
-
-  for (const [idx, metric, value] of records) {
-    const exId = exIds[idx];
-    if (!exId) continue;
-    await insertRow(client, 'user_exercise_records', {
-      user_id: USER_ID,
-      exercise_id: exId,
-      metric_type: metric,
-      value,
-      created_at: daysAgo(1, 11),
-    });
-  }
-  console.log('  → Achievements and records ready');
+  // NOTE: user_exercise_records and user_achievements are intentionally NOT
+  // inserted here. They are computed from the real seeded sets by the Nest
+  // recalc step (apps/api/seed/recalc-achievements.ts), which replays the exact
+  // production AchievementService logic (PRs, is_pr flags, unlocks).
+  console.log('  → Achievement catalog ready (records/unlocks computed by recalc step)');
 }
 
 async function syncSequences(client) {
@@ -847,11 +959,53 @@ async function syncSequences(client) {
   console.log('  → Sequences synchronized');
 }
 
+// ─── ETL / recalc orchestration ──────────────────────────────────────────────
+
+/** Run a child Node script, inheriting stdio; throw if it exits non-zero. */
+function runScript(scriptPath, args, label) {
+  console.log(`\n[seed] running ${label}: node ${path.relative(__dirname, scriptPath)} ${args.join(' ')}`);
+  const res = spawnSync(process.execPath, [scriptPath, ...args], {
+    cwd: __dirname,
+    stdio: 'inherit',
+    env: process.env,
+  });
+  if (res.status !== 0) {
+    throw new Error(`${label} failed (exit ${res.status})`);
+  }
+}
+
+/**
+ * Recompute achievements/PRs through the real AchievementService so the seeded
+ * data matches production exactly. Runs via ts-node (same toolchain as the
+ * TypeORM migration scripts). Spawned AFTER commit so it sees committed rows.
+ */
+function runAchievementRecalc() {
+  // Invoke ts-node's JS entry through node directly — cross-platform and avoids
+  // the Windows .cmd/shell quoting issues of the .bin shim.
+  const tsNodeBin = require.resolve('ts-node/dist/bin.js');
+  const recalcScript = path.join(__dirname, 'seed', 'recalc-achievements.ts');
+  console.log('\n[seed] recomputing achievements via Nest AchievementService…');
+  const res = spawnSync(
+    process.execPath,
+    [tsNodeBin, '--transpile-only', recalcScript],
+    { cwd: __dirname, stdio: 'inherit', env: process.env },
+  );
+  if (res.status !== 0) {
+    throw new Error(`achievement recalc failed (exit ${res.status})`);
+  }
+}
+
 // ─── Entry point ─────────────────────────────────────────────────────────────
 
 async function seed() {
-  const skipEtl = process.argv.includes('--skip-etl');
-  if (skipEtl) console.log('[seed] --skip-etl: exercises and foods will be looked up, not inserted');
+  const withEtl = process.argv.includes('--with-etl');
+
+  // Optionally (re)load the system catalogs (exercises/muscles/equipment +
+  // Spoonacular foods/dishes) before simulating usage. Runs as a child process
+  // so the ETL manages its own pool/transaction lifecycle.
+  if (withEtl) {
+    runScript(path.join(__dirname, 'etl', 'index.js'), ['--all'], 'ETL');
+  }
 
   const client = await pool.connect();
   try {
@@ -864,7 +1018,7 @@ async function seed() {
     const ids = await seedLookups(client);
 
     console.log('\nPhase 2: Exercises');
-    const exIds = await seedExercises(client, ids, skipEtl);
+    const exIds = await seedExercises(client, ids);
 
     console.log('\nPhase 3: Body metrics');
     await seedBodyMetrics(client, ids);
@@ -877,7 +1031,7 @@ async function seed() {
     await seedPublicTemplates(client, ids, exIds);
 
     console.log('\nPhase 6: Nutrition');
-    await seedNutrition(client, ids, skipEtl);
+    await seedNutrition(client, ids);
 
     console.log('\nPhase 7: Achievements');
     await seedAchievements(client, exIds);
@@ -886,7 +1040,7 @@ async function seed() {
     await syncSequences(client);
 
     await client.query('COMMIT');
-    console.log('\n✓ Seed completed successfully!\n');
+    console.log('\n✓ Base seed committed.');
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('\n✗ Seed failed:', err.message);
@@ -896,6 +1050,15 @@ async function seed() {
     client.release();
     await pool.end();
   }
+
+  // Achievements/PRs are computed from committed data by the real service.
+  try {
+    runAchievementRecalc();
+  } catch (err) {
+    console.error('\n✗ Achievement recalc failed:', err.message);
+    process.exit(1);
+  }
+  console.log('\n✓ Seed completed successfully!\n');
 }
 
 seed();

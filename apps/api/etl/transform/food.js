@@ -20,6 +20,21 @@ function numericOrNull(v) {
   return Number.isFinite(n) ? n : null;
 }
 
+/**
+ * Guard against implausible rows: every macro must be a finite number, calories
+ * must be sane for a per-100g basis, and at least one macro must be > 0 (drops
+ * empty/placeholder foods). Operates on the mapped shape ({calories, proteins,
+ * fats, carbs}).
+ */
+function validateMacros(m) {
+  for (const k of ['calories', 'proteins', 'fats', 'carbs']) {
+    if (!Number.isFinite(Number(m[k]))) return false;
+  }
+  const cal = Number(m.calories);
+  if (cal < 0 || cal > 1000) return false;
+  return Number(m.proteins) > 0 || Number(m.fats) > 0 || Number(m.carbs) > 0;
+}
+
 function buildPayload(payload) {
   return {
     name: payload.name,
@@ -92,4 +107,4 @@ async function ensureNutritionFact(client, foodId, unitName, macros) {
   return inserted.id;
 }
 
-module.exports = { upsertFood, ensureNutritionFact, buildPayload };
+module.exports = { upsertFood, ensureNutritionFact, buildPayload, validateMacros };

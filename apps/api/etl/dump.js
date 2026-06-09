@@ -27,18 +27,7 @@ const { createClient } = require('./lib/http');
 
 const WGER_BASE = 'https://wger.de/api/v2';
 const EXERCISEDB_BASE = process.env.EXERCISEDB_BASE_URL || 'https://exercisedb-api.vercel.app';
-const OFF_BASE = 'https://world.openfoodfacts.org';
-const FDC_BASE = 'https://api.nal.usda.gov/fdc/v1';
-
-const OFF_CATEGORIES = [
-  'dairies',
-  'cereals',
-  'meats',
-  'fruits',
-  'vegetables',
-  'snacks',
-  'beverages',
-];
+const SPOON_BASE = 'https://api.spoonacular.com';
 
 // --- per-source raw fetchers -----------------------------------------------
 
@@ -84,73 +73,43 @@ async function dumpExerciseDb(limit) {
   );
 }
 
-async function dumpOff(limit, categories) {
-  const http = createClient({ baseURL: OFF_BASE, minDelayMs: 4000, maxRetries: 4 });
-  const targets = categories && categories.length ? categories : OFF_CATEGORIES;
-  const target = limit || 50;
-  const perCategory = Math.ceil(target / targets.length);
-  const products = [];
-
-  for (const category of targets) {
-    let page = 1;
-    while (products.length < target) {
-      // No `fields` filter → full raw product objects (incl. complete nutriments).
-      const data = await http.get('/api/v2/search', {
-        page,
-        page_size: 100,
-        sort_by: 'unique_scans_n',
-        countries_tags_en: 'united-states,united-kingdom,germany,france',
-        categories_tags_en: category,
-      });
-      const batch = data?.products || [];
-      if (batch.length === 0) break;
-      products.push(...batch);
-      process.stdout.write(`\r[off] fetched ${products.length}…`);
-      if (products.length >= target) break;
-      if (page * 100 >= perCategory) break;
-      page += 1;
-    }
-    if (products.length >= target) break;
-  }
-
-  process.stdout.write('\n');
-  return products.slice(0, target);
-}
-
-async function dumpFdc(limit, dataType) {
-  const apiKey = process.env.USDA_FDC_API_KEY;
+async function dumpSpoonacular(limit) {
+  const apiKey = process.env.SPOONACULAR_API_KEY;
   if (!apiKey) {
     throw new Error(
-      'USDA_FDC_API_KEY missing in env — get one free at https://api.data.gov/signup',
+      'SPOONACULAR_API_KEY missing in env — get one free at https://spoonacular.com/food-api',
     );
   }
-  const http = createClient({ baseURL: FDC_BASE, minDelayMs: 4000, maxRetries: 4 });
-  const types = dataType ? [dataType] : ['Foundation', 'SR Legacy'];
-  const target = limit || 100;
-  const foods = [];
+  const http = createClient({ baseURL: SPOON_BASE, minDelayMs: 1100, maxRetries: 3 });
+  const { INGREDIENTS, DISH_QUERIES } = require('./sources/spoonacular');
+  const target = limit || 12;
+  const out = [];
 
-  for (const dt of types) {
-    let page = 1;
-    while (foods.length < target) {
-      const data = await http.get('/foods/search', {
-        api_key: apiKey,
-        dataType: dt,
-        pageSize: 200,
-        pageNumber: page,
-      });
-      const batch = data?.foods || [];
-      if (batch.length === 0) break;
-      foods.push(...batch);
-      process.stdout.write(`\r[fdc] fetched ${foods.length}…`);
-      if (foods.length >= target) break;
-      if (batch.length < 200) break;
-      page += 1;
-    }
-    if (foods.length >= target) break;
+  // A few raw ingredient payloads.
+  for (const name of INGREDIENTS) {
+    if (out.length >= target) break;
+    const search = await http.get('/food/ingredients/search', { apiKey, query: name, number: 1 });
+    const hit = search?.results?.[0];
+    if (!hit) continue;
+    const info = await http.get(`/food/ingredients/${hit.id}/information`, {
+      apiKey, amount: 100, unit: 'grams',
+    });
+    out.push({ kind: 'ingredient', query: name, search: hit, info });
+    process.stdout.write(`\r[spoonacular] fetched ${out.length}…`);
+  }
+
+  // A couple of raw recipe payloads.
+  for (const query of DISH_QUERIES) {
+    if (out.length >= target * 1.5) break;
+    const data = await http.get('/recipes/complexSearch', {
+      apiKey, query, number: 1, addRecipeNutrition: true,
+    });
+    if (data?.results?.[0]) out.push({ kind: 'dish', query, recipe: data.results[0] });
+    process.stdout.write(`\r[spoonacular] fetched ${out.length}…`);
   }
 
   process.stdout.write('\n');
-  return foods.slice(0, target);
+  return out;
 }
 
 // --- runner ----------------------------------------------------------------
@@ -158,8 +117,7 @@ async function dumpFdc(limit, dataType) {
 const SOURCES = {
   wger: { file: 'wger.raw.json', run: (o) => dumpWger(o.limit ?? 300) },
   exercisedb: { file: 'exercisedb.raw.json', run: (o) => dumpExerciseDb(o.limit) },
-  off: { file: 'off.raw.json', run: (o) => dumpOff(o.limit ?? 50, o.categories) },
-  fdc: { file: 'fdc.raw.json', run: (o) => dumpFdc(o.limit ?? 100, o.dataType) },
+  spoonacular: { file: 'spoonacular.raw.json', run: (o) => dumpSpoonacular(o.limit) },
 };
 
 function parseArgs(argv) {
@@ -189,10 +147,8 @@ function writeJson(outDir, name, data) {
 function help() {
   console.log(`Athlo ETL — raw dump
 
-  --source=<wger|exercisedb|off|fdc>   dump a single source (default: all)
+  --source=<wger|exercisedb|spoonacular>   dump a single source (default: all)
   --limit=N                             cap items per source
-  --categories=a,b,c                    OFF: comma-separated category tags
-  --datatype=Foundation|SR%20Legacy     FDC dataType filter
   --out-dir=<path>                      output folder (default: etl/dumps)
   --help                                this message
 `);
@@ -206,17 +162,12 @@ async function main() {
   }
 
   const limit = toInt(args.limit, undefined);
-  const categories =
-    typeof args.categories === 'string'
-      ? args.categories.split(',').map((s) => s.trim()).filter(Boolean)
-      : undefined;
-  const dataType = typeof args.datatype === 'string' ? args.datatype : undefined;
   const outDir =
     typeof args['out-dir'] === 'string'
       ? path.resolve(args['out-dir'])
       : path.join(__dirname, 'dumps');
 
-  const options = { limit, categories, dataType };
+  const options = { limit };
   const selected = args.source ? [String(args.source)] : Object.keys(SOURCES);
 
   console.log(`[dump] sources: ${selected.join(', ')} → ${outDir}`);

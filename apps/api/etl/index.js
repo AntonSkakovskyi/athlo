@@ -16,8 +16,7 @@ const db = require('./lib/db');
 const lookups = require('./transform/lookups');
 const wger = require('./sources/wger');
 const exercisedb = require('./sources/exercisedb');
-const off = require('./sources/openfoodfacts');
-const fdc = require('./sources/usda-fdc');
+const spoonacular = require('./sources/spoonacular');
 
 function parseArgs(argv) {
   const args = {};
@@ -40,11 +39,9 @@ function toInt(value, fallback) {
 function help() {
   console.log(`Athlo ETL
 
-  --source=<wger|exercisedb|off|fdc>   pick a single source
+  --source=<wger|exercisedb|spoonacular>   pick a single source
   --all                                 run every source in order
   --limit=N                             cap items fetched (per source)
-  --categories=a,b,c                    OFF: comma-separated tag list
-  --datatype=Foundation|SR%20Legacy     FDC dataType filter
   --enrich-gifs                         exercisedb: name-match GIFs onto wger rows
   --dry-run                             fetch + transform, skip DB writes
   --help                                this message
@@ -57,10 +54,8 @@ async function runSource(source, options) {
       return wger.run(options);
     case 'exercisedb':
       return exercisedb.run({ ...options, enrichGifs: true });
-    case 'off':
-      return off.run(options);
-    case 'fdc':
-      return fdc.run(options);
+    case 'spoonacular':
+      return spoonacular.run(options);
     default:
       throw new Error(`Unknown source: ${source}`);
   }
@@ -76,12 +71,8 @@ async function main() {
 
   const dryRun = Boolean(args['dry-run']);
   const limit = toInt(args.limit, undefined);
-  const categories = typeof args.categories === 'string'
-    ? args.categories.split(',').map((s) => s.trim()).filter(Boolean)
-    : undefined;
-  const dataType = typeof args.datatype === 'string' ? args.datatype : undefined;
 
-  const baseOptions = { dryRun, limit, categories, dataType };
+  const baseOptions = { dryRun, limit };
 
   console.log(`[etl] starting${dryRun ? ' (dry-run)' : ''}`);
 
@@ -91,7 +82,7 @@ async function main() {
   }
 
   if (args.all) {
-    for (const source of ['wger', 'exercisedb', 'off', 'fdc']) {
+    for (const source of ['wger', 'exercisedb', 'spoonacular']) {
       console.log(`\n[etl] === ${source} ===`);
       try {
         await runSource(source, baseOptions);
