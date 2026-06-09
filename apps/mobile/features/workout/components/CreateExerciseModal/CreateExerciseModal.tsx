@@ -58,7 +58,7 @@ export function CreateExerciseModal({
   const [description, setDescription] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [trackingTypeId, setTrackingTypeId] = useState<number | null>(null);
-  const [equipmentId, setEquipmentId] = useState<number | null>(null);
+  const [equipmentId, setEquipmentId] = useState<number | null | undefined>(undefined);
   const [selectedMuscles, setSelectedMuscles] = useState<MuscleSelection[]>([]);
   const [showMusclePicker, setShowMusclePicker] = useState(false);
 
@@ -66,7 +66,7 @@ export function CreateExerciseModal({
     setName('');
     setDescription('');
     setTrackingTypeId(null);
-    setEquipmentId(null);
+    setEquipmentId(undefined);
     setSelectedMuscles([]);
     setShowMusclePicker(false);
   };
@@ -82,6 +82,15 @@ export function CreateExerciseModal({
       showToast({ title: 'Please select a tracking type', variant: 'error' });
       return;
     }
+    if (equipmentId === undefined) {
+      showToast({ title: 'Please select equipment', variant: 'error' });
+      return;
+    }
+    if (selectedMuscles.length === 0) {
+      showToast({ title: 'Please select at least one muscle', variant: 'error' });
+      return;
+    }
+    
     const validation = validateFieldsMap([
       { key: 'name', value: name, rules: [required('Exercise name')] },
     ]);
@@ -91,13 +100,13 @@ export function CreateExerciseModal({
       name: name.trim(),
       description: description.trim() || undefined,
       trackingTypeId,
-      equipmentId: equipmentId ?? undefined,
+      equipmentId: equipmentId === null ? undefined : equipmentId,
       muscles: selectedMuscles,
     });
     resetForm();
   };
 
-  const isValid = name.trim().length > 0 && trackingTypeId !== null;
+  const isValid = name.trim().length > 0 && trackingTypeId !== null && equipmentId !== undefined && selectedMuscles.length > 0;
 
   const muscleLabel = useMemo(() => {
     if (selectedMuscles.length === 0) return 'Select muscles...';
@@ -134,7 +143,7 @@ export function CreateExerciseModal({
             onChangeText={setDescription}
             placeholder="Describe the exercise..."
             multiline
-            numberOfLines={3}
+            style={styles.descriptionInput}
           />
 
           <Text style={styles.sectionLabel}>Tracking Type *</Text>
@@ -150,7 +159,7 @@ export function CreateExerciseModal({
             ))}
           </View>
 
-          <Text style={styles.sectionLabel}>Equipment (optional)</Text>
+          <Text style={styles.sectionLabel}>Equipment *</Text>
           <View style={styles.chipsGrid}>
             <Chip
               label="None"
@@ -169,7 +178,7 @@ export function CreateExerciseModal({
             ))}
           </View>
 
-          <Text style={styles.sectionLabel}>Muscles (optional)</Text>
+          <Text style={styles.sectionLabel}>Muscles *</Text>
           <Pressable
             style={[styles.muscleSelector, selectedMuscles.length > 0 && styles.muscleSelectorActive]}
             onPress={() => setShowMusclePicker(true)}
@@ -238,6 +247,10 @@ function makeStyles(c: ColorPalette) {
     },
     form: {
       paddingHorizontal: spacing.lg,
+    },
+    descriptionInput: {
+      height: 120,
+      textAlignVertical: 'top',
     },
     sectionLabel: {
       fontSize: fontSize.sm,
