@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
-import { getTrackingType, hasEmptySets } from '@/utils/workout';
+import { buildFinalizedExercises, getTrackingType } from '@/utils/workout';
 import { formatHMS, formatSeconds } from '@/utils/time';
 import { showErrorAlert } from '@/utils/alerts';
 import apiClient from '@/api/api-client';
@@ -47,6 +47,7 @@ export function useActiveWorkoutScreen() {
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [restTimerSeconds, setRestTimerSeconds] = useState(60);
   const [newAchievement, setNewAchievement] = useState<{ title: string; description?: string } | null>(null);
+  const [errorToast, setErrorToast] = useState<{ title: string; description?: string } | null>(null);
 
   const updateWorkoutMutation = useUpdateWorkout();
   const deleteWorkout = useDeleteWorkout();
@@ -339,12 +340,33 @@ export function useActiveWorkoutScreen() {
       if (!set) return;
 
       const newCompleted = !set.isCompleted;
+
+      const resolvedValues: Partial<SetRowData> = {};
+      if (newCompleted) {
+        if (set.weight == null && set.placeholderWeight != null) {
+          resolvedValues.weight = set.placeholderWeight;
+        }
+        if (set.reps == null && set.placeholderReps != null) {
+          resolvedValues.reps = set.placeholderReps;
+        }
+        if (set.duration == null && set.placeholderDuration != null) {
+          resolvedValues.duration = set.placeholderDuration;
+        }
+        if (set.distance == null && set.placeholderDistance != null) {
+          resolvedValues.distance = set.placeholderDistance;
+        }
+      }
+
+      if (Object.keys(resolvedValues).length > 0) {
+        updateSetLocal(exerciseIndex, setIndex, resolvedValues);
+      }
       toggleSetCompleteLocal(exerciseIndex, setIndex);
 
       if (ex?.logExerciseId && set.id) {
         apiClient
           .patch(`workouts/${workoutId}/exercises/${ex.logExerciseId}/sets/${set.id}`, {
             isCompleted: newCompleted,
+            ...resolvedValues,
           })
           .then((response) => {
             // Update with returned data (isPR, achievementId, achievement)
@@ -404,60 +426,34 @@ export function useActiveWorkoutScreen() {
   const handleFinish = useCallback(async () => {
     if (!workout) return;
 
-    const proceed = async () => {
-      // Silent pruning: remove exercises with no sets
-      const emptyExerciseIndices = exercises
-        .map((ex, idx) => (ex.sets.length === 0 ? idx : -1))
-        .filter((idx) => idx !== -1);
+    const { finalizedExercises, hasEmptyCompleted } = buildFinalizedExercises(exercises);
 
-      if (emptyExerciseIndices.length > 0) {
-        const reverseIndices = [...emptyExerciseIndices].reverse();
-        for (const idx of reverseIndices) {
-          const ex = exercises[idx];
-          if (ex.logExerciseId) {
-            try {
-              await apiClient.delete(`workouts/${workoutId}/exercises/${ex.logExerciseId}`);
-            } catch (e) {
-              console.error('Failed to prune empty exercise:', e);
-            }
-          }
-          removeExercise(idx);
-        }
-      }
-
-      if (completedSets === 0 && emptyExerciseIndices.length === exercises.length) {
-        Alert.alert('No Sets Completed', 'Your workout has no set values.', [{ text: 'Ok' }]);
-        return;
-      }
-
-      router.push({
-        pathname: '/(app)/(workout)/finish-workout',
-        params: {
-          duration: formatHMS(elapsed),
-          volume: String(totalVolume),
-          completedSets: String(completedSets),
-          totalSets: String(totalSets),
-        },
+    if (finalizedExercises.length === 0) {
+      setErrorToast({
+        title: 'No completed sets',
+        description: 'Mark at least one set as completed to finish the workout.',
       });
-    };
-
-    const hasEmpty = exercises.some((ex) =>
-      hasEmptySets(ex.sets, ex.trackingType, { completedOnly: true, allowPlaceholders: true }),
-    );
-    if (hasEmpty) {
-      Alert.alert(
-        'Незаповнені підходи',
-        'Деякі виконані підходи не мають значень і немає попередніх даних. Продовжити?',
-        [
-          { text: 'Скасувати', style: 'cancel' },
-          { text: 'Продовжити', onPress: proceed },
-        ],
-      );
       return;
     }
 
-    await proceed();
-  }, [workout, exercises, workoutId, removeExercise, completedSets, router, elapsed, totalVolume, totalSets]);
+    if (hasEmptyCompleted) {
+      setErrorToast({
+        title: 'Empty completed sets',
+        description: 'Fill in the values for all completed sets before finishing.',
+      });
+      return;
+    }
+
+    router.push({
+      pathname: '/(app)/(workout)/finish-workout',
+      params: {
+        duration: formatHMS(elapsed),
+        volume: String(totalVolume),
+        completedSets: String(completedSets),
+        totalSets: String(totalSets),
+      },
+    });
+  }, [workout, exercises, completedSets, router, elapsed, totalVolume, totalSets]);
 
   const handleRestTimer = useCallback((seconds: number) => {
     setRestTimerSeconds(seconds);
@@ -526,6 +522,8 @@ export function useActiveWorkoutScreen() {
     restTimerSeconds,
     newAchievement,
     setNewAchievement,
+    errorToast,
+    setErrorToast,
     isLoadingExercises,
     isInitializing,
     handleFinish,

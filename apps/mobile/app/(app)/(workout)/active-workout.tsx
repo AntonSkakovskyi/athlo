@@ -36,6 +36,8 @@ export default function ActiveWorkoutScreen() {
     restTimerSeconds,
     newAchievement,
     setNewAchievement,
+    errorToast,
+    setErrorToast,
     isLoadingExercises,
     isInitializing,
     handleFinish,
@@ -185,6 +187,14 @@ export default function ActiveWorkoutScreen() {
         description={newAchievement?.description}
         variant="achievement"
         onClose={() => setNewAchievement(null)}
+      />
+
+      <Toast
+        visible={!!errorToast}
+        title={errorToast?.title || ''}
+        description={errorToast?.description}
+        variant="error"
+        onClose={() => setErrorToast(null)}
       />
     </View>
   );

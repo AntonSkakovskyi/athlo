@@ -25,9 +25,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ICONS } from '@/utils/icons';
 
 export default function MealPlanDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, fromProfileId } = useLocalSearchParams<{ id: string; fromProfileId?: string }>();
   const insets = useSafeAreaInsets();
   const router = useRouter();
+
+  const handleBack = () => {
+    if (fromProfileId) {
+      router.push({ pathname: '/(app)/(profile)/[userId]', params: { userId: fromProfileId } });
+    } else {
+      router.back();
+    }
+  };
   const { user } = useAuth();
 
   const {
@@ -70,7 +78,7 @@ export default function MealPlanDetailScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScreenHeader
         title=""
-        onBack={() => router.back()}
+        onBack={handleBack}
         rightAction={
           isActive ? (
             <Button

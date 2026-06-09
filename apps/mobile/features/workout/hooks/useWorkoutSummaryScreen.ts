@@ -19,7 +19,7 @@ import { VisibilityType } from '@athlo/shared';
 export function useWorkoutSummaryScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { workoutId, autoEdit } = useLocalSearchParams<{ workoutId: string; autoEdit?: string }>();
+  const { workoutId, autoEdit, fromCompletion } = useLocalSearchParams<{ workoutId: string; autoEdit?: string; fromCompletion?: string }>();
 
   const { data: workout, isLoading } = useGetWorkoutById(workoutId ?? '');
   const updateWorkout = useUpdateWorkout();
@@ -129,6 +129,22 @@ export function useWorkoutSummaryScreen() {
           }
         });
 
+        // Renumber completed sets consecutively so view mode shows #1, #2, ... not #1, #3
+        exercises.forEach(ex => {
+          const sorted = [...(ex.sets ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          const completed = sorted.filter(s => s.isCompleted);
+          completed.forEach((set, i) => {
+            const newOrder = i + 1;
+            if ((set.order ?? 0) !== newOrder) {
+              updateLogSet.mutate({
+                exerciseId: String(ex.id),
+                setId: String(set.id),
+                data: { order: newOrder },
+              });
+            }
+          });
+        });
+
         setIsEditing(false);
       };
 
@@ -153,7 +169,7 @@ export function useWorkoutSummaryScreen() {
       return;
     }
     setIsEditing(true);
-  }, [isEditing, localRpe, localCalories, localFeeling, localDuration, localVisibility, localDescription, localNotesMap, workoutId, workout?.started_at, workout?.name, nameInput, updateWorkout, updateLogExercise, exercises, deleteLogExercise]);
+  }, [isEditing, localRpe, localCalories, localFeeling, localDuration, localVisibility, localDescription, localNotesMap, workoutId, workout?.started_at, workout?.name, nameInput, updateWorkout, updateLogExercise, updateLogSet, exercises, deleteLogExercise]);
 
   const updateTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const pendingSetData = useRef<Map<string, any>>(new Map());
@@ -339,6 +355,7 @@ export function useWorkoutSummaryScreen() {
   return {
     workout,
     isLoading,
+    fromCompletion: fromCompletion === '1',
     exercises,
     completedSets,
     totalVolume,

@@ -74,6 +74,7 @@ export function ExerciseLogCard({
 
   const isViewOnly = !isEditing && mode !== 'active';
   const canEditNotes = (isEditing || mode === 'active') && onToggleNotes;
+  const showCheckboxCol = mode === 'active' || (mode === 'summary' && isEditing);
   const displayAddSet = isEditing; // Show when editing, regardless of mode
 
   const handleOpenSetMenu = (index: number) => {
@@ -217,9 +218,7 @@ export function ExerciseLogCard({
 
       <View style={styles.columnHeaders}>
         <Text style={styles.colNum}>#</Text>
-        {(mode === 'active' || (mode === 'summary' && isEditing)) && (
-          <Text style={styles.colPrev}>Prev</Text>
-        )}
+        {showCheckboxCol && <Text style={styles.colPrev}>Prev</Text>}
         {trackingType === TrackingType.WEIGHT_AND_REPS && (
           <>
             <Text style={styles.colInput}>kg</Text>
@@ -241,9 +240,7 @@ export function ExerciseLogCard({
         {trackingType === TrackingType.DISTANCE_ONLY && (
           <Text style={styles.colInputWide}>Distance</Text>
         )}
-        <Text style={styles.colCheck}>
-          {mode === 'active' ? '✓' : ''}
-        </Text>
+        {showCheckboxCol && <Text style={styles.colCheck}>✓</Text>}
         <View style={styles.colActions} />
       </View>
       {sets?.map((set, index) => (

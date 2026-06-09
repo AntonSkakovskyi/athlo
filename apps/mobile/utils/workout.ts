@@ -1,5 +1,5 @@
 import { TrackingType } from '@athlo/shared';
-import type { IWorkoutWithRelations } from '@athlo/shared';
+import type { IWorkoutWithRelations, IFinalizedExercise, IFinalizedSet } from '@athlo/shared';
 import { ICONS } from '@/utils/icons';
 
 export interface ValidatableSet {
@@ -51,6 +51,72 @@ export function hasEmptySets(
   });
 }
 
+
+export interface FinalizableExercise {
+  logExerciseId?: number;
+  trackingType: TrackingType;
+  sets: ValidatableSet[];
+}
+
+export interface FinalizeResult {
+  finalizedExercises: IFinalizedExercise[];
+  hasEmptyCompleted: boolean;
+}
+
+/**
+ * Build the payload sent to PATCH /workouts/:id/complete.
+ * - Keeps only completed sets, in display order, renumbered 1..N.
+ * - Resolves placeholder* values into actual values.
+ * - Drops exercises with no completed sets or no logExerciseId.
+ * - Reports if any completed set has a required field still empty after resolution.
+ */
+export function buildFinalizedExercises(
+  exercises: FinalizableExercise[],
+): FinalizeResult {
+  const finalizedExercises: IFinalizedExercise[] = [];
+  let hasEmptyCompleted = false;
+
+  for (const ex of exercises) {
+    if (ex.logExerciseId == null) continue;
+    const completed = ex.sets.filter((s) => s.isCompleted);
+    if (completed.length === 0) continue;
+
+    const sets: IFinalizedSet[] = completed.map((s, idx) => {
+      const weight = s.weight ?? s.placeholderWeight ?? undefined;
+      const reps = s.reps ?? s.placeholderReps ?? undefined;
+      const duration = s.duration ?? s.placeholderDuration ?? undefined;
+      const distance = s.distance ?? s.placeholderDistance ?? undefined;
+
+      switch (ex.trackingType) {
+        case TrackingType.WEIGHT_AND_REPS:
+          if (weight == null || reps == null) hasEmptyCompleted = true;
+          break;
+        case TrackingType.REPS_ONLY:
+          if (reps == null) hasEmptyCompleted = true;
+          break;
+        case TrackingType.TIME_BASED:
+        case TrackingType.DISTANCE_AND_TIME:
+          if (duration == null) hasEmptyCompleted = true;
+          break;
+        case TrackingType.DISTANCE_ONLY:
+          if (distance == null) hasEmptyCompleted = true;
+          break;
+      }
+
+      return {
+        order: idx + 1,
+        weight: weight ?? undefined,
+        reps: reps ?? undefined,
+        duration: duration ?? undefined,
+        distance: distance ?? undefined,
+      };
+    });
+
+    finalizedExercises.push({ logExerciseId: ex.logExerciseId, sets });
+  }
+
+  return { finalizedExercises, hasEmptyCompleted };
+}
 
 export function computeVolume(workout: IWorkoutWithRelations): number {
   return (

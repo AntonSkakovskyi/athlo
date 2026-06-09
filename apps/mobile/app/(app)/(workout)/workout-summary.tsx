@@ -21,6 +21,7 @@ export default function WorkoutSummaryScreen() {
   const {
     workout,
     isLoading,
+    fromCompletion,
     exercises,
     completedSets,
     totalVolume,
@@ -61,6 +62,14 @@ export default function WorkoutSummaryScreen() {
     newAchievement,
     setNewAchievement,
   } = useWorkoutSummaryScreen();
+
+  const handleBack = () => {
+    if (fromCompletion) {
+      router.replace('/(app)/(workout)');
+    } else {
+      router.back();
+    }
+  };
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -219,7 +228,7 @@ export default function WorkoutSummaryScreen() {
     <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
       <ScreenHeader
         title="Summary"
-        onBack={() => router.back()}
+        onBack={handleBack}
         rightAction={
           <Pressable onPress={handleToggleEditing} style={styles.renameBtn}>
             <Text style={styles.renameBtnText}>{isEditing ? '✅ Done' : '✏️ Edit'}</Text>
@@ -387,6 +396,12 @@ export default function WorkoutSummaryScreen() {
         )}
       </ScrollView>
 
+      {fromCompletion && !isEditing && (
+        <View style={styles.completionFooter}>
+          <Button title="Done" variant="primary" onPress={handleBack} style={styles.completionBtn} />
+        </View>
+      )}
+
       <Toast
         visible={!!newAchievement}
         title={newAchievement?.title || ''}
@@ -527,6 +542,15 @@ function makeStyles(c: ColorPalette) {
     addExerciseBtn: {
       marginTop: spacing.md,
       marginBottom: spacing.xl,
+    },
+    completionFooter: {
+      padding: spacing.lg,
+      backgroundColor: c.surface,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+    },
+    completionBtn: {
+      width: '100%',
     },
     sheetBody: {
       paddingBottom: spacing.lg,

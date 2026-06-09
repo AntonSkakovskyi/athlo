@@ -115,26 +115,6 @@ export function LogSetRow({
         showAlert('Незаповнений підхід', 'Введіть значення перед тим як відмітити підхід.');
         return;
       }
-
-      // If completing and values are empty, fill from placeholders (last set of current workout)
-      const updates: Partial<LogSetData> = {};
-      if (trackingType === TrackingType.WEIGHT_AND_REPS) {
-        if (set.weight === undefined && set.placeholderWeight !== undefined) updates.weight = set.placeholderWeight;
-        if (set.reps === undefined && set.placeholderReps !== undefined) updates.reps = set.placeholderReps;
-      } else if (trackingType === TrackingType.REPS_ONLY) {
-        if (set.reps === undefined && set.placeholderReps !== undefined) updates.reps = set.placeholderReps;
-      } else if (trackingType === TrackingType.TIME_BASED) {
-        if (set.duration === undefined && set.placeholderDuration !== undefined) updates.duration = set.placeholderDuration;
-      } else if (trackingType === TrackingType.DISTANCE_AND_TIME) {
-        if (set.duration === undefined && set.placeholderDuration !== undefined) updates.duration = set.placeholderDuration;
-        if (set.distance === undefined && set.placeholderDistance !== undefined) updates.distance = set.placeholderDistance;
-      } else if (trackingType === TrackingType.DISTANCE_ONLY) {
-        if (set.distance === undefined && set.placeholderDistance !== undefined) updates.distance = set.placeholderDistance;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        onUpdate(updates);
-      }
     }
     onToggleComplete?.();
   };
@@ -163,16 +143,16 @@ export function LogSetRow({
           onOpenTimePicker={onOpenTimePicker}
         />
 
-        <View style={styles.checkboxCell}>
-          {showCheckbox && (
+        {showCheckbox && (
+          <View style={styles.checkboxCell}>
             <Pressable
               style={[styles.checkbox, set.isCompleted && styles.checked]}
               onPress={handleToggleComplete}
             >
               {set.isCompleted && <Text style={styles.checkmark}>✓</Text>}
             </Pressable>
-          )}
-        </View>
+          </View>
+        )}
 
         <View style={styles.actionsCell}>
           {!isEditing && set.isPR && (

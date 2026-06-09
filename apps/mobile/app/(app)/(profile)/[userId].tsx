@@ -23,6 +23,7 @@ export default function UserProfileScreen() {
     handleLoadMore,
     templates,
     mealPlans,
+    userId,
   } = useUserProfileScreen();
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -49,7 +50,7 @@ export default function UserProfileScreen() {
         <View style={styles.resourcesSection}>
           <CollapsibleSection title="Workout Templates" count={templates?.length ?? 0}>
             {templates?.map(t => (
-              <Card key={t.id} style={styles.resourceCard} onPress={() => router.push({ pathname: `/(app)/(workout)/template/${t.id}`, params: { id: String(t.id) } })}>
+              <Card key={t.id} style={styles.resourceCard} onPress={() => router.push({ pathname: `/(app)/(workout)/template/${t.id}`, params: { id: String(t.id), fromProfileId: userId } })}>
                 <Text style={styles.resourceTitle}>{t.name}</Text>
                 {t.description && <Text style={styles.resourceDesc}>{t.description}</Text>}
               </Card>
@@ -63,7 +64,7 @@ export default function UserProfileScreen() {
 
           <CollapsibleSection title="Nutrition Plans" count={mealPlans?.length ?? 0}>
             {mealPlans?.map(p => (
-              <Card key={p.id} style={styles.resourceCard} onPress={() => router.push({ pathname: '/(app)/(nutrition)/meal-plan/[id]', params: { id: String(p.id) } })}>
+              <Card key={p.id} style={styles.resourceCard} onPress={() => router.push({ pathname: '/(app)/(nutrition)/meal-plan/[id]', params: { id: String(p.id), fromProfileId: userId } })}>
                 <Text style={styles.resourceTitle}>{p.name}</Text>
                 <Text style={styles.resourceDesc}>{p.totalDays} days</Text>
               </Card>

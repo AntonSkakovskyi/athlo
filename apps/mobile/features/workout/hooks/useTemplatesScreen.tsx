@@ -43,9 +43,13 @@ export function useTemplatesScreen() {
   const saveTemplate = useSaveTemplate();
   const unsaveTemplate = useUnsaveTemplate();
   const savedTemplatesQuery = useGetSavedTemplates();
+  const { showToast } = useToast();
 
   const handleCreate = () => {
-    if (!newName.trim()) return;
+    if (!newName.trim()) {
+      showToast({ title: 'Template name is required', variant: 'error' });
+      return;
+    }
     createTemplate.mutate(
       { 
         name: newName.trim(), 
@@ -71,8 +75,6 @@ export function useTemplatesScreen() {
       },
     });
   };
-
-  const { showToast } = useToast();
 
   const handleSave = (id: number) => {
     saveTemplate.mutate(String(id), {

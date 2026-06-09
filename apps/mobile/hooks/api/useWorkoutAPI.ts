@@ -1,5 +1,11 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { IWorkout, IWorkoutWithRelations, ILastPerformance, IPaginatedResponse } from '@athlo/shared';
+import type {
+  IWorkout,
+  IWorkoutWithRelations,
+  ILastPerformance,
+  IPaginatedResponse,
+  IFinalizedExercise,
+} from '@athlo/shared';
 import { WorkoutStatus, VisibilityType } from '@athlo/shared';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
@@ -122,6 +128,7 @@ interface CompleteWorkoutData {
   feelingScore?: number;
   visibility?: VisibilityType;
   description?: string;
+  finalizedExercises?: IFinalizedExercise[];
 }
 
 export const useCompleteWorkout = () => {

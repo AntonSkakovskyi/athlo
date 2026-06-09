@@ -35,7 +35,7 @@ export function FeelingSection({
         </View>
       ) : (
         <Text style={styles.optionalValueLarge}>
-          {FEELING_OPTIONS.find((o) => o.value === workoutFeelingScore)?.emoji ?? '😐'}
+          {FEELING_OPTIONS.find((o) => o.value === workoutFeelingScore)?.emoji ?? '—'}
         </Text>
       )}
     </View>

@@ -17,7 +17,7 @@ import { validateFields, required } from '@/utils/validation';
 export function useTemplateDetailScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { id, edit } = useLocalSearchParams<{ id: string; edit?: string }>();
+  const { id, edit, fromProfileId } = useLocalSearchParams<{ id: string; edit?: string; fromProfileId?: string }>();
   const queryClient = useQueryClient();
 
   const { data: template, isLoading, error } = useGetTemplateById(id);
@@ -134,6 +134,25 @@ export function useTemplateDetailScreen() {
     }
   }, [exercises, id, queryClient]);
 
+  const handleMoveSet = useCallback(async (exerciseEntryId: number, setIndex: number, direction: 'up' | 'down') => {
+    const ex = exercises.find(e => e.id === exerciseEntryId);
+    const sorted = (ex?.templateSets ?? []).slice().sort((a, b) => a.order - b.order);
+    const targetIndex = direction === 'up' ? setIndex - 1 : setIndex + 1;
+    if (targetIndex < 0 || targetIndex >= sorted.length) return;
+
+    const setA = sorted[setIndex];
+    const setB = sorted[targetIndex];
+    try {
+      await Promise.all([
+        apiClient.patch(`templates/${id}/exercises/${exerciseEntryId}/sets/${setA.id}`, { order: setB.order }),
+        apiClient.patch(`templates/${id}/exercises/${exerciseEntryId}/sets/${setB.id}`, { order: setA.order }),
+      ]);
+      queryClient.invalidateQueries({ queryKey: templateKeys.byId(id) });
+    } catch {
+      showErrorAlert('Failed to reorder set.');
+    }
+  }, [exercises, id, queryClient]);
+
   const handleUpdateExercise = useCallback((exerciseEntryId: number, data: any) => {
     updateExercise.mutate({ id: String(exerciseEntryId), data });
   }, [updateExercise]);
@@ -241,6 +260,7 @@ export function useTemplateDetailScreen() {
 
   return {
     id,
+    fromProfileId,
     typedTemplate,
     exercises,
     isLoading,
@@ -256,6 +276,7 @@ export function useTemplateDetailScreen() {
     handleUpdateSet,
     handleAddSet,
     handleDeleteSet,
+    handleMoveSet,
     handleDelete,
     handleStart,
     handleDeleteExercise,

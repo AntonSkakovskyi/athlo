@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { borderRadius, fontSize, spacing, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -23,6 +23,7 @@ interface WorkoutHistoryCardProps {
   sets?: ExerciseSetSummary[];
   onPress?: () => void;
   onSaveAsTemplate?: () => void;
+  isSavingAsTemplate?: boolean;
   onCopyWorkout?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -37,6 +38,7 @@ export function WorkoutHistoryCard({
   sets = [],
   onPress,
   onSaveAsTemplate,
+  isSavingAsTemplate = false,
   onCopyWorkout,
   onEdit,
   onDelete,
@@ -44,6 +46,14 @@ export function WorkoutHistoryCard({
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [menuVisible, setMenuVisible] = useState(false);
+  const wasSavingRef = useRef(false);
+
+  useEffect(() => {
+    if (wasSavingRef.current && !isSavingAsTemplate) {
+      setMenuVisible(false);
+    }
+    wasSavingRef.current = isSavingAsTemplate;
+  }, [isSavingAsTemplate]);
 
   const preview = sets.slice(0, 3);
   const hasMore = exerciseCount > 3;
@@ -97,12 +107,17 @@ export function WorkoutHistoryCard({
       {hasMenu && (
         <BottomSheet
           visible={menuVisible}
-          onClose={() => setMenuVisible(false)}
+          onClose={isSavingAsTemplate ? () => {} : () => setMenuVisible(false)}
           scrollable={false}
         >
           <View style={styles.sheetBody}>
             {onSaveAsTemplate && (
-              <MenuItem icon="📋" label="Save as Template" onPress={() => closeAndRun(onSaveAsTemplate)} />
+              <MenuItem
+                icon="📋"
+                label="Save as Template"
+                loading={isSavingAsTemplate}
+                onPress={() => onSaveAsTemplate()}
+              />
             )}
             {onCopyWorkout && (
               <MenuItem icon="📄" label="Copy Workout" onPress={() => closeAndRun(onCopyWorkout)} />
@@ -117,10 +132,6 @@ export function WorkoutHistoryCard({
               </>
             )}
 
-            <View style={styles.menuDivider} />
-            <Pressable style={styles.cancelRow} onPress={() => setMenuVisible(false)}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
           </View>
         </BottomSheet>
       )}
@@ -191,15 +202,6 @@ function makeStyles(c: ColorPalette) {
       height: 1,
       backgroundColor: c.border,
       marginVertical: spacing.xs,
-    },
-    cancelRow: {
-      paddingVertical: 14,
-      alignItems: 'center',
-    },
-    cancelText: {
-      fontSize: fontSize.md,
-      color: c.primary,
-      fontWeight: fontWeight.semibold,
     },
   });
 }

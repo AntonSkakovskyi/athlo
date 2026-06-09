@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { useCompleteWorkout, useDeleteWorkout } from '@/hooks/api';
 import { VisibilityType } from '@athlo/shared';
+import { buildFinalizedExercises } from '@/utils/workout';
 
 export function useFinishWorkoutScreen() {
   const insets = useSafeAreaInsets();
@@ -16,7 +17,7 @@ export function useFinishWorkoutScreen() {
     totalSets: string;
   }>();
 
-  const { workout, endWorkout } = useActiveWorkout();
+  const { workout, exercises, endWorkout } = useActiveWorkout();
   const completeWorkout = useCompleteWorkout();
   const deleteWorkout = useDeleteWorkout();
 
@@ -27,9 +28,28 @@ export function useFinishWorkoutScreen() {
   const [maxHr, setMaxHr] = useState('');
   const [visibility, setVisibility] = useState<VisibilityType>(VisibilityType.PUBLIC);
   const [description, setDescription] = useState('');
+  const [errorToast, setErrorToast] = useState<{ title: string; description?: string } | null>(null);
 
   const handleFinish = useCallback(() => {
     if (!workout) return;
+
+    const { finalizedExercises, hasEmptyCompleted } = buildFinalizedExercises(exercises);
+
+    if (finalizedExercises.length === 0) {
+      setErrorToast({
+        title: 'No completed sets',
+        description: 'Mark at least one set as completed to finish the workout.',
+      });
+      return;
+    }
+    if (hasEmptyCompleted) {
+      setErrorToast({
+        title: 'Empty completed sets',
+        description: 'Go back and fill in the values for all completed sets.',
+      });
+      return;
+    }
+
     completeWorkout.mutate(
       {
         id: String(workout.id),
@@ -41,6 +61,7 @@ export function useFinishWorkoutScreen() {
           maxHeartRate: maxHr ? Number(maxHr) : undefined,
           visibility,
           description: description.trim() || undefined,
+          finalizedExercises,
         },
       },
       {
@@ -48,12 +69,12 @@ export function useFinishWorkoutScreen() {
           endWorkout();
           router.replace({
             pathname: '/(app)/(workout)/workout-summary',
-            params: { workoutId: String(workout.id) },
+            params: { workoutId: String(workout.id), fromCompletion: '1' },
           });
         },
       },
     );
-  }, [workout, completeWorkout, rpe, feeling, calories, avgHr, maxHr, visibility, description, endWorkout, router]);
+  }, [workout, exercises, completeWorkout, rpe, feeling, calories, avgHr, maxHr, visibility, description, endWorkout, router]);
 
   const handleDiscard = useCallback(() => {
     if (!workout) return;
@@ -89,6 +110,8 @@ export function useFinishWorkoutScreen() {
     setDescription,
     handleFinish,
     handleDiscard,
+    errorToast,
+    setErrorToast,
     completeWorkoutPending: completeWorkout.isPending,
     deleteWorkoutPending: deleteWorkout.isPending,
     insets,

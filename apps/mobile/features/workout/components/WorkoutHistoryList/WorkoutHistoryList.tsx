@@ -1,4 +1,4 @@
-import React, { useCallback, forwardRef } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, View, FlatList, StyleSheet } from 'react-native';
 import { spacing } from '@/constants/theme';
 import { confirmDestructive, showErrorAlert } from '@/utils/alerts';
@@ -43,9 +43,11 @@ export const WorkoutHistoryList = ({
   const deleteWorkout = useDeleteWorkout();
   const copyWorkout = useCopyWorkout();
   const createTemplateFromWorkout = useCreateTemplateFromWorkout();
+  const [savingAsTemplateId, setSavingAsTemplateId] = useState<number | null>(null);
 
   const handleSaveAsTemplate = useCallback(
     async (w: IWorkoutWithRelations) => {
+      setSavingAsTemplateId(w.id);
       try {
         const template = await createTemplateFromWorkout.mutateAsync({
           workoutId: String(w.id),
@@ -54,6 +56,8 @@ export const WorkoutHistoryList = ({
         router.push(`/(app)/(workout)/template/${template.id}`);
       } catch {
         showErrorAlert('Failed to save as template. Please try again.');
+      } finally {
+        setSavingAsTemplateId(null);
       }
     },
     [createTemplateFromWorkout, router],
@@ -130,6 +134,7 @@ export const WorkoutHistoryList = ({
             sets={exerciseSets}
             onPress={() => onWorkoutPress(w.id)}
             onSaveAsTemplate={() => handleSaveAsTemplate(w)}
+            isSavingAsTemplate={savingAsTemplateId === w.id}
             onCopyWorkout={() => handleCopyWorkout(w)}
             onEdit={() =>
               router.push({

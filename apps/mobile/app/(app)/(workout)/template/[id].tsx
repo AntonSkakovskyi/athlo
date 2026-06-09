@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function TemplateDetailScreen() {
   const { user } = useAuth();
   const {
+    fromProfileId,
     typedTemplate, exercises, isLoading, error,
     editName, setEditName, editDesc, setEditDesc,
     isEditing, toggleEditing,
@@ -24,12 +25,20 @@ export default function TemplateDetailScreen() {
     handleDeleteExercise, handleUpdateExercise, handleUpdateRestTime, handleSaveRestTime,
     timePickerVisible, setTimePickerVisible, pickerValue, setPickerValue,
     handleMoveExercise, handleAddExercise,
-    handleUpdateSet, handleAddSet, handleDeleteSet,
+    handleUpdateSet, handleAddSet, handleDeleteSet, handleMoveSet,
     currentVisibility, handleVisibilityChange,
     startFromTemplatePending, deleteTemplatePending,
     isSaved, handleSave, isSavePending,
     insets, router,
   } = useTemplateDetailScreen();
+
+  const handleBack = () => {
+    if (fromProfileId) {
+      router.push({ pathname: '/(app)/(profile)/[userId]', params: { userId: fromProfileId } });
+    } else {
+      router.back();
+    }
+  };
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -47,7 +56,7 @@ export default function TemplateDetailScreen() {
     return (
       <View style={[styles.centered, { paddingTop: insets.top }]}>
         <Text style={styles.errorText}>Failed to load template</Text>
-        <Button title="Go Back" variant="ghost" onPress={() => router.back()} style={styles.goBackBtn} />
+        <Button title="Go Back" variant="ghost" onPress={handleBack} style={styles.goBackBtn} />
       </View>
     );
   }
@@ -55,7 +64,7 @@ export default function TemplateDetailScreen() {
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.sm }]}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={handleBack}>
           <Text style={styles.backBtn}>← Back</Text>
         </Pressable>
         {isOwner && (
@@ -106,6 +115,7 @@ export default function TemplateDetailScreen() {
               onUpdateSet={isOwner ? (setIdx, data) => { handleUpdateSet(ex.id, setIdx, data); } : () => {}}
               onAddSet={isOwner ? () => handleAddSet(ex.id) : undefined}
               onDeleteSet={isOwner ? (setIdx) => handleDeleteSet(ex.id, setIdx) : undefined}
+              onMoveSet={isOwner ? (setIdx, direction) => handleMoveSet(ex.id, setIdx, direction) : undefined}
               onRestTimer={isOwner ? () => handleUpdateRestTime(ex.id, ex.restTime ?? 0) : undefined}
               onDeleteExercise={isOwner ? () => handleDeleteExercise(ex.id) : undefined}
               onMoveUp={isOwner && idx > 0 ? () => handleMoveExercise(idx, 'up') : undefined}

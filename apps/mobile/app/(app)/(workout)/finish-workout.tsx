@@ -13,6 +13,7 @@ import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { VisibilitySelector } from '@/components/ui/VisibilitySelector/VisibilitySelector';
+import { Toast } from '@/components/ui/Toast/Toast';
 import { useFinishWorkoutScreen } from '@/features/workout/hooks/useFinishWorkoutScreen';
 import { FEELING_OPTIONS } from '@/utils/icons';
 
@@ -52,6 +53,8 @@ export default function FinishWorkoutScreen() {
     setDescription,
     handleFinish,
     handleDiscard,
+    errorToast,
+    setErrorToast,
     completeWorkoutPending,
     insets,
     router,
@@ -171,6 +174,14 @@ export default function FinishWorkoutScreen() {
           style={styles.footerBtn}
         />
       </View>
+
+      <Toast
+        visible={!!errorToast}
+        title={errorToast?.title || ''}
+        description={errorToast?.description}
+        variant="error"
+        onClose={() => setErrorToast(null)}
+      />
     </View>
   );
 }
