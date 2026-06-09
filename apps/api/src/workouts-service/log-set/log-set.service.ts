@@ -59,6 +59,21 @@ export class LogSetService {
   ) {
     await this.validateOwnership(workoutId, logExerciseId, userId);
 
+    // Idempotency: a duplicate POST for the same (logExerciseId, order) returns the
+    // existing row instead of creating another. Protects against double effect runs
+    // initialising a fresh log_exercise from previous-performance data.
+    if (dto.order != null) {
+      const existing = await this.logSetRepository.findOne({
+        where: { logExerciseId, order: dto.order },
+      });
+      if (existing) {
+        return this.logSetRepository.findOne({
+          where: { id: existing.id },
+          relations: { achievement: true },
+        });
+      }
+    }
+
     const set = this.logSetRepository.create({
       logExerciseId,
       ...dto,

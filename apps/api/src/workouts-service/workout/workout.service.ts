@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -170,6 +171,54 @@ export class WorkoutService {
 
   async complete(id: number, userId: number, dto: CompleteWorkoutDto) {
     const workout = await this.findOne(id, userId);
+
+    const finalized = (dto.finalizedExercises ?? []).filter(
+      (fe) => fe.sets && fe.sets.length > 0,
+    );
+
+    if (finalized.length === 0) {
+      throw new BadRequestException(
+        'Workout must have at least one completed set',
+      );
+    }
+
+    const ownLogExerciseIds = new Set(
+      (workout.logExercises ?? []).map((le) => le.id),
+    );
+    for (const fe of finalized) {
+      if (!ownLogExerciseIds.has(fe.logExerciseId)) {
+        throw new BadRequestException(
+          `LogExercise ${fe.logExerciseId} does not belong to this workout`,
+        );
+      }
+    }
+
+    const finalizedIds = new Set(finalized.map((fe) => fe.logExerciseId));
+    const toDelete = (workout.logExercises ?? []).filter(
+      (le) => !finalizedIds.has(le.id),
+    );
+    if (toDelete.length > 0) {
+      await this.logExerciseRepository.remove(toDelete);
+    }
+
+    const exercisesForAchievements: number[] = [];
+    for (const fe of finalized) {
+      await this.logSetRepository.delete({ logExerciseId: fe.logExerciseId });
+      const newSets = fe.sets.map((s, idx) =>
+        this.logSetRepository.create({
+          logExerciseId: fe.logExerciseId,
+          order: idx + 1,
+          weight: s.weight ?? null,
+          reps: s.reps ?? null,
+          duration: s.duration ?? null,
+          distance: s.distance ?? null,
+          isCompleted: true,
+        }),
+      );
+      await this.logSetRepository.save(newSets);
+      exercisesForAchievements.push(fe.logExerciseId);
+    }
+
     workout.status = WorkoutStatus.COMPLETED;
     workout.ended_at = new Date();
 
@@ -180,13 +229,21 @@ export class WorkoutService {
     if (dto.feelingScore !== undefined) workout.feelingScore = dto.feelingScore;
 
     const saved = await this.workoutsRepository.save(workout);
+
+    for (const logExerciseId of exercisesForAchievements) {
+      await this.achievementService.checkAndUpdateRecords(
+        userId,
+        logExerciseId,
+      );
+    }
     await this.achievementService.checkGlobalAchievements(userId);
+
     return saved;
   }
 
   async remove(id: number, userId: number) {
     const workout = await this.findOne(id, userId);
-    await this.workoutsRepository.remove(workout);
+    await this.workoutsRepository.delete({ id: workout.id });
   }
 
   async copyWorkout(id: number, userId: number) {
@@ -248,12 +305,24 @@ export class WorkoutService {
 
     if (!workout) return null;
 
-    // Get the sets for this exercise in that workout
-    const sets = await this.logSetRepository
-      .createQueryBuilder('ls')
-      .innerJoin('ls.logExercise', 'le')
+    // Pick the latest log_exercise instance for this exerciseId in the workout
+    // (a user can add the same exercise more than once in a workout).
+    const logExercise = await this.logExerciseRepository
+      .createQueryBuilder('le')
       .where('le.workout_id = :workoutId', { workoutId: workout.id })
       .andWhere('le.exercise_id = :exerciseId', { exerciseId })
+      .orderBy('le.order', 'DESC')
+      .addOrderBy('le.id', 'DESC')
+      .getOne();
+
+    if (!logExercise) return null;
+
+    const sets = await this.logSetRepository
+      .createQueryBuilder('ls')
+      .where('ls.log_exercise_id = :logExerciseId', {
+        logExerciseId: logExercise.id,
+      })
+      .andWhere('ls.is_completed = :isCompleted', { isCompleted: true })
       .orderBy('ls.order', 'ASC')
       .getMany();
 

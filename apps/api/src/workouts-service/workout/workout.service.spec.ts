@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { WorkoutService } from './workout.service';
 import { WorkoutEntity } from '../entities/workout.entity';
 import { LogExerciseEntity } from '../entities/log-exercise.entity';
@@ -16,6 +20,7 @@ const createMockRepository = () => ({
   findOne: jest.fn(),
   findAndCount: jest.fn(),
   remove: jest.fn(),
+  delete: jest.fn(),
   createQueryBuilder: jest.fn(),
 });
 
@@ -25,6 +30,7 @@ const makeQb = (result: any = null) => {
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
     getOne: jest.fn().mockResolvedValue(result),
     getMany: jest.fn().mockResolvedValue(result ?? []),
   };
@@ -103,23 +109,35 @@ describe('WorkoutService', () => {
   // ─── complete ─────────────────────────────────────
 
   describe('complete', () => {
+    const baseFinalized = [
+      { logExerciseId: 10, sets: [{ order: 1, weight: 50, reps: 5 }] },
+    ];
+
+    const mockSavePass = () => {
+      logSetRepo.delete.mockResolvedValue({});
+      logSetRepo.create.mockImplementation((s: any) => s);
+      logSetRepo.save.mockResolvedValue([]);
+    };
+
     it('should set status to COMPLETED and call checkGlobalAchievements', async () => {
       const workout = {
         id: 1,
         userId: 1,
         status: WorkoutStatus.IN_PROGRESS,
-        logExercises: [],
+        logExercises: [{ id: 10 }],
       };
       workoutRepo.findOne.mockResolvedValue(workout);
       workoutRepo.save.mockResolvedValue({
         ...workout,
         status: WorkoutStatus.COMPLETED,
       });
+      mockSavePass();
+      mockAchievementService.checkAndUpdateRecords.mockResolvedValue(undefined);
       mockAchievementService.checkGlobalAchievements.mockResolvedValue(
         undefined,
       );
 
-      await service.complete(1, 1, {});
+      await service.complete(1, 1, { finalizedExercises: baseFinalized });
 
       expect(workoutRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ status: WorkoutStatus.COMPLETED }),
@@ -134,15 +152,17 @@ describe('WorkoutService', () => {
         id: 1,
         userId: 1,
         status: WorkoutStatus.IN_PROGRESS,
-        logExercises: [],
+        logExercises: [{ id: 10 }],
       };
       workoutRepo.findOne.mockResolvedValue(workout);
       workoutRepo.save.mockImplementation((w) => Promise.resolve(w));
+      mockSavePass();
+      mockAchievementService.checkAndUpdateRecords.mockResolvedValue(undefined);
       mockAchievementService.checkGlobalAchievements.mockResolvedValue(
         undefined,
       );
 
-      await service.complete(1, 1, {});
+      await service.complete(1, 1, { finalizedExercises: baseFinalized });
 
       expect(workoutRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ ended_at: expect.any(Date) }),
@@ -150,18 +170,58 @@ describe('WorkoutService', () => {
     });
 
     it('should apply optional dto fields when provided', async () => {
-      const workout = { id: 1, userId: 1, logExercises: [] };
+      const workout = { id: 1, userId: 1, logExercises: [{ id: 10 }] };
       workoutRepo.findOne.mockResolvedValue(workout);
       workoutRepo.save.mockImplementation((w) => Promise.resolve(w));
+      mockSavePass();
+      mockAchievementService.checkAndUpdateRecords.mockResolvedValue(undefined);
       mockAchievementService.checkGlobalAchievements.mockResolvedValue(
         undefined,
       );
 
-      await service.complete(1, 1, { calories: 500, rpe: 7 });
+      await service.complete(1, 1, {
+        calories: 500,
+        rpe: 7,
+        finalizedExercises: baseFinalized,
+      });
 
       expect(workoutRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ calories: 500, rpe: 7 }),
       );
+    });
+
+    it('should throw BadRequestException when no completed sets provided', async () => {
+      const workout = {
+        id: 1,
+        userId: 1,
+        status: WorkoutStatus.IN_PROGRESS,
+        logExercises: [{ id: 10 }],
+      };
+      workoutRepo.findOne.mockResolvedValue(workout);
+
+      await expect(service.complete(1, 1, {})).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should remove log_exercises not in finalizedExercises', async () => {
+      const workout = {
+        id: 1,
+        userId: 1,
+        status: WorkoutStatus.IN_PROGRESS,
+        logExercises: [{ id: 10 }, { id: 11 }],
+      };
+      workoutRepo.findOne.mockResolvedValue(workout);
+      workoutRepo.save.mockImplementation((w) => Promise.resolve(w));
+      mockSavePass();
+      mockAchievementService.checkAndUpdateRecords.mockResolvedValue(undefined);
+      mockAchievementService.checkGlobalAchievements.mockResolvedValue(
+        undefined,
+      );
+
+      await service.complete(1, 1, { finalizedExercises: baseFinalized });
+
+      expect(logExerciseRepo.remove).toHaveBeenCalledWith([{ id: 11 }]);
     });
   });
 
@@ -256,11 +316,11 @@ describe('WorkoutService', () => {
         name: 'Pull Day',
         started_at: new Date('2025-06-01'),
       };
+      const logExercise = { id: 42 };
       const sets = [{ order: 1, weight: 80, reps: 8 }];
-      const workoutQb = makeQb(workout);
-      const setsQb = makeQb(sets);
-      workoutRepo.createQueryBuilder.mockReturnValue(workoutQb);
-      logSetRepo.createQueryBuilder.mockReturnValue(setsQb);
+      workoutRepo.createQueryBuilder.mockReturnValue(makeQb(workout));
+      logExerciseRepo.createQueryBuilder.mockReturnValue(makeQb(logExercise));
+      logSetRepo.createQueryBuilder.mockReturnValue(makeQb(sets));
 
       const result = await service.getLastPerformance(1, 10);
 

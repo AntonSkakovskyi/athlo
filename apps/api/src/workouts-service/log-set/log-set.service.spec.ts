@@ -66,7 +66,9 @@ describe('LogSetService', () => {
       const saved = { id: 20, logExerciseId: 10, ...dto };
       logSetRepo.create.mockReturnValue(saved);
       logSetRepo.save.mockResolvedValue(saved);
-      logSetRepo.findOne.mockResolvedValue({ ...saved, achievement: null });
+      logSetRepo.findOne
+        .mockResolvedValueOnce(null) // idempotency check: no existing set
+        .mockResolvedValueOnce({ ...saved, achievement: null }); // post-save return
       mockAchievementService.checkAndUpdateRecords.mockResolvedValue(undefined);
 
       await service.create(1, 10, 1, dto);
@@ -76,6 +78,20 @@ describe('LogSetService', () => {
         1,
         10,
       );
+    });
+
+    it('should return existing set without calling save when order already exists', async () => {
+      setupValidOwnership();
+      const dto = { order: 1, weight: 100, reps: 5 };
+      const existing = { id: 99, logExerciseId: 10, order: 1 };
+      logSetRepo.findOne
+        .mockResolvedValueOnce(existing)
+        .mockResolvedValueOnce({ ...existing, achievement: null });
+
+      const result = await service.create(1, 10, 1, dto);
+
+      expect(logSetRepo.save).not.toHaveBeenCalled();
+      expect(result).toMatchObject({ id: 99 });
     });
 
     it('should throw NotFoundException when workout does not exist', async () => {

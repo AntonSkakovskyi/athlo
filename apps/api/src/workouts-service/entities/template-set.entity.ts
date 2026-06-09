@@ -29,10 +29,10 @@ export class TemplateSetEntity implements ITemplateSet {
   })
   weight: number | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   reps: number | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', nullable: true })
   duration: number | null;
 
   @Column({
