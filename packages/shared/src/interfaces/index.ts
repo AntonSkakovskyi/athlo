@@ -40,6 +40,7 @@ export type { IExerciseProgress, IExerciseProgressRecord } from './exercise-prog
 export type { IBodyMetricProgress, IBodyMetricHistoryRecord } from './body-metric-progress.interface.js';
 export type { IStatisticsSummary } from './statistics-summary.interface.js';
 export type { ILastPerformance } from './last-performance.interface.js';
+export type { IFinalizedSet, IFinalizedExercise } from './finalized-workout.interface.js';
 export type { IAchievement } from './achievement.interface.js';
 export type { IUserAchievement } from './user-achievement.interface.js';
 export type { IUserExerciseRecord } from './user-exercise-record.interface.js';
