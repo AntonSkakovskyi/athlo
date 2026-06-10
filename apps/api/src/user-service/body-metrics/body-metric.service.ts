@@ -1,10 +1,7 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { findOwnedOrFail } from '../../common/helpers/find-owned-or-fail';
 import { BodyMetricEntity } from './entities/body-metric.entity';
 import { MetricTypeEntity } from './entities/metric-type.entity';
 import { UnitEntity } from './entities/unit.entity';
@@ -53,20 +50,13 @@ export class BodyMetricService {
   }
 
   async findOne(id: number, userId: number) {
-    const metric = await this.bodyMetricRepository.findOne({
+    return findOwnedOrFail(this.bodyMetricRepository, {
       where: { id },
+      userId,
       relations: { metricType: { unit: true } },
+      notFoundMessage: `Body metric with ID ${id} not found`,
+      forbiddenMessage: 'You do not have access to this metric',
     });
-
-    if (!metric) {
-      throw new NotFoundException(`Body metric with ID ${id} not found`);
-    }
-
-    if (metric.userId !== userId) {
-      throw new ForbiddenException('You do not have access to this metric');
-    }
-
-    return metric;
   }
 
   async update(id: number, userId: number, dto: UpdateBodyMetricDto) {

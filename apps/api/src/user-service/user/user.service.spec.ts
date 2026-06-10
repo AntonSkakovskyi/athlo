@@ -9,6 +9,7 @@ jest.mock('bcrypt', () => ({
 }));
 import * as bcrypt from 'bcrypt';
 const mockBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
+import { DataSource } from 'typeorm';
 import { UserEntity } from './entities/user.entity';
 import { UserSettingEntity } from './entities/user-setting.entity';
 
@@ -18,7 +19,23 @@ const createMockRepository = () => ({
   find: jest.fn(),
   findOne: jest.fn(),
   remove: jest.fn(),
+  createQueryBuilder: jest.fn(),
 });
+
+const makeQb = (result: any = null) => ({
+  addSelect: jest.fn().mockReturnThis(),
+  where: jest.fn().mockReturnThis(),
+  getOne: jest.fn().mockResolvedValue(result),
+});
+
+const mockEntityManager = {
+  save: jest.fn((arg: any) => Promise.resolve(arg)),
+  delete: jest.fn(),
+};
+
+const mockDataSource = {
+  transaction: jest.fn((cb: any) => cb(mockEntityManager)),
+};
 
 describe('UserService', () => {
   let service: UserService;
@@ -37,6 +54,7 @@ describe('UserService', () => {
           provide: getRepositoryToken(UserSettingEntity),
           useValue: createMockRepository(),
         },
+        { provide: DataSource, useValue: mockDataSource },
       ],
     }).compile();
 
@@ -126,24 +144,22 @@ describe('UserService', () => {
   });
 
   describe('findByEmail', () => {
-    it('should return user when found by email', async () => {
+    it('should return user when found by email (case-insensitive)', async () => {
       // Arrange
       const user = { id: 1, email: 'test@test.com' };
-      userRepo.findOne.mockResolvedValue(user);
+      userRepo.createQueryBuilder.mockReturnValue(makeQb(user));
 
       // Act
       const result = await service.findByEmail('test@test.com');
 
       // Assert
-      expect(userRepo.findOne).toHaveBeenCalledWith({
-        where: { email: 'test@test.com' },
-      });
+      expect(userRepo.createQueryBuilder).toHaveBeenCalledWith('user');
       expect(result).toEqual(user);
     });
 
     it('should return null when user is not found by email', async () => {
       // Arrange
-      userRepo.findOne.mockResolvedValue(null);
+      userRepo.createQueryBuilder.mockReturnValue(makeQb(null));
 
       // Act
       const result = await service.findByEmail('noone@test.com');
@@ -182,6 +198,41 @@ describe('UserService', () => {
     });
   });
 
+  describe('getPublicProfile', () => {
+    it('should request only whitelisted public fields', async () => {
+      // Arrange
+      const publicUser = {
+        id: 2,
+        fullName: 'Other User',
+        nickname: 'other',
+        avatar: null,
+      };
+      userRepo.findOne.mockResolvedValue(publicUser);
+
+      // Act
+      const result = await service.getPublicProfile(2);
+
+      // Assert
+      expect(userRepo.findOne).toHaveBeenCalledWith({
+        where: { id: 2 },
+        select: { id: true, fullName: true, nickname: true, avatar: true },
+      });
+      expect(result).toEqual(publicUser);
+      expect(result).not.toHaveProperty('email');
+      expect(result).not.toHaveProperty('weight');
+    });
+
+    it('should throw NotFoundException when user does not exist', async () => {
+      // Arrange
+      userRepo.findOne.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(service.getPublicProfile(999)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+
   describe('updateProfile', () => {
     it('should update profile fields and return without password_hash', async () => {
       // Arrange
@@ -202,15 +253,15 @@ describe('UserService', () => {
       };
       userRepo.findOne.mockResolvedValue(user);
       settingRepo.findOne.mockResolvedValue(existingSettings);
-      settingRepo.save.mockResolvedValue(existingSettings);
-      userRepo.save.mockResolvedValue({ ...user, fullName: 'New Name' });
 
       // Act
       const result = await service.updateProfile(1, { fullName: 'New Name' });
 
       // Assert
-      expect(userRepo.save).toHaveBeenCalled();
-      expect(settingRepo.save).toHaveBeenCalled();
+      expect(mockEntityManager.save).toHaveBeenCalledWith(existingSettings);
+      expect(mockEntityManager.save).toHaveBeenCalledWith(
+        expect.objectContaining({ fullName: 'New Name' }),
+      );
       expect(result).not.toHaveProperty('password_hash');
     });
 
@@ -227,18 +278,17 @@ describe('UserService', () => {
       userRepo.findOne.mockResolvedValue(user);
       settingRepo.findOne.mockResolvedValue(null);
       settingRepo.create.mockReturnValue(newSettings);
-      settingRepo.save.mockResolvedValue({ ...newSettings, waterGoal: 2500 });
-      userRepo.save.mockResolvedValue({
-        ...user,
-        settings: { waterGoal: 2500 },
-      });
 
       // Act
       const result = await service.updateProfile(1, { waterGoal: 2500 });
 
       // Assert
       expect(settingRepo.create).toHaveBeenCalledWith({ userId: 1 });
-      expect(settingRepo.save).toHaveBeenCalled();
+      expect(mockEntityManager.save).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: 1, waterGoal: 2500 }),
+      );
+      // Явні цілі скидають майбутні daily_goals у тій самій транзакції
+      expect(mockEntityManager.delete).toHaveBeenCalled();
       expect(result).not.toHaveProperty('password_hash');
     });
   });

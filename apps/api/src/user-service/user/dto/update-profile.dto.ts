@@ -6,6 +6,7 @@ import {
   IsInt,
   IsEnum,
   IsNumber,
+  IsDateString,
 } from 'class-validator';
 import { Gender, ActivityLevel, FitnessGoal } from '@athlo/shared';
 
@@ -31,8 +32,8 @@ export class UpdateProfileDto {
   gender?: Gender;
 
   @IsOptional()
-  @IsInt()
-  age?: number;
+  @IsDateString()
+  birthDate?: string | null;
 
   @IsOptional()
   @IsInt()
@@ -49,6 +50,10 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsEnum(FitnessGoal)
   fitnessGoal?: FitnessGoal;
+
+  @IsOptional()
+  @IsInt()
+  calorieGoal?: number | null;
 
   @IsOptional()
   @IsInt()

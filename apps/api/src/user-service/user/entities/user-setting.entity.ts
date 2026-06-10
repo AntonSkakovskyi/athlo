@@ -16,6 +16,9 @@ export class UserSettingEntity implements IUserSettings {
   @Column({ name: 'user_id', unique: true })
   userId: number;
 
+  @Column({ name: 'calorie_goal', type: 'int', nullable: true })
+  calorieGoal: number | null;
+
   @Column({ name: 'water_goal', type: 'int', nullable: true })
   waterGoal: number | null;
 
