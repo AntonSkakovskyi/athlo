@@ -5,7 +5,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { findOwnedOrFail } from '../../common/helpers/find-owned-or-fail';
 import { MealPlanEntity } from '../entities/meal-plan.entity';
 import { PlanDayEntity } from '../entities/plan-day.entity';
 import { PlanMealEntity } from '../entities/plan-meal.entity';
@@ -36,37 +37,42 @@ export class MealPlanService {
     @InjectRepository(UserMealPlanEntity)
     private readonly userMealPlanRepository: Repository<UserMealPlanEntity>,
     private readonly friendService: FriendService,
+    private readonly dataSource: DataSource,
   ) {}
 
   // ─── Meal Plans ───────────────────────────────────
 
   async create(userId: number, dto: CreateMealPlanDto) {
     const totalDays = dto.totalDays ?? 0;
-    const plan = this.mealPlanRepository.create({
-      creatorId: userId,
-      name: dto.name,
-      description: dto.description,
-      visibilityTypeId: dto.visibilityTypeId ?? 1,
-      totalDays,
-    });
 
-    const savedPlan = await this.mealPlanRepository.save(plan);
+    // План і його дні створюються атомарно — не буває плану без днів
+    return this.dataSource.transaction(async (em) => {
+      const plan = em.create(MealPlanEntity, {
+        creatorId: userId,
+        name: dto.name,
+        description: dto.description,
+        visibilityTypeId: dto.visibilityTypeId ?? 1,
+        totalDays,
+      });
 
-    // Automatically create days only if totalDays > 0
-    if (totalDays > 0) {
-      const days = [];
-      for (let i = 1; i <= totalDays; i++) {
-        days.push(
-          this.planDayRepository.create({
-            mealPlanId: savedPlan.id,
-            dayNumber: i,
-          }),
-        );
+      const savedPlan = await em.save(plan);
+
+      // Automatically create days only if totalDays > 0
+      if (totalDays > 0) {
+        const days = [];
+        for (let i = 1; i <= totalDays; i++) {
+          days.push(
+            em.create(PlanDayEntity, {
+              mealPlanId: savedPlan.id,
+              dayNumber: i,
+            }),
+          );
+        }
+        await em.save(days);
       }
-      await this.planDayRepository.save(days);
-    }
 
-    return savedPlan;
+      return savedPlan;
+    });
   }
 
   async findMyPlans(userId: number) {
@@ -99,14 +105,17 @@ export class MealPlanService {
       .getManyAndCount();
 
     return {
-      items: items.map((p) => ({
+      data: items.map((p) => ({
         ...p,
         creatorNickname: p.creator?.nickname,
         creator: undefined,
       })),
-      total,
-      page,
-      limit,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
@@ -497,16 +506,12 @@ export class MealPlanService {
   // ─── Helpers ──────────────────────────────────────
 
   private async assertOwner(planId: number, userId: number) {
-    const plan = await this.mealPlanRepository.findOne({
+    await findOwnedOrFail(this.mealPlanRepository, {
       where: { id: planId },
+      userId,
+      ownerField: 'creatorId',
+      notFoundMessage: `Meal plan with ID ${planId} not found`,
+      forbiddenMessage: 'Only the creator can modify this meal plan',
     });
-    if (!plan) {
-      throw new NotFoundException(`Meal plan with ID ${planId} not found`);
-    }
-    if (plan.creatorId !== userId) {
-      throw new ForbiddenException(
-        'Only the creator can modify this meal plan',
-      );
-    }
   }
 }

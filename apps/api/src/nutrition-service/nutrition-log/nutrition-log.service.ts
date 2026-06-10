@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
+import { findOwnedOrFail } from '../../common/helpers/find-owned-or-fail';
 import { LogMealEntity } from '../entities/log-meal.entity';
 import { LogMealItemEntity } from '../entities/log-meal-item.entity';
 import { WaterLogEntity } from '../entities/water-log.entity';
@@ -61,21 +62,16 @@ export class NutritionLogService {
   }
 
   async getMealById(id: number, userId: number) {
-    const meal = await this.logMealRepository.findOne({
+    return findOwnedOrFail(this.logMealRepository, {
       where: { id },
+      userId,
       relations: {
         mealType: true,
         items: { food: { units: true }, unit: true },
       },
+      notFoundMessage: `Log meal with ID ${id} not found`,
+      forbiddenMessage: 'You do not have access to this meal log',
     });
-
-    if (!meal) {
-      throw new NotFoundException(`Log meal with ID ${id} not found`);
-    }
-    if (meal.userId !== userId) {
-      throw new ForbiddenException('You do not have access to this meal log');
-    }
-    return meal;
   }
 
   async updateMeal(id: number, userId: number, dto: UpdateLogMealDto) {
@@ -158,13 +154,12 @@ export class NutritionLogService {
   }
 
   async updateWaterLog(id: number, userId: number, dto: UpdateWaterLogDto) {
-    const log = await this.waterLogRepository.findOne({ where: { id } });
-    if (!log) {
-      throw new NotFoundException(`Water log with ID ${id} not found`);
-    }
-    if (log.userId !== userId) {
-      throw new ForbiddenException('You do not have access to this water log');
-    }
+    const log = await findOwnedOrFail(this.waterLogRepository, {
+      where: { id },
+      userId,
+      notFoundMessage: `Water log with ID ${id} not found`,
+      forbiddenMessage: 'You do not have access to this water log',
+    });
     if (dto.amountMl !== undefined) log.amountMl = dto.amountMl;
     if (dto.consumedAt !== undefined) log.consumedAt = new Date(dto.consumedAt);
     return this.waterLogRepository.save(log);
@@ -180,13 +175,12 @@ export class NutritionLogService {
   }
 
   async removeWaterLog(id: number, userId: number) {
-    const log = await this.waterLogRepository.findOne({ where: { id } });
-    if (!log) {
-      throw new NotFoundException(`Water log with ID ${id} not found`);
-    }
-    if (log.userId !== userId) {
-      throw new ForbiddenException('You do not have access to this water log');
-    }
+    const log = await findOwnedOrFail(this.waterLogRepository, {
+      where: { id },
+      userId,
+      notFoundMessage: `Water log with ID ${id} not found`,
+      forbiddenMessage: 'You do not have access to this water log',
+    });
     await this.waterLogRepository.remove(log);
   }
 
@@ -221,6 +215,7 @@ export class NutritionLogService {
       dailyGoal = this.dailyGoalRepository.create({
         userId,
         date: new Date(date),
+        calorieGoal: user?.settings?.calorieGoal ?? null,
         waterGoal: calculatedWaterGoal,
         proteinGoal: user?.settings?.proteinGoal ?? null,
         fatGoal: user?.settings?.fatGoal ?? null,
@@ -255,6 +250,7 @@ export class NutritionLogService {
       totalFats: Math.round(totalFats * 100) / 100,
       totalCarbs: Math.round(totalCarbs * 100) / 100,
       totalWaterMl,
+      calorieGoal: dailyGoal.calorieGoal,
       waterGoal: dailyGoal.waterGoal,
       proteinGoal: dailyGoal.proteinGoal,
       fatGoal: dailyGoal.fatGoal,

@@ -5,11 +5,12 @@ import { NutritionLogService } from './nutrition-log.service';
 import { LogMealEntity } from '../entities/log-meal.entity';
 import { LogMealItemEntity } from '../entities/log-meal-item.entity';
 import { WaterLogEntity } from '../entities/water-log.entity';
+import { DailyGoalEntity } from '../entities/daily-goal.entity';
 import { UserEntity } from '../../user-service/user/entities/user.entity';
 import { BodyMetricEntity } from '../../user-service/body-metrics/entities/body-metric.entity';
 
 const createMockRepository = () => ({
-  create: jest.fn(),
+  create: jest.fn((entity) => entity),
   save: jest.fn(),
   find: jest.fn(),
   findOne: jest.fn(),
@@ -38,6 +39,10 @@ describe('NutritionLogService', () => {
         },
         {
           provide: getRepositoryToken(WaterLogEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(DailyGoalEntity),
           useValue: createMockRepository(),
         },
         {

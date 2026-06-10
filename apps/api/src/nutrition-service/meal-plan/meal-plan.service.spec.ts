@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { MealPlanService } from './meal-plan.service';
 import { MealPlanEntity } from '../entities/meal-plan.entity';
 import { PlanDayEntity } from '../entities/plan-day.entity';
@@ -26,6 +27,16 @@ const createMockRepository = () => ({
 const mockFriendService = {
   isFriend: jest.fn(),
   getFriendIds: jest.fn(),
+};
+
+// Транзакція в тестах просто виконує колбек із моком EntityManager
+const mockEntityManager = {
+  create: jest.fn((_entity: any, data: any) => data),
+  save: jest.fn((arg: any) => Promise.resolve(arg)),
+};
+
+const mockDataSource = {
+  transaction: jest.fn((cb: any) => cb(mockEntityManager)),
 };
 
 describe('MealPlanService', () => {
@@ -61,6 +72,7 @@ describe('MealPlanService', () => {
           useValue: createMockRepository(),
         },
         { provide: FriendService, useValue: mockFriendService },
+        { provide: DataSource, useValue: mockDataSource },
       ],
     }).compile();
 
@@ -79,50 +91,38 @@ describe('MealPlanService', () => {
   describe('create', () => {
     it('should not create days when totalDays is 0', async () => {
       const dto = { name: 'My Plan', totalDays: 0 };
-      const savedPlan = { id: 1, creatorId: 1, name: 'My Plan', totalDays: 0 };
-      mealPlanRepo.create.mockReturnValue(savedPlan);
-      mealPlanRepo.save.mockResolvedValue(savedPlan);
 
       await service.create(1, dto);
 
-      expect(planDayRepo.save).not.toHaveBeenCalled();
+      // Збережено лише сам план, без днів
+      expect(mockDataSource.transaction).toHaveBeenCalled();
+      expect(mockEntityManager.save).toHaveBeenCalledTimes(1);
     });
 
     it('should create the correct number of days when totalDays > 0', async () => {
       const dto = { name: '3-Day Plan', totalDays: 3 };
-      const savedPlan = {
+      // План отримує id після збереження — дні мають посилатися на нього
+      mockEntityManager.save.mockImplementationOnce(async (plan: any) => ({
+        ...plan,
         id: 2,
-        creatorId: 1,
-        name: '3-Day Plan',
-        totalDays: 3,
-      };
-      mealPlanRepo.create.mockReturnValue(savedPlan);
-      mealPlanRepo.save.mockResolvedValue(savedPlan);
-      planDayRepo.create.mockImplementation((d) => d);
-      planDayRepo.save.mockResolvedValue([]);
+      }));
 
       await service.create(1, dto);
 
-      expect(planDayRepo.create).toHaveBeenCalledTimes(3);
-      expect(planDayRepo.create).toHaveBeenCalledWith({
-        mealPlanId: 2,
-        dayNumber: 1,
-      });
-      expect(planDayRepo.create).toHaveBeenCalledWith({
-        mealPlanId: 2,
-        dayNumber: 3,
-      });
+      const dayCreateCalls = mockEntityManager.create.mock.calls.filter(
+        ([entity]) => entity === PlanDayEntity,
+      );
+      expect(dayCreateCalls).toHaveLength(3);
+      expect(dayCreateCalls[0][1]).toEqual({ mealPlanId: 2, dayNumber: 1 });
+      expect(dayCreateCalls[2][1]).toEqual({ mealPlanId: 2, dayNumber: 3 });
     });
 
     it('should default to totalDays=0 when not provided', async () => {
       const dto = { name: 'No Days Plan' };
-      const savedPlan = { id: 3, totalDays: 0 };
-      mealPlanRepo.create.mockReturnValue(savedPlan);
-      mealPlanRepo.save.mockResolvedValue(savedPlan);
 
       await service.create(1, dto as any);
 
-      expect(planDayRepo.save).not.toHaveBeenCalled();
+      expect(mockEntityManager.save).toHaveBeenCalledTimes(1);
     });
   });
 
