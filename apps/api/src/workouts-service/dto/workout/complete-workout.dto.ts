@@ -2,14 +2,22 @@ import {
   IsOptional,
   IsNumber,
   IsInt,
+  IsString,
+  IsEnum,
   Min,
   Max,
   IsArray,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { VisibilityType } from '@athlo/shared';
+import type {
+  ICompleteWorkoutRequest,
+  IFinalizedExercise,
+  IFinalizedSet,
+} from '@athlo/shared';
 
-export class FinalizedSetDto {
+export class FinalizedSetDto implements IFinalizedSet {
   @IsInt()
   @Min(1)
   order!: number;
@@ -31,7 +39,7 @@ export class FinalizedSetDto {
   distance?: number;
 }
 
-export class FinalizedExerciseDto {
+export class FinalizedExerciseDto implements IFinalizedExercise {
   @IsInt()
   logExerciseId!: number;
 
@@ -41,7 +49,7 @@ export class FinalizedExerciseDto {
   sets!: FinalizedSetDto[];
 }
 
-export class CompleteWorkoutDto {
+export class CompleteWorkoutDto implements ICompleteWorkoutRequest {
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -68,6 +76,14 @@ export class CompleteWorkoutDto {
   @Min(1)
   @Max(5)
   feelingScore?: number;
+
+  @IsOptional()
+  @IsEnum(VisibilityType)
+  visibility?: VisibilityType;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
 
   @IsOptional()
   @IsArray()

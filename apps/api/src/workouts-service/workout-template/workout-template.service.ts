@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, In, Repository } from 'typeorm';
+import { findOwnedOrFail } from '../../common/helpers/find-owned-or-fail';
 import { WorkoutTemplateEntity } from '../entities/workout-template.entity';
 import { UserWorkoutTemplateEntity } from '../entities/saved-template.entity';
 import { WorkoutEntity } from '../entities/workout.entity';
@@ -388,17 +389,13 @@ export class WorkoutTemplateService {
   }
 
   private async findOneOwned(id: number, userId: number) {
-    const template = await this.templateRepository.findOne({ where: { id } });
-
-    if (!template) {
-      throw new NotFoundException(`Template with ID ${id} not found`);
-    }
-
-    if (template.creatorId !== userId) {
-      throw new ForbiddenException('You can only edit your own templates');
-    }
-
-    return template;
+    return findOwnedOrFail(this.templateRepository, {
+      where: { id },
+      userId,
+      ownerField: 'creatorId',
+      notFoundMessage: `Template with ID ${id} not found`,
+      forbiddenMessage: 'You can only edit your own templates',
+    });
   }
 
   private getVisibilityId(type: VisibilityType): number {

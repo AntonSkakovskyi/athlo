@@ -3,11 +3,14 @@ import {
   IsOptional,
   IsNumber,
   IsInt,
+  IsEnum,
   Min,
   Max,
 } from 'class-validator';
+import { VisibilityType } from '@athlo/shared';
+import type { IUpdateWorkoutRequest } from '@athlo/shared';
 
-export class UpdateWorkoutDto {
+export class UpdateWorkoutDto implements IUpdateWorkoutRequest {
   @IsOptional()
   @IsString()
   name?: string;
@@ -46,4 +49,8 @@ export class UpdateWorkoutDto {
   @IsOptional()
   @IsString()
   ended_at?: string;
+
+  @IsOptional()
+  @IsEnum(VisibilityType)
+  visibility?: VisibilityType;
 }

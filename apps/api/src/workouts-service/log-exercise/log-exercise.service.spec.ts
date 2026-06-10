@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { LogExerciseService } from './log-exercise.service';
 import { LogExerciseEntity } from '../entities/log-exercise.entity';
 import { WorkoutEntity } from '../entities/workout.entity';
+import { WorkoutService } from '../workout/workout.service';
 
 const createMockRepository = () => ({
   create: jest.fn(),
@@ -16,12 +18,17 @@ describe('LogExerciseService', () => {
   let service: LogExerciseService;
   let logExerciseRepo: ReturnType<typeof createMockRepository>;
   let workoutRepo: ReturnType<typeof createMockRepository>;
+  let workoutService: { getLastPerformance: jest.Mock };
+  let entityManager: { create: jest.Mock; save: jest.Mock };
 
   const setupValidOwnership = (userId = 1) => {
     workoutRepo.findOne.mockResolvedValue({ id: 1, userId });
   };
 
   beforeEach(async () => {
+    entityManager = { create: jest.fn(), save: jest.fn() };
+    workoutService = { getLastPerformance: jest.fn().mockResolvedValue(null) };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LogExerciseService,
@@ -32,6 +39,18 @@ describe('LogExerciseService', () => {
         {
           provide: getRepositoryToken(WorkoutEntity),
           useValue: createMockRepository(),
+        },
+        {
+          provide: WorkoutService,
+          useValue: workoutService,
+        },
+        {
+          provide: DataSource,
+          useValue: {
+            transaction: jest.fn((cb: (em: unknown) => unknown) =>
+              cb(entityManager),
+            ),
+          },
         },
       ],
     }).compile();
@@ -50,13 +69,47 @@ describe('LogExerciseService', () => {
       setupValidOwnership();
       const dto = { exerciseId: 5, order: 1 };
       const saved = { id: 10, workoutId: 1, ...dto };
-      logExerciseRepo.create.mockReturnValue(saved);
-      logExerciseRepo.save.mockResolvedValue(saved);
+      entityManager.create.mockReturnValue(saved);
+      entityManager.save.mockResolvedValue(saved);
 
       const result = await service.create(1, 1, dto as any);
 
-      expect(logExerciseRepo.save).toHaveBeenCalled();
-      expect(result).toEqual(saved);
+      expect(entityManager.save).toHaveBeenCalled();
+      expect(result).toEqual({ ...saved, sets: [] });
+    });
+
+    it('should prefill empty sets from last performance', async () => {
+      setupValidOwnership();
+      const dto = { exerciseId: 5, order: 1 };
+      const saved = { id: 10, workoutId: 1, ...dto };
+      workoutService.getLastPerformance.mockResolvedValue({
+        workoutId: 3,
+        workoutName: 'Prev',
+        date: '2026-06-01',
+        sets: [{ order: 1 }, { order: 2 }, { order: 3 }],
+      });
+      const prefillSet = (order: number) => ({
+        logExerciseId: 10,
+        order,
+        isCompleted: false,
+      });
+      entityManager.create.mockImplementation(
+        (_entity: unknown, data: object) => data,
+      );
+      entityManager.save.mockImplementation((value: unknown) =>
+        Promise.resolve(
+          Array.isArray(value) ? value : { ...(value as object), id: 10 },
+        ),
+      );
+
+      const result = await service.create(1, 1, dto as any);
+
+      expect(workoutService.getLastPerformance).toHaveBeenCalledWith(1, 5);
+      expect(result.sets).toEqual([
+        prefillSet(1),
+        prefillSet(2),
+        prefillSet(3),
+      ]);
     });
 
     it('should throw NotFoundException when workout not found', async () => {

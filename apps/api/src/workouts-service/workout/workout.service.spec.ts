@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { WorkoutService } from './workout.service';
 import { WorkoutEntity } from '../entities/workout.entity';
 import { LogExerciseEntity } from '../entities/log-exercise.entity';
@@ -27,12 +28,15 @@ const createMockRepository = () => ({
 const makeQb = (result: any = null) => {
   const qb: any = {
     innerJoin: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    addSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     andWhere: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
     addOrderBy: jest.fn().mockReturnThis(),
     getOne: jest.fn().mockResolvedValue(result),
     getMany: jest.fn().mockResolvedValue(result ?? []),
+    getRawMany: jest.fn().mockResolvedValue(result ?? []),
   };
   return qb;
 };
@@ -44,6 +48,18 @@ const mockAchievementService = {
 
 const mockFriendService = {
   isFriend: jest.fn(),
+};
+
+// Транзакція в тестах просто виконує колбек із моком EntityManager
+const mockEntityManager = {
+  create: jest.fn((_entity: any, data: any) => data),
+  save: jest.fn((arg: any) => Promise.resolve(arg)),
+  remove: jest.fn(),
+  delete: jest.fn(),
+};
+
+const mockDataSource = {
+  transaction: jest.fn((cb: any) => cb(mockEntityManager)),
 };
 
 describe('WorkoutService', () => {
@@ -70,6 +86,7 @@ describe('WorkoutService', () => {
         },
         { provide: AchievementService, useValue: mockAchievementService },
         { provide: FriendService, useValue: mockFriendService },
+        { provide: DataSource, useValue: mockDataSource },
       ],
     }).compile();
 
@@ -113,12 +130,6 @@ describe('WorkoutService', () => {
       { logExerciseId: 10, sets: [{ order: 1, weight: 50, reps: 5 }] },
     ];
 
-    const mockSavePass = () => {
-      logSetRepo.delete.mockResolvedValue({});
-      logSetRepo.create.mockImplementation((s: any) => s);
-      logSetRepo.save.mockResolvedValue([]);
-    };
-
     it('should set status to COMPLETED and call checkGlobalAchievements', async () => {
       const workout = {
         id: 1,
@@ -127,11 +138,6 @@ describe('WorkoutService', () => {
         logExercises: [{ id: 10 }],
       };
       workoutRepo.findOne.mockResolvedValue(workout);
-      workoutRepo.save.mockResolvedValue({
-        ...workout,
-        status: WorkoutStatus.COMPLETED,
-      });
-      mockSavePass();
       mockAchievementService.checkAndUpdateRecords.mockResolvedValue(undefined);
       mockAchievementService.checkGlobalAchievements.mockResolvedValue(
         undefined,
@@ -139,7 +145,8 @@ describe('WorkoutService', () => {
 
       await service.complete(1, 1, { finalizedExercises: baseFinalized });
 
-      expect(workoutRepo.save).toHaveBeenCalledWith(
+      expect(mockDataSource.transaction).toHaveBeenCalled();
+      expect(mockEntityManager.save).toHaveBeenCalledWith(
         expect.objectContaining({ status: WorkoutStatus.COMPLETED }),
       );
       expect(
@@ -155,8 +162,6 @@ describe('WorkoutService', () => {
         logExercises: [{ id: 10 }],
       };
       workoutRepo.findOne.mockResolvedValue(workout);
-      workoutRepo.save.mockImplementation((w) => Promise.resolve(w));
-      mockSavePass();
       mockAchievementService.checkAndUpdateRecords.mockResolvedValue(undefined);
       mockAchievementService.checkGlobalAchievements.mockResolvedValue(
         undefined,
@@ -164,7 +169,7 @@ describe('WorkoutService', () => {
 
       await service.complete(1, 1, { finalizedExercises: baseFinalized });
 
-      expect(workoutRepo.save).toHaveBeenCalledWith(
+      expect(mockEntityManager.save).toHaveBeenCalledWith(
         expect.objectContaining({ ended_at: expect.any(Date) }),
       );
     });
@@ -172,8 +177,6 @@ describe('WorkoutService', () => {
     it('should apply optional dto fields when provided', async () => {
       const workout = { id: 1, userId: 1, logExercises: [{ id: 10 }] };
       workoutRepo.findOne.mockResolvedValue(workout);
-      workoutRepo.save.mockImplementation((w) => Promise.resolve(w));
-      mockSavePass();
       mockAchievementService.checkAndUpdateRecords.mockResolvedValue(undefined);
       mockAchievementService.checkGlobalAchievements.mockResolvedValue(
         undefined,
@@ -185,7 +188,7 @@ describe('WorkoutService', () => {
         finalizedExercises: baseFinalized,
       });
 
-      expect(workoutRepo.save).toHaveBeenCalledWith(
+      expect(mockEntityManager.save).toHaveBeenCalledWith(
         expect.objectContaining({ calories: 500, rpe: 7 }),
       );
     });
@@ -212,8 +215,6 @@ describe('WorkoutService', () => {
         logExercises: [{ id: 10 }, { id: 11 }],
       };
       workoutRepo.findOne.mockResolvedValue(workout);
-      workoutRepo.save.mockImplementation((w) => Promise.resolve(w));
-      mockSavePass();
       mockAchievementService.checkAndUpdateRecords.mockResolvedValue(undefined);
       mockAchievementService.checkGlobalAchievements.mockResolvedValue(
         undefined,
@@ -221,7 +222,7 @@ describe('WorkoutService', () => {
 
       await service.complete(1, 1, { finalizedExercises: baseFinalized });
 
-      expect(logExerciseRepo.remove).toHaveBeenCalledWith([{ id: 11 }]);
+      expect(mockEntityManager.remove).toHaveBeenCalledWith([{ id: 11 }]);
     });
   });
 
@@ -254,26 +255,24 @@ describe('WorkoutService', () => {
         ],
       };
       const savedWorkout = { id: 2, userId: 1, name: 'Push Day' };
-      const savedLogExercise = { id: 20, workoutId: 2 };
 
       // findOne called twice: once for original, once at end of copyWorkout
       workoutRepo.findOne
         .mockResolvedValueOnce(original)
         .mockResolvedValueOnce({ ...savedWorkout, logExercises: [] });
-      workoutRepo.create.mockReturnValue(savedWorkout);
-      workoutRepo.save.mockResolvedValue(savedWorkout);
-      logExerciseRepo.create.mockReturnValue({ workoutId: 2, exerciseId: 10 });
-      logExerciseRepo.save.mockResolvedValue(savedLogExercise);
-      logSetRepo.create.mockImplementation((d) => d);
-      logSetRepo.save.mockResolvedValue([]);
 
       await service.copyWorkout(1, 1);
 
-      expect(workoutRepo.create).toHaveBeenCalledWith(
+      expect(mockDataSource.transaction).toHaveBeenCalled();
+      expect(mockEntityManager.create).toHaveBeenCalledWith(
+        WorkoutEntity,
         expect.objectContaining({ status: WorkoutStatus.IN_PROGRESS }),
       );
-      const setCreated = logSetRepo.create.mock.calls[0][0];
-      expect(setCreated.isCompleted).toBe(false);
+      const setCreateCall = mockEntityManager.create.mock.calls.find(
+        ([entity]) => entity === LogSetEntity,
+      );
+      expect(setCreateCall).toBeDefined();
+      expect(setCreateCall![1].isCompleted).toBe(false);
     });
 
     it('should copy workout without exercises when logExercises is empty', async () => {
@@ -289,13 +288,11 @@ describe('WorkoutService', () => {
       workoutRepo.findOne
         .mockResolvedValueOnce(original)
         .mockResolvedValueOnce({ ...savedWorkout, logExercises: [] });
-      workoutRepo.create.mockReturnValue(savedWorkout);
-      workoutRepo.save.mockResolvedValue(savedWorkout);
 
       await service.copyWorkout(1, 1);
 
-      expect(logExerciseRepo.save).not.toHaveBeenCalled();
-      expect(logSetRepo.save).not.toHaveBeenCalled();
+      // Збережено лише саме тренування — без вправ і сетів
+      expect(mockEntityManager.save).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -303,7 +300,7 @@ describe('WorkoutService', () => {
 
   describe('getLastPerformance', () => {
     it('should return null when no completed workout with the exercise exists', async () => {
-      workoutRepo.createQueryBuilder.mockReturnValue(makeQb(null));
+      logExerciseRepo.createQueryBuilder.mockReturnValue(makeQb([]));
 
       const result = await service.getLastPerformance(1, 10);
 
@@ -311,16 +308,19 @@ describe('WorkoutService', () => {
     });
 
     it('should return last performance with sets when workout found', async () => {
-      const workout = {
-        id: 5,
-        name: 'Pull Day',
-        started_at: new Date('2025-06-01'),
-      };
-      const logExercise = { id: 42 };
-      const sets = [{ order: 1, weight: 80, reps: 8 }];
-      workoutRepo.createQueryBuilder.mockReturnValue(makeQb(workout));
-      logExerciseRepo.createQueryBuilder.mockReturnValue(makeQb(logExercise));
-      logSetRepo.createQueryBuilder.mockReturnValue(makeQb(sets));
+      // Один DISTINCT ON запит повертає сирі рядки (вправа + тренування)
+      const rows = [
+        {
+          exercise_id: 10,
+          log_exercise_id: 42,
+          workout_id: 5,
+          workout_name: 'Pull Day',
+          started_at: new Date('2025-06-01'),
+        },
+      ];
+      const sets = [{ order: 1, weight: 80, reps: 8, logExerciseId: 42 }];
+      logExerciseRepo.createQueryBuilder.mockReturnValue(makeQb(rows));
+      logSetRepo.find.mockResolvedValue(sets);
 
       const result = await service.getLastPerformance(1, 10);
 

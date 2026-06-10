@@ -4,9 +4,13 @@ import { LogExerciseEntity } from '../entities/log-exercise.entity';
 import { WorkoutEntity } from '../entities/workout.entity';
 import { LogExerciseService } from './log-exercise.service';
 import { LogExerciseController } from './log-exercise.controller';
+import { WorkoutModule } from '../workout/workout.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([LogExerciseEntity, WorkoutEntity])],
+  imports: [
+    TypeOrmModule.forFeature([LogExerciseEntity, WorkoutEntity]),
+    WorkoutModule,
+  ],
   controllers: [LogExerciseController],
   providers: [LogExerciseService],
   exports: [LogExerciseService],
