@@ -6,10 +6,8 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { TemplateExerciseService } from './template-exercise.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateTemplateExerciseDto } from '../dto/template-exercise/create-template-exercise.dto';
 import { UpdateTemplateExerciseDto } from '../dto/template-exercise/update-template-exercise.dto';
@@ -22,7 +20,6 @@ import {
 
 @ApiTags('Template Exercises')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('templates/:templateId/exercises')
 export class TemplateExerciseController {
   constructor(

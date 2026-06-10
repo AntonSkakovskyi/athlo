@@ -8,10 +8,8 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { MealPlanService } from './meal-plan.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateMealPlanDto } from '../dto/meal-plan/create-meal-plan.dto';
 import { UpdateMealPlanDto } from '../dto/meal-plan/update-meal-plan.dto';
@@ -30,7 +28,6 @@ import {
 
 @ApiTags('Meal Plans')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('meal-plans')
 export class MealPlanController {
   constructor(private readonly mealPlanService: MealPlanService) {}

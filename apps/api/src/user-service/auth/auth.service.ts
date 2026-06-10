@@ -23,13 +23,14 @@ export class AuthService {
     }
 
     const user = await this.userService.create(registerDto);
+    const { password_hash, ...userWithoutPassword } = user;
     const token = this.generateToken(user.id, user.email);
 
-    return { user, token };
+    return { user: userWithoutPassword, token };
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.userService.findByEmail(loginDto.email);
+    const user = await this.userService.findByEmailWithPassword(loginDto.email);
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }

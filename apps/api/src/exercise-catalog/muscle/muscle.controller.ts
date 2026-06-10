@@ -1,6 +1,5 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { MuscleService } from './muscle.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -10,7 +9,6 @@ import {
 
 @ApiTags('Muscles')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('muscles')
 export class MuscleController {
   constructor(private readonly muscleService: MuscleService) {}

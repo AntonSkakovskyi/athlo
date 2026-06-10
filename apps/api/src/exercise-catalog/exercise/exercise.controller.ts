@@ -8,13 +8,11 @@ import {
   Param,
   Body,
   ParseIntPipe,
-  UseGuards,
 } from '@nestjs/common';
 import { ExerciseService } from './exercise.service';
 import { GetExercisesQueryDto } from '../dto/get-exercises-query.dto';
 import { CreateExerciseDto } from '../dto/create-exercise.dto';
 import { UpdateExerciseDto } from '../dto/update-exercise.dto';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import {
   ApiBearerAuth,
@@ -25,7 +23,6 @@ import {
 
 @ApiTags('Exercises')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('exercises')
 export class ExerciseController {
   constructor(private readonly exerciseService: ExerciseService) {}

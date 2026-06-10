@@ -4,14 +4,13 @@ import {
   Body,
   Patch,
   Delete,
-  UseGuards,
   Query,
   Param,
   ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import {
   ApiBearerAuth,
@@ -22,7 +21,6 @@ import {
 
 @ApiTags('Profile')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('profile')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -35,20 +33,22 @@ export class UserController {
   }
 
   @Get('search')
-  @ApiOperation({ summary: 'Search users' })
+  @ApiOperation({ summary: 'Search users (non-friends only, paginated)' })
   @ApiResponse({ status: 200, description: 'List of users' })
   searchUsers(
     @CurrentUser('id') currentUserId: number,
     @Query('query') query: string,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
   ) {
-    return this.userService.searchUsers(query, currentUserId);
+    return this.userService.searchUsers(query, currentUserId, limit, offset);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get another user profile' })
-  @ApiResponse({ status: 200, description: 'User profile data' })
+  @ApiOperation({ summary: 'Get another user public profile' })
+  @ApiResponse({ status: 200, description: 'Public user profile data' })
   getOtherProfile(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.getProfile(id);
+    return this.userService.getPublicProfile(id);
   }
 
   @Patch()

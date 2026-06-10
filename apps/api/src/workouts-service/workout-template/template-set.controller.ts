@@ -6,10 +6,8 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { TemplateSetService } from './template-set.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateTemplateSetDto } from '../dto/template-set/create-template-set.dto';
 import { UpdateTemplateSetDto } from '../dto/template-set/update-template-set.dto';
@@ -22,7 +20,6 @@ import {
 
 @ApiTags('Template Sets')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('templates/:templateId/exercises/:templateExerciseId/sets')
 export class TemplateSetController {
   constructor(private readonly templateSetService: TemplateSetService) {}

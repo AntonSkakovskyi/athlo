@@ -7,10 +7,8 @@ import {
   Post,
   Patch,
   Body,
-  UseGuards,
 } from '@nestjs/common';
 import { FriendService } from './friend.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { SendFriendRequestDto } from './dto/add-friend.dto';
 import {
@@ -22,7 +20,6 @@ import {
 
 @ApiTags('Friends')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('friends')
 export class FriendController {
   constructor(private readonly friendService: FriendService) {}

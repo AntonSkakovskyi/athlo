@@ -6,10 +6,8 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
 import { LogSetService } from './log-set.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateLogSetDto } from '../dto/log-set/create-log-set.dto';
 import { UpdateLogSetDto } from '../dto/log-set/update-log-set.dto';
@@ -22,7 +20,6 @@ import {
 
 @ApiTags('Workout Sets')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('workouts/:workoutId/exercises/:logExerciseId/sets')
 export class LogSetController {
   constructor(private readonly logSetService: LogSetService) {}

@@ -1,9 +1,15 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Public } from '../../common/decorators/public.decorator';
 
+// Відкриті маршрути (реєстрація/логін) — без JWT, але під rate-limit:
+// 10 спроб на хвилину з однієї IP-адреси
+@Public()
+@Throttle({ default: { limit: 10, ttl: 60_000 } })
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {

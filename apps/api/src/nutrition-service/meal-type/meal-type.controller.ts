@@ -1,6 +1,5 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { MealTypeService } from './meal-type.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -10,7 +9,6 @@ import {
 
 @ApiTags('Meal Types')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('meal-types')
 export class MealTypeController {
   constructor(private readonly mealTypeService: MealTypeService) {}

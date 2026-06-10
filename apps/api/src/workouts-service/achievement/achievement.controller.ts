@@ -3,10 +3,8 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  UseGuards,
 } from '@nestjs/common';
 import { AchievementService } from './achievement.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import {
   ApiBearerAuth,
@@ -17,7 +15,6 @@ import {
 
 @ApiTags('Achievements')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('achievements')
 export class AchievementController {
   constructor(private readonly achievementService: AchievementService) {}

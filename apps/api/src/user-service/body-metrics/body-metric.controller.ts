@@ -8,10 +8,8 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { BodyMetricService } from './body-metric.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreateBodyMetricDto } from './dto/create-body-metric.dto';
 import { UpdateBodyMetricDto } from './dto/update-body-metric.dto';
@@ -25,7 +23,6 @@ import {
 
 @ApiTags('Body Metrics')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('body-metrics')
 export class BodyMetricController {
   constructor(private readonly bodyMetricService: BodyMetricService) {}

@@ -8,10 +8,8 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { FoodService } from './food.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateFoodDto } from '../dto/food/create-food.dto';
 import { UpdateFoodDto } from '../dto/food/update-food.dto';
@@ -26,7 +24,6 @@ import {
 
 @ApiTags('Foods')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('foods')
 export class FoodController {
   constructor(private readonly foodService: FoodService) {}

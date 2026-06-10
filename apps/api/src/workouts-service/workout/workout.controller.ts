@@ -8,10 +8,8 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { WorkoutService } from './workout.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateWorkoutDto } from '../dto/workout/create-workout.dto';
 import { UpdateWorkoutDto } from '../dto/workout/update-workout.dto';
@@ -28,7 +26,6 @@ import { WorkoutStatus } from '@athlo/shared';
 
 @ApiTags('Workouts')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('workouts')
 export class WorkoutController {
   constructor(private readonly workoutService: WorkoutService) {}

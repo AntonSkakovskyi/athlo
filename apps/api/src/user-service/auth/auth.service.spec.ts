@@ -13,7 +13,11 @@ const mockBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 
 describe('AuthService', () => {
   let authService: AuthService;
-  let mockUserService: { findByEmail: jest.Mock; create: jest.Mock };
+  let mockUserService: {
+    findByEmail: jest.Mock;
+    findByEmailWithPassword: jest.Mock;
+    create: jest.Mock;
+  };
   let mockJwtService: { sign: jest.Mock };
 
   beforeEach(async () => {
@@ -24,6 +28,7 @@ describe('AuthService', () => {
           provide: UserService,
           useValue: {
             findByEmail: jest.fn(),
+            findByEmailWithPassword: jest.fn(),
             create: jest.fn(),
           },
         },
@@ -57,6 +62,7 @@ describe('AuthService', () => {
         email: 'test@test.com',
         fullName: 'Test',
         nickname: 'tester',
+        password_hash: 'hashed',
       };
       mockUserService.findByEmail.mockResolvedValue(null);
       mockUserService.create.mockResolvedValue(createdUser as any);
@@ -70,7 +76,8 @@ describe('AuthService', () => {
         registerDto.email,
       );
       expect(mockUserService.create).toHaveBeenCalledWith(registerDto);
-      expect(result.user).toEqual(createdUser);
+      expect(result.user).not.toHaveProperty('password_hash');
+      expect(result.user.email).toBe('test@test.com');
       expect(result.token).toBe('jwt-token');
     });
 
@@ -105,7 +112,7 @@ describe('AuthService', () => {
         nickname: 'tester',
         password_hash: 'hashed',
       };
-      mockUserService.findByEmail.mockResolvedValue(user as any);
+      mockUserService.findByEmailWithPassword.mockResolvedValue(user as any);
       mockBcrypt.compare.mockResolvedValue(true as never);
       mockJwtService.sign.mockReturnValue('jwt-token');
 
@@ -121,7 +128,7 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException when user is not found', async () => {
       // Arrange
       const loginDto = { email: 'noone@test.com', password: '123456' };
-      mockUserService.findByEmail.mockResolvedValue(null);
+      mockUserService.findByEmailWithPassword.mockResolvedValue(null);
 
       // Act & Assert
       await expect(authService.login(loginDto)).rejects.toThrow(
@@ -133,7 +140,7 @@ describe('AuthService', () => {
       // Arrange
       const loginDto = { email: 'user@test.com', password: 'wrong' };
       const user = { id: 1, email: 'user@test.com', password_hash: 'hashed' };
-      mockUserService.findByEmail.mockResolvedValue(user as any);
+      mockUserService.findByEmailWithPassword.mockResolvedValue(user as any);
       mockBcrypt.compare.mockResolvedValue(false as never);
 
       // Act & Assert

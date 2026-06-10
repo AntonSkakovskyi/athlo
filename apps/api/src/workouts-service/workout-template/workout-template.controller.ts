@@ -8,10 +8,8 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
 import { WorkoutTemplateService } from './workout-template.service';
-import { JwtAuthGuard } from '../../user-service/auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../user-service/auth/decorators/current-user.decorator';
 import { CreateWorkoutTemplateDto } from '../dto/workout-template/create-workout-template.dto';
 import { UpdateWorkoutTemplateDto } from '../dto/workout-template/update-workout-template.dto';
@@ -25,7 +23,6 @@ import {
 
 @ApiTags('Workout Templates')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('templates')
 export class WorkoutTemplateController {
   constructor(private readonly templateService: WorkoutTemplateService) {}
