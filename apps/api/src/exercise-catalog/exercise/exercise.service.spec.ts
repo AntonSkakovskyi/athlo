@@ -4,6 +4,8 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { ExerciseService } from './exercise.service';
 import { ExerciseEntity } from '../entities/exercise.entity';
 import { ExerciseMuscleEntity } from '../entities/exercise-muscle.entity';
+import { LogExerciseEntity } from '../../workouts-service/entities/log-exercise.entity';
+import { TemplateExerciseEntity } from '../../workouts-service/entities/template-exercise.entity';
 
 const createMockRepository = () => ({
   create: jest.fn(),
@@ -12,6 +14,7 @@ const createMockRepository = () => ({
   findOne: jest.fn(),
   remove: jest.fn(),
   delete: jest.fn(),
+  count: jest.fn().mockResolvedValue(0),
   createQueryBuilder: jest.fn(),
 });
 
@@ -30,6 +33,14 @@ describe('ExerciseService', () => {
         },
         {
           provide: getRepositoryToken(ExerciseMuscleEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(LogExerciseEntity),
+          useValue: createMockRepository(),
+        },
+        {
+          provide: getRepositoryToken(TemplateExerciseEntity),
           useValue: createMockRepository(),
         },
       ],
@@ -81,7 +92,7 @@ describe('ExerciseService', () => {
       await service.findAll({ page: 1, limit: 20, search: 'bench' });
 
       // Assert — search uses Brackets so andWhere receives an object, not a raw string
-      expect(qb.andWhere).toHaveBeenCalledTimes(2); // userId IS NULL + search Brackets
+      expect(qb.andWhere).toHaveBeenCalledTimes(3); // deletedAt IS NULL + userId IS NULL + search Brackets
     });
 
     it('should apply equipmentId filter when provided', async () => {

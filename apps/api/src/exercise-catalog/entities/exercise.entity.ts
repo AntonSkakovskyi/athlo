@@ -40,12 +40,6 @@ export class ExerciseEntity implements IExercise {
   @Column({ name: 'image_url', type: 'varchar', length: 512, nullable: true })
   imageUrl: string | null;
 
-  @Column({ name: 'gif_url', type: 'varchar', length: 512, nullable: true })
-  gifUrl: string | null;
-
-  @Column({ type: 'text', nullable: true })
-  instructions: string | null;
-
   @ManyToOne(() => EquipmentEntity)
   @JoinColumn({ name: 'equipment_id' })
   equipment: EquipmentEntity;
