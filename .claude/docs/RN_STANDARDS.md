@@ -199,6 +199,9 @@ const [workout, setWorkout] = useState(null);
 - Long `ScrollView` → replace with `FlatList` or `FlashList`
 - **Large / Paginated Lists:** If you suspect a list will have a large number of elements or needs pagination, always use the `<InfiniteList>` component from `@/components/ui/InfiniteList/InfiniteList`.
   - **Crucial Rule for InfiniteList:** Never place an `<InfiniteList>` inside a `ScrollView`. If a screen requires content above the list (e.g., profile headers, stat cards), pass that upper content to the `ListHeaderComponent` prop of `<InfiniteList>` instead of wrapping the entire screen in a `ScrollView`. This prevents the "VirtualizedLists should never be nested inside plain ScrollViews" warning and ensures optimal performance.
+- **Isolate high-frequency timers:** A `setInterval` that ticks every second must live in its own component with its own `useState`, never in a parent hook/screen. If a screen receives a `startedAt: string` and needs to display elapsed time, create a dedicated `<SomeDuration startedAt={...} />` child component so only that leaf re-renders per tick — not the whole screen tree.
+- **Stale-closure rule for derived state:** Never read React state after a synchronous `setState` call and expect fresh values — React batches updates. If you need the post-update value immediately (e.g., to fire an API call), compute it locally from the current state **before** calling `setState`, then use that local variable for downstream work.
+- **AsyncStorage persistence for long-lived UX flows:** Any in-memory state that would be catastrophic to lose if the OS kills the process (e.g., an active workout session) must be persisted. Save a recovery key (e.g., `workoutId`) to `AsyncStorage` when the session starts; clear it when it ends. On app boot, check for this key and restore the session from the server.
 - Responsive: `useWindowDimensions()` for sizing, `useSafeAreaInsets()` for safe areas
 
 ---
