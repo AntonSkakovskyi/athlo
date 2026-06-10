@@ -374,11 +374,27 @@ const USER_EXERCISES = [
   { name: 'Wall Sit',               tt: 'DISTANCE_AND_TIME',      eq: null,              pm: 'Quadriceps', sm: ['Glutes'] },
 ];
 
+async function addExerciseMuscles(client, exId, ex, muscles) {
+  await client.query(
+    `INSERT INTO exercise_muscles (exercise_id, muscle_id, is_primary, impact_percentage)
+     VALUES ($1, $2, true, 100) ON CONFLICT (exercise_id, muscle_id) DO NOTHING`,
+    [exId, muscles[ex.pm]],
+  );
+  for (const sm of ex.sm) {
+    if (!muscles[sm]) continue;
+    await client.query(
+      `INSERT INTO exercise_muscles (exercise_id, muscle_id, is_primary, impact_percentage)
+       VALUES ($1, $2, false, $3) ON CONFLICT (exercise_id, muscle_id) DO NOTHING`,
+      [exId, muscles[sm], Math.floor(60 / ex.sm.length)],
+    );
+  }
+}
+
+// SYSTEM data: the curated public exercise catalog (user_id IS NULL). This is the
+// stable anchor the workout simulation depends on; the ETL (wger) adds hundreds
+// more catalog exercises alongside these via the partial unique index on
+// LOWER(name) WHERE user_id IS NULL.
 async function seedExercises(client, { vt, tt, equip, muscles }) {
-  // The curated set below is the stable anchor the workout simulation depends on
-  // (named exercises with correct tracking types + muscles). The ETL (wger) adds
-  // hundreds more catalog exercises alongside these — they coexist, matched by
-  // the partial unique index on LOWER(name) WHERE user_id IS NULL.
   const exIds = [];
   for (const ex of EXERCISES) {
     const s = await client.query(`SELECT id FROM exercises WHERE LOWER(name)=LOWER($1) AND user_id IS NULL LIMIT 1`, [ex.name]);
@@ -391,30 +407,20 @@ async function seedExercises(client, { vt, tt, equip, muscles }) {
       user_id: null,
       visibility_type_id: vt['PUBLIC'],
     });
-
-    await client.query(
-      `INSERT INTO exercise_muscles (exercise_id, muscle_id, is_primary, impact_percentage)
-       VALUES ($1, $2, true, 100) ON CONFLICT (exercise_id, muscle_id) DO NOTHING`,
-      [exId, muscles[ex.pm]]
-    );
-    for (const sm of ex.sm) {
-      if (!muscles[sm]) continue;
-      await client.query(
-        `INSERT INTO exercise_muscles (exercise_id, muscle_id, is_primary, impact_percentage)
-         VALUES ($1, $2, false, $3) ON CONFLICT (exercise_id, muscle_id) DO NOTHING`,
-        [exId, muscles[sm], Math.floor(60 / ex.sm.length)]
-      );
-    }
+    await addExerciseMuscles(client, exId, ex, muscles);
     exIds.push(exId);
   }
   console.log(`  → ${exIds.length} system exercises ready`);
+  return exIds;
+}
 
-  // Seed custom exercises for USER_ID
+// TEST data: custom exercises owned by the showcase user (user-created feature).
+async function seedUserExercises(client, { vt, tt, equip, muscles }) {
   let userExCount = 0;
   for (const ex of USER_EXERCISES) {
     const s = await client.query(
       `SELECT id FROM exercises WHERE LOWER(name)=LOWER($1) AND user_id=$2 LIMIT 1`,
-      [ex.name, USER_ID]
+      [ex.name, USER_ID],
     );
     if (s.rows.length) continue;
 
@@ -425,25 +431,10 @@ async function seedExercises(client, { vt, tt, equip, muscles }) {
       user_id: USER_ID,
       visibility_type_id: vt['PRIVATE'],
     });
-
-    await client.query(
-      `INSERT INTO exercise_muscles (exercise_id, muscle_id, is_primary, impact_percentage)
-       VALUES ($1, $2, true, 100) ON CONFLICT (exercise_id, muscle_id) DO NOTHING`,
-      [exId, muscles[ex.pm]]
-    );
-    for (const sm of ex.sm) {
-      if (!muscles[sm]) continue;
-      await client.query(
-        `INSERT INTO exercise_muscles (exercise_id, muscle_id, is_primary, impact_percentage)
-         VALUES ($1, $2, false, $3) ON CONFLICT (exercise_id, muscle_id) DO NOTHING`,
-        [exId, muscles[sm], Math.floor(60 / ex.sm.length)]
-      );
-    }
+    await addExerciseMuscles(client, exId, ex, muscles);
     userExCount++;
   }
   if (userExCount > 0) console.log(`  → ${userExCount} custom user exercises seeded`);
-
-  return exIds;
 }
 
 async function seedBodyMetrics(client, { metricTypes }) {
@@ -687,26 +678,105 @@ function intakeFactor(d) {
   return base + rand(-0.07, 0.07);
 }
 
-async function seedNutrition(client, { mealTypes, units, vt }) {
+// Per-plan macro shapes shared by global and user meal plans.
+function buildPlanTemplates() {
+  const breakfast = (oats, ban) => [['Oats', oats], ['Banana', ban], ['Milk', 200], ['Greek Yogurt', 150]];
+  return {
+    bulk: [
+      { type: 'Breakfast', items: breakfast(100, 150) },
+      { type: 'Lunch',     items: [['Chicken Breast', 220], ['White Rice', 200], ['Broccoli', 120], ['Olive Oil', 15]] },
+      { type: 'Dinner',    items: [['Beef Steak', 220], ['Sweet Potato', 220], ['Spinach', 80]] },
+      { type: 'Snack',     items: [['Greek Yogurt', 200], ['Peanut Butter', 30], ['Apple', 150]] },
+    ],
+    cut: [
+      { type: 'Breakfast', items: [['Egg White', 200], ['Oats', 50], ['Blueberries', 80]] },
+      { type: 'Lunch',     items: [['Chicken Breast', 200], ['Quinoa', 120], ['Spinach', 100]] },
+      { type: 'Dinner',    items: [['Cod', 200], ['Broccoli', 150], ['Olive Oil', 8]] },
+      { type: 'Snack',     items: [['Cottage Cheese', 150], ['Almonds', 20]] },
+    ],
+    maintenance: [
+      { type: 'Breakfast', items: breakfast(70, 120) },
+      { type: 'Lunch',     items: [['Turkey Breast', 200], ['Brown Rice', 150], ['Green Beans', 100]] },
+      { type: 'Dinner',    items: [['Salmon', 180], ['Potato', 200], ['Broccoli', 100]] },
+      { type: 'Snack',     items: [['Greek Yogurt', 150], ['Walnuts', 20], ['Orange', 130]] },
+    ],
+  };
+}
+
+// Insert one meal plan (+ days/meals/items + optional user assignment). Idempotent.
+async function insertMealPlan(client, plan, { mealTypes, gId, foodIds, dishes }) {
+  const planEx = plan.creator
+    ? await client.query(`SELECT id FROM meal_plans WHERE creator_id=$1 AND name=$2 LIMIT 1`, [plan.creator, plan.name])
+    : await client.query(`SELECT id FROM meal_plans WHERE creator_id IS NULL AND name=$1 LIMIT 1`, [plan.name]);
+  if (planEx.rows.length) return;
+
+  const pickDish = () => (dishes.length ? dishes[randInt(0, dishes.length - 1)] : null);
+  const planId = await insertRow(client, 'meal_plans', {
+    creator_id: plan.creator, visibility_type_id: plan.vis,
+    name: plan.name, description: plan.desc, total_days: 7,
+  });
+
+  for (let day = 1; day <= 7; day++) {
+    const dayId = await insertRow(client, 'plan_days', { meal_plan_id: planId, day_number: day });
+    for (let mi = 0; mi < plan.meals.length; mi++) {
+      const m = plan.meals[mi];
+      const pmId = await insertRow(client, 'plan_meals', {
+        plan_day_id: dayId, meal_type_id: mealTypes[m.type], order: mi + 1,
+      });
+      // One day per week swaps dinner for a composite dish, for variety.
+      if (m.type === 'Dinner' && day % 3 === 0 && dishes.length) {
+        const dish = pickDish();
+        await insertRow(client, 'plan_meal_items', {
+          plan_meal_id: pmId, food_id: dish.id, unit_id: gId, amount: 350,
+        });
+        continue;
+      }
+      for (const [fname, amount] of m.items) {
+        if (!foodIds[fname]) continue;
+        await insertRow(client, 'plan_meal_items', {
+          plan_meal_id: pmId, food_id: foodIds[fname], unit_id: gId, amount,
+        });
+      }
+    }
+  }
+
+  if (plan.assignTo) {
+    // The unique partial index allows many inactive links but one active link
+    // per user — so a user can "own" several plans with one set active.
+    const umpEx = await client.query(
+      `SELECT id FROM user_meal_plans WHERE user_id=$1 AND meal_plan_id=$2 LIMIT 1`,
+      [plan.assignTo, planId],
+    );
+    if (!umpEx.rows.length) {
+      await insertRow(client, 'user_meal_plans', {
+        user_id: plan.assignTo, meal_plan_id: planId, is_active: plan.active,
+        started_at: new Date().toISOString().split('T')[0],
+      });
+    }
+  }
+}
+
+// SYSTEM nutrition: foods (creator IS NULL) + global public meal plans. Returns a
+// food context reused by the (optional) user-activity simulation.
+async function seedSystemNutrition(client, { mealTypes, units, vt }) {
   const gId = units['g'];
 
-  // 1) Resolve foods by name. Reuse ETL rows when present (they carry photos);
-  //    otherwise insert a fallback row + per-100g macros so the seed still works
-  //    standalone (no Spoonacular key). Prefer an ingredient over a same-named dish.
+  // Resolve system foods by name. Reuse ETL rows when present (they carry photos);
+  // otherwise insert a fallback row + per-100g macros so the seed still works
+  // standalone (no Spoonacular key). My-products (creatorId) are TEST data.
   const foodIds = {};
   for (const f of FOODS) {
+    if (f.creatorId) continue;
     const s = await client.query(
       `SELECT id FROM foods
-       WHERE LOWER(name)=LOWER($1) AND COALESCE(creator_id,0)=COALESCE($2,0)
+       WHERE LOWER(name)=LOWER($1) AND creator_id IS NULL
        ORDER BY (brand IS NULL) DESC LIMIT 1`,
-      [f.name, f.creatorId || null],
+      [f.name],
     );
     if (s.rows.length) {
       foodIds[f.name] = s.rows[0].id;
     } else {
-      foodIds[f.name] = await insertRow(client, 'foods', {
-        name: f.name, brand: f.brand, creator_id: f.creatorId || null,
-      });
+      foodIds[f.name] = await insertRow(client, 'foods', { name: f.name, brand: f.brand, creator_id: null });
       await insertRow(client, 'nutrition_facts', {
         food_id: foodIds[f.name], unit_id: gId, amount: 100,
         calories: f.calories, proteins: f.proteins, fats: f.fats, carbs: f.carbs,
@@ -718,11 +788,43 @@ async function seedNutrition(client, { mealTypes, units, vt }) {
   const dishRows = await client.query(
     `SELECT id, name FROM foods WHERE brand='Dish' AND creator_id IS NULL ORDER BY id`,
   );
-  const dishes = dishRows.rows;
-  const pickDish = () => (dishes.length ? dishes[randInt(0, dishes.length - 1)] : null);
-  console.log(`  → ${Object.keys(foodIds).length} foods ready (+${dishes.length} dishes)`);
+  const ctx = { mealTypes, gId, foodIds, dishes: dishRows.rows };
+  console.log(`  → ${Object.keys(foodIds).length} system foods ready (+${ctx.dishes.length} dishes)`);
 
-  // 2) Meal log — NUTRITION_DAYS for USER_ID with phase-based portions.
+  const T = buildPlanTemplates();
+  const globalPlans = [
+    { name: 'Balanced Maintenance', desc: 'Stable calorie maintenance plan',     creator: null, vis: vt['PUBLIC'], meals: T.maintenance, assignTo: null, active: false },
+    { name: 'High-Protein Bulk',    desc: 'System surplus plan for muscle gain',  creator: null, vis: vt['PUBLIC'], meals: T.bulk,        assignTo: null, active: false },
+    { name: 'Lean Cut Plan',        desc: 'System deficit plan for fat loss',     creator: null, vis: vt['PUBLIC'], meals: T.cut,         assignTo: null, active: false },
+  ];
+  for (const plan of globalPlans) await insertMealPlan(client, plan, ctx);
+  console.log('  → 3 global meal plans ready');
+
+  return ctx;
+}
+
+// TEST nutrition: my-products foods, meal/water logs for the showcase user, and
+// the user/friend/stranger meal plans. Reuses the system food context.
+async function seedUserNutrition(client, { vt }, ctx) {
+  const { mealTypes, gId, foodIds, dishes } = ctx;
+  const pickDish = () => (dishes.length ? dishes[randInt(0, dishes.length - 1)] : null);
+
+  // "My Products" — user-created foods (creatorId = USER_ID).
+  for (const f of FOODS) {
+    if (!f.creatorId) continue;
+    const s = await client.query(
+      `SELECT id FROM foods WHERE LOWER(name)=LOWER($1) AND creator_id=$2 LIMIT 1`,
+      [f.name, f.creatorId],
+    );
+    if (s.rows.length) { foodIds[f.name] = s.rows[0].id; continue; }
+    foodIds[f.name] = await insertRow(client, 'foods', { name: f.name, brand: f.brand, creator_id: f.creatorId });
+    await insertRow(client, 'nutrition_facts', {
+      food_id: foodIds[f.name], unit_id: gId, amount: 100,
+      calories: f.calories, proteins: f.proteins, fats: f.fats, carbs: f.carbs,
+    });
+  }
+
+  // Meal log — NUTRITION_DAYS for USER_ID with phase-based portions.
   const existingLogs = await client.query(`SELECT COUNT(*) FROM log_meals WHERE user_id=$1`, [USER_ID]);
   if (parseInt(existingLogs.rows[0].count) < NUTRITION_DAYS * 2) {
     const DINNER_VARIANTS = [
@@ -776,7 +878,7 @@ async function seedNutrition(client, { mealTypes, units, vt }) {
     console.log(`  → ${mlCount} meal logs for USER_ID over ${NUTRITION_DAYS} days`);
   }
 
-  // 3) Water logs — NUTRITION_DAYS with day-to-day variation.
+  // Water logs — NUTRITION_DAYS with day-to-day variation.
   const existingWater = await client.query(`SELECT COUNT(*) FROM water_logs WHERE user_id=$1`, [USER_ID]);
   if (parseInt(existingWater.rows[0].count) < NUTRITION_DAYS * 2) {
     const WATER = [[300, 8], [500, 12], [400, 15], [300, 18], [500, 21]];
@@ -792,97 +894,19 @@ async function seedNutrition(client, { mealTypes, units, vt }) {
     }
   }
 
-  // 4) Meal plans — 3 for the showcase user (only one active) + friend/stranger/public.
-  const breakfast = (oats, ban) => [['Oats', oats], ['Banana', ban], ['Milk', 200], ['Greek Yogurt', 150]];
-  const planTemplates = {
-    bulk: [
-      { type: 'Breakfast', items: breakfast(100, 150) },
-      { type: 'Lunch',     items: [['Chicken Breast', 220], ['White Rice', 200], ['Broccoli', 120], ['Olive Oil', 15]] },
-      { type: 'Dinner',    items: [['Beef Steak', 220], ['Sweet Potato', 220], ['Spinach', 80]] },
-      { type: 'Snack',     items: [['Greek Yogurt', 200], ['Peanut Butter', 30], ['Apple', 150]] },
-    ],
-    cut: [
-      { type: 'Breakfast', items: [['Egg White', 200], ['Oats', 50], ['Blueberries', 80]] },
-      { type: 'Lunch',     items: [['Chicken Breast', 200], ['Quinoa', 120], ['Spinach', 100]] },
-      { type: 'Dinner',    items: [['Cod', 200], ['Broccoli', 150], ['Olive Oil', 8]] },
-      { type: 'Snack',     items: [['Cottage Cheese', 150], ['Almonds', 20]] },
-    ],
-    maintenance: [
-      { type: 'Breakfast', items: breakfast(70, 120) },
-      { type: 'Lunch',     items: [['Turkey Breast', 200], ['Brown Rice', 150], ['Green Beans', 100]] },
-      { type: 'Dinner',    items: [['Salmon', 180], ['Potato', 200], ['Broccoli', 100]] },
-      { type: 'Snack',     items: [['Greek Yogurt', 150], ['Walnuts', 20], ['Orange', 130]] },
-    ],
-  };
-
-  const mealPlanConfigs = [
-    // Showcase user — 3 plans (one active).
-    { name: 'Clean Bulk Plan',     desc: '7-day high-protein surplus plan',  creator: USER_ID,   vis: vt['PRIVATE'],      meals: planTemplates.bulk,        assignTo: USER_ID, active: true  },
-    { name: 'Shred / Cut Plan',    desc: 'Higher-protein calorie deficit',   creator: USER_ID,   vis: vt['PRIVATE'],      meals: planTemplates.cut,         assignTo: USER_ID, active: false },
-    { name: 'Maintenance Plan',    desc: 'Balanced everyday eating',         creator: USER_ID,   vis: vt['PRIVATE'],      meals: planTemplates.maintenance, assignTo: USER_ID, active: false },
-    // Friend — 3 plans, FRIENDS_ONLY (one active).
-    { name: 'Friend Fat Loss Plan',desc: 'Low carb fat-loss week',           creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], meals: planTemplates.cut,         assignTo: FRIEND_ID, active: true  },
-    { name: 'Friend Lean Bulk',    desc: 'Gradual lean-gain plan',           creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], meals: planTemplates.bulk,        assignTo: FRIEND_ID, active: false },
-    { name: 'Friend Balanced Week',desc: 'Everyday balanced eating',         creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], meals: planTemplates.maintenance, assignTo: FRIEND_ID, active: false },
-    // Stranger — public.
-    { name: 'Public Keto Guide',   desc: 'A standard keto approach',         creator: STRANGER_ID, vis: vt['PUBLIC'],     meals: planTemplates.maintenance, assignTo: null,    active: false },
-    // Global system plans (no creator) — 3 public starter plans.
-    { name: 'Balanced Maintenance',desc: 'Stable calorie maintenance plan',  creator: null,      vis: vt['PUBLIC'],       meals: planTemplates.maintenance, assignTo: null,    active: false },
-    { name: 'High-Protein Bulk',   desc: 'System surplus plan for muscle gain', creator: null,   vis: vt['PUBLIC'],       meals: planTemplates.bulk,        assignTo: null,    active: false },
-    { name: 'Lean Cut Plan',       desc: 'System deficit plan for fat loss', creator: null,      vis: vt['PUBLIC'],       meals: planTemplates.cut,         assignTo: null,    active: false },
+  // User / friend / stranger meal plans (one active per owner).
+  const T = buildPlanTemplates();
+  const userPlans = [
+    { name: 'Clean Bulk Plan',     desc: '7-day high-protein surplus plan',  creator: USER_ID,   vis: vt['PRIVATE'],      meals: T.bulk,        assignTo: USER_ID,   active: true  },
+    { name: 'Shred / Cut Plan',    desc: 'Higher-protein calorie deficit',   creator: USER_ID,   vis: vt['PRIVATE'],      meals: T.cut,         assignTo: USER_ID,   active: false },
+    { name: 'Maintenance Plan',    desc: 'Balanced everyday eating',         creator: USER_ID,   vis: vt['PRIVATE'],      meals: T.maintenance, assignTo: USER_ID,   active: false },
+    { name: 'Friend Fat Loss Plan',desc: 'Low carb fat-loss week',           creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], meals: T.cut,         assignTo: FRIEND_ID, active: true  },
+    { name: 'Friend Lean Bulk',    desc: 'Gradual lean-gain plan',           creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], meals: T.bulk,        assignTo: FRIEND_ID, active: false },
+    { name: 'Friend Balanced Week',desc: 'Everyday balanced eating',         creator: FRIEND_ID, vis: vt['FRIENDS_ONLY'], meals: T.maintenance, assignTo: FRIEND_ID, active: false },
+    { name: 'Public Keto Guide',   desc: 'A standard keto approach',         creator: STRANGER_ID, vis: vt['PUBLIC'],     meals: T.maintenance, assignTo: null,      active: false },
   ];
-
-  for (const plan of mealPlanConfigs) {
-    const planEx = plan.creator
-      ? await client.query(`SELECT id FROM meal_plans WHERE creator_id=$1 AND name=$2 LIMIT 1`, [plan.creator, plan.name])
-      : await client.query(`SELECT id FROM meal_plans WHERE creator_id IS NULL AND name=$1 LIMIT 1`, [plan.name]);
-    if (planEx.rows.length) continue;
-
-    const planId = await insertRow(client, 'meal_plans', {
-      creator_id: plan.creator, visibility_type_id: plan.vis,
-      name: plan.name, description: plan.desc, total_days: 7,
-    });
-
-    for (let day = 1; day <= 7; day++) {
-      const dayId = await insertRow(client, 'plan_days', { meal_plan_id: planId, day_number: day });
-      for (let mi = 0; mi < plan.meals.length; mi++) {
-        const m = plan.meals[mi];
-        const pmId = await insertRow(client, 'plan_meals', {
-          plan_day_id: dayId, meal_type_id: mealTypes[m.type], order: mi + 1,
-        });
-        // One day per week swaps dinner for a composite dish, for variety.
-        if (m.type === 'Dinner' && day % 3 === 0 && dishes.length) {
-          const dish = pickDish();
-          await insertRow(client, 'plan_meal_items', {
-            plan_meal_id: pmId, food_id: dish.id, unit_id: gId, amount: 350,
-          });
-          continue;
-        }
-        for (const [fname, amount] of m.items) {
-          if (!foodIds[fname]) continue;
-          await insertRow(client, 'plan_meal_items', {
-            plan_meal_id: pmId, food_id: foodIds[fname], unit_id: gId, amount,
-          });
-        }
-      }
-    }
-
-    if (plan.assignTo) {
-      // The unique partial index allows many inactive links but one active link
-      // per user — so the user "owns" all three plans, with one set active.
-      const umpEx = await client.query(
-        `SELECT id FROM user_meal_plans WHERE user_id=$1 AND meal_plan_id=$2 LIMIT 1`,
-        [plan.assignTo, planId],
-      );
-      if (!umpEx.rows.length) {
-        await insertRow(client, 'user_meal_plans', {
-          user_id: plan.assignTo, meal_plan_id: planId, is_active: plan.active,
-          started_at: new Date().toISOString().split('T')[0],
-        });
-      }
-    }
-  }
-  console.log('  → Meal plans ready (3 user, 3 friend, 1 stranger, 3 global)');
+  for (const plan of userPlans) await insertMealPlan(client, plan, ctx);
+  console.log('  → User meal plans ready (3 user, 3 friend, 1 stranger)');
 }
 
 async function seedAchievements(client, exIds) {
@@ -999,10 +1023,21 @@ function runAchievementRecalc() {
 
 async function seed() {
   const withEtl = process.argv.includes('--with-etl');
+  // Test-data flag: by default only system/reference tables are filled; adding
+  // this flag also creates demo users and their workout/nutrition logging.
+  const withSimulation =
+    process.argv.includes('--with-simulation') ||
+    process.argv.includes('--simulate') ||
+    process.argv.includes('--demo');
+
+  console.log(
+    `[seed] mode: ${withSimulation ? 'system + simulation (test data)' : 'system tables only'}` +
+      `${withEtl ? ' | ETL: on' : ''}`,
+  );
 
   // Optionally (re)load the system catalogs (exercises/muscles/equipment +
-  // Spoonacular foods/dishes) before simulating usage. Runs as a child process
-  // so the ETL manages its own pool/transaction lifecycle.
+  // Spoonacular foods/dishes) before seeding. Runs as a child process so the ETL
+  // manages its own pool/transaction lifecycle.
   if (withEtl) {
     runScript(path.join(__dirname, 'etl', 'index.js'), ['--all'], 'ETL');
   }
@@ -1011,32 +1046,44 @@ async function seed() {
   try {
     await client.query('BEGIN');
 
-    console.log('\nPhase 0: Users & Friends');
-    await seedUsersAndFriends(client);
-
+    // ── System / reference data (always) ──────────────────────────────────
     console.log('\nPhase 1: Lookup tables');
     const ids = await seedLookups(client);
 
-    console.log('\nPhase 2: Exercises');
+    console.log('\nPhase 2: System exercises');
     const exIds = await seedExercises(client, ids);
 
-    console.log('\nPhase 3: Body metrics');
-    await seedBodyMetrics(client, ids);
+    console.log('\nPhase 3: System foods & global meal plans');
+    const nutritionCtx = await seedSystemNutrition(client, ids);
 
-    console.log('\nPhase 4: Workouts');
-    await seedWorkouts(client, ids, exIds);
-
-    console.log('\nPhase 5: Templates');
-    await seedTemplates(client, ids, exIds);
-    await seedPublicTemplates(client, ids, exIds);
-
-    console.log('\nPhase 6: Nutrition');
-    await seedNutrition(client, ids);
-
-    console.log('\nPhase 7: Achievements');
+    console.log('\nPhase 4: Achievement catalog');
     await seedAchievements(client, exIds);
 
-    console.log('\nPhase 8: Synchronizing sequences');
+    console.log('\nPhase 5: Global workout templates');
+    await seedPublicTemplates(client, ids, exIds);
+
+    // ── Test data / usage simulation (flagged) ────────────────────────────
+    if (withSimulation) {
+      console.log('\nPhase 6: Demo users & friends');
+      await seedUsersAndFriends(client);
+      await seedUserExercises(client, ids);
+
+      console.log('\nPhase 7: Body metrics');
+      await seedBodyMetrics(client, ids);
+
+      console.log('\nPhase 8: Workout logs');
+      await seedWorkouts(client, ids, exIds);
+
+      console.log('\nPhase 9: User templates');
+      await seedTemplates(client, ids, exIds);
+
+      console.log('\nPhase 10: Nutrition logs & user plans');
+      await seedUserNutrition(client, ids, nutritionCtx);
+    } else {
+      console.log('\n[seed] skipping demo users, workout/nutrition logs (no --with-simulation)');
+    }
+
+    console.log('\nPhase 11: Synchronizing sequences');
     await syncSequences(client);
 
     await client.query('COMMIT');
@@ -1051,12 +1098,15 @@ async function seed() {
     await pool.end();
   }
 
-  // Achievements/PRs are computed from committed data by the real service.
-  try {
-    runAchievementRecalc();
-  } catch (err) {
-    console.error('\n✗ Achievement recalc failed:', err.message);
-    process.exit(1);
+  // Achievements/PRs are computed from the simulated workouts by the real
+  // service — only relevant when test data was created.
+  if (withSimulation) {
+    try {
+      runAchievementRecalc();
+    } catch (err) {
+      console.error('\n✗ Achievement recalc failed:', err.message);
+      process.exit(1);
+    }
   }
   console.log('\n✓ Seed completed successfully!\n');
 }
