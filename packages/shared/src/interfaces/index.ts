@@ -2,7 +2,6 @@ export type { IWorkout } from './workout.interface.js';
 export type { IExercise } from './exercise.interface.js';
 export type { IMuscle } from './muscle.interface.js';
 export type { IEquipment } from './equipment.interface.js';
-export type { IExerciseCategory } from './exercise-category.interface.js';
 export type { ILogExercise } from './log-exercise.interface.js';
 export type { ILogExerciseWithSets } from './log-exercise-with-sets.interface.js';
 export type { ILogSet } from './log-set.interface.js';
@@ -41,6 +40,11 @@ export type { IBodyMetricProgress, IBodyMetricHistoryRecord } from './body-metri
 export type { IStatisticsSummary } from './statistics-summary.interface.js';
 export type { ILastPerformance } from './last-performance.interface.js';
 export type { IFinalizedSet, IFinalizedExercise } from './finalized-workout.interface.js';
+export type {
+  ICreateWorkoutRequest,
+  IUpdateWorkoutRequest,
+  ICompleteWorkoutRequest,
+} from './workout-request.interface.js';
 export type { IAchievement } from './achievement.interface.js';
 export type { IUserAchievement } from './user-achievement.interface.js';
 export type { IUserExerciseRecord } from './user-exercise-record.interface.js';

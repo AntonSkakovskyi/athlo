@@ -1,4 +1,4 @@
-import type { WorkoutStatus } from '../enums/workout-status.enum';
+import type { WorkoutStatus } from '../enums/workout-status.enum.js';
 
 export interface IWorkout {
   id: number;

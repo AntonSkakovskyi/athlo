@@ -7,8 +7,6 @@ export interface IExercise {
   userId?: number | null;
   visibilityTypeId?: number;
   imageUrl?: string | null;
-  gifUrl?: string | null;
-  instructions?: string | null;
   deletedAt?: Date | null;
   hasLoggedHistory?: boolean;
 }

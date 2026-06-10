@@ -10,6 +10,7 @@ export interface AnthropometryData {
 }
 
 export interface CalculatedGoals {
+  calorieGoal: number; // in kcal
   waterGoal: number; // in ml
   proteinGoal: number; // in g
   fatGoal: number; // in g
@@ -64,6 +65,10 @@ export function calculateGoals(data: AnthropometryData): CalculatedGoals {
       break;
   }
 
+  // Floor target calories so an aggressive deficit can't drop below a safe minimum.
+  const minCalories = gender === Gender.FEMALE ? 1200 : 1500;
+  targetCalories = Math.max(targetCalories, minCalories);
+
   const proteinGoal = Math.round((targetCalories * proteinRatio) / 4);
   const fatGoal = Math.round((targetCalories * fatRatio) / 9);
   const carbGoal = Math.round((targetCalories * carbRatio) / 4);
@@ -75,6 +80,7 @@ export function calculateGoals(data: AnthropometryData): CalculatedGoals {
   }
 
   return {
+    calorieGoal: Math.round(targetCalories),
     waterGoal,
     proteinGoal,
     fatGoal,

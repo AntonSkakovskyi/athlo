@@ -9,7 +9,7 @@ export interface IUser {
   
   // Anthropometry
   gender?: Gender;
-  age?: number;
+  birthDate?: string | null; // ISO date (YYYY-MM-DD)
   height?: number;
   weight?: number;
   activityLevel?: ActivityLevel;

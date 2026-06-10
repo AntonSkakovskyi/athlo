@@ -1,4 +1,4 @@
-import type { INutritionFact } from './nutrition-fact.interface';
+import type { INutritionFact } from './nutrition-fact.interface.js';
 
 export interface IFood {
   id: number;

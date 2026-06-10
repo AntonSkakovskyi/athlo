@@ -3,7 +3,8 @@ export interface IUserExerciseRecord {
   userId: number;
   exerciseId: number;
   logSetId: number | null;
-  metricType: string; // 'WEIGHT', 'REPS', 'DURATION', 'DISTANCE', '1RM'
+  metricTypeId: number;
   value: number;
   createdAt: Date;
+  trackingMetric?: { id: number; name: string } | null;
 }

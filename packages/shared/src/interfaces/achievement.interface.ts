@@ -8,7 +8,6 @@ export interface IAchievement {
   type: AchievementType;
   threshold: number;
   exerciseId: number | null;
+  trackingMetricId: number | null;
   trackingMetric: TrackingMetric | null;
-  iconUrl: string | null;
-  order: number;
 }

@@ -1,4 +1,4 @@
-import { ILogSet } from './log-set.interface';
+import { ILogSet } from './log-set.interface.js';
 
 export interface IExerciseProgressRecord {
   date: string;
