@@ -8,6 +8,7 @@ import {
 import type { IAchievement } from '@athlo/shared';
 import { AchievementType, TrackingMetric } from '@athlo/shared';
 import { ExerciseEntity } from '../../../exercise-catalog/entities/exercise.entity';
+import { TrackingMetricEntity } from '../../../exercise-catalog/entities/tracking-metric.entity';
 
 @Entity({ name: 'achievements' })
 export class AchievementEntity implements IAchievement {
@@ -29,21 +30,19 @@ export class AchievementEntity implements IAchievement {
   @Column({ name: 'exercise_id', type: 'int', nullable: true })
   exerciseId: number | null;
 
-  @Column({
-    name: 'tracking_metric',
-    type: 'varchar',
-    length: 50,
-    nullable: true,
-  })
-  trackingMetric: TrackingMetric | null;
-
-  @Column({ name: 'icon_url', type: 'varchar', length: 512, nullable: true })
-  iconUrl: string | null;
-
-  @Column({ default: 0 })
-  order: number;
+  @Column({ name: 'tracking_metric_id', type: 'int', nullable: true })
+  trackingMetricId: number | null;
 
   @ManyToOne(() => ExerciseEntity, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'exercise_id' })
   exercise: ExerciseEntity;
+
+  @ManyToOne(() => TrackingMetricEntity, { nullable: true, eager: false })
+  @JoinColumn({ name: 'tracking_metric_id' })
+  trackingMetricRelation: TrackingMetricEntity | null;
+
+  // Resolved via join — satisfies IAchievement.trackingMetric
+  get trackingMetric(): TrackingMetric | null {
+    return (this.trackingMetricRelation?.name as TrackingMetric) ?? null;
+  }
 }

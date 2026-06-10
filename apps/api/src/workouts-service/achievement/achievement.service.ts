@@ -4,13 +4,21 @@ import { Repository, In } from 'typeorm';
 import { AchievementEntity } from './entities/achievement.entity';
 import { UserAchievementEntity } from './entities/user-achievement.entity';
 import { UserExerciseRecordEntity } from './entities/user-exercise-record.entity';
+import { TrackingMetricEntity } from '../../exercise-catalog/entities/tracking-metric.entity';
 import { LogSetEntity } from '../entities/log-set.entity';
 import { LogExerciseEntity } from '../entities/log-exercise.entity';
 import { WorkoutEntity } from '../entities/workout.entity';
-import { AchievementType, WorkoutStatus } from '@athlo/shared';
+import {
+  AchievementType,
+  TrackingMetric,
+  TrackingType,
+  WorkoutStatus,
+} from '@athlo/shared';
 
 @Injectable()
 export class AchievementService {
+  private metricIdCache: Map<string, number> | null = null;
+
   constructor(
     @InjectRepository(AchievementEntity)
     private readonly achievementRepo: Repository<AchievementEntity>,
@@ -18,6 +26,8 @@ export class AchievementService {
     private readonly userAchievementRepo: Repository<UserAchievementEntity>,
     @InjectRepository(UserExerciseRecordEntity)
     private readonly userExerciseRecordRepo: Repository<UserExerciseRecordEntity>,
+    @InjectRepository(TrackingMetricEntity)
+    private readonly trackingMetricRepo: Repository<TrackingMetricEntity>,
     @InjectRepository(LogSetEntity)
     private readonly logSetRepo: Repository<LogSetEntity>,
     @InjectRepository(LogExerciseEntity)
@@ -26,8 +36,19 @@ export class AchievementService {
     private readonly workoutRepo: Repository<WorkoutEntity>,
   ) {}
 
+  private async ensureMetricCache(): Promise<Map<string, number>> {
+    if (!this.metricIdCache) {
+      const metrics = await this.trackingMetricRepo.find();
+      this.metricIdCache = new Map(metrics.map((m) => [m.name, m.id]));
+    }
+    return this.metricIdCache;
+  }
+
   async getAll() {
-    return this.achievementRepo.find({ order: { order: 'ASC' } });
+    return this.achievementRepo.find({
+      relations: { trackingMetricRelation: true },
+      order: { type: 'ASC', threshold: 'ASC' },
+    });
   }
 
   async getUserAchievements(userId: number) {
@@ -41,6 +62,7 @@ export class AchievementService {
   async getUserExerciseRecords(userId: number) {
     return this.userExerciseRecordRepo.find({
       where: { userId },
+      relations: { trackingMetric: true },
       order: { createdAt: 'DESC' },
     });
   }
@@ -48,6 +70,7 @@ export class AchievementService {
   async getExerciseRecord(userId: number, exerciseId: number) {
     return this.userExerciseRecordRepo.find({
       where: { userId, exerciseId },
+      relations: { trackingMetric: true },
       order: { createdAt: 'DESC' },
     });
   }
@@ -67,15 +90,17 @@ export class AchievementService {
     if (!logExercise) return;
 
     const exerciseId = logExercise.exerciseId;
-    const trackingTypeName =
-      logExercise.exercise?.trackingType?.name ?? 'WEIGHT_AND_REPS';
+    const trackingTypeName = (logExercise.exercise?.trackingType?.name ??
+      TrackingType.WEIGHT_AND_REPS) as TrackingType;
+
+    const metricIds = await this.ensureMetricCache();
+    const getMetricId = (name: TrackingMetric): number => metricIds.get(name)!;
 
     // Sort sets by order to correctly identify the first set that broke the record
     const sets = [...logExercise.sets].sort((a, b) => a.order - b.order);
     const logSetIds = sets.map((s) => s.id);
 
     // Rollback: clear any existing PR records for this specific set of logs
-    // so we can re-evaluate correctly (handles decreasing weight, unchecking set, etc.)
     if (logSetIds.length > 0) {
       await this.userExerciseRecordRepo.delete({
         userId,
@@ -89,20 +114,26 @@ export class AchievementService {
       where: { userId, exerciseId },
     });
 
-    const getAbsoluteMax = (metricType: string) => {
-      const records = currentRecords.filter((r) => r.metricType === metricType);
+    // Досягнення цієї вправи — один запит на весь перерахунок, а не в циклі по сетах
+    const exerciseAchievements = await this.achievementRepo.find({
+      where: { type: AchievementType.EXERCISE_PERSONAL_RECORD, exerciseId },
+    });
+
+    const getAbsoluteMax = (metricTypeId: number) => {
+      const records = currentRecords.filter((r) => r.metricTypeId === metricTypeId);
       if (records.length === 0) return 0;
       return Math.max(...records.map((r) => Number(r.value)));
     };
 
     const newRecordsToSave: UserExerciseRecordEntity[] = [];
+    const setsToSave: LogSetEntity[] = [];
 
     for (const set of sets) {
       if (!set.isCompleted) {
         if (set.isPR || set.achievementId) {
           set.isPR = false;
           set.achievementId = null;
-          await this.logSetRepo.save(set);
+          setsToSave.push(set);
         }
         continue;
       }
@@ -110,57 +141,58 @@ export class AchievementService {
       let setIsPR = false;
       let triggeredAchievementId: number | null = null;
 
-      const checkMetric = (metricType: string, newValue: number) => {
+      const checkMetric = (metricType: TrackingMetric, newValue: number) => {
         if (newValue > 0) {
-          const currentMax = getAbsoluteMax(metricType);
+          const metricTypeId = getMetricId(metricType);
+          const currentMax = getAbsoluteMax(metricTypeId);
           if (newValue > currentMax) {
             const newRecord = this.userExerciseRecordRepo.create({
               userId,
               exerciseId,
-              metricType,
+              metricTypeId,
               value: newValue,
               logSetId: set.id,
             });
             newRecordsToSave.push(newRecord);
-            currentRecords.push(newRecord); // To update the max for subsequent sets
+            currentRecords.push(newRecord);
             setIsPR = true;
           }
         }
       };
 
       switch (trackingTypeName) {
-        case 'WEIGHT_AND_REPS': {
+        case TrackingType.WEIGHT_AND_REPS: {
           const weight = Number(set.weight) || 0;
           const reps = Number(set.reps) || 0;
-          checkMetric('WEIGHT', weight);
-          checkMetric('REPS', reps);
+          checkMetric(TrackingMetric.WEIGHT, weight);
+          checkMetric(TrackingMetric.REPS, reps);
           if (weight > 0 && reps > 0) {
-            checkMetric('VOLUME', weight * reps);
+            checkMetric(TrackingMetric.VOLUME, weight * reps);
             const estimated = parseFloat((weight * (1 + reps / 30)).toFixed(2));
-            checkMetric('1RM', estimated);
+            checkMetric(TrackingMetric.ESTIMATED_1RM, estimated);
           }
           break;
         }
-        case 'REPS_ONLY': {
+        case TrackingType.REPS_ONLY: {
           const reps = Number(set.reps) || 0;
-          checkMetric('REPS', reps);
+          checkMetric(TrackingMetric.REPS, reps);
           break;
         }
-        case 'TIME_BASED': {
+        case TrackingType.TIME_BASED: {
           const duration = Number(set.duration) || 0;
-          checkMetric('DURATION', duration);
+          checkMetric(TrackingMetric.DURATION, duration);
           break;
         }
-        case 'DISTANCE_AND_TIME': {
+        case TrackingType.DISTANCE_AND_TIME: {
           const duration = Number(set.duration) || 0;
           const distance = Number(set.distance) || 0;
-          checkMetric('DURATION', duration);
-          checkMetric('DISTANCE', distance);
+          checkMetric(TrackingMetric.DURATION, duration);
+          checkMetric(TrackingMetric.DISTANCE, distance);
           break;
         }
-        case 'DISTANCE_ONLY': {
+        case TrackingType.DISTANCE_ONLY: {
           const distance = Number(set.distance) || 0;
-          checkMetric('DISTANCE', distance);
+          checkMetric(TrackingMetric.DISTANCE, distance);
           break;
         }
       }
@@ -168,16 +200,12 @@ export class AchievementService {
       if (setIsPR) {
         set.isPR = true;
 
-        // If it's a PR, also check for achievements
-        const exerciseAchievements = await this.achievementRepo.find({
-          where: { type: AchievementType.EXERCISE_PERSONAL_RECORD, exerciseId },
-        });
-
-        // We use the latest max value for this set
         for (const achievement of exerciseAchievements) {
-          const metricType = achievement.trackingMetric || '';
+          if (achievement.trackingMetricId == null) continue;
           const newlyAddedRecord = newRecordsToSave.find(
-            (r) => r.metricType === metricType && r.logSetId === set.id,
+            (r) =>
+              r.metricTypeId === achievement.trackingMetricId &&
+              r.logSetId === set.id,
           );
 
           if (newlyAddedRecord) {
@@ -193,43 +221,52 @@ export class AchievementService {
         }
 
         set.achievementId = triggeredAchievementId;
-        await this.logSetRepo.save(set);
+        setsToSave.push(set);
       } else {
-        // If not a PR, ensure flags are cleared (in case it was updated to lower values)
         if (set.isPR || set.achievementId) {
           set.isPR = false;
           set.achievementId = null;
-          await this.logSetRepo.save(set);
+          setsToSave.push(set);
         }
       }
     }
 
+    // Сети та рекорди зберігаються батчем — два запити замість запиту на сет
+    if (setsToSave.length > 0) {
+      await this.logSetRepo.save(setsToSave);
+    }
     if (newRecordsToSave.length > 0) {
       await this.userExerciseRecordRepo.save(newRecordsToSave);
     }
 
-    // Re-check exercise achievements: revoke if actual max no longer meets threshold
-    const exerciseAchievements = await this.achievementRepo.find({
-      where: { type: AchievementType.EXERCISE_PERSONAL_RECORD, exerciseId },
-    });
+    // Re-check exercise achievements: revoke if actual max no longer meets threshold.
+    const existingUnlocks =
+      exerciseAchievements.length > 0
+        ? await this.userAchievementRepo.find({
+            where: {
+              userId,
+              achievementId: In(exerciseAchievements.map((a) => a.id)),
+            },
+          })
+        : [];
+    const unlocksByAchievement = new Map(
+      existingUnlocks.map((u) => [u.achievementId, u]),
+    );
 
     for (const achievement of exerciseAchievements) {
-      const metricType = achievement.trackingMetric || '';
+      if (achievement.trackingMetricId == null) continue;
 
-      const allRecords = await this.userExerciseRecordRepo.find({
-        where: { userId, exerciseId, metricType },
-      });
+      const allRecords = currentRecords.filter(
+        (r) => r.metricTypeId === achievement.trackingMetricId,
+      );
       const currentMax =
         allRecords.length > 0
           ? Math.max(...allRecords.map((r) => Number(r.value)))
           : 0;
 
-      const existing = await this.userAchievementRepo.findOne({
-        where: { userId, achievementId: achievement.id },
-      });
+      const existing = unlocksByAchievement.get(achievement.id);
 
       if (!existing) {
-        // If not unlocked yet, but current max meets threshold, unlock it now
         if (currentMax >= Number(achievement.threshold)) {
           await this.userAchievementRepo.save(
             this.userAchievementRepo.create({
@@ -358,7 +395,6 @@ export class AchievementService {
   ): Promise<UserAchievementEntity | null> {
     if (!record) return null;
 
-    // Check if already unlocked
     const existing = await this.userAchievementRepo.findOne({
       where: { userId, achievementId: achievement.id },
     });

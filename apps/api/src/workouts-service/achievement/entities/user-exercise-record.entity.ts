@@ -4,14 +4,13 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  Unique,
-  UpdateDateColumn,
   CreateDateColumn,
 } from 'typeorm';
 import type { IUserExerciseRecord } from '@athlo/shared';
 import { UserEntity } from '../../../user-service/user/entities/user.entity';
 import { ExerciseEntity } from '../../../exercise-catalog/entities/exercise.entity';
 import { LogSetEntity } from '../../entities/log-set.entity';
+import { TrackingMetricEntity } from '../../../exercise-catalog/entities/tracking-metric.entity';
 import { ColumnNumericTransformer } from '../../entities/utils/column-numeric-transformer';
 
 @Entity({ name: 'user_exercise_records' })
@@ -28,8 +27,8 @@ export class UserExerciseRecordEntity implements IUserExerciseRecord {
   @Column({ name: 'log_set_id', nullable: true })
   logSetId: number | null;
 
-  @Column({ name: 'metric_type', type: 'varchar', length: 50 })
-  metricType: string;
+  @Column({ name: 'metric_type_id' })
+  metricTypeId: number;
 
   @Column({
     name: 'value',
@@ -54,4 +53,8 @@ export class UserExerciseRecordEntity implements IUserExerciseRecord {
   @ManyToOne(() => LogSetEntity, { nullable: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'log_set_id' })
   logSet: LogSetEntity;
+
+  @ManyToOne(() => TrackingMetricEntity, { eager: false })
+  @JoinColumn({ name: 'metric_type_id' })
+  trackingMetric: TrackingMetricEntity;
 }

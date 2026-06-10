@@ -4,10 +4,22 @@ import { AchievementService } from './achievement.service';
 import { AchievementEntity } from './entities/achievement.entity';
 import { UserAchievementEntity } from './entities/user-achievement.entity';
 import { UserExerciseRecordEntity } from './entities/user-exercise-record.entity';
+import { TrackingMetricEntity } from '../../exercise-catalog/entities/tracking-metric.entity';
 import { LogSetEntity } from '../entities/log-set.entity';
 import { LogExerciseEntity } from '../entities/log-exercise.entity';
 import { WorkoutEntity } from '../entities/workout.entity';
-import { AchievementType } from '@athlo/shared';
+import { AchievementType, TrackingMetric } from '@athlo/shared';
+
+const METRIC_IDS: Record<string, number> = {
+  [TrackingMetric.WEIGHT]: 1,
+  [TrackingMetric.REPS]: 2,
+  [TrackingMetric.DURATION]: 3,
+  [TrackingMetric.DISTANCE]: 4,
+  [TrackingMetric.VOLUME]: 5,
+  [TrackingMetric.ESTIMATED_1RM]: 6,
+};
+
+const MOCK_METRICS = Object.entries(METRIC_IDS).map(([name, id]) => ({ id, name }));
 
 const createMockRepository = () => ({
   find: jest.fn(),
@@ -39,6 +51,7 @@ describe('AchievementService', () => {
   let achievementRepo: ReturnType<typeof createMockRepository>;
   let userAchievementRepo: ReturnType<typeof createMockRepository>;
   let userExerciseRecordRepo: ReturnType<typeof createMockRepository>;
+  let trackingMetricRepo: ReturnType<typeof createMockRepository>;
   let logSetRepo: ReturnType<typeof createMockRepository>;
   let logExerciseRepo: ReturnType<typeof createMockRepository>;
   let workoutRepo: ReturnType<typeof createMockRepository>;
@@ -60,6 +73,10 @@ describe('AchievementService', () => {
           useValue: createMockRepository(),
         },
         {
+          provide: getRepositoryToken(TrackingMetricEntity),
+          useValue: createMockRepository(),
+        },
+        {
           provide: getRepositoryToken(LogSetEntity),
           useValue: createMockRepository(),
         },
@@ -77,12 +94,13 @@ describe('AchievementService', () => {
     service = module.get<AchievementService>(AchievementService);
     achievementRepo = module.get(getRepositoryToken(AchievementEntity));
     userAchievementRepo = module.get(getRepositoryToken(UserAchievementEntity));
-    userExerciseRecordRepo = module.get(
-      getRepositoryToken(UserExerciseRecordEntity),
-    );
+    userExerciseRecordRepo = module.get(getRepositoryToken(UserExerciseRecordEntity));
+    trackingMetricRepo = module.get(getRepositoryToken(TrackingMetricEntity));
     logSetRepo = module.get(getRepositoryToken(LogSetEntity));
     logExerciseRepo = module.get(getRepositoryToken(LogExerciseEntity));
     workoutRepo = module.get(getRepositoryToken(WorkoutEntity));
+
+    trackingMetricRepo.find.mockResolvedValue(MOCK_METRICS);
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -90,14 +108,15 @@ describe('AchievementService', () => {
   // ─── Getters ──────────────────────────────────────
 
   describe('getAll', () => {
-    it('should return all achievements ordered by order', async () => {
+    it('should return all achievements ordered by type and threshold', async () => {
       const achievements = [{ id: 1, name: 'First Workout' }];
       achievementRepo.find.mockResolvedValue(achievements);
 
       const result = await service.getAll();
 
       expect(achievementRepo.find).toHaveBeenCalledWith({
-        order: { order: 'ASC' },
+        relations: { trackingMetricRelation: true },
+        order: { type: 'ASC', threshold: 'ASC' },
       });
       expect(result).toEqual(achievements);
     });
@@ -119,7 +138,7 @@ describe('AchievementService', () => {
   describe('getExerciseRecord', () => {
     it('should return records for a user and exercise', async () => {
       const records = [
-        { id: 1, userId: 1, exerciseId: 5, metricType: 'WEIGHT', value: 100 },
+        { id: 1, userId: 1, exerciseId: 5, metricTypeId: METRIC_IDS[TrackingMetric.WEIGHT], value: 100 },
       ];
       userExerciseRecordRepo.find.mockResolvedValue(records);
 
@@ -127,6 +146,7 @@ describe('AchievementService', () => {
 
       expect(userExerciseRecordRepo.find).toHaveBeenCalledWith({
         where: { userId: 1, exerciseId: 5 },
+        relations: { trackingMetric: true },
         order: { createdAt: 'DESC' },
       });
       expect(result).toEqual(records);
@@ -161,17 +181,17 @@ describe('AchievementService', () => {
         sets: [set],
       });
       userExerciseRecordRepo.delete.mockResolvedValue({});
-      userExerciseRecordRepo.find.mockResolvedValue([]); // no existing records
+      userExerciseRecordRepo.find.mockResolvedValue([]);
       const newRecord = {
         userId: 1,
         exerciseId: 5,
-        metricType: 'WEIGHT',
+        metricTypeId: METRIC_IDS[TrackingMetric.WEIGHT],
         value: 100,
         logSetId: 10,
       };
       userExerciseRecordRepo.create.mockImplementation((d) => ({ ...d }));
       logSetRepo.save.mockResolvedValue(set);
-      achievementRepo.find.mockResolvedValue([]); // no exercise achievements
+      achievementRepo.find.mockResolvedValue([]);
       userExerciseRecordRepo.save.mockResolvedValue([newRecord]);
 
       await service.checkAndUpdateRecords(1, 1);
@@ -209,7 +229,9 @@ describe('AchievementService', () => {
       await service.checkAndUpdateRecords(1, 1);
 
       const saved = userExerciseRecordRepo.save.mock.calls[0][0] as any[];
-      const oneRmRecord = saved.find((r: any) => r.metricType === '1RM');
+      const oneRmRecord = saved.find(
+        (r: any) => r.metricTypeId === METRIC_IDS[TrackingMetric.ESTIMATED_1RM],
+      );
       expect(oneRmRecord).toBeDefined();
       expect(oneRmRecord.value).toBeCloseTo(133.33, 1);
     });
@@ -240,7 +262,7 @@ describe('AchievementService', () => {
 
       expect(set.isPR).toBe(false);
       expect(set.achievementId).toBeNull();
-      expect(logSetRepo.save).toHaveBeenCalledWith(set);
+      expect(logSetRepo.save).toHaveBeenCalledWith([set]);
     });
 
     it('should check REPS_ONLY metric correctly', async () => {
@@ -268,8 +290,12 @@ describe('AchievementService', () => {
       await service.checkAndUpdateRecords(1, 1);
 
       const saved = userExerciseRecordRepo.save.mock.calls[0][0] as any[];
-      expect(saved.find((r: any) => r.metricType === 'REPS')).toBeDefined();
-      expect(saved.find((r: any) => r.metricType === 'WEIGHT')).toBeUndefined();
+      expect(
+        saved.find((r: any) => r.metricTypeId === METRIC_IDS[TrackingMetric.REPS]),
+      ).toBeDefined();
+      expect(
+        saved.find((r: any) => r.metricTypeId === METRIC_IDS[TrackingMetric.WEIGHT]),
+      ).toBeUndefined();
     });
   });
 
@@ -287,8 +313,8 @@ describe('AchievementService', () => {
     ) => {
       workoutRepo.count.mockResolvedValue(counts.workouts ?? 0);
       logSetRepo.createQueryBuilder
-        .mockReturnValueOnce(makeQb(counts.sets ?? 0)) // getCount for totalSets
-        .mockReturnValueOnce(makeQb({ total: String(counts.weight ?? 0) })); // getRawOne for totalWeight
+        .mockReturnValueOnce(makeQb(counts.sets ?? 0))
+        .mockReturnValueOnce(makeQb({ total: String(counts.weight ?? 0) }));
       workoutRepo.createQueryBuilder.mockReturnValue(
         makeQb({ total: String(counts.time ?? 0) }),
       );
@@ -305,7 +331,7 @@ describe('AchievementService', () => {
         threshold: 10,
       };
       achievementRepo.find.mockResolvedValue([achievement]);
-      userAchievementRepo.find.mockResolvedValue([]); // nothing unlocked yet
+      userAchievementRepo.find.mockResolvedValue([]);
       userAchievementRepo.create.mockImplementation((d) => ({ ...d }));
       userAchievementRepo.save.mockResolvedValue({});
 
@@ -337,7 +363,7 @@ describe('AchievementService', () => {
         threshold: 10,
       };
       achievementRepo.find.mockResolvedValue([achievement]);
-      userAchievementRepo.find.mockResolvedValue([{ achievementId: 1 }]); // already unlocked
+      userAchievementRepo.find.mockResolvedValue([{ achievementId: 1 }]);
 
       await service.checkGlobalAchievements(1);
 

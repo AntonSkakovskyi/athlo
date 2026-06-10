@@ -5,6 +5,7 @@ import { AchievementController } from './achievement.controller';
 import { AchievementEntity } from './entities/achievement.entity';
 import { UserAchievementEntity } from './entities/user-achievement.entity';
 import { UserExerciseRecordEntity } from './entities/user-exercise-record.entity';
+import { TrackingMetricEntity } from '../../exercise-catalog/entities/tracking-metric.entity';
 import { LogSetEntity } from '../entities/log-set.entity';
 import { LogExerciseEntity } from '../entities/log-exercise.entity';
 import { WorkoutEntity } from '../entities/workout.entity';
@@ -15,6 +16,7 @@ import { WorkoutEntity } from '../entities/workout.entity';
       AchievementEntity,
       UserAchievementEntity,
       UserExerciseRecordEntity,
+      TrackingMetricEntity,
       LogSetEntity,
       LogExerciseEntity,
       WorkoutEntity,
