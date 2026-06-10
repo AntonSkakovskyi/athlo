@@ -5,8 +5,7 @@
  * Usage:
  *   node apps/api/etl/index.js --source=wger --limit=850
  *   node apps/api/etl/index.js --source=exercisedb --enrich-gifs
- *   node apps/api/etl/index.js --source=off --categories=cereals,dairy --limit=500
- *   node apps/api/etl/index.js --source=fdc --datatype=Foundation --limit=300
+ *   node apps/api/etl/index.js --source=spoonacular
  *   node apps/api/etl/index.js --all
  *   node apps/api/etl/index.js --all --dry-run
  *

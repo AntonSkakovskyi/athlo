@@ -10,13 +10,13 @@
  *
  * Usage:
  *   node apps/api/etl/dump.js                          # all sources, default limits
- *   node apps/api/etl/dump.js --source=off --limit=50
- *   node apps/api/etl/dump.js --source=fdc --datatype=Foundation --limit=100
+ *   node apps/api/etl/dump.js --source=wger --limit=100
+ *   node apps/api/etl/dump.js --source=spoonacular --limit=12
  *   node apps/api/etl/dump.js --out-dir=./tmp/dumps
  *
  * Notes:
- *   - OFF/FDC are rate-limited (4s between requests) — keep limits small.
- *   - FDC needs USDA_FDC_API_KEY in apps/api/.env (free at api.data.gov/signup).
+ *   - Spoonacular needs SPOONACULAR_API_KEY in apps/api/.env (free at
+ *     spoonacular.com/food-api); keep limits small to stay within 150 pts/day.
  */
 const fs = require('fs');
 const path = require('path');
