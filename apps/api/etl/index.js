@@ -4,7 +4,6 @@
  *
  * Usage:
  *   node apps/api/etl/index.js --source=wger --limit=850
- *   node apps/api/etl/index.js --source=exercisedb --enrich-gifs
  *   node apps/api/etl/index.js --source=spoonacular
  *   node apps/api/etl/index.js --all
  *   node apps/api/etl/index.js --all --dry-run
@@ -14,7 +13,6 @@
 const db = require('./lib/db');
 const lookups = require('./transform/lookups');
 const wger = require('./sources/wger');
-const exercisedb = require('./sources/exercisedb');
 const spoonacular = require('./sources/spoonacular');
 
 function parseArgs(argv) {
@@ -43,6 +41,7 @@ function help() {
   --limit=N                             cap items fetched (per source)
   --enrich-gifs                         exercisedb: name-match GIFs onto wger rows
   --dry-run                             fetch + transform, skip DB writes
+  --from-dump                           skip API, load from etl/dumps/ instead
   --help                                this message
 `);
 }
@@ -69,9 +68,10 @@ async function main() {
   }
 
   const dryRun = Boolean(args['dry-run']);
+  const fromDump = Boolean(args['from-dump']);
   const limit = toInt(args.limit, undefined);
 
-  const baseOptions = { dryRun, limit };
+  const baseOptions = { dryRun, limit, fromDump };
 
   console.log(`[etl] starting${dryRun ? ' (dry-run)' : ''}`);
 

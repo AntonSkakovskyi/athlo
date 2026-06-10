@@ -15,24 +15,20 @@ const { queryOne } = require('../lib/db');
 const EXERCISE_UPSERT_COLS = [
   'name',
   'description',
-  'instructions',
   'equipment_id',
   'tracking_type_id',
   'visibility_type_id',
   'image_url',
-  'gif_url',
 ];
 
 async function upsertExercise(client, payload) {
   const data = {
     name: payload.name,
     description: payload.description ?? null,
-    instructions: payload.instructions ?? null,
     equipment_id: payload.equipmentId ?? null,
     tracking_type_id: payload.trackingTypeId ?? null,
     visibility_type_id: payload.visibilityTypeId ?? 1,
     image_url: payload.imageUrl ?? null,
-    gif_url: payload.gifUrl ?? null,
   };
 
   const cols = EXERCISE_UPSERT_COLS.map((c) => `"${c}"`).join(', ');
@@ -42,7 +38,7 @@ async function upsertExercise(client, payload) {
   // never overwrite description if it was hand-edited (COALESCE keeps existing).
   const updateClause = EXERCISE_UPSERT_COLS.filter((c) => c !== 'name')
     .map((c) =>
-      c === 'description' || c === 'instructions'
+      c === 'description'
         ? `"${c}" = COALESCE("exercises"."${c}", EXCLUDED."${c}")`
         : `"${c}" = EXCLUDED."${c}"`,
     )
@@ -92,18 +88,4 @@ async function syncExerciseMuscles(client, exerciseId, muscles) {
   }
 }
 
-/**
- * Update only the gif_url field — used by the ExerciseDB GIF-enrichment step.
- * Also fills `instructions` if currently null.
- */
-async function setGifAndInstructions(client, exerciseId, gifUrl, instructions) {
-  await client.query(
-    `UPDATE "exercises"
-     SET "gif_url" = COALESCE($2, "gif_url"),
-         "instructions" = COALESCE("instructions", $3)
-     WHERE id = $1`,
-    [exerciseId, gifUrl, instructions],
-  );
-}
-
-module.exports = { upsertExercise, syncExerciseMuscles, setGifAndInstructions };
+module.exports = { upsertExercise, syncExerciseMuscles };

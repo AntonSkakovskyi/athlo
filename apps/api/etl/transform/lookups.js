@@ -1,6 +1,6 @@
 /**
- * Reference-data upserts (visibility_type, tracking_types, exercise_categories,
- * units, muscles, equipments). All idempotent by name.
+ * Reference-data upserts (visibility_type, tracking_types, units, muscles,
+ * equipments). All idempotent by name.
  */
 const { ensureByName, queryOne } = require('../lib/db');
 const { normalize } = require('../lib/normalize');
@@ -8,13 +8,11 @@ const { normalize } = require('../lib/normalize');
 const VISIBILITY = ['PUBLIC', 'PRIVATE', 'FRIENDS_ONLY'];
 const TRACKING_TYPES = ['WEIGHT_AND_REPS', 'REPS_ONLY', 'TIME_BASED', 'DISTANCE_AND_TIME'];
 const UNITS = ['g', 'ml', 'pcs', 'cup', 'tbsp', 'tsp', 'oz'];
-const CATEGORIES = ['Cardio', 'Legs', 'Chest', 'Arms', 'Abs', 'Back', 'Shoulders'];
 
 async function ensureCoreLookups(client) {
   for (const name of VISIBILITY) await ensureByName(client, 'visibility_type', name);
   for (const name of TRACKING_TYPES) await ensureByName(client, 'tracking_types', name);
   for (const name of UNITS) await ensureByName(client, 'units', name);
-  for (const name of CATEGORIES) await ensureByName(client, 'exercise_categories', name);
 }
 
 /**
@@ -39,33 +37,19 @@ async function ensureLookupByName(client, table, name, cache) {
 }
 
 /**
- * Upsert a muscle keyed by name (case-insensitive). If a row already exists,
- * fill in any null metadata fields (name_en, image_url, image_url_secondary)
- * but never overwrite values a user/admin may have edited.
+ * Upsert a muscle keyed by name (case-insensitive).
  */
-async function upsertMuscle(client, { name, nameEn, imageUrl, imageUrlSecondary }) {
+async function upsertMuscle(client, { name }) {
   const existing = await queryOne(
     client,
     `SELECT id FROM "muscles" WHERE LOWER(name) = LOWER($1) LIMIT 1`,
     [name],
   );
-  if (existing) {
-    await client.query(
-      `UPDATE "muscles"
-       SET "name_en" = COALESCE("name_en", $2),
-           "image_url" = COALESCE("image_url", $3),
-           "image_url_secondary" = COALESCE("image_url_secondary", $4)
-       WHERE id = $1`,
-      [existing.id, nameEn, imageUrl, imageUrlSecondary],
-    );
-    return existing.id;
-  }
+  if (existing) return existing.id;
   const inserted = await queryOne(
     client,
-    `INSERT INTO "muscles" ("name", "name_en", "image_url", "image_url_secondary")
-     VALUES ($1, $2, $3, $4)
-     RETURNING id`,
-    [name, nameEn, imageUrl, imageUrlSecondary],
+    `INSERT INTO "muscles" ("name") VALUES ($1) RETURNING id`,
+    [name],
   );
   return inserted.id;
 }

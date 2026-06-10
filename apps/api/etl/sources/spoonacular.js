@@ -17,18 +17,25 @@
  * Env: SPOONACULAR_API_KEY (free at https://spoonacular.com/food-api).
  *
  * Free tier = 150 points/day. Endpoints are cheap (ingredient info ~1 pt, recipe
- * search ~1 pt) but a full run sits close to the cap, so:
- *   - already-imported ingredients are skipped *before* spending an API call
- *     (a re-run the next day resumes where the quota stopped), and
- *   - a 402 ("quota exhausted") is treated as a clean stop: whatever was
- *     collected so far is still written.
+ * search ~1 pt) but a full run sits close to the cap, so EVERY successful fetch
+ * is checkpointed to `etl/dumps/spoonacular.foods.json` *before* it touches the
+ * DB. If the DB write later fails, or the next day's run picks up from where
+ * the quota cut us off, we never re-spend points on items already collected.
+ *
+ * Re-run flags:
+ *   --from-dump       skip the API entirely and write the existing dump to DB
+ *   (default)         fetch missing items + write everything (existing + new)
  */
+const path = require('path');
 const { pool, withTransaction } = require('../lib/db');
-const { createClient } = require('../lib/http');
+const { createClient, mapConcurrent } = require('../lib/http');
 const { upsertFood, ensureNutritionFact, validateMacros } = require('../transform/food');
+const { checkpoint } = require('../lib/dumpStore');
 
 const SPOON_BASE = 'https://api.spoonacular.com';
 const IMG_BASE = 'https://img.spoonacular.com';
+const DUMP_FILE = 'spoonacular.foods.json';
+const FETCH_CONCURRENCY = 5;
 
 // Sentinel thrown when the daily point quota is exhausted (HTTP 402).
 class QuotaExhausted extends Error {}
@@ -81,8 +88,10 @@ function makeClient() {
       'SPOONACULAR_API_KEY missing in env — get one free at https://spoonacular.com/food-api',
     );
   }
-  // 1 req/s is well within free-tier limits and polite.
-  const http = createClient({ baseURL: SPOON_BASE, minDelayMs: 1100, maxRetries: 3 });
+  // 200 ms floor between requests; combined with FETCH_CONCURRENCY this stays
+  // well under Spoonacular's burst limits while finishing the curated catalog
+  // ~5x faster than the old serial 1.1 s pacing.
+  const http = createClient({ baseURL: SPOON_BASE, minDelayMs: 200, maxRetries: 3 });
   return { http, apiKey };
 }
 
@@ -97,12 +106,9 @@ function nutrientAmount(nutrients, name) {
   return Number.isFinite(v) ? v : null;
 }
 
-async function ingredientExists(name) {
-  const r = await pool.query(
-    `SELECT 1 FROM foods WHERE LOWER(name) = LOWER($1) AND brand IS NULL AND creator_id IS NULL LIMIT 1`,
-    [name],
-  );
-  return r.rowCount > 0;
+// Stable identity for dedup against the on-disk dump.
+function foodKey(food) {
+  return `${(food.brand || '').toLowerCase()}::${(food.name || '').toLowerCase()}`;
 }
 
 // ── Extract ──────────────────────────────────────────────────────────────────
@@ -182,68 +188,110 @@ async function writeFoods(foods) {
   return written;
 }
 
-async function run({ limit, dryRun } = {}) {
-  const { http, apiKey } = makeClient();
+// ── Run ──────────────────────────────────────────────────────────────────────
+async function run({ limit, dryRun, fromDump } = {}) {
   const cap = Number.isFinite(limit) ? limit : Infinity;
-  const collected = [];
+  const cp = checkpoint(DUMP_FILE);
+  const seen = new Set(cp.items.map(foodKey));
   let quota = false;
 
-  // 1) Ingredients — skip ones already in the DB so a re-run resumes past quota.
-  for (const name of INGREDIENTS) {
-    if (collected.length >= cap) break;
-    if (!dryRun && (await ingredientExists(name))) continue;
-    try {
-      const mapped = await fetchIngredient(http, apiKey, name);
-      if (!mapped) {
-        console.warn(`[spoonacular] no ingredient match for "${name}"`);
-        continue;
-      }
-      if (!validateMacros(mapped)) {
-        console.warn(`[spoonacular] dropped "${name}" — implausible macros`);
-        continue;
-      }
-      collected.push(mapped);
-      process.stdout.write(`\r[spoonacular] ingredients collected ${collected.length}…`);
-    } catch (err) {
-      if (isQuotaError(err)) { quota = true; break; }
-      console.warn(`[spoonacular] ingredient "${name}" failed: ${err.message}`);
-    }
+  if (cp.items.length) {
+    console.log(`[spoonacular] resumed from dump: ${cp.items.length} items already collected`);
   }
-  process.stdout.write('\n');
 
-  // 2) Dishes — 2 recipes per query for variety.
-  if (!quota) {
-    for (const query of DISH_QUERIES) {
-      if (collected.length >= cap) break;
+  if (fromDump) {
+    console.log('[spoonacular] --from-dump: skipping API, using disk only');
+  } else {
+    const { http, apiKey } = makeClient();
+
+    // 1) Ingredients — parallel fetch, but skip ones already in the dump so a
+    //    re-run never re-spends quota on something we already have on disk.
+    const todo = INGREDIENTS.filter((name) => !seen.has(foodKey({ name, brand: null })));
+    let fetched = cp.items.filter((f) => f.brand === null).length;
+
+    await mapConcurrent(todo, FETCH_CONCURRENCY, async (name) => {
+      if (quota || cp.items.length >= cap) return;
       try {
-        const dishes = await fetchDishes(http, apiKey, query, 2);
-        for (const dish of dishes) {
-          if (collected.length >= cap) break;
-          if (!dish.name || !validateMacros(dish)) continue;
-          collected.push(dish);
+        const mapped = await fetchIngredient(http, apiKey, name);
+        if (!mapped) {
+          console.warn(`[spoonacular] no ingredient match for "${name}"`);
+          return;
         }
-        process.stdout.write(`\r[spoonacular] +dishes, total ${collected.length}…`);
+        if (!validateMacros(mapped)) {
+          console.warn(`[spoonacular] dropped "${name}" — implausible macros`);
+          return;
+        }
+        cp.append(mapped);
+        seen.add(foodKey(mapped));
+        fetched += 1;
+        process.stdout.write(`\r[spoonacular] ingredients ${fetched}/${INGREDIENTS.length}…`);
       } catch (err) {
-        if (isQuotaError(err)) { quota = true; break; }
-        console.warn(`[spoonacular] dish "${query}" failed: ${err.message}`);
+        if (isQuotaError(err)) {
+          quota = true;
+          return;
+        }
+        console.warn(`\n[spoonacular] ingredient "${name}" failed: ${err.message}`);
       }
-    }
+    });
     process.stdout.write('\n');
+
+    // 2) Dishes — also parallel; each query returns up to 2 recipes.
+    if (!quota && cp.items.length < cap) {
+      const dishQueries = DISH_QUERIES.filter((q) => {
+        // Crude "have we already fetched dishes for this query?" check: if any
+        // existing dump entry's name shares 2+ tokens with the query, skip it.
+        const tokens = q.toLowerCase().split(' ');
+        return !cp.items.some(
+          (f) =>
+            f.brand === 'Dish' &&
+            tokens.filter((t) => f.name.toLowerCase().includes(t)).length >= Math.min(2, tokens.length),
+        );
+      });
+      let queried = 0;
+
+      await mapConcurrent(dishQueries, FETCH_CONCURRENCY, async (query) => {
+        if (quota || cp.items.length >= cap) return;
+        try {
+          const dishes = await fetchDishes(http, apiKey, query, 2);
+          for (const dish of dishes) {
+            if (cp.items.length >= cap) break;
+            if (!dish.name || !validateMacros(dish)) continue;
+            const key = foodKey(dish);
+            if (seen.has(key)) continue;
+            cp.append(dish);
+            seen.add(key);
+          }
+          queried += 1;
+          process.stdout.write(`\r[spoonacular] dishes ${queried}/${dishQueries.length} (total ${cp.items.length})…`);
+        } catch (err) {
+          if (isQuotaError(err)) {
+            quota = true;
+            return;
+          }
+          console.warn(`\n[spoonacular] dish "${query}" failed: ${err.message}`);
+        }
+      });
+      process.stdout.write('\n');
+    }
+
+    cp.flush();
+
+    if (quota) {
+      console.warn('[spoonacular] daily point quota reached (402) — saved progress, re-run tomorrow to continue');
+    }
   }
 
-  if (quota) {
-    console.warn('[spoonacular] daily point quota reached (402) — writing what we have, re-run tomorrow to continue');
-  }
-  console.log(`[spoonacular] collected ${collected.length} foods (${collected.filter((f) => f.brand === 'Dish').length} dishes)`);
+  const dishes = cp.items.filter((f) => f.brand === 'Dish').length;
+  console.log(`[spoonacular] dump has ${cp.items.length} foods (${dishes} dishes)`);
 
   if (dryRun) {
-    for (const f of collected.slice(0, 12)) {
+    for (const f of cp.items.slice(0, 12)) {
       console.log(`  · ${f.name}${f.brand ? ` [${f.brand}]` : ''}  kcal=${f.calories} P=${f.proteins} F=${f.fats} C=${f.carbs}  img=${f.imageUrl ? 'y' : 'n'}`);
     }
     return;
   }
 
-  const written = await writeFoods(collected);
+  const written = await writeFoods(cp.items);
   console.log(`[spoonacular] done. upserted=${written}`);
 }
 

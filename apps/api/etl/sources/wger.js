@@ -13,6 +13,7 @@
 const { createClient, sleep } = require('../lib/http');
 const { withTransaction } = require('../lib/db');
 const { stripHtml } = require('../lib/normalize');
+const dumpStore = require('../lib/dumpStore');
 const {
   loadNameIndex,
   ensureLookupByName,
@@ -25,6 +26,7 @@ const WGER_BASE = 'https://wger.de/api/v2';
 const EN_LANGUAGE = 2;
 const STATUS_APPROVED = 2;
 const PAGE_SIZE = 100;
+const DUMP_FILE = 'wger.raw.json';
 
 const http = createClient({
   baseURL: WGER_BASE,
@@ -70,6 +72,8 @@ async function fetchAllExercises(limit) {
     if (!data || !Array.isArray(data.results)) break;
     results.push(...data.results);
     process.stdout.write(`\r[wger] fetched ${results.length}…`);
+    // Checkpoint after each page so a crash mid-pagination keeps what we have.
+    dumpStore.save(DUMP_FILE, results);
 
     if (limit && results.length >= limit) {
       results.length = limit;
@@ -82,13 +86,21 @@ async function fetchAllExercises(limit) {
   }
 
   process.stdout.write('\n');
+  dumpStore.save(DUMP_FILE, results);
   return results;
 }
 
-async function run({ limit, dryRun }) {
-  console.log('[wger] fetching exercises…');
-  const items = await fetchAllExercises(limit);
-  console.log(`[wger] received ${items.length} items`);
+async function run({ limit, dryRun, fromDump }) {
+  let items;
+  if (fromDump) {
+    items = dumpStore.load(DUMP_FILE, []) || [];
+    console.log(`[wger] --from-dump: loaded ${items.length} items from disk`);
+    if (limit) items = items.slice(0, limit);
+  } else {
+    console.log('[wger] fetching exercises…');
+    items = await fetchAllExercises(limit);
+    console.log(`[wger] received ${items.length} items (saved to dumps/${DUMP_FILE})`);
+  }
 
   if (dryRun) {
     const sample = items.slice(0, 5);
@@ -129,33 +141,21 @@ async function run({ limit, dryRun }) {
       // Muscles: upsert each so we capture wger SVGs + canonical English names.
       const muscleRows = [];
       for (const m of item.muscles || []) {
-        const id = await upsertMuscle(client, {
-          name: m.name_en || m.name,
-          nameEn: m.name_en,
-          imageUrl: m.image_url_main || null,
-          imageUrlSecondary: m.image_url_secondary || null,
-        });
+        const id = await upsertMuscle(client, { name: m.name_en || m.name });
         muscleRows.push({ muscleId: id, isPrimary: true, impact: 100 });
       }
       for (const m of item.muscles_secondary || []) {
-        const id = await upsertMuscle(client, {
-          name: m.name_en || m.name,
-          nameEn: m.name_en,
-          imageUrl: m.image_url_main || null,
-          imageUrlSecondary: m.image_url_secondary || null,
-        });
+        const id = await upsertMuscle(client, { name: m.name_en || m.name });
         muscleRows.push({ muscleId: id, isPrimary: false, impact: 50 });
       }
 
       const exerciseId = await upsertExercise(client, {
         name: tr.name,
         description: stripHtml(tr.description),
-        instructions: null,
         equipmentId,
         trackingTypeId,
         visibilityTypeId: 1,
         imageUrl: pickMainImage(item.images),
-        gifUrl: null,
       });
 
       await syncExerciseMuscles(client, exerciseId, muscleRows);

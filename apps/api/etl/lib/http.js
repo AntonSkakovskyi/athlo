@@ -3,8 +3,36 @@
  * delay so ETL modules can stay polite to free public APIs.
  */
 const axios = require('axios');
+const http = require('http');
+const https = require('https');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Reuse sockets so concurrent requests don't pile up TLS error-listeners and
+// trigger Node's MaxListenersExceeded warning at >10 in-flight calls.
+const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 32 });
+const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 32 });
+
+/**
+ * Run `fn(item, index)` over `items` with at most `concurrency` in-flight
+ * promises. Preserves input order in the result array. Failures bubble up to
+ * the caller so the source can decide whether to abort or skip the item.
+ */
+async function mapConcurrent(items, concurrency, fn) {
+  const out = new Array(items.length);
+  let cursor = 0;
+  const workers = Array.from(
+    { length: Math.min(concurrency, items.length) },
+    async () => {
+      while (cursor < items.length) {
+        const idx = cursor++;
+        out[idx] = await fn(items[idx], idx);
+      }
+    },
+  );
+  await Promise.all(workers);
+  return out;
+}
 
 /**
  * Build an axios instance tuned for a specific source.
@@ -33,6 +61,8 @@ function createClient(opts) {
       Accept: 'application/json',
       ...headers,
     },
+    httpAgent,
+    httpsAgent,
     // Keep the raw error so retry logic can inspect status.
     validateStatus: (s) => s >= 200 && s < 300,
   });
@@ -85,4 +115,4 @@ function createClient(opts) {
   };
 }
 
-module.exports = { createClient, sleep };
+module.exports = { createClient, sleep, mapConcurrent };
