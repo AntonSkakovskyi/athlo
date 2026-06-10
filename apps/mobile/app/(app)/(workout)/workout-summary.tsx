@@ -10,8 +10,8 @@ import { ExerciseLogCard, DurationPicker } from '@/features/workout/components';
 import { useWorkoutSummaryScreen } from '@/features/workout/hooks/useWorkoutSummaryScreen';
 import { FeelingSection } from './workout-summary/components/FeelingSection/FeelingSection';
 import { MetricsRow } from './workout-summary/components/MetricsRow/MetricsRow';
-import { getTrackingType } from '@/utils/workout';
-import { formatSeconds } from '@/utils/time';
+import { getTrackingType, formatSetValue } from '@/utils/workout';
+import { TrackingType } from '@athlo/shared';
 import { VISIBILITY_ENUM_TO_ID, getVisibilityIcon } from '@/utils/visibility';
 import { BottomSheet, Toast } from '@/components/ui';
 import { useState, useMemo } from 'react';
@@ -93,31 +93,11 @@ export default function WorkoutSummaryScreen() {
     );
   }
 
-  const handleOpenPR = (set: any, exerciseName: string, trackingType?: string) => {
+  const handleOpenPR = (set: any, exerciseName: string, trackingType: TrackingType) => {
     if (set.achievement) {
       setPrAchievement(set.achievement);
     } else {
-      let recordDetails = '';
-      if (trackingType === 'WEIGHT_AND_REPS') {
-        if (set.weight != null && set.reps != null) {
-          recordDetails = `${set.weight}kg × ${set.reps} reps`;
-        } else if (set.weight != null) {
-          recordDetails = `${set.weight}kg`;
-        } else if (set.reps != null) {
-          recordDetails = `${set.reps} reps`;
-        }
-      } else if (trackingType === 'REPS_ONLY') {
-        if (set.reps != null) recordDetails = `${set.reps} reps`;
-      } else if (trackingType === 'TIME_BASED') {
-        if (set.duration != null) recordDetails = formatSeconds(set.duration);
-      } else if (trackingType === 'DISTANCE_AND_TIME') {
-        const dur = set.duration ? formatSeconds(set.duration) : '';
-        const dist = set.distance ? `${set.distance}m` : '';
-        recordDetails = [dur, dist].filter(Boolean).join(' ');
-      } else if (trackingType === 'DISTANCE_ONLY') {
-        if (set.distance != null) recordDetails = `${set.distance}m`;
-      }
-
+      const recordDetails = formatSetValue(trackingType, set);
       setPrAchievement({
         name: 'Personal Record!',
         description: recordDetails

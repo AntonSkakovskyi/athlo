@@ -15,16 +15,10 @@ interface DailyMacrosSummaryProps {
   carbGoal?: number;
 }
 
-function getMacroColor(percent: number, baseColor: string, c: ColorPalette): string {
+function getProgressColor(percent: number, c: ColorPalette): string {
   if (percent > 150) return c.danger;
   if (percent > 100) return c.warning;
-  return baseColor;
-}
-
-function getCalorieRingColor(percent: number, c: ColorPalette): string {
-  if (percent > 150) return c.danger;
-  if (percent > 100) return c.warning;
-  return c.primary;
+  return c.success;
 }
 
 export function DailyMacrosSummary({
@@ -49,7 +43,7 @@ export function DailyMacrosSummary({
 
   const hasGoals = finalCalorieGoal !== undefined;
   const caloriePercent = finalCalorieGoal && finalCalorieGoal > 0 ? (calories / finalCalorieGoal) * 100 : 0;
-  const ringColor = hasGoals ? getCalorieRingColor(caloriePercent, colors) : colors.surfaceLight;
+  const ringColor = hasGoals ? getProgressColor(caloriePercent, colors) : colors.surfaceLight;
 
   return (
     <View style={styles.container}>
@@ -74,9 +68,9 @@ export function DailyMacrosSummary({
 
       {/* Macro Bars */}
       <View style={styles.macrosRow}>
-        <MacroBar label="Protein" value={proteins} goal={proteinGoal} color={colors.info} unit="g" />
-        <MacroBar label="Fats" value={fats} goal={fatGoal} color={colors.warning} unit="g" />
-        <MacroBar label="Carbs" value={carbs} goal={carbGoal} color={colors.success} unit="g" />
+        <MacroBar label="Protein" value={proteins} goal={proteinGoal} unit="g" />
+        <MacroBar label="Fats" value={fats} goal={fatGoal} unit="g" />
+        <MacroBar label="Carbs" value={carbs} goal={carbGoal} unit="g" />
       </View>
     </View>
   );
@@ -86,17 +80,16 @@ interface MacroBarProps {
   label: string;
   value: number;
   goal?: number;
-  color: string;
   unit: string;
 }
 
-function MacroBar({ label, value, goal, color, unit }: MacroBarProps) {
+function MacroBar({ label, value, goal, unit }: MacroBarProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const hasGoal = goal !== undefined && goal > 0;
   const percent = hasGoal ? (value / goal) * 100 : 0;
   const displayPercent = Math.min(percent, 100);
-  const activeColor = hasGoal ? getMacroColor(percent, color, colors) : colors.text;
+  const activeColor = hasGoal ? getProgressColor(percent, colors) : colors.text;
 
   return (
     <View style={styles.macroItem}>

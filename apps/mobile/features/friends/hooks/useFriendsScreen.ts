@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { 
-  useGetFriends, 
-  useGetIncomingRequests, 
+import {
+  useGetFriends,
+  useGetIncomingRequests,
   useGetOutgoingRequests,
   useSendFriendRequest,
   useAcceptFriendRequest,
@@ -12,6 +12,7 @@ import {
   useRemoveFriend
 } from '@/hooks/api/useFriendAPI';
 import { useSearchUsers } from '@/hooks/api/useUserAPI';
+import type { IUser } from '@athlo/shared';
 
 export function useFriendsScreen() {
   const router = useRouter();
@@ -22,7 +23,19 @@ export function useFriendsScreen() {
   const { data: friends, isLoading: friendsLoading } = useGetFriends();
   const { data: incomingRequests, isLoading: incomingLoading } = useGetIncomingRequests();
   const { data: outgoingRequests, isLoading: outgoingLoading } = useGetOutgoingRequests();
-  const { data: searchResults, isLoading: searchLoading } = useSearchUsers(searchQuery);
+
+  const {
+    data: searchData,
+    isLoading: searchLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useSearchUsers(searchQuery);
+
+  const searchResults = useMemo<IUser[]>(
+    () => searchData?.pages.flat() ?? [],
+    [searchData],
+  );
 
   const sendRequest = useSendFriendRequest();
   const acceptRequest = useAcceptFriendRequest();
@@ -49,6 +62,9 @@ export function useFriendsScreen() {
     outgoingLoading,
     searchResults,
     searchLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     handleUserPress,
     sendRequest,
     acceptRequest,

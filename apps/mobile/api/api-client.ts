@@ -19,7 +19,7 @@ const apiClient = axios.create({
 apiClient.interceptors.response.use(
   response => response,
   async error => {
-    console.log('API Error:', error.response?.data || error.message);
+    if (__DEV__) console.warn('API Error:', error.response?.data || error.message);
     if (error.response?.status === 401) {
       await AuthService.deleteToken();
       onUnauthorized?.();

@@ -109,15 +109,17 @@ export function BarChartBlock({
             </Text>
           )}
         </View>
-        <View style={styles.headerRight}>
-          <PeriodSelector
-            period={period}
-            periods={periods}
-            open={periodOpen}
-            onToggle={() => setPeriodOpen(!periodOpen)}
-            onSelect={(p) => { onPeriodChange(p); setPeriodOpen(false); }}
-          />
-        </View>
+        {data.length > 0 && (
+          <View style={styles.headerRight}>
+            <PeriodSelector
+              period={period}
+              periods={periods}
+              open={periodOpen}
+              onToggle={() => setPeriodOpen(!periodOpen)}
+              onSelect={(p) => { onPeriodChange(p); setPeriodOpen(false); }}
+            />
+          </View>
+        )}
       </View>
 
       {/* Chart */}
@@ -153,8 +155,9 @@ export function BarChartBlock({
         </View>
       ) : null}
 
-      {/* Metric chips */}
-      {metrics && onMetricChange && activeMetric !== undefined && (
+      {/* Metric chips — приховуємо при відсутності даних: усі метрики беруться з одного масиву,
+          тож зміна метрики порожній графік не оживить. Period selector лишається доступним. */}
+      {metrics && onMetricChange && activeMetric !== undefined && data.length > 0 && (
         <MetricSelector
           metrics={metrics}
           activeMetric={activeMetric}

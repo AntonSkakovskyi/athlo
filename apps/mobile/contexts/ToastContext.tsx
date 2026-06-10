@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { Toast } from '@/components/ui';
 import type { ToastVariant } from '@/components/ui';
+import { registerGlobalToastHandler } from '@/utils/globalToast';
 
 interface ToastOptions {
   title: string;
@@ -23,6 +24,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToastData(options);
     setVisible(true);
   }, []);
+
+  // Дає змогу показувати тости з-поза React-дерева (глобальний onError мутацій)
+  useEffect(() => {
+    registerGlobalToastHandler(showToast);
+    return () => registerGlobalToastHandler(null);
+  }, [showToast]);
 
   const handleClose = useCallback(() => {
     setVisible(false);

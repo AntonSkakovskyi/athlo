@@ -52,10 +52,10 @@ export const useGetPublicMealPlans = (search?: string) => {
   return useQuery({
     queryKey: mealPlanKeys.public(search),
     queryFn: async () => {
-      const response = await apiClient.get<{ items: IMealPlan[] }>(apiRoutes.mealPlans.getPublic, {
+      const response = await apiClient.get<{ data: IMealPlan[] }>(apiRoutes.mealPlans.getPublic, {
         params: { search },
       });
-      return response.data.items;
+      return response.data.data;
     },
   });
 };

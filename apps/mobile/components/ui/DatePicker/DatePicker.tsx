@@ -35,10 +35,12 @@ function getFirstDayOfMonth(year: number, month: number): number {
   return day === 0 ? 6 : day - 1;
 }
 
-function getYearRange(): number[] {
+function getYearRange(min?: Date, max?: Date): number[] {
   const currentYear = new Date().getFullYear();
+  const start = min ? min.getFullYear() : currentYear - 50;
+  const end = max ? max.getFullYear() : currentYear + 10;
   const years: number[] = [];
-  for (let y = currentYear - 50; y <= currentYear + 10; y++) {
+  for (let y = start; y <= end; y++) {
     years.push(y);
   }
   return years;
@@ -69,7 +71,7 @@ export function DatePicker({ value, onChange, label, mode = 'date', maximumDate,
     return days;
   }, [firstDay, daysInMonth]);
 
-  const yearRange = useMemo(() => getYearRange().reverse(), []);
+  const yearRange = useMemo(() => getYearRange(minimumDate, maximumDate).reverse(), [minimumDate, maximumDate]);
 
   const handleDaySelect = (day: number) => {
     const newDate = new Date(currentMonth.year, currentMonth.month, day);

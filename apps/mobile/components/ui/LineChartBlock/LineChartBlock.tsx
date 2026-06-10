@@ -200,13 +200,15 @@ export function LineChartBlock({
           )}
         </View>
 
-        <PeriodSelector
-          period={period}
-          periods={periods}
-          open={periodOpen}
-          onToggle={() => setPeriodOpen(!periodOpen)}
-          onSelect={(p) => { onPeriodChange(p); setPeriodOpen(false); }}
-        />
+        {data.length > 0 && (
+          <PeriodSelector
+            period={period}
+            periods={periods}
+            open={periodOpen}
+            onToggle={() => setPeriodOpen(!periodOpen)}
+            onSelect={(p) => { onPeriodChange(p); setPeriodOpen(false); }}
+          />
+        )}
       </View>
 
       {/* Chart Section */}
@@ -298,7 +300,7 @@ export function LineChartBlock({
       </View>
 
       {/* Metric Selector (Optional Footer) */}
-      {metrics && onMetricChange && activeMetric !== undefined && (
+      {data.length > 0 && metrics && onMetricChange && activeMetric !== undefined && (
         <View style={styles.footer}>
           <MetricSelector
             metrics={metrics}

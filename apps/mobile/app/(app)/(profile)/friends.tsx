@@ -32,6 +32,9 @@ export default function FriendsScreen() {
     outgoingLoading,
     searchResults,
     searchLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     handleUserPress,
     sendRequest,
     acceptRequest,
@@ -232,6 +235,8 @@ export default function FriendsScreen() {
               data={searchResults}
               renderItem={renderSearchResult}
               contentContainerStyle={styles.list}
+              onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
+              onEndReachedThreshold={0.4}
             />
           )}
         </View>

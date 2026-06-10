@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { IUser, IUserProfile } from '@athlo/shared';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
@@ -15,15 +15,20 @@ export const useGetUserProfile = (userId: string) => {
   });
 };
 
+const SEARCH_LIMIT = 10;
+
 export const useSearchUsers = (query: string) => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: profileKeys.search(query),
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 0 }) => {
       const response = await apiClient.get<IUser[]>(apiRoutes.profile.search, {
-        params: { query },
+        params: { query, limit: SEARCH_LIMIT, offset: pageParam },
       });
       return response.data;
     },
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length === SEARCH_LIMIT ? allPages.length * SEARCH_LIMIT : undefined,
+    initialPageParam: 0,
     enabled: query.length >= 2,
   });
 };

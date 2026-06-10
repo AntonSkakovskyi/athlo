@@ -4,9 +4,11 @@ import type {
   IWorkoutWithRelations,
   ILastPerformance,
   IPaginatedResponse,
-  IFinalizedExercise,
+  ICreateWorkoutRequest,
+  IUpdateWorkoutRequest,
+  ICompleteWorkoutRequest,
 } from '@athlo/shared';
-import { WorkoutStatus, VisibilityType } from '@athlo/shared';
+import { WorkoutStatus } from '@athlo/shared';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
 import { workoutKeys, lastPerformanceKeys } from '@/api/queries/query-keys';
@@ -74,16 +76,11 @@ export const useGetWorkoutById = (id: string) => {
 
 // ─── Mutations ──────────────────────────────────────
 
-interface CreateWorkoutData {
-  name: string;
-  description?: string;
-}
-
 export const useCreateWorkout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateWorkoutData) => {
+    mutationFn: async (data: ICreateWorkoutRequest) => {
       const response = await apiClient.post<IWorkout>(apiRoutes.workouts.getAll, data);
       return response.data;
     },
@@ -93,23 +90,11 @@ export const useCreateWorkout = () => {
   });
 };
 
-interface UpdateWorkoutData {
-  name?: string;
-  description?: string;
-  calories?: number;
-  avgHeartRate?: number;
-  maxHeartRate?: number;
-  rpe?: number;
-  feelingScore?: number;
-  ended_at?: string;
-  visibility?: VisibilityType;
-}
-
 export const useUpdateWorkout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateWorkoutData }) => {
+    mutationFn: async ({ id, data }: { id: string; data: IUpdateWorkoutRequest }) => {
       const response = await apiClient.patch<IWorkout>(apiRoutes.workouts.getById(id), data);
       return response.data;
     },
@@ -120,22 +105,11 @@ export const useUpdateWorkout = () => {
   });
 };
 
-interface CompleteWorkoutData {
-  calories?: number;
-  avgHeartRate?: number;
-  maxHeartRate?: number;
-  rpe?: number;
-  feelingScore?: number;
-  visibility?: VisibilityType;
-  description?: string;
-  finalizedExercises?: IFinalizedExercise[];
-}
-
 export const useCompleteWorkout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: CompleteWorkoutData }) => {
+    mutationFn: async ({ id, data }: { id: string; data: ICompleteWorkoutRequest }) => {
       const response = await apiClient.patch<IWorkout>(apiRoutes.workouts.complete(id), data);
       return response.data;
     },

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { borderRadius, spacing } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
@@ -13,6 +13,7 @@ import { ExerciseLogCard } from '@/features/workout/components/ExerciseLogCard/E
 import { EditExerciseModal } from '@/features/workout/components';
 import { useExerciseDetailScreen } from '@/features/profile/hooks/useExerciseDetailScreen';
 import { Ionicons } from '@expo/vector-icons';
+import { TrackingMetric } from '@athlo/shared';
 
 export default function ExerciseDetailScreen() {
   const {
@@ -52,8 +53,9 @@ export default function ExerciseDetailScreen() {
 
   const renderHeader = () => {
     const currentPRs = (prHistory ?? []).reduce((acc, curr) => {
-      if (!acc[curr.metricType] || new Date(curr.createdAt) > new Date(acc[curr.metricType].createdAt)) {
-        acc[curr.metricType] = curr;
+      const key = curr.trackingMetric?.name ?? String(curr.metricTypeId);
+      if (!acc[key] || new Date(curr.createdAt) > new Date(acc[key].createdAt)) {
+        acc[key] = curr;
       }
       return acc;
     }, {} as Record<string, any>);
@@ -88,9 +90,13 @@ export default function ExerciseDetailScreen() {
         </View>
 
         <View style={styles.exerciseInfo}>
-          <View style={styles.exerciseImagePlaceholder}>
-            <Text style={styles.exerciseImageEmoji}>💪</Text>
-          </View>
+          {exercise?.imageUrl ? (
+            <Image source={{ uri: exercise.imageUrl }} style={styles.exerciseImage} />
+          ) : (
+            <View style={styles.exerciseImagePlaceholder}>
+              <Text style={styles.exerciseImageEmoji}>💪</Text>
+            </View>
+          )}
           <Text style={styles.exerciseName}>{params.exerciseName}</Text>
           {(exerciseMuscles.primary.length > 0 || exerciseMuscles.secondary.length > 0) && (
             <View style={styles.muscleRow}>
@@ -115,21 +121,24 @@ export default function ExerciseDetailScreen() {
           <View style={styles.prsContainer}>
             <Text style={styles.prsTitle}>Personal Records</Text>
             <View style={styles.prsRow}>
-              {Object.values(currentPRs).map((pr: any) => (
-                <Card key={pr.metricType} style={styles.prCard}>
+              {Object.values(currentPRs).map((pr: any) => {
+                const metricName = pr.trackingMetric?.name ?? String(pr.metricTypeId);
+                return (
+                <Card key={metricName} style={styles.prCard}>
                   <Text style={styles.prTrophy}>🏆</Text>
-                  <Text style={styles.prMetricType}>{pr.metricType}</Text>
+                  <Text style={styles.prMetricType}>{metricName}</Text>
                   <Text style={styles.prValue}>
-                    {pr.metricType === 'WEIGHT' || pr.metricType === '1RM'
+                    {metricName === TrackingMetric.WEIGHT || metricName === TrackingMetric.ESTIMATED_1RM
                       ? `${Math.round(pr.value * 10) / 10} kg`
-                      : pr.metricType === 'VOLUME'
+                      : metricName === TrackingMetric.VOLUME
                       ? `${Math.round(pr.value)} kg`
-                      : pr.metricType === 'DURATION'
+                      : metricName === TrackingMetric.DURATION
                       ? `${Math.floor(pr.value / 60)}:${String(pr.value % 60).padStart(2, '0')}`
                       : pr.value}
                   </Text>
                 </Card>
-              ))}
+                );
+              })}
             </View>
           </View>
         )}
@@ -253,6 +262,14 @@ function makeStyles(c: ColorPalette) {
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: 12,
+    },
+    exerciseImage: {
+      width: '100%',
+      aspectRatio: 16 / 9,
+      borderRadius: borderRadius.lg,
+      backgroundColor: c.surfaceLight,
+      marginBottom: 12,
+      resizeMode: 'cover',
     },
     exerciseImageEmoji: {
       fontSize: 32,

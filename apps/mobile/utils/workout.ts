@@ -1,6 +1,44 @@
 import { TrackingType } from '@athlo/shared';
 import type { IWorkoutWithRelations, IFinalizedExercise, IFinalizedSet } from '@athlo/shared';
 import { ICONS } from '@/utils/icons';
+import { formatSeconds } from '@/utils/time';
+
+interface FormattableSet {
+  weight?: number | null;
+  reps?: number | null;
+  duration?: number | null;
+  distance?: number | null;
+}
+
+// Людиночитний підсумок значень підходу залежно від типу трекінгу
+// (напр. "50kg × 5 reps", "20 reps", "1:30 200m"). Порожній рядок, якщо даних нема.
+export function formatSetValue(
+  trackingType: TrackingType,
+  set: FormattableSet,
+): string {
+  switch (trackingType) {
+    case TrackingType.WEIGHT_AND_REPS:
+      if (set.weight != null && set.reps != null) {
+        return `${set.weight}kg × ${set.reps} reps`;
+      }
+      if (set.weight != null) return `${set.weight}kg`;
+      if (set.reps != null) return `${set.reps} reps`;
+      return '';
+    case TrackingType.REPS_ONLY:
+      return set.reps != null ? `${set.reps} reps` : '';
+    case TrackingType.TIME_BASED:
+      return set.duration != null ? formatSeconds(set.duration) : '';
+    case TrackingType.DISTANCE_AND_TIME: {
+      const dur = set.duration ? formatSeconds(set.duration) : '';
+      const dist = set.distance ? `${set.distance}m` : '';
+      return [dur, dist].filter(Boolean).join(' ');
+    }
+    case TrackingType.DISTANCE_ONLY:
+      return set.distance != null ? `${set.distance}m` : '';
+    default:
+      return '';
+  }
+}
 
 export interface ValidatableSet {
   isCompleted?: boolean;

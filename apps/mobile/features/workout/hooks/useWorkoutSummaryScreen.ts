@@ -14,7 +14,7 @@ import {
   useGetBatchLastPerformance
 } from '@/hooks/api';
 import { confirmDestructive } from '@/utils/alerts';
-import { VisibilityType } from '@athlo/shared';
+import { VisibilityType, VISIBILITY_TYPE_BY_ID } from '@athlo/shared';
 
 export function useWorkoutSummaryScreen() {
   const insets = useSafeAreaInsets();
@@ -50,12 +50,7 @@ export function useWorkoutSummaryScreen() {
       setLocalFeeling(workout.feelingScore ?? null);
       setNameInput(workout.name ?? '');
 
-      const visibilityMap: Record<number, VisibilityType> = {
-        1: VisibilityType.PRIVATE,
-        2: VisibilityType.PUBLIC,
-        3: VisibilityType.FRIENDS_ONLY,
-      };
-      setLocalVisibility(visibilityMap[workout.visibilityTypeId] || VisibilityType.PRIVATE);
+      setLocalVisibility(VISIBILITY_TYPE_BY_ID[workout.visibilityTypeId] ?? VisibilityType.PRIVATE);
       setLocalDescription(workout.description ?? '');
 
       if (workout.started_at && workout.ended_at) {

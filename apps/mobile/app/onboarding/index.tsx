@@ -4,12 +4,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Gender, ActivityLevel, FitnessGoal } from '@athlo/shared';
 import { Typography, NumericInput, SegmentControl, OptionButton, Button, ProgressBar, Card } from '@/components/ui';
+import { DatePicker } from '@/components/ui/DatePicker/DatePicker';
 import { spacing, borderRadius, fontSize } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { useUpdateProfile } from '@/hooks/api/useProfileAPI';
 import { useToast } from '@/contexts/ToastContext';
-import { validateFields, required, minNumber, maxNumber } from '@/utils/validation';
+import { validateFields, required, minNumber } from '@/utils/validation';
+import {
+  birthDateToAge,
+  toBirthDateString,
+  getBirthDateBounds,
+  MIN_BIRTH_AGE_YEARS,
+} from '@/utils/age';
 
 const ACTIVITY_LEVELS: { id: ActivityLevel; label: string; desc: string }[] = [
   { id: ActivityLevel.SEDENTARY, label: 'Sedentary', desc: 'Little to no exercise' },
@@ -34,12 +41,19 @@ export default function OnboardingScreen() {
 
   const [step, setStep] = useState(1);
   const [gender, setGender] = useState<Gender>(Gender.MALE);
-  const [age, setAge] = useState('');
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>(ActivityLevel.MODERATE);
   const [goal, setGoal] = useState<FitnessGoal>(FitnessGoal.MAINTAIN);
   const { showToast } = useToast();
+
+  const { min: minBirthDate, max: maxBirthDate } = useMemo(() => getBirthDateBounds(), []);
+  const datePickerValue = birthDate ?? maxBirthDate;
+  const derivedAge = useMemo(
+    () => (birthDate ? birthDateToAge(toBirthDateString(birthDate)) : null),
+    [birthDate],
+  );
 
   const handleNext = () => {
     if (step < 3) {
@@ -54,21 +68,32 @@ export default function OnboardingScreen() {
   };
 
   const handleComplete = async () => {
+    if (!birthDate) {
+      showToast({ title: 'Birth date is required', variant: 'error' });
+      return;
+    }
+    if (birthDate > maxBirthDate) {
+      showToast({ title: `Must be at least ${MIN_BIRTH_AGE_YEARS} years old`, variant: 'error' });
+      return;
+    }
+    if (birthDate < minBirthDate) {
+      showToast({ title: 'Date of birth seems invalid', variant: 'error' });
+      return;
+    }
+
     const error = validateFields([
-      { value: age, rules: [required('Age'), minNumber('Age', 1), maxNumber('Age', 120)] },
       { value: height, rules: [required('Height'), minNumber('Height', 1)] },
       { value: weight, rules: [required('Weight'), minNumber('Weight', 0.1)] },
     ]);
     if (error) { showToast({ title: error, variant: 'error' }); return; }
 
-    const ageNum = parseInt(age, 10);
     const weightNum = parseFloat(weight);
     const heightNum = parseInt(height, 10);
 
     try {
       await updateProfile({
         gender,
-        age: ageNum,
+        birthDate: toBirthDateString(birthDate),
         weight: weightNum,
         height: heightNum,
         activityLevel,
@@ -81,10 +106,10 @@ export default function OnboardingScreen() {
   };
 
   const isStepValid = useMemo(() => {
-    if (step === 1) return !!age && parseInt(age, 10) > 0;
+    if (step === 1) return !!birthDate && birthDate <= maxBirthDate && birthDate >= minBirthDate;
     if (step === 2) return !!weight && !!height && parseFloat(weight) > 0 && parseInt(height, 10) > 0;
     return true;
-  }, [step, age, weight, height]);
+  }, [step, birthDate, maxBirthDate, minBirthDate, weight, height]);
 
   const renderStep = () => {
     switch (step) {
@@ -107,10 +132,18 @@ export default function OnboardingScreen() {
               </View>
 
               <View style={[styles.section, { marginBottom: 0 }]}>
-                <Typography variant="label" style={styles.label}>Age</Typography>
-                <View style={styles.numericInputWrapper}>
-                  <NumericInput value={age} onChangeText={setAge} placeholder="Years" />
-                </View>
+                <Typography variant="label" style={styles.label}>Birth Date</Typography>
+                <DatePicker
+                  value={datePickerValue}
+                  onChange={setBirthDate}
+                  minimumDate={minBirthDate}
+                  maximumDate={maxBirthDate}
+                />
+                {derivedAge !== null && (
+                  <Typography variant="caption" style={styles.ageCaption}>
+                    {derivedAge} years old
+                  </Typography>
+                )}
               </View>
             </Card>
           </View>
@@ -293,8 +326,9 @@ function makeStyles(c: ColorPalette) {
       marginBottom: spacing.xs,
       color: c.textSecondary,
     },
-    numericInputWrapper: {
-      width: 100,
+    ageCaption: {
+      marginTop: spacing.xs,
+      color: c.textMuted,
     },
     metricsRow: {
       flexDirection: 'row',

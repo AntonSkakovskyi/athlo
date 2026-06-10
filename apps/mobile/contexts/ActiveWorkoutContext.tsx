@@ -1,8 +1,11 @@
-import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import type { IWorkout } from '@athlo/shared';
 import { TrackingType } from '@athlo/shared';
 import type { LogSetData as SetRowData } from '@/features/workout/components/ExerciseLogCard/LogSetRow/LogSetRow';
+
+const ACTIVE_WORKOUT_STORAGE_KEY = 'activeWorkoutId';
 
 export interface ActiveExercise {
   logExerciseId?: number;
@@ -23,13 +26,15 @@ interface ActiveWorkoutState {
 }
 
 interface ActiveWorkoutContextType extends ActiveWorkoutState {
+  pendingRecoveryId: string | null;
   startWorkout: (workout: IWorkout, exercises?: ActiveExercise[]) => void;
   endWorkout: () => void;
   addExercise: (exercise: Omit<ActiveExercise, 'order' | 'showNotes' | 'sets' | 'notes'> & { sets?: SetRowData[]; notes?: string }) => void;
   replaceExercise: (index: number, exercise: Omit<ActiveExercise, 'order' | 'showNotes' | 'sets' | 'notes'> & { sets?: SetRowData[]; notes?: string }) => void;
   removeExercise: (index: number) => void;
   updateExercise: (index: number, data: Partial<ActiveExercise>) => void;
-  addSet: (exerciseIndex: number) => void;
+  addSet: (exerciseIndex: number, localKey: string) => void;
+  reconcileSetId: (exerciseIndex: number, localKey: string, serverId: number) => void;
   updateSet: (exerciseIndex: number, setIndex: number, data: Partial<SetRowData>) => void;
   removeSet: (exerciseIndex: number, setIndex: number) => void;
   reorderExercises: (fromIndex: number, toIndex: number) => void;
@@ -49,16 +54,27 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
     exercises: [],
     isActive: false,
   });
+  const [pendingRecoveryId, setPendingRecoveryId] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem(ACTIVE_WORKOUT_STORAGE_KEY).then((id) => {
+      if (id) setPendingRecoveryId(id);
+    });
+  }, []);
 
   const startTimeRef = useRef<number>(Date.now());
 
   const startWorkout = useCallback((workout: IWorkout, exercises: ActiveExercise[] = []) => {
     startTimeRef.current = Date.now();
     setState({ workout, exercises, isActive: true });
+    AsyncStorage.setItem(ACTIVE_WORKOUT_STORAGE_KEY, String(workout.id));
+    setPendingRecoveryId(null);
   }, []);
 
   const endWorkout = useCallback(() => {
     setState({ workout: null, exercises: [], isActive: false });
+    setPendingRecoveryId(null);
+    AsyncStorage.removeItem(ACTIVE_WORKOUT_STORAGE_KEY);
   }, []);
 
   const addExercise = useCallback(
@@ -133,7 +149,9 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const addSet = useCallback((exerciseIndex: number) => {
+  // localKey — стабільний клієнтський ключ нового сету; справжній серверний id
+  // підставляється згодом через reconcileSetId (а не записується тимчасовим значенням).
+  const addSet = useCallback((exerciseIndex: number, localKey: string) => {
     setState((prev) => ({
       ...prev,
       exercises: prev.exercises.map((e, i) => {
@@ -144,7 +162,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
           sets: [
             ...e.sets,
             {
-              id: Date.now() + Math.random(),
+              localKey,
               order: e.sets.length + 1,
               isCompleted: false,
               placeholderWeight: lastSet?.weight ?? lastSet?.placeholderWeight,
@@ -157,6 +175,25 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
       }),
     }));
   }, []);
+
+  // Прив'язує серверний id до сету за його localKey — стійко до паралельних додавань.
+  const reconcileSetId = useCallback(
+    (exerciseIndex: number, localKey: string, serverId: number) => {
+      setState((prev) => ({
+        ...prev,
+        exercises: prev.exercises.map((e, i) => {
+          if (i !== exerciseIndex) return e;
+          return {
+            ...e,
+            sets: e.sets.map((s) =>
+              s.localKey === localKey ? { ...s, id: serverId } : s,
+            ),
+          };
+        }),
+      }));
+    },
+    [],
+  );
 
   const updateSet = useCallback(
     (exerciseIndex: number, setIndex: number, data: Partial<SetRowData>) => {
@@ -254,6 +291,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       ...state,
+      pendingRecoveryId,
       startWorkout,
       endWorkout,
       addExercise,
@@ -261,6 +299,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
       removeExercise,
       updateExercise,
       addSet,
+      reconcileSetId,
       updateSet,
       removeSet,
       reorderExercises,
@@ -271,7 +310,7 @@ export function ActiveWorkoutProvider({ children }: { children: ReactNode }) {
       totalSets,
       startTime: startTimeRef.current,
     }),
-    [state, startWorkout, endWorkout, addExercise, replaceExercise, removeExercise, updateExercise, addSet, updateSet, removeSet, reorderExercises, reorderSets, toggleSetComplete, totalVolume, completedSets, totalSets],
+    [state, pendingRecoveryId, startWorkout, endWorkout, addExercise, replaceExercise, removeExercise, updateExercise, addSet, reconcileSetId, updateSet, removeSet, reorderExercises, reorderSets, toggleSetComplete, totalVolume, completedSets, totalSets],
   );
 
   return (

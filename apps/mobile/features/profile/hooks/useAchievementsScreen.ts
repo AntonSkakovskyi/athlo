@@ -46,7 +46,7 @@ export function useAchievementsScreen() {
 
   const lockedAchievements = useMemo(() => {
     if (!achievements) return [];
-    return achievements.filter((a) => !unlockedMap.has(a.id)).sort((a, b) => a.order - b.order);
+    return achievements.filter((a) => !unlockedMap.has(a.id));
   }, [achievements, unlockedMap]);
 
   const totalCount = achievements?.length ?? 0;
@@ -60,7 +60,7 @@ export function useAchievementsScreen() {
       if (!exerciseRecords) return 0;
       
       const records = exerciseRecords.filter(
-        (r) => r.exerciseId === achievement.exerciseId && r.metricType === achievement.trackingMetric
+        (r) => r.exerciseId === achievement.exerciseId && r.metricTypeId === achievement.trackingMetricId
       );
       
       if (records.length === 0) return 0;

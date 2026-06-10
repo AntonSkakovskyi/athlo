@@ -1,27 +1,54 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { borderRadius } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
+import { formatHMS } from '@/utils/time';
 
 interface StatsBarProps {
-  duration: string;
+  startedAt: string | Date;
   volume: number;
   completedSets: number;
   totalSets: number;
 }
 
-export function StatsBar({ duration, volume, completedSets, totalSets }: StatsBarProps) {
+function WorkoutDuration({ startedAt }: { startedAt: string | Date }) {
+  const startMs = useRef(new Date(startedAt).getTime());
+  const [elapsed, setElapsed] = useState(() => Date.now() - startMs.current);
+
+  useEffect(() => {
+    const id = setInterval(() => setElapsed(Date.now() - startMs.current), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeDurationStyles(colors), [colors]);
+
+  return (
+    <View style={styles.stat}>
+      <Text style={styles.icon}>⏱️</Text>
+      <Text style={styles.value}>{formatHMS(elapsed)}</Text>
+      <Text style={styles.label}>Duration</Text>
+    </View>
+  );
+}
+
+function makeDurationStyles(c: ColorPalette) {
+  return StyleSheet.create({
+    stat: { flex: 1, alignItems: 'center' },
+    icon: { fontSize: 16, marginBottom: 4 },
+    value: { fontSize: 16, fontWeight: '700', color: c.text },
+    label: { fontSize: 11, color: c.textMuted, marginTop: 2 },
+  });
+}
+
+export function StatsBar({ startedAt, volume, completedSets, totalSets }: StatsBarProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <View style={styles.container}>
-      <View style={styles.stat}>
-        <Text style={styles.icon}>⏱️</Text>
-        <Text style={styles.value}>{duration}</Text>
-        <Text style={styles.label}>Duration</Text>
-      </View>
+      <WorkoutDuration startedAt={startedAt} />
       <View style={styles.divider} />
       <View style={styles.stat}>
         <Text style={styles.icon}>🏋️</Text>

@@ -162,8 +162,8 @@ export default function ExercisePickerScreen() {
       ) : (
         <InfiniteList
           data={virtualList}
-          keyExtractor={(item, index) =>
-            item.type === 'header' ? `header-${item.title}` : `exercise-${item.data.id}-${index}`
+          keyExtractor={(item) =>
+            item.type === 'header' ? `header-${item.title}` : `exercise-${item.data.id}`
           }
           renderItem={renderItem}
           contentContainerStyle={styles.list}

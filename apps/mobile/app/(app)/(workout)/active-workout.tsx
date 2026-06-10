@@ -8,9 +8,12 @@ import { ExerciseListSection } from './active-workout/components/ExerciseListSec
 import { StatsBar, RestTimerOverlay } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { BottomSheet, Toast } from '@/components/ui';
-import { formatHMS, formatSeconds } from '@/utils/time';
+import { formatSetValue } from '@/utils/workout';
 import { useActiveWorkoutScreen } from '@/features/workout/hooks/useActiveWorkoutScreen';
 import { useMemo, useState } from 'react';
+import type { IAchievement } from '@athlo/shared';
+
+type PrDisplay = Pick<IAchievement, 'name' | 'description'>;
 
 export default function ActiveWorkoutScreen() {
   const {
@@ -28,7 +31,6 @@ export default function ActiveWorkoutScreen() {
     deleteExercise,
     moveExercise,
     reorderSets,
-    elapsed,
     editName,
     setEditName,
     showRestTimer,
@@ -39,7 +41,6 @@ export default function ActiveWorkoutScreen() {
     errorToast,
     setErrorToast,
     isLoadingExercises,
-    isInitializing,
     handleFinish,
     handleRestTimer,
     handleCancel,
@@ -51,7 +52,7 @@ export default function ActiveWorkoutScreen() {
 
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const [prAchievement, setPrAchievement] = useState<any>(null);
+  const [prAchievement, setPrAchievement] = useState<PrDisplay | null>(null);
   const [prVisible, setPrVisible] = useState(false);
 
   if (!isActive || !workout) {
@@ -73,26 +74,7 @@ export default function ActiveWorkoutScreen() {
     if (set.achievement) {
       setPrAchievement(set.achievement);
     } else {
-      let recordDetails = '';
-      if (ex.trackingType === 'WEIGHT_AND_REPS') {
-        if (set.weight != null && set.reps != null) {
-          recordDetails = `${set.weight}kg × ${set.reps} reps`;
-        } else if (set.weight != null) {
-          recordDetails = `${set.weight}kg`;
-        } else if (set.reps != null) {
-          recordDetails = `${set.reps} reps`;
-        }
-      } else if (ex.trackingType === 'REPS_ONLY') {
-        if (set.reps != null) recordDetails = `${set.reps} reps`;
-      } else if (ex.trackingType === 'TIME_BASED') {
-        if (set.duration != null) recordDetails = formatSeconds(set.duration);
-      } else if (ex.trackingType === 'DISTANCE_AND_TIME') {
-        const dur = set.duration ? formatSeconds(set.duration) : '';
-        const dist = set.distance ? `${set.distance}m` : '';
-        recordDetails = [dur, dist].filter(Boolean).join(' ');
-      } else if (ex.trackingType === 'DISTANCE_ONLY') {
-        if (set.distance != null) recordDetails = `${set.distance}m`;
-      }
+      const recordDetails = formatSetValue(ex.trackingType, set);
 
       setPrAchievement({
         name: 'Personal Record!',
@@ -118,7 +100,7 @@ export default function ActiveWorkoutScreen() {
 
       <View style={styles.statsWrap}>
         <StatsBar
-          duration={formatHMS(elapsed)}
+          startedAt={workout.started_at}
           volume={totalVolume}
           completedSets={completedSets}
           totalSets={totalSets}
@@ -128,7 +110,6 @@ export default function ActiveWorkoutScreen() {
       <ExerciseListSection
         exercises={exercises}
         isLoadingExercises={isLoadingExercises}
-        isInitializing={isInitializing}
         workoutId={String(workout.id)}
         onAddExercise={handleAddExercise}
         onUpdateExercise={updateExercise}

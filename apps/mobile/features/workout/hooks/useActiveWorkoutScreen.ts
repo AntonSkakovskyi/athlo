@@ -3,8 +3,8 @@ import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
-import { buildFinalizedExercises, getTrackingType } from '@/utils/workout';
-import { formatHMS, formatSeconds } from '@/utils/time';
+import { buildFinalizedExercises, getTrackingType, formatSetValue } from '@/utils/workout';
+import { formatHMS } from '@/utils/time';
 import { showErrorAlert } from '@/utils/alerts';
 import apiClient from '@/api/api-client';
 import {
@@ -33,6 +33,7 @@ export function useActiveWorkoutScreen() {
     addExercise,
     updateExercise: updateExerciseLocal,
     addSet: addSetLocal,
+    reconcileSetId,
     updateSet: updateSetLocal,
     removeSet: removeSetLocal,
     reorderExercises: reorderExercisesLocal,
@@ -42,7 +43,6 @@ export function useActiveWorkoutScreen() {
     removeExercise,
   } = useActiveWorkout();
 
-  const [elapsed, setElapsed] = useState(0);
   const [editName, setEditName] = useState<string | null>(null);
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [restTimerSeconds, setRestTimerSeconds] = useState(60);
@@ -92,16 +92,6 @@ export function useActiveWorkoutScreen() {
       !lastPerfQuery.isSuccess &&
       !lastPerfQuery.isError);
 
-//TODO виправити, бо тут піздєц
-  useEffect(() => {
-    if (!isActive || !workout) return;
-    const start = new Date(workout.started_at).getTime();
-    const interval = setInterval(() => {
-      setElapsed(Date.now() - start);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isActive, workout]);
-
   // Accumulate last-perf results into the cache so they survive query key changes.
   useEffect(() => {
     if (!lastPerfQuery.data) return;
@@ -109,109 +99,76 @@ export function useActiveWorkoutScreen() {
     newExerciseIds.forEach((id) => fetchedLastPerfIds.current.add(id));
   }, [lastPerfQuery.data, newExerciseIds]);
 
-  const initializingIds = useRef(new Set<number>());
-  const [isInitializing, setIsInitializing] = useState(false);
-
+  // Гідрація локального стану з сервера. Prefill-сети створює бекенд
+  // транзакційно в POST /workouts/:id/exercises — тут лише читання.
   useEffect(() => {
     // Only wait for in-flight last-perf if there are genuinely new exercises to fetch for.
     if (newExerciseIds.length > 0 && !lastPerfQuery.isSuccess && !lastPerfQuery.isError) return;
-    if (workoutQuery.data?.logExercises?.length) {
-      const existingIds = new Set(exercises.map((e) => e.logExerciseId));
-      let newlyAdded = false;
+    if (!workoutQuery.data?.logExercises?.length) return;
 
-      for (const ex of workoutQuery.data.logExercises.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))) {
-        if (existingIds.has(ex.id) || addedLogExerciseIds.current.has(ex.id) || initializingIds.current.has(ex.id)) continue;
+    const existingIds = new Set(exercises.map((e) => e.logExerciseId));
+    // Копія перед sort: in-place сортування мутує кеш TanStack Query
+    const sortedLogExercises = [...workoutQuery.data.logExercises].sort(
+      (a, b) => (a.order ?? 0) - (b.order ?? 0),
+    );
 
-        newlyAdded = true;
-        initializingIds.current.add(ex.id);
-        setIsInitializing(true);
-        const trackingType = getTrackingType(ex.exercise?.trackingTypeId);
-        
-        // Use accumulated cache — data for old exercises is available immediately.
-        const prevSets = lastPerfCache.current[ex.exerciseId]?.sets ?? [];
-        const sortedLogSets = [...(ex.sets ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    for (const ex of sortedLogExercises) {
+      if (existingIds.has(ex.id) || addedLogExerciseIds.current.has(ex.id)) continue;
 
-        const initExercise = async () => {
-          let setsToUse = sortedLogSets;
-          
-          // If no sets exist in DB, create initial sets based on last performance
-          if (sortedLogSets.length === 0 && prevSets.length > 0) {
-            try {
-              const createdSets = await Promise.all(
-                prevSets.map(s => 
-                  apiClient.post(`workouts/${workoutId}/exercises/${ex.id}/sets`, {
-                    order: s.order,
-                    isCompleted: false,
-                  })
-                )
-              );
-              setsToUse = createdSets.map(r => r.data);
-            } catch (e) {
-              console.error('Failed to initialize sets for exercise:', ex.id, e);
-            }
-          }
+      addedLogExerciseIds.current.add(ex.id);
+      const trackingType = getTrackingType(ex.exercise?.trackingTypeId);
 
-          addedLogExerciseIds.current.add(ex.id);
-          initializingIds.current.delete(ex.id);
-          if (initializingIds.current.size === 0) {
-            setIsInitializing(false);
-          }
+      // Use accumulated cache — data for old exercises is available immediately.
+      const prevSets = lastPerfCache.current[ex.exerciseId]?.sets ?? [];
+      const sortedLogSets = [...(ex.sets ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-          addExercise({
-            logExerciseId: ex.id,
-            exerciseId: ex.exerciseId,
-            exerciseName: ex.exercise?.name ?? `Exercise #${ex.order}`,
-            trackingType,
-            restTime: ex.restTime ?? 0,
-            notes: ex.notes ?? '',
-            sets: setsToUse.length > 0 
-              ? setsToUse.map((s, idx) => {
-                  const prevPerformanceSet = prevSets[idx];
-                  const previousInWorkout = idx > 0 ? setsToUse[idx-1] : null;
+      addExercise({
+        logExerciseId: ex.id,
+        exerciseId: ex.exerciseId,
+        exerciseName: ex.exercise?.name ?? `Exercise #${ex.order}`,
+        trackingType,
+        restTime: ex.restTime ?? 0,
+        notes: ex.notes ?? '',
+        sets: sortedLogSets.length > 0
+          ? sortedLogSets.map((s, idx) => {
+              const prevPerformanceSet = prevSets[idx];
+              const previousInWorkout = idx > 0 ? sortedLogSets[idx - 1] : null;
 
-                  return {
-                    id: s.id,
-                    order: s.order,
-                    weight: s.weight,
-                    reps: s.reps,
-                    duration: s.duration,
-                    distance: s.distance,
-                    isCompleted: s.isCompleted,
-                    isPR: s.isPR,
-                    achievementId: s.achievementId,
-                    achievement: s.achievement,
-                    previousWeight: prevPerformanceSet?.weight,
-                    previousReps: prevPerformanceSet?.reps,
-                    previousDuration: prevPerformanceSet?.duration,
-                    previousDistance: prevPerformanceSet?.distance,
-                    // Placeholders
-                    placeholderWeight: previousInWorkout?.weight ?? prevPerformanceSet?.weight,
-                    placeholderReps: previousInWorkout?.reps ?? prevPerformanceSet?.reps,
-                    placeholderDuration: previousInWorkout?.duration ?? prevPerformanceSet?.duration,
-                    placeholderDistance: previousInWorkout?.distance ?? prevPerformanceSet?.distance,
-                  };
-                })
-              : [{ 
-                  order: 1, 
-                  isCompleted: false,
-                  previousWeight: prevSets[0]?.weight,
-                  previousReps: prevSets[0]?.reps,
-                  previousDuration: prevSets[0]?.duration,
-                  previousDistance: prevSets[0]?.distance,
-                  placeholderWeight: prevSets[0]?.weight,
-                  placeholderReps: prevSets[0]?.reps,
-                  placeholderDuration: prevSets[0]?.duration,
-                  placeholderDistance: prevSets[0]?.distance,
-                }],
-          });
-        };
-
-        initExercise();
-      }
-
-      if (!newlyAdded && initializingIds.current.size === 0) {
-        setIsInitializing(false);
-      }
+              return {
+                id: s.id,
+                order: s.order,
+                weight: s.weight,
+                reps: s.reps,
+                duration: s.duration,
+                distance: s.distance,
+                isCompleted: s.isCompleted,
+                isPR: s.isPR,
+                achievementId: s.achievementId,
+                achievement: s.achievement,
+                previousWeight: prevPerformanceSet?.weight,
+                previousReps: prevPerformanceSet?.reps,
+                previousDuration: prevPerformanceSet?.duration,
+                previousDistance: prevPerformanceSet?.distance,
+                // Placeholders
+                placeholderWeight: previousInWorkout?.weight ?? prevPerformanceSet?.weight,
+                placeholderReps: previousInWorkout?.reps ?? prevPerformanceSet?.reps,
+                placeholderDuration: previousInWorkout?.duration ?? prevPerformanceSet?.duration,
+                placeholderDistance: previousInWorkout?.distance ?? prevPerformanceSet?.distance,
+              };
+            })
+          : [{
+              order: 1,
+              isCompleted: false,
+              previousWeight: prevSets[0]?.weight,
+              previousReps: prevSets[0]?.reps,
+              previousDuration: prevSets[0]?.duration,
+              previousDistance: prevSets[0]?.distance,
+              placeholderWeight: prevSets[0]?.weight,
+              placeholderReps: prevSets[0]?.reps,
+              placeholderDuration: prevSets[0]?.duration,
+              placeholderDistance: prevSets[0]?.distance,
+            }],
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workoutQuery.data, lastPerfQuery.data, lastPerfQuery.isSuccess, lastPerfQuery.isError, newExerciseIds, exercises]);
@@ -236,22 +193,22 @@ export function useActiveWorkoutScreen() {
       if (!ex?.logExerciseId) return;
 
       const newOrder = ex.sets.length + 1;
-      // Optimistic update
-      addSetLocal(exerciseIndex);
+      // Optimistic update with a stable client key; the server id is bound later
+      // by localKey, so concurrent adds can't write an id onto the wrong row.
+      const localKey = `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      addSetLocal(exerciseIndex, localKey);
 
       try {
         const response = await apiClient.post(
           `workouts/${workoutId}/exercises/${ex.logExerciseId}/sets`,
           { order: newOrder },
         );
-        // Update the newly added set with its real ID
-        const setIndex = ex.sets.length; // The index after addSetLocal
-        updateSetLocal(exerciseIndex, setIndex, { id: response.data.id });
+        reconcileSetId(exerciseIndex, localKey, response.data.id);
       } catch {
         showErrorAlert('Failed to add set. Please check your connection.');
       }
     },
-    [exercises, workoutId, addSetLocal, updateSetLocal],
+    [exercises, workoutId, addSetLocal, reconcileSetId],
   );
 
   const updateSet = useCallback(
@@ -303,23 +260,26 @@ export function useActiveWorkoutScreen() {
     const toIndex = direction === 'up' ? setIndex - 1 : setIndex + 1;
     const ex = exercises[exerciseIndex];
     if (!ex || toIndex < 0 || toIndex >= ex.sets.length) return;
-    
-    // 1. Update local state
+
+    // Compute the new order locally BEFORE calling reorderSetsLocal.
+    // Reading exercises[exerciseIndex] after setState is a stale closure —
+    // React state doesn't update synchronously.
+    const reorderedSets = [...ex.sets];
+    const [moved] = reorderedSets.splice(setIndex, 1);
+    reorderedSets.splice(toIndex, 0, moved);
+
     reorderSetsLocal(exerciseIndex, setIndex, toIndex);
-    
-    // 2. Persist to API
+
     if (ex.logExerciseId) {
-      const updatedEx = exercises[exerciseIndex]; // Get fresh sets after local update
-      // We need to update orders for all sets to be safe
-      const updatePromises = updatedEx.sets.map((s, idx) => 
-        apiClient.patch(`workouts/${workoutId}/exercises/${ex.logExerciseId}/sets/${s.id}`, {
-          order: idx + 1
-        })
+      const updatePromises = reorderedSets.map((s, idx) =>
+        s.id
+          ? apiClient.patch(`workouts/${workoutId}/exercises/${ex.logExerciseId}/sets/${s.id}`, { order: idx + 1 })
+          : Promise.resolve(),
       );
       try {
         await Promise.all(updatePromises);
-      } catch (e) {
-        console.error('Failed to persist set reordering:', e);
+      } catch {
+        showErrorAlert('Failed to save set order. Please check your connection.');
       }
     }
   }, [exercises, reorderSetsLocal, workoutId]);
@@ -384,26 +344,7 @@ export function useActiveWorkoutScreen() {
                     description: response.data.achievement.description,
                   });
                 } else if (response.data.isPR) {
-                  let recordDetails = '';
-                  if (ex.trackingType === 'WEIGHT_AND_REPS') {
-                    if (set.weight != null && set.reps != null) {
-                      recordDetails = `${set.weight}kg × ${set.reps} reps`;
-                    } else if (set.weight != null) {
-                      recordDetails = `${set.weight}kg`;
-                    } else if (set.reps != null) {
-                      recordDetails = `${set.reps} reps`;
-                    }
-                  } else if (ex.trackingType === 'REPS_ONLY') {
-                    if (set.reps != null) recordDetails = `${set.reps} reps`;
-                  } else if (ex.trackingType === 'TIME_BASED') {
-                    if (set.duration != null) recordDetails = formatSeconds(set.duration);
-                  } else if (ex.trackingType === 'DISTANCE_AND_TIME') {
-                    const dur = set.duration ? formatSeconds(set.duration) : '';
-                    const dist = set.distance ? `${set.distance}m` : '';
-                    recordDetails = [dur, dist].filter(Boolean).join(' ');
-                  } else if (ex.trackingType === 'DISTANCE_ONLY') {
-                    if (set.distance != null) recordDetails = `${set.distance}m`;
-                  }
+                  const recordDetails = formatSetValue(ex.trackingType, set);
 
                   setNewAchievement({
                     title: 'Personal Record!',
@@ -444,6 +385,8 @@ export function useActiveWorkoutScreen() {
       return;
     }
 
+    const elapsed = Date.now() - new Date(workout.started_at).getTime();
+
     router.push({
       pathname: '/(app)/(workout)/finish-workout',
       params: {
@@ -453,7 +396,7 @@ export function useActiveWorkoutScreen() {
         totalSets: String(totalSets),
       },
     });
-  }, [workout, exercises, completedSets, router, elapsed, totalVolume, totalSets]);
+  }, [workout, exercises, completedSets, router, totalVolume, totalSets]);
 
   const handleRestTimer = useCallback((seconds: number) => {
     setRestTimerSeconds(seconds);
@@ -514,7 +457,6 @@ export function useActiveWorkoutScreen() {
     moveExercise,
     reorderSets,
     endWorkout,
-    elapsed,
     editName,
     setEditName,
     showRestTimer,
@@ -525,7 +467,6 @@ export function useActiveWorkoutScreen() {
     errorToast,
     setErrorToast,
     isLoadingExercises,
-    isInitializing,
     handleFinish,
     handleRestTimer,
     handleCancel,

@@ -23,11 +23,12 @@ interface UpdateProfileData {
   nickname?: string;
   avatar?: string | null;
   gender?: Gender;
-  age?: number;
+  birthDate?: string | null;
   height?: number;
   weight?: number;
   activityLevel?: ActivityLevel;
   fitnessGoal?: FitnessGoal;
+  calorieGoal?: number | null;
   waterGoal?: number | null;
   proteinGoal?: number | null;
   fatGoal?: number | null;

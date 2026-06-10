@@ -14,6 +14,8 @@ import { OptionButton } from '@/components/ui/OptionButton/OptionButton';
 import { Card } from '@/components/ui/Card/Card';
 import { Typography } from '@/components/ui/Typography/Typography';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
+import { DatePicker } from '@/components/ui/DatePicker/DatePicker';
+import { getBirthDateBounds } from '@/utils/age';
 import { useEditProfileScreen } from '@/features/profile/hooks/useEditProfileScreen';
 
 const ACTIVITY_LEVELS: { id: ActivityLevel; label: string }[] = [
@@ -43,8 +45,9 @@ export default function EditProfileScreen() {
     pickImage,
     gender,
     setGender,
-    age,
-    setAge,
+    birthDate,
+    setBirthDate,
+    derivedAge,
     height,
     setHeight,
     weight,
@@ -82,6 +85,9 @@ export default function EditProfileScreen() {
   const handleGenderSelect = (idx: number) => {
     setGender(idx === 0 ? Gender.MALE : idx === 1 ? Gender.FEMALE : Gender.OTHER);
   };
+
+  const { min: minBirthDate, max: maxBirthDate } = getBirthDateBounds();
+  const datePickerValue = birthDate ?? maxBirthDate;
 
   return (
     <View style={[styles.root, { paddingTop: insets.top }]}>
@@ -139,11 +145,21 @@ export default function EditProfileScreen() {
 
         <Card style={styles.card}>
           <Typography variant="h4" style={styles.cardTitle}>Physical Metrics</Typography>
+          <View style={styles.birthDateBlock}>
+            <Typography variant="label" style={styles.fieldLabel}>Birth Date</Typography>
+            <DatePicker
+              value={datePickerValue}
+              onChange={setBirthDate}
+              minimumDate={minBirthDate}
+              maximumDate={maxBirthDate}
+            />
+            {derivedAge !== null && (
+              <Typography variant="caption" style={styles.birthDateCaption}>
+                {derivedAge} years old
+              </Typography>
+            )}
+          </View>
           <View style={styles.metricsRow}>
-            <View style={styles.metricInputWrap}>
-              <Typography variant="label" style={styles.fieldLabel}>Age</Typography>
-              <NumericInput value={age} onChangeText={setAge} placeholder="Years" />
-            </View>
             <View style={styles.metricInputWrap}>
               <Typography variant="label" style={styles.fieldLabel}>Height (cm)</Typography>
               <NumericInput value={height} onChangeText={setHeight} placeholder="cm" />
@@ -310,6 +326,13 @@ function makeStyles(c: ColorPalette) {
     },
     lastInputInCard: {
       marginBottom: spacing.md,
+    },
+    birthDateBlock: {
+      marginBottom: spacing.md,
+    },
+    birthDateCaption: {
+      marginTop: spacing.xs,
+      color: c.textMuted,
     },
     metricsRow: {
       flexDirection: 'row',

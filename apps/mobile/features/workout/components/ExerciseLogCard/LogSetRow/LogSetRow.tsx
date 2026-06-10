@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
-import { TrackingType } from '@athlo/shared';
+import { TrackingType, type IAchievement } from '@athlo/shared';
 import { formatSeconds } from '@/utils/time';
 import { showAlert } from '@/utils/alerts';
 import { SetInputGroup } from './SetInputGroup/SetInputGroup';
@@ -12,6 +12,8 @@ export type ExerciseLogMode = 'active' | 'summary' | 'template';
 
 export interface LogSetData {
   id?: number;
+  // Стабільний клієнтський ключ для нових сетів, поки сервер не присвоїв id.
+  localKey?: string;
   order: number;
   weight?: number | null;
   reps?: number | null;
@@ -20,7 +22,7 @@ export interface LogSetData {
   isCompleted: boolean;
   isPR?: boolean;
   achievementId?: number | null;
-  achievement?: any | null;
+  achievement?: IAchievement | null;
   previousWeight?: number | null;
   previousReps?: number | null;
   previousDuration?: number | null;
@@ -112,7 +114,7 @@ export function LogSetRow({
       }
 
       if (isEmptyWithoutPlaceholder) {
-        showAlert('Незаповнений підхід', 'Введіть значення перед тим як відмітити підхід.');
+        showAlert('Empty set', 'Enter a value before marking the set as done.');
         return;
       }
     }

@@ -1,5 +1,6 @@
 import { Slot } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { getApiErrorMessage, showGlobalToast } from '@/utils/globalToast';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '../contexts/AuthContext';
 import { ToastProvider } from '../contexts/ToastContext';
@@ -13,7 +14,25 @@ import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } fro
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      retry: 2,
+    },
+  },
+  // Збій будь-якої мутації показує тост — жодна помилка мережі не зникає мовчки.
+  // Локальні onError у хуках працюють додатково до цього глобального хендлера.
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      showGlobalToast({
+        title: 'Request failed',
+        description: getApiErrorMessage(error),
+        variant: 'error',
+      });
+    },
+  }),
+});
 
 function RootLayoutContent() {
   const { colors, resolvedScheme } = useTheme();
@@ -23,10 +42,7 @@ function RootLayoutContent() {
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Simulate app loading and setup
-    setTimeout(() => {
-      setAppReady(true);
-    }, 500);
+    setAppReady(true);
   }, []);
 
   const onLayoutRootView = useCallback(async () => {

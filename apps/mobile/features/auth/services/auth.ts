@@ -8,25 +8,23 @@ export class AuthService {
       return await SecureStorage.getItemAsync(TOKEN_KEY);
     }
     catch (error) {
-      console.log('Error getting token:', error);
+      if (__DEV__) console.warn('Error getting token:', error);
     }
   }
   static async saveToken(token: string) {
     try{
       await SecureStorage.setItemAsync(TOKEN_KEY, token);
-      console.log('Token saved successfully');
     }
     catch(error){
-      console.log('Error saving token:', error);
+      if (__DEV__) console.warn('Error saving token:', error);
     }
   }
   static async deleteToken() {
     try {
       await SecureStorage.deleteItemAsync(TOKEN_KEY);
-      console.log('Token deleted successfully');
     }
     catch (error) {
-      console.log('Error deleting token:', error);
+      if (__DEV__) console.warn('Error deleting token:', error);
     }
   }
 }

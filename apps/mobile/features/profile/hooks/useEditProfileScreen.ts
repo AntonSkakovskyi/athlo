@@ -6,6 +6,13 @@ import { Gender, ActivityLevel, FitnessGoal } from '@athlo/shared';
 import { useGetProfile, useUpdateProfile } from '@/hooks/api/useProfileAPI';
 import { useToast } from '@/contexts/ToastContext';
 import { validateFieldsMap, validateFields, required, minLength, minNumber, optionalMinNumber } from '@/utils/validation';
+import {
+  birthDateToAge,
+  parseBirthDate,
+  toBirthDateString,
+  getBirthDateBounds,
+  MIN_BIRTH_AGE_YEARS,
+} from '@/utils/age';
 
 export function useEditProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -22,7 +29,7 @@ export function useEditProfileScreen() {
 
   // Anthropometry
   const [gender, setGender] = useState<Gender>(Gender.MALE);
-  const [age, setAge] = useState('');
+  const [birthDate, setBirthDate] = useState<Date | null>(null);
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>(ActivityLevel.MODERATE);
@@ -41,7 +48,7 @@ export function useEditProfileScreen() {
       setAvatar(profile.avatar ?? null);
       
       setGender(profile.gender ?? Gender.MALE);
-      setAge(profile.age ? String(profile.age) : '');
+      setBirthDate(parseBirthDate(profile.birthDate));
       setHeight(profile.height ? String(profile.height) : '');
       setWeight(profile.weight ? String(profile.weight) : '');
       setActivityLevel(profile.activityLevel ?? ActivityLevel.MODERATE);
@@ -54,9 +61,10 @@ export function useEditProfileScreen() {
     }
   }, [profile]);
 
-  const parsedAge = parseInt(age, 10);
   const parsedHeight = parseInt(height, 10);
   const parsedWeight = parseFloat(weight);
+  const birthDateString = birthDate ? toBirthDateString(birthDate) : null;
+  const derivedAge = birthDateToAge(birthDateString);
 
   const parsedWater = parseInt(waterGoalInput, 10);
   const parsedProtein = parseInt(proteinInput, 10);
@@ -74,7 +82,7 @@ export function useEditProfileScreen() {
       nickname !== profile.nickname ||
       avatar !== (profile.avatar ?? null) ||
       gender !== (profile.gender ?? Gender.MALE) ||
-      parsedAge !== (profile.age ?? 0) ||
+      birthDateString !== (profile.birthDate ?? null) ||
       parsedHeight !== (profile.height ?? 0) ||
       parsedWeight !== (profile.weight ?? 0) ||
       activityLevel !== (profile.activityLevel ?? ActivityLevel.MODERATE) ||
@@ -118,8 +126,21 @@ export function useEditProfileScreen() {
     ]);
     if (inlineErrors) { setFieldErrors(inlineErrors); return; }
 
+    const { min: minBirthDate, max: maxBirthDate } = getBirthDateBounds();
+    if (!birthDate) {
+      showToast({ title: 'Birth date is required', variant: 'error' });
+      return;
+    }
+    if (birthDate > maxBirthDate) {
+      showToast({ title: `Must be at least ${MIN_BIRTH_AGE_YEARS} years old`, variant: 'error' });
+      return;
+    }
+    if (birthDate < minBirthDate) {
+      showToast({ title: 'Date of birth seems invalid', variant: 'error' });
+      return;
+    }
+
     const numericError = validateFields([
-      { value: age, rules: [required('Age'), minNumber('Age', 1)] },
       { value: height, rules: [required('Height'), minNumber('Height', 1)] },
       { value: weight, rules: [required('Weight'), minNumber('Weight', 0.1)] },
       { value: waterGoalInput, rules: [optionalMinNumber('Water goal', 1)] },
@@ -140,7 +161,7 @@ export function useEditProfileScreen() {
       nickname,
       avatar,
       gender,
-      age: isNaN(parsedAge) ? undefined : parsedAge,
+      birthDate: birthDateString,
       height: isNaN(parsedHeight) ? undefined : parsedHeight,
       weight: isNaN(parsedWeight) ? undefined : parsedWeight,
       activityLevel,
@@ -170,8 +191,9 @@ export function useEditProfileScreen() {
     pickImage,
     gender,
     setGender,
-    age,
-    setAge,
+    birthDate,
+    setBirthDate,
+    derivedAge,
     height,
     setHeight,
     weight,

@@ -245,7 +245,7 @@ export function ExerciseLogCard({
       </View>
       {sets?.map((set, index) => (
         <LogSetRow
-          key={set.id ?? `set-${index}`}
+          key={set.id ?? set.localKey ?? `set-${index}`}
           set={set}
           trackingType={trackingType}
           mode={mode}

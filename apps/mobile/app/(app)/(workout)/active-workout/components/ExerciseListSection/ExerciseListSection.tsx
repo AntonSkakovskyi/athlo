@@ -1,19 +1,16 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { spacing } from '@/constants/theme';
-import { useTheme } from '@/contexts/ThemeContext';
 import { ExerciseLogCard } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { Button } from '@/components/ui/Button/Button';
-import { Card, Typography } from '@/components/ui';
 import type { ActiveExercise } from '@/contexts/ActiveWorkoutContext';
 import type { LogSetData } from '@/features/workout/components/ExerciseLogCard/LogSetRow/LogSetRow';
 
 interface ExerciseListSectionProps {
   exercises: ActiveExercise[];
   isLoadingExercises: boolean;
-  isInitializing?: boolean;
   workoutId: string;
   onAddExercise: () => void;
   onUpdateExercise: (exIdx: number, data: Partial<ActiveExercise>) => void;
@@ -31,7 +28,6 @@ interface ExerciseListSectionProps {
 export function ExerciseListSection({
   exercises,
   isLoadingExercises,
-  isInitializing,
   workoutId,
   onAddExercise,
   onUpdateExercise,
@@ -46,7 +42,6 @@ export function ExerciseListSection({
   onPRPress,
 }: ExerciseListSectionProps) {
   const router = useRouter();
-  const { colors } = useTheme();
 
   return (
     <ScrollView
@@ -56,7 +51,7 @@ export function ExerciseListSection({
     >
       {isLoadingExercises ? (
         <Spinner style={{ marginTop: spacing['5xl'] }} />
-      ) : exercises.length === 0 && !isInitializing ? (
+      ) : exercises.length === 0 ? (
         <EmptyState
           title="No exercises yet"
           description="Add an exercise to begin"
@@ -99,18 +94,10 @@ export function ExerciseListSection({
               onPRPress={(setIdx) => onPRPress(exIdx, setIdx)}
             />
           ))}
-          {isInitializing && (
-            <Card style={styles.loadingCard}>
-              <Spinner size="small" />
-              <Typography variant="bodySmall" color={colors.textMuted} style={{ marginLeft: spacing.sm }}>
-                Initializing exercise...
-              </Typography>
-            </Card>
-          )}
         </>
       )}
 
-      {(exercises.length > 0 || isInitializing) && (
+      {exercises.length > 0 && (
         <Button
           title="+ Add Exercise"
           variant="ghost"
@@ -133,14 +120,6 @@ const styles = StyleSheet.create({
   addExerciseBtn: {
     marginTop: spacing.md,
     marginBottom: spacing.lg,
-  },
-  loadingCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-    marginBottom: spacing.md,
-    opacity: 0.7,
   },
 });
 
