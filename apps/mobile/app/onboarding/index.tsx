@@ -138,6 +138,7 @@ export default function OnboardingScreen() {
                   onChange={setBirthDate}
                   minimumDate={minBirthDate}
                   maximumDate={maxBirthDate}
+                  showTodayButton={false}
                 />
                 {derivedAge !== null && (
                   <Typography variant="caption" style={styles.ageCaption}>

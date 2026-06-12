@@ -95,8 +95,10 @@ export default function EditProfileScreen() {
         title="Edit Profile"
         onBack={() => router.back()}
         rightAction={
-          <Pressable onPress={handleSave} disabled={!hasChanges} hitSlop={8}>
-            <Text style={[styles.saveBtn, !hasChanges && styles.saveBtnDisabled]}>Save</Text>
+          <Pressable onPress={handleSave} disabled={!hasChanges || updateProfile.isPending} hitSlop={8}>
+            {updateProfile.isPending
+              ? <Spinner size="small" />
+              : <Text style={[styles.saveBtn, !hasChanges && styles.saveBtnDisabled]}>Save</Text>}
           </Pressable>
         }
       />

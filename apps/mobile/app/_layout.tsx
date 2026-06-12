@@ -1,13 +1,15 @@
 import { Slot } from 'expo-router';
 import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { getApiErrorMessage, showGlobalToast } from '@/utils/globalToast';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { AuthProvider } from '../contexts/AuthContext';
 import { ToastProvider } from '../contexts/ToastContext';
 import { ActiveWorkoutProvider } from '../contexts/ActiveWorkoutContext';
 import { ThemeProvider, useTheme } from '../contexts/ThemeContext';
 import { SplashScreen as ThemedSplashScreen } from '../components/ui';
 import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
+import { Asset } from 'expo-asset';
 import { Animated, View, StyleSheet } from 'react-native';
 import { useRef, useCallback, useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
@@ -42,7 +44,11 @@ function RootLayoutContent() {
   const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    setAppReady(true);
+    async function prepare() {
+      await Asset.fromModule(require('@/assets/icon.png')).downloadAsync();
+      setAppReady(true);
+    }
+    prepare();
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
@@ -82,6 +88,7 @@ function RootLayoutContent() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]} onLayout={onLayoutRootView}>
+      <StatusBar style={resolvedScheme === 'dark' ? 'light' : 'dark'} />
       <NavigationThemeProvider value={themedNavigation}>
         <AuthProvider>
           <ToastProvider>
@@ -101,7 +108,7 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <RootLayoutContent />

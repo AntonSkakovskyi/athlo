@@ -14,6 +14,7 @@ interface DatePickerProps {
   maximumDate?: Date;
   minimumDate?: Date;
   trigger?: React.ReactNode;
+  showTodayButton?: boolean;
 }
 
 export const DAYS_OF_WEEK = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -46,7 +47,7 @@ function getYearRange(min?: Date, max?: Date): number[] {
   return years;
 }
 
-export function DatePicker({ value, onChange, label, mode = 'date', maximumDate, minimumDate, trigger }: DatePickerProps) {
+export function DatePicker({ value, onChange, label, mode = 'date', maximumDate, minimumDate, trigger, showTodayButton = true }: DatePickerProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [show, setShow] = useState(false);
@@ -179,21 +180,23 @@ export function DatePicker({ value, onChange, label, mode = 'date', maximumDate,
                 })}
               </View>
 
-              <Pressable
-                style={styles.todayBtn}
-                onPress={() => {
-                  const todayDate = new Date();
-                  setCurrentMonth({ year: todayDate.getFullYear(), month: todayDate.getMonth() });
-                  if (mode === 'date') {
-                    onChange(todayDate);
-                    setShow(false);
-                  } else {
-                    setViewState('calendar');
-                  }
-                }}
-              >
-                <Text style={styles.todayBtnText}>Today</Text>
-              </Pressable>
+              {showTodayButton && (
+                <Pressable
+                  style={styles.todayBtn}
+                  onPress={() => {
+                    const todayDate = new Date();
+                    setCurrentMonth({ year: todayDate.getFullYear(), month: todayDate.getMonth() });
+                    if (mode === 'date') {
+                      onChange(todayDate);
+                      setShow(false);
+                    } else {
+                      setViewState('calendar');
+                    }
+                  }}
+                >
+                  <Text style={styles.todayBtnText}>Today</Text>
+                </Pressable>
+              )}
             </View>
           )}
 
