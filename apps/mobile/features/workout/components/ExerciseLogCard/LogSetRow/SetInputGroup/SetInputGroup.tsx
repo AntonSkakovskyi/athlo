@@ -158,15 +158,11 @@ function makeStyles(c: ColorPalette) {
   return StyleSheet.create({
     inputWrap: {
       flex: 1,
-      maxWidth: 80,
-      minWidth: 65,
       alignItems: 'center',
       justifyContent: 'center',
     },
     inputWrapWide: {
       flex: 2,
-      maxWidth: 160,
-      minWidth: 130,
       alignItems: 'center',
       justifyContent: 'center',
     },

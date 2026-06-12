@@ -186,8 +186,8 @@ function makeStyles(c: ColorPalette) {
       flexDirection: 'row',
       alignItems: 'center',
       paddingVertical: spacing.sm,
-      paddingHorizontal: spacing.xs,
-      justifyContent: 'space-between',
+      paddingLeft: spacing.xs,
+      gap: spacing.xs,
     },
     rowCompleted: {
       backgroundColor: c.primaryLight,
@@ -217,10 +217,10 @@ function makeStyles(c: ColorPalette) {
       justifyContent: 'center',
     },
     actionsCell: {
-      width: 36,
+      width: 28,
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
+      justifyContent: 'flex-end',
     },
     checkbox: {
       width: 32,

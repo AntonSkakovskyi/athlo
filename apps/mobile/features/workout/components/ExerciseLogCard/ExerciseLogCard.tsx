@@ -306,9 +306,9 @@ function makeStyles(c: ColorPalette) {
     columnHeaders: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: spacing.xs,
+      paddingLeft: spacing.xs,
       paddingBottom: spacing.xs,
-      justifyContent: 'space-between',
+      gap: spacing.xs,
     },
     colHeader: {
       fontSize: fontSize.sm,
@@ -333,8 +333,6 @@ function makeStyles(c: ColorPalette) {
     },
     colInput: {
       flex: 1,
-      maxWidth: 80,
-      minWidth: 65,
       fontSize: fontSize.sm,
       fontWeight: fontWeight.semibold,
       color: c.textMuted,
@@ -343,8 +341,6 @@ function makeStyles(c: ColorPalette) {
     },
     colInputWide: {
       flex: 2,
-      maxWidth: 160,
-      minWidth: 130,
       fontSize: fontSize.sm,
       fontWeight: fontWeight.semibold,
       color: c.textMuted,
@@ -359,7 +355,7 @@ function makeStyles(c: ColorPalette) {
       textAlign: 'center',
     },
     colActions: {
-      width: 36,
+      width: 28,
     },
     addSetBtn: {
       marginTop: spacing.sm,
