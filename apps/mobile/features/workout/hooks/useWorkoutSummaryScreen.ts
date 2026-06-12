@@ -15,10 +15,12 @@ import {
 } from '@/hooks/api';
 import { confirmDestructive } from '@/utils/alerts';
 import { VisibilityType, VISIBILITY_TYPE_BY_ID } from '@athlo/shared';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useWorkoutSummaryScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { user } = useAuth();
   const { workoutId, autoEdit, fromCompletion } = useLocalSearchParams<{ workoutId: string; autoEdit?: string; fromCompletion?: string }>();
 
   const { data: workout, isLoading } = useGetWorkoutById(workoutId ?? '');
@@ -346,10 +348,12 @@ export function useWorkoutSummaryScreen() {
   );
 
   const duration = workout ? formatDurationRange(workout.started_at, workout.ended_at) : '—';
+  const isOwner = !!workout && !!user && workout.userId === user.id;
 
   return {
     workout,
     isLoading,
+    isOwner,
     fromCompletion: fromCompletion === '1',
     exercises,
     completedSets,

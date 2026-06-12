@@ -24,6 +24,7 @@ interface WorkoutHistoryListProps extends Omit<InfiniteListProps<IWorkoutWithRel
   emptyDescription?: string;
   emptyActionLabel?: string;
   onEmptyAction?: () => void;
+  readOnly?: boolean;
 }
 
 export const WorkoutHistoryList = ({
@@ -34,6 +35,7 @@ export const WorkoutHistoryList = ({
   emptyDescription = 'Start your first workout to see your history',
   emptyActionLabel,
   onEmptyAction,
+  readOnly = false,
   ListHeaderComponent,
   contentContainerStyle,
   ...infiniteListProps
@@ -136,13 +138,12 @@ export const WorkoutHistoryList = ({
             onSaveAsTemplate={() => handleSaveAsTemplate(w)}
             isSavingAsTemplate={savingAsTemplateId === w.id}
             onCopyWorkout={() => handleCopyWorkout(w)}
-            onEdit={() =>
+            onEdit={!readOnly ? () =>
               router.push({
                 pathname: '/(app)/(workout)/workout-summary',
                 params: { workoutId: String(w.id), autoEdit: 'true' },
-              })
-            }
-            onDelete={() => handleDelete(w)}
+              }) : undefined}
+            onDelete={!readOnly ? () => handleDelete(w) : undefined}
           />
         );
       }}

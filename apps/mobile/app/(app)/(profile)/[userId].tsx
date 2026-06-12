@@ -92,6 +92,7 @@ export default function UserProfileScreen() {
       hasNextPage={workoutsQuery.hasNextPage}
       isFetchingNextPage={workoutsQuery.isFetchingNextPage}
       onLoadMore={handleLoadMore}
+      readOnly
       onWorkoutPress={(id) =>
         router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id) } })
       }

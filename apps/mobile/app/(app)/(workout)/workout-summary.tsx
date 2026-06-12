@@ -21,6 +21,7 @@ export default function WorkoutSummaryScreen() {
   const {
     workout,
     isLoading,
+    isOwner,
     fromCompletion,
     exercises,
     completedSets,
@@ -210,9 +211,11 @@ export default function WorkoutSummaryScreen() {
         title="Summary"
         onBack={handleBack}
         rightAction={
-          <Pressable onPress={handleToggleEditing} style={styles.renameBtn}>
-            <Text style={styles.renameBtnText}>{isEditing ? '✅ Done' : '✏️ Edit'}</Text>
-          </Pressable>
+          isOwner ? (
+            <Pressable onPress={handleToggleEditing} style={styles.renameBtn}>
+              <Text style={styles.renameBtnText}>{isEditing ? '✅ Done' : '✏️ Edit'}</Text>
+            </Pressable>
+          ) : undefined
         }
       />
 
