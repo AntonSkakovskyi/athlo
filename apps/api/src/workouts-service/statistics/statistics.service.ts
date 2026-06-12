@@ -438,12 +438,22 @@ export class StatisticsService {
       .andWhere('w.ended_at IS NOT NULL')
       .getRawOne();
 
+    // Unique exercises performed (distinct exercise_id across all completed workouts)
+    const uniqueExercisesResult = await this.logExerciseRepo
+      .createQueryBuilder('le')
+      .select('COUNT(DISTINCT le.exercise_id)', 'count')
+      .innerJoin('le.workout', 'w')
+      .where('w.user_id = :userId', { userId })
+      .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .getRawOne();
+
     // Current streak (consecutive days with completed workouts)
     const currentStreak = await this.calculateStreak(userId);
 
     return {
       totalWorkouts,
       totalExercisesPerformed: totalExercisesResult,
+      totalUniqueExercises: parseInt(uniqueExercisesResult?.count ?? '0'),
       totalSets,
       totalWeightLifted: parseFloat(totalWeightResult?.total ?? '0'),
       totalDurationSeconds: parseFloat(
