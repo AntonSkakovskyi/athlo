@@ -342,12 +342,24 @@ export class WorkoutTemplateService {
 
   async createFromWorkout(workoutId: number, userId: number, name: string) {
     const workout = await this.workoutRepository.findOne({
-      where: { id: workoutId, userId },
+      where: { id: workoutId },
       relations: { logExercises: { sets: true } },
     });
 
     if (!workout) {
       throw new NotFoundException(`Workout with ID ${workoutId} not found`);
+    }
+
+    if (workout.userId !== userId) {
+      const isPublic = workout.visibilityTypeId === 2;
+      const isFriendsOnly = workout.visibilityTypeId === 3;
+      const areFriends = isFriendsOnly
+        ? await this.friendService.isFriend(userId, workout.userId)
+        : false;
+
+      if (!isPublic && !areFriends) {
+        throw new ForbiddenException('You do not have access to this workout');
+      }
     }
 
     const template = this.templateRepository.create({
