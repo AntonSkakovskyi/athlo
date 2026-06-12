@@ -10,6 +10,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 import { VisibilityType } from '@athlo/shared';
 import type {
   ICompleteWorkoutRequest,
@@ -43,6 +44,7 @@ export class FinalizedExerciseDto implements IFinalizedExercise {
   @IsInt()
   logExerciseId!: number;
 
+  @ApiProperty({ type: [FinalizedSetDto] })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => FinalizedSetDto)
@@ -77,6 +79,7 @@ export class CompleteWorkoutDto implements ICompleteWorkoutRequest {
   @Max(5)
   feelingScore?: number;
 
+  @ApiProperty({ enum: VisibilityType, required: false })
   @IsOptional()
   @IsEnum(VisibilityType)
   visibility?: VisibilityType;
@@ -85,6 +88,7 @@ export class CompleteWorkoutDto implements ICompleteWorkoutRequest {
   @IsString()
   description?: string;
 
+  @ApiProperty({ type: [FinalizedExerciseDto], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

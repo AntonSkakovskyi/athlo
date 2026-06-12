@@ -6,6 +6,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 import { AddNutritionFactDto } from './add-nutrition-fact.dto';
 
 export class CreateFoodDto {
@@ -20,6 +21,7 @@ export class CreateFoodDto {
   @IsNumber()
   creatorId?: number;
 
+  @ApiProperty({ type: [AddNutritionFactDto], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
