@@ -70,20 +70,22 @@ export function BarChartBlock({
 
   const chartData: barDataItem[] = useMemo(() => {
     if (data.length === 0) return [];
-
-    const shouldShowLabel = (i: number) => {
-      if (data.length <= 8) return true;
-      if (data.length <= 15) return i % 2 === 0;
-      return i === 0 || i === Math.floor(data.length / 2) || i === data.length - 1;
-    };
-
     return data.map((d, i) => ({
       value: d.value,
-      label: shouldShowLabel(i) ? d.label : '',
-      frontColor: selectedIndex === i ? colors.primary : colors.primary + '80', // semi-transparent if not selected
+      frontColor: selectedIndex === i ? colors.primary : colors.primary + '80',
       onPress: () => setSelectedIndex(i),
     }));
   }, [data, selectedIndex, colors]);
+
+  const xAxisLabels = useMemo(() => {
+    if (data.length === 0) return [];
+    if (data.length <= 3) return data.map((d) => d.label);
+    return [
+      data[0].label,
+      data[Math.floor(data.length / 2)].label,
+      data[data.length - 1].label,
+    ];
+  }, [data]);
 
   const plotWidth = containerWidth > 0
     ? containerWidth - CONTAINER_PADDING * 2 - Y_AXIS_WIDTH
@@ -96,73 +98,76 @@ export function BarChartBlock({
     return Math.max(width, 4);
   }, [data.length, plotWidth]);
 
-  return (
-    <View style={styles.container} onLayout={handleLayout}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.metricLabel}>{metricLabel}</Text>
-          {displayPoint && !isLoading && (
-            <Text style={styles.headerValue}>
-              {formatValue(displayPoint.value)}
-              <Text style={styles.headerDate}> · {displayPoint.headerLabel || displayPoint.label}</Text>
-            </Text>
-          )}
-        </View>
-        {data.length > 0 && (
-          <View style={styles.headerRight}>
-            <PeriodSelector
-              period={period}
-              periods={periods}
-              open={periodOpen}
-              onToggle={() => setPeriodOpen(!periodOpen)}
-              onSelect={(p) => { onPeriodChange(p); setPeriodOpen(false); }}
-            />
-          </View>
-        )}
-      </View>
+  const hasContent = isLoading || data.length > 0;
 
-      {/* Chart */}
+  return (
+    <View style={[styles.container, hasContent && styles.containerFull]} onLayout={handleLayout}>
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <Spinner size="small" />
         </View>
       ) : data.length === 0 ? (
         <Text style={styles.emptyText}>{emptyText}</Text>
-      ) : plotWidth > 0 ? (
-        <View style={styles.chartWrapper}>
-          <BarChart
-            data={chartData}
-            height={CHART_HEIGHT}
-            width={plotWidth}
-            barWidth={barWidth}
-            initialSpacing={10}
-            spacing={4}
-            yAxisLabelWidth={Y_AXIS_WIDTH}
-            noOfSections={3}
-            formatYLabel={(val) => formatValue(Number(val))}
-            rulesColor={colors.border}
-            yAxisColor="transparent"
-            xAxisColor={colors.border}
-            yAxisTextStyle={axisTextStyle}
-            xAxisLabelTextStyle={axisTextStyle}
-            backgroundColor="transparent"
-            disableScroll
-            hideRules={false}
-            showGradient
-            gradientColor={colors.primary}
-          />
-        </View>
-      ) : null}
+      ) : (
+        <>
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.metricLabel}>{metricLabel}</Text>
+              {displayPoint && (
+                <Text style={styles.headerValue}>
+                  {formatValue(displayPoint.value)}
+                  <Text style={styles.headerDate}> · {displayPoint.headerLabel || displayPoint.label}</Text>
+                </Text>
+              )}
+            </View>
+            <View style={styles.headerRight}>
+              <PeriodSelector
+                period={period}
+                periods={periods}
+                open={periodOpen}
+                onToggle={() => setPeriodOpen(!periodOpen)}
+                onSelect={(p) => { onPeriodChange(p); setPeriodOpen(false); }}
+              />
+            </View>
+          </View>
 
-      {/* Metric chips — приховуємо при відсутності даних: усі метрики беруться з одного масиву,
-          тож зміна метрики порожній графік не оживить. Period selector лишається доступним. */}
-      {metrics && onMetricChange && activeMetric !== undefined && data.length > 0 && (
-        <MetricSelector
-          metrics={metrics}
-          activeMetric={activeMetric}
-          onMetricChange={onMetricChange}
-        />
+          {plotWidth > 0 && (
+            <View style={styles.chartWrapper}>
+              <BarChart
+                data={chartData}
+                height={CHART_HEIGHT}
+                width={plotWidth}
+                barWidth={barWidth}
+                spacing={4}
+                yAxisLabelWidth={Y_AXIS_WIDTH}
+                noOfSections={3}
+                formatYLabel={(val) => formatValue(Number(val))}
+                rulesColor={colors.border}
+                yAxisColor="transparent"
+                xAxisColor={colors.border}
+                yAxisTextStyle={axisTextStyle}
+                backgroundColor="transparent"
+                disableScroll
+                hideRules={false}
+                showGradient
+                gradientColor={colors.primary}
+              />
+              <View style={styles.xAxis}>
+                {xAxisLabels.map((label, i) => (
+                  <Text key={i} style={styles.xLabel}>{label}</Text>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {metrics && onMetricChange && activeMetric !== undefined && (
+            <MetricSelector
+              metrics={metrics}
+              activeMetric={activeMetric}
+              onMetricChange={onMetricChange}
+            />
+          )}
+        </>
       )}
     </View>
   );
@@ -177,7 +182,9 @@ function makeStyles(c: ColorPalette) {
       marginBottom: spacing.lg,
       borderWidth: 1,
       borderColor: c.border,
-      minHeight: 250, // Ensure enough height for spinner
+    },
+    containerFull: {
+      minHeight: 250,
     },
     loadingContainer: {
       height: CHART_HEIGHT,
@@ -222,7 +229,16 @@ function makeStyles(c: ColorPalette) {
     },
     chartWrapper: {
       marginBottom: spacing.sm,
-      marginLeft: -10, // Adjust for Y-axis labels
+      marginLeft: -10,
+    },
+    xAxis: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginLeft: Y_AXIS_WIDTH,
+    },
+    xLabel: {
+      fontSize: 10,
+      color: c.textMuted,
     },
   });
 }

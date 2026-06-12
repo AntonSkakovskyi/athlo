@@ -26,16 +26,21 @@ export function NutritionBarChart({ data, color, unit }: NutritionBarChartProps)
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const chartHeight = 140;
 
-  const displayData = data;
-  const selected = selectedIndex !== null ? displayData[selectedIndex] : null;
+  const displayIndex = selectedIndex ?? data.length - 1;
+  const displayPoint = data[displayIndex];
 
   const handleBarPress = (index: number) => {
     setSelectedIndex((prev) => (prev === index ? null : index));
   };
 
   return (
-    <View>
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={[styles.headerValue, { color }]}>{formatValueFull(displayPoint.value, unit)}</Text>
+        <Text style={styles.headerDate}>{displayPoint.label ?? formatDate(displayPoint.date)}</Text>
+      </View>
+
       {/* Y-axis labels */}
       <View style={styles.yAxis}>
         <Text style={styles.yLabel}>{formatValue(maxValue)}</Text>
@@ -52,7 +57,7 @@ export function NutritionBarChart({ data, color, unit }: NutritionBarChartProps)
 
         {/* Bar container */}
         <View style={styles.barsContainer}>
-          {displayData.map((point, index) => {
+          {data.map((point, index) => {
             const barHeight = (point.value / maxValue) * chartHeight;
             const isSelected = selectedIndex === index;
             return (
@@ -75,34 +80,20 @@ export function NutritionBarChart({ data, color, unit }: NutritionBarChartProps)
 
       {/* X-axis labels */}
       <View style={styles.xAxis}>
-        {displayData.length > 0 && (
+        {data.length > 0 && (
           <>
-            <Text style={styles.xLabel}>{displayData[0].label ?? formatDate(displayData[0].date)}</Text>
-            {displayData.length > 2 && (
+            <Text style={styles.xLabel}>{data[0].label ?? formatDate(data[0].date)}</Text>
+            {data.length > 2 && (
               <Text style={styles.xLabel}>
-                {(() => { const m = displayData[Math.floor(displayData.length / 2)]; return m.label ?? formatDate(m.date); })()}
+                {(() => { const m = data[Math.floor(data.length / 2)]; return m.label ?? formatDate(m.date); })()}
               </Text>
             )}
             <Text style={styles.xLabel}>
-              {(() => { const l = displayData[displayData.length - 1]; return l.label ?? formatDate(l.date); })()}
+              {(() => { const l = data[data.length - 1]; return l.label ?? formatDate(l.date); })()}
             </Text>
           </>
         )}
       </View>
-
-    </View>
-
-    {/* Detail panel — sibling of chart card, fixed height */}
-    <View style={styles.detailPanel}>
-      {selected ? (
-        <>
-          <Text style={styles.detailDate}>{selected.label ?? formatDate(selected.date)}</Text>
-          <Text style={[styles.detailValue, { color }]}>{formatValueFull(selected.value, unit)}</Text>
-        </>
-      ) : (
-        <Text style={styles.detailHint}>Tap a bar for details</Text>
-      )}
-    </View>
     </View>
   );
 }
@@ -131,32 +122,24 @@ function makeStyles(c: ColorPalette) {
       borderWidth: 1,
       borderColor: c.border,
     },
-    detailPanel: {
-      height: 44,
-      marginTop: spacing.sm,
+    header: {
       flexDirection: 'row',
-      alignItems: 'center',
       justifyContent: 'space-between',
-      paddingHorizontal: spacing.xs,
+      alignItems: 'baseline',
+      marginBottom: spacing.md,
     },
-    detailDate: {
+    headerValue: {
+      fontSize: fontSize.xl,
+      fontWeight: '700',
+    },
+    headerDate: {
       fontSize: fontSize.sm,
       color: c.textSecondary,
-    },
-    detailValue: {
-      fontSize: fontSize.md,
-      fontWeight: '600',
-    },
-    detailHint: {
-      fontSize: fontSize.xs,
-      color: c.textMuted,
-      flex: 1,
-      textAlign: 'center',
     },
     yAxis: {
       position: 'absolute',
       left: spacing.sm,
-      top: spacing.lg,
+      top: 52, // header height (~32) + marginBottom (spacing.md)
       bottom: spacing['3xl'],
       justifyContent: 'space-between',
       zIndex: 1,
