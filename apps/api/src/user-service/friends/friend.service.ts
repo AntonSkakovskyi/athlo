@@ -6,8 +6,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { FriendRequestStatus } from '@athlo/shared';
+import { DataSource, Repository } from 'typeorm';
+import { FriendRequestStatus, VISIBILITY_TYPE_ID, VisibilityType } from '@athlo/shared';
 import { UserFriendEntity } from './entities/user-friend.entity';
 import { FriendStatusEntity } from './entities/friend-status.entity';
 import { UserEntity } from '../user/entities/user.entity';
@@ -23,6 +23,7 @@ export class FriendService {
     private readonly friendStatusRepository: Repository<FriendStatusEntity>,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    private readonly dataSource: DataSource,
   ) {}
 
   private async ensureStatusCache(): Promise<Map<FriendRequestStatus, number>> {
@@ -170,7 +171,33 @@ export class FriendService {
       throw new NotFoundException('Friendship not found');
     }
 
-    await this.friendRepository.remove(friendship);
+    const friendsOnlyId = VISIBILITY_TYPE_ID[VisibilityType.FRIENDS_ONLY];
+
+    await this.dataSource.transaction(async (em) => {
+      await em.remove(friendship);
+
+      await em.query(
+        `DELETE FROM user_workout_templates
+         WHERE (user_id = $1 AND workout_template_id IN (
+           SELECT id FROM workout_templates WHERE creator_id = $2 AND visibility_type_id = $3
+         ))
+         OR (user_id = $2 AND workout_template_id IN (
+           SELECT id FROM workout_templates WHERE creator_id = $1 AND visibility_type_id = $3
+         ))`,
+        [userId, friendId, friendsOnlyId],
+      );
+
+      await em.query(
+        `DELETE FROM user_meal_plans
+         WHERE (user_id = $1 AND meal_plan_id IN (
+           SELECT id FROM meal_plans WHERE creator_id = $2 AND visibility_type_id = $3
+         ))
+         OR (user_id = $2 AND meal_plan_id IN (
+           SELECT id FROM meal_plans WHERE creator_id = $1 AND visibility_type_id = $3
+         ))`,
+        [userId, friendId, friendsOnlyId],
+      );
+    });
 
     return { message: 'Friend removed successfully' };
   }
