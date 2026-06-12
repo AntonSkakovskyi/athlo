@@ -11,7 +11,7 @@ import { DataSource, In, Repository } from 'typeorm';
 import { CreateWorkoutDto } from '../dto/workout/create-workout.dto';
 import { UpdateWorkoutDto } from '../dto/workout/update-workout.dto';
 import { CompleteWorkoutDto } from '../dto/workout/complete-workout.dto';
-import { WorkoutStatus, VISIBILITY_TYPE_ID } from '@athlo/shared';
+import { WorkoutStatus, VISIBILITY_TYPE_ID, VisibilityType } from '@athlo/shared';
 import { LogSetEntity } from '../entities/log-set.entity';
 import { ILastPerformance } from '@athlo/shared';
 import { AchievementService } from '../achievement/achievement.service';
@@ -164,6 +164,41 @@ export class WorkoutService {
     return workout;
   }
 
+  async findOneReadable(id: number, currentUserId: number) {
+    const workout = await this.workoutsRepository.findOne({
+      where: { id },
+      relations: {
+        logExercises: {
+          exercise: true,
+          sets: {
+            achievement: true,
+          },
+        },
+      },
+      order: {
+        logExercises: {
+          order: 'ASC',
+          sets: { order: 'ASC' },
+        },
+      },
+    });
+
+    if (!workout) {
+      throw new NotFoundException(`Workout with ID ${id} not found`);
+    }
+
+    if (workout.userId === currentUserId) return workout;
+
+    if (workout.visibilityTypeId === VISIBILITY_TYPE_ID[VisibilityType.PUBLIC]) return workout;
+
+    if (workout.visibilityTypeId === VISIBILITY_TYPE_ID[VisibilityType.FRIENDS_ONLY]) {
+      const areFriends = await this.friendService.isFriend(currentUserId, workout.userId);
+      if (areFriends) return workout;
+    }
+
+    throw new ForbiddenException('You do not have access to this workout');
+  }
+
   async update(id: number, userId: number, dto: UpdateWorkoutDto) {
     const workout = await this.findOne(id, userId);
     const { visibility, ...fields } = dto;
@@ -265,7 +300,7 @@ export class WorkoutService {
   }
 
   async copyWorkout(id: number, userId: number) {
-    const original = await this.findOne(id, userId);
+    const original = await this.findOneReadable(id, userId);
 
     // Копія створюється атомарно: або повне тренування з вправами й сетами,
     // або нічого

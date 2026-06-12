@@ -87,7 +87,7 @@ export class WorkoutController {
     @Param('id', ParseIntPipe) id: number,
     @CurrentUser('id') userId: number,
   ) {
-    return this.workoutService.findOne(id, userId);
+    return this.workoutService.findOneReadable(id, userId);
   }
 
   @Patch(':id')
