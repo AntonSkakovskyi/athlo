@@ -28,6 +28,7 @@ const createMockRepository = () => ({
 const makeQb = (result: any = null) => {
   const qb: any = {
     innerJoin: jest.fn().mockReturnThis(),
+    distinctOn: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     addSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
