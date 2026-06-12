@@ -6,6 +6,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
 import { Badge } from '@/components/ui/Badge/Badge';
+import { formatAchievementProgress } from '@/utils/achievement';
 
 interface AchievementCardProps {
   achievement: IAchievement;
@@ -54,13 +55,17 @@ export function AchievementCard({
                 year: 'numeric',
               })}
             </Text>
-            <Text style={styles.unlockedValue}>Value: {userAchievement.value}</Text>
           </View>
         ) : (
           <View style={styles.progressSection}>
             <ProgressBar progress={progressPercent} />
             <Text style={styles.progressText}>
-              {currentProgress} / {achievement.threshold}
+              {formatAchievementProgress(
+                currentProgress,
+                achievement.threshold,
+                achievement.type,
+                achievement.trackingMetric,
+              )}
             </Text>
           </View>
         )}
@@ -122,19 +127,12 @@ function makeStyles(c: ColorPalette) {
       marginTop: 3,
     },
     unlockedInfo: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.md,
       marginTop: spacing.sm,
     },
     unlockedDate: {
       fontSize: 12,
       color: c.primary,
       fontWeight: '500',
-    },
-    unlockedValue: {
-      fontSize: 12,
-      color: c.textSecondary,
     },
     progressSection: {
       marginTop: 10,

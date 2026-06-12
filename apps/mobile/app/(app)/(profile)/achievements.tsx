@@ -9,9 +9,9 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';
 import { ProgressBar } from '@/components/ui/ProgressBar/ProgressBar';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
-import { Tag } from '@/components/ui/Tag/Tag';
 import { BottomSheet } from '@/components/ui';
 import { useAchievementsScreen } from '@/features/profile/hooks/useAchievementsScreen';
+import { formatAchievementProgress } from '@/utils/achievement';
 
 export default function AchievementsScreen() {
   const {
@@ -21,7 +21,6 @@ export default function AchievementsScreen() {
     setTabIndex,
     selectedAchievement,
     setSelectedAchievement,
-    exerciseMap,
     unlockedMap,
     displayedAchievements,
     totalCount,
@@ -101,16 +100,8 @@ export default function AchievementsScreen() {
           {selectedAchievement && (
             <>
               <Text style={styles.sheetDesc}>{selectedAchievement.description}</Text>
-              {selectedAchievement.exerciseId && exerciseMap.has(selectedAchievement.exerciseId) && (
-                <View style={styles.exerciseBadgeWrap}>
-                  <Tag label={exerciseMap.get(selectedAchievement.exerciseId) ?? ''} />
-                </View>
-              )}
               {selectedIsUnlocked && selectedUserAchievement ? (
                 <View style={styles.sheetUnlockedInfo}>
-                  {selectedUserAchievement.value != null && (
-                    <Text style={styles.sheetValue}>Value: {selectedUserAchievement.value}</Text>
-                  )}
                   <Text style={styles.sheetDate}>
                     Unlocked: {new Date(selectedUserAchievement.unlockedAt).toLocaleDateString('en-US', {
                       day: 'numeric', month: 'long', year: 'numeric',
@@ -121,7 +112,12 @@ export default function AchievementsScreen() {
                 <View style={styles.sheetProgressSection}>
                   <ProgressBar progress={selectedProgressPercent} height={8} />
                   <Text style={styles.sheetProgressText}>
-                    {selectedProgress} / {selectedAchievement.threshold}
+                    {formatAchievementProgress(
+                      selectedProgress,
+                      selectedAchievement.threshold,
+                      selectedAchievement.type,
+                      selectedAchievement.trackingMetric,
+                    )}
                   </Text>
                 </View>
               )}
@@ -164,9 +160,7 @@ function makeStyles(c: ColorPalette) {
     achievementTitleLocked: { color: c.textMuted },
     sheetBody: { paddingHorizontal: spacing.xl, paddingBottom: spacing.lg },
     sheetDesc: { fontSize: fontSize.md, color: c.textSecondary, lineHeight: 22, marginBottom: spacing.md },
-    exerciseBadgeWrap: { alignSelf: 'flex-start', marginBottom: spacing.md },
     sheetUnlockedInfo: { gap: spacing.sm, marginTop: spacing.xs },
-    sheetValue: { fontSize: fontSize.lg, fontWeight: fontWeight.semibold, color: c.text },
     sheetDate: { fontSize: fontSize.md, color: c.primary, fontWeight: fontWeight.medium },
     sheetProgressSection: { marginTop: spacing.xs },
     sheetProgressText: { fontSize: fontSize.sm, color: c.textMuted, marginTop: spacing.xs },

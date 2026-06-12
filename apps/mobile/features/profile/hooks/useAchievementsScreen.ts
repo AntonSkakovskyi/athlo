@@ -7,6 +7,14 @@ import { useGetAchievements, useGetUserAchievements, useGetExerciseRecords } fro
 import { useGetExercises } from '@/hooks/api/useExerciseAPI';
 import { useStatisticsSummary } from '@/hooks/api/useStatisticsAPI';
 
+const CHAIN_TYPES = new Set<AchievementType>([
+  AchievementType.GLOBAL_WORKOUTS,
+  AchievementType.GLOBAL_SETS,
+  AchievementType.GLOBAL_WEIGHT,
+  AchievementType.GLOBAL_TIME,
+  AchievementType.GLOBAL_EXERCISES,
+]);
+
 export function useAchievementsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -44,9 +52,18 @@ export function useAchievementsScreen() {
       });
   }, [achievements, unlockedMap]);
 
+  // For chain-type achievements (global milestones), only show the next locked one
+  // per type (lowest threshold). achievements is sorted type ASC, threshold ASC by API.
   const lockedAchievements = useMemo(() => {
     if (!achievements) return [];
-    return achievements.filter((a) => !unlockedMap.has(a.id));
+    const locked = achievements.filter((a) => !unlockedMap.has(a.id));
+    const seenTypes = new Set<string>();
+    return locked.filter((a) => {
+      if (!CHAIN_TYPES.has(a.type as AchievementType)) return true;
+      if (seenTypes.has(a.type)) return false;
+      seenTypes.add(a.type);
+      return true;
+    });
   }, [achievements, unlockedMap]);
 
   const totalCount = achievements?.length ?? 0;
@@ -58,13 +75,10 @@ export function useAchievementsScreen() {
   const getProgressForAchievement = useCallback((achievement: IAchievement): number => {
     if (achievement.type === AchievementType.EXERCISE_PERSONAL_RECORD && achievement.exerciseId) {
       if (!exerciseRecords) return 0;
-      
       const records = exerciseRecords.filter(
-        (r) => r.exerciseId === achievement.exerciseId && r.metricTypeId === achievement.trackingMetricId
+        (r) => r.exerciseId === achievement.exerciseId && r.metricTypeId === achievement.trackingMetricId,
       );
-      
       if (records.length === 0) return 0;
-      
       return Math.max(...records.map(r => r.value));
     }
 
@@ -77,7 +91,9 @@ export function useAchievementsScreen() {
       case AchievementType.GLOBAL_WEIGHT:
         return statisticsSummary.totalWeightLifted;
       case AchievementType.GLOBAL_TIME:
-        return statisticsSummary.totalDurationSeconds || 0; // if it's there
+        return statisticsSummary.totalDurationSeconds;
+      case AchievementType.GLOBAL_EXERCISES:
+        return statisticsSummary.totalUniqueExercises;
       default:
         return 0;
     }
