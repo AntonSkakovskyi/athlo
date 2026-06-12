@@ -35,7 +35,7 @@ const { checkpoint } = require('../lib/dumpStore');
 const SPOON_BASE = 'https://api.spoonacular.com';
 const IMG_BASE = 'https://img.spoonacular.com';
 const DUMP_FILE = 'spoonacular.foods.json';
-const FETCH_CONCURRENCY = 5;
+const FETCH_CONCURRENCY = 1; // Fetch sequentially to avoid rate limits (429) and socket listener warnings
 
 // Sentinel thrown when the daily point quota is exhausted (HTTP 402).
 class QuotaExhausted extends Error {}
@@ -88,10 +88,9 @@ function makeClient() {
       'SPOONACULAR_API_KEY missing in env — get one free at https://spoonacular.com/food-api',
     );
   }
-  // 200 ms floor between requests; combined with FETCH_CONCURRENCY this stays
-  // well under Spoonacular's burst limits while finishing the curated catalog
-  // ~5x faster than the old serial 1.1 s pacing.
-  const http = createClient({ baseURL: SPOON_BASE, minDelayMs: 200, maxRetries: 3 });
+  // 500 ms floor between requests to stay safely under Spoonacular's strict
+  // rate limits on the free tier and prevent 429 Too Many Requests errors.
+  const http = createClient({ baseURL: SPOON_BASE, minDelayMs: 500, maxRetries: 3 });
   return { http, apiKey };
 }
 

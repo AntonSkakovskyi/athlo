@@ -36,10 +36,9 @@ function toInt(value, fallback) {
 function help() {
   console.log(`Athlo ETL
 
-  --source=<wger|exercisedb|spoonacular>   pick a single source
+  --source=<wger|spoonacular>           pick a single source
   --all                                 run every source in order
   --limit=N                             cap items fetched (per source)
-  --enrich-gifs                         exercisedb: name-match GIFs onto wger rows
   --dry-run                             fetch + transform, skip DB writes
   --from-dump                           skip API, load from etl/dumps/ instead
   --help                                this message
@@ -50,8 +49,6 @@ async function runSource(source, options) {
   switch (source) {
     case 'wger':
       return wger.run(options);
-    case 'exercisedb':
-      return exercisedb.run({ ...options, enrichGifs: true });
     case 'spoonacular':
       return spoonacular.run(options);
     default:
@@ -81,7 +78,7 @@ async function main() {
   }
 
   if (args.all) {
-    for (const source of ['wger', 'exercisedb', 'spoonacular']) {
+    for (const source of ['wger', 'spoonacular']) {
       console.log(`\n[etl] === ${source} ===`);
       try {
         await runSource(source, baseOptions);
