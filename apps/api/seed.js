@@ -301,6 +301,9 @@ const FOODS = [
   { name: 'Cod',               brand: null,      calories: 82,  proteins: 18,  fats: 0.7, carbs: 0   },
   { name: 'Brown Rice',        brand: null,      calories: 123, proteins: 2.7, fats: 1,   carbs: 26  },
   { name: 'Green Beans',       brand: null,      calories: 31,  proteins: 1.8, fats: 0.2, carbs: 7   },
+  { name: 'Tomato',            brand: null,      calories: 18,  proteins: 0.9, fats: 0.2, carbs: 3.9 },
+  { name: 'Carrot',            brand: null,      calories: 41,  proteins: 0.9, fats: 0.2, carbs: 9.6 },
+  { name: 'Onion',             brand: null,      calories: 40,  proteins: 1.1, fats: 0.1, carbs: 9.3 },
   { name: 'Greek Salad',       brand: 'Homemade',calories: 120, proteins: 3.5, fats: 9,   carbs: 8   },
   { name: 'Protein Bar',       brand: 'Quest',   calories: 190, proteins: 21,  fats: 7,   carbs: 21  },
   { name: 'Rice Cakes',        brand: null,      calories: 387, proteins: 8,   fats: 2.8, carbs: 82  },
@@ -732,6 +735,18 @@ function buildPlanTemplates() {
       { type: 'Dinner',    items: [['Beef Steak', 220], ['Green Beans', 150], ['Avocado', 80]] },
       { type: 'Snack',     items: [['Walnuts', 30], ['Cottage Cheese', 150], ['Almonds', 20]] },
     ],
+    easyEveryday: [
+      { type: 'Breakfast', items: [['Scrambled Eggs', 150], ['Whole Wheat Bread', 80], ['Apple', 120]] },
+      { type: 'Lunch',     items: [['Chicken Breast', 200], ['White Rice', 150], ['Broccoli', 100], ['Olive Oil', 10]] },
+      { type: 'Dinner',    items: [['Pasta', 100], ['Turkey Breast', 150], ['Tomato', 100], ['Olive Oil', 10]] },
+      { type: 'Snack',     items: [['Banana', 120], ['Peanut Butter', 30]] },
+    ],
+    budgetFriendly: [
+      { type: 'Breakfast', items: [['Oats', 80], ['Milk', 200], ['Banana', 120]] },
+      { type: 'Lunch',     items: [['Lentils', 150], ['White Rice', 150], ['Carrot', 100], ['Olive Oil', 10]] },
+      { type: 'Dinner',    items: [['Eggs', 150], ['Potato', 250], ['Onion', 50], ['Olive Oil', 10]] },
+      { type: 'Snack',     items: [['Apple', 150], ['Peanut Butter', 20]] },
+    ],
   };
 }
 
@@ -832,6 +847,8 @@ async function seedSystemNutrition(client, { mealTypes, units, vt }) {
     { name: 'Mediterranean Plan',   desc: 'Fish, olive oil and vegetable-rich diet',    creator: null, vis: vt['PUBLIC'], meals: T.mediterranean,assignTo: null, active: false },
     { name: 'High-Protein Athlete', desc: 'Elevated protein intake for advanced lifters',creator: null, vis: vt['PUBLIC'], meals: T.highProtein,  assignTo: null, active: false },
     { name: 'Low-Carb Plan',        desc: 'Reduced carbohydrate, higher fat approach',  creator: null, vis: vt['PUBLIC'], meals: T.lowCarb,      assignTo: null, active: false },
+    { name: 'Easy Everyday',        desc: 'Simple, accessible meals for everyday living',creator: null, vis: vt['PUBLIC'], meals: T.easyEveryday,assignTo: null, active: false },
+    { name: 'Budget Friendly',      desc: 'Nutritious meals using cost-effective staples',creator: null, vis: vt['PUBLIC'], meals: T.budgetFriendly,assignTo: null, active: false },
   ];
   for (const plan of globalPlans) await insertMealPlan(client, plan, ctx);
   console.log(`  → ${globalPlans.length} global meal plans ready`);
@@ -1076,7 +1093,11 @@ async function seed() {
   // Spoonacular foods/dishes) before seeding. Runs as a child process so the ETL
   // manages its own pool/transaction lifecycle.
   if (withEtl) {
-    runScript(path.join(__dirname, 'etl', 'index.js'), ['--all'], 'ETL');
+    const etlArgs = ['--all'];
+    if (process.argv.includes('--from-dump')) {
+      etlArgs.push('--from-dump');
+    }
+    runScript(path.join(__dirname, 'etl', 'index.js'), etlArgs, 'ETL');
   }
 
   const client = await pool.connect();

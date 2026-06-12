@@ -16,6 +16,7 @@
     "seed": "node seed.js",
     "seed:demo": "node seed.js --with-simulation",
     "seed:full": "node seed.js --with-etl --with-simulation",
+    "seed:dump": "node seed.js --with-etl --with-simulation --from-dump",
     "seed:recalc": "ts-node --transpile-only seed/recalc-achievements.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
