@@ -40,6 +40,7 @@ function help() {
   --all                                 run every source in order
   --limit=N                             cap items fetched (per source)
   --dry-run                             fetch + transform, skip DB writes
+  --dump-only                           fetch + update dump file, skip DB writes
   --from-dump                           skip API, load from etl/dumps/ instead
   --help                                this message
 `);
@@ -66,14 +67,15 @@ async function main() {
 
   const dryRun = Boolean(args['dry-run']);
   const fromDump = Boolean(args['from-dump']);
+  const dumpOnly = Boolean(args['dump-only']);
   const limit = toInt(args.limit, undefined);
 
-  const baseOptions = { dryRun, limit, fromDump };
+  const baseOptions = { dryRun, limit, fromDump, dumpOnly };
 
-  console.log(`[etl] starting${dryRun ? ' (dry-run)' : ''}`);
+  console.log(`[etl] starting${dryRun ? ' (dry-run)' : dumpOnly ? ' (dump-only)' : ''}`);
 
   // Reference lookups (visibility/tracking_types/units) — required by every source.
-  if (!dryRun) {
+  if (!dryRun && !dumpOnly) {
     await db.withTransaction((client) => lookups.ensureCoreLookups(client));
   }
 

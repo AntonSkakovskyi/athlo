@@ -24,6 +24,7 @@
  *
  * Re-run flags:
  *   --from-dump       skip the API entirely and write the existing dump to DB
+ *   --dump-only       fetch missing items + update dump, skip DB writes entirely
  *   (default)         fetch missing items + write everything (existing + new)
  */
 const path = require('path');
@@ -188,7 +189,7 @@ async function writeFoods(foods) {
 }
 
 // ── Run ──────────────────────────────────────────────────────────────────────
-async function run({ limit, dryRun, fromDump } = {}) {
+async function run({ limit, dryRun, fromDump, dumpOnly } = {}) {
   const cap = Number.isFinite(limit) ? limit : Infinity;
   const cp = checkpoint(DUMP_FILE);
   const seen = new Set(cp.items.map(foodKey));
@@ -282,6 +283,11 @@ async function run({ limit, dryRun, fromDump } = {}) {
 
   const dishes = cp.items.filter((f) => f.brand === 'Dish').length;
   console.log(`[spoonacular] dump has ${cp.items.length} foods (${dishes} dishes)`);
+
+  if (dumpOnly) {
+    console.log('[spoonacular] --dump-only: dump updated, skipping DB writes');
+    return;
+  }
 
   if (dryRun) {
     for (const f of cp.items.slice(0, 12)) {
