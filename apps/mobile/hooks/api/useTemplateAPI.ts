@@ -151,12 +151,33 @@ export const useDeleteTemplate = () => {
   });
 };
 
+export interface SaveTemplateInput {
+  id: string;
+  template: IWorkoutTemplate & { creatorNickname?: string };
+}
+
 export const useSaveTemplate = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => apiClient.post(apiRoutes.templates.save(id)),
-    onSuccess: () => {
+    mutationFn: ({ id }: SaveTemplateInput) => apiClient.post(apiRoutes.templates.save(id)),
+    onMutate: async ({ id, template }: SaveTemplateInput) => {
+      await queryClient.cancelQueries({ queryKey: templateKeys.saved });
+      const previousSaved = queryClient.getQueryData(templateKeys.saved);
+      queryClient.setQueryData(templateKeys.saved, (old: any) => [
+        ...(old ?? []),
+        { id: -Date.now(), userId: -1, workoutTemplateId: Number(id), workoutTemplate: template },
+      ]);
+      return { previousSaved };
+    },
+    onError: (err: unknown, _input, context) => {
+      const isAlreadySaved =
+        (err as any)?.response?.data?.message === 'Template is already saved';
+      if (!isAlreadySaved && context?.previousSaved !== undefined) {
+        queryClient.setQueryData(templateKeys.saved, context.previousSaved);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: templateKeys.saved });
     },
   });
@@ -167,7 +188,20 @@ export const useUnsaveTemplate = () => {
 
   return useMutation({
     mutationFn: (id: string) => apiClient.delete(apiRoutes.templates.save(id)),
-    onSuccess: () => {
+    onMutate: async (id: string) => {
+      await queryClient.cancelQueries({ queryKey: templateKeys.saved });
+      const previousSaved = queryClient.getQueryData(templateKeys.saved);
+      queryClient.setQueryData(templateKeys.saved, (old: any) =>
+        (old ?? []).filter((s: any) => s.workoutTemplateId !== Number(id)),
+      );
+      return { previousSaved };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousSaved !== undefined) {
+        queryClient.setQueryData(templateKeys.saved, context.previousSaved);
+      }
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: templateKeys.saved });
     },
   });

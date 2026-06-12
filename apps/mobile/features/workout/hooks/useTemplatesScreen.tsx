@@ -14,17 +14,20 @@ import {
   useUnsaveTemplate,
   useGetSavedTemplates,
 } from '@/hooks/api';
+import type { SaveTemplateInput } from '@/hooks/api';
 import type { IWorkoutTemplate } from '@athlo/shared';
 import { VisibilityType } from '@athlo/shared';
 import { VISIBILITY_ENUM_TO_ID } from '@/utils/visibility';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
+import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import TemplateCard from '../components/TemplateCard/TemplateCard';
 
 export function useTemplatesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
+  const { startWorkout, isActive } = useActiveWorkout();
   const [activeTab, setActiveTab] = useState(0);
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState('');
@@ -69,15 +72,26 @@ export function useTemplatesScreen() {
   };
 
   const handleStartFromTemplate = (id: number) => {
+    if (isActive) {
+      showAlert('Active Workout', 'You already have an active workout. Finish it first.');
+      return;
+    }
     startFromTemplate.mutate(String(id), {
-      onSuccess: () => {
-        router.replace('/(app)/(workout)/active-workout');
+      onSuccess: (workout) => {
+        if (workout) {
+          startWorkout(workout, []);
+          router.replace('/(app)/(workout)/active-workout');
+        }
+      },
+      onError: () => {
+        showErrorAlert('Failed to start workout. Please try again.');
       },
     });
   };
 
-  const handleSave = (id: number) => {
-    saveTemplate.mutate(String(id), {
+  const handleSave = (id: number, template: IWorkoutTemplate & { creatorNickname?: string }) => {
+    const input: SaveTemplateInput = { id: String(id), template };
+    saveTemplate.mutate(input, {
       onSuccess: () => {
         showToast({
           title: 'Template Saved!',
@@ -85,10 +99,14 @@ export function useTemplatesScreen() {
           icon: '📁',
         });
       },
-      onError: (err) => {
-        showErrorAlert('Failed to save template. Please try again.');
+      onError: (err: unknown) => {
+        const isAlreadySaved =
+          (err as any)?.response?.data?.message === 'Template is already saved';
+        if (!isAlreadySaved) {
+          showErrorAlert('Failed to save template. Please try again.');
+        }
         console.error('Save template error:', err);
-      }
+      },
     });
   };
 
@@ -100,6 +118,9 @@ export function useTemplatesScreen() {
     const saved = (savedTemplatesQuery.data ?? []) as Array<{ workoutTemplateId: number }>;
     return new Set(saved.map((s) => s.workoutTemplateId));
   }, [savedTemplatesQuery.data]);
+
+  const isStartingTemplate = (id: number) =>
+    startFromTemplate.isPending && startFromTemplate.variables === String(id);
 
   const renderTemplateItem = (
     item: IWorkoutTemplate,
@@ -116,6 +137,7 @@ export function useTemplatesScreen() {
         variant={variant}
         onPress={() => router.push(`/(app)/(workout)/template/${item.id}` as any)}
         onStart={() => handleStartFromTemplate(item.id)}
+        isStartingWorkout={isStartingTemplate(item.id)}
         onSave={onSave}
         onUnsave={onUnsave}
       />
@@ -162,18 +184,17 @@ export function useTemplatesScreen() {
 
   const friendsGroups = useMemo(() => {
     const templates = (friendsTemplatesQuery.data as any) ?? [];
-    // Group by friend
     const groups: Record<number, { friend: { id: number; nickname?: string; fullName: string }; templates: IWorkoutTemplate[] }> = {};
     templates.forEach((t: any) => {
-      if (t.creatorId && t.creatorNickname) {
-        if (!groups[t.creatorId]) {
-          groups[t.creatorId] = { 
-            friend: { id: t.creatorId, nickname: t.creatorNickname, fullName: t.creatorNickname },
-            templates: [] 
-          };
-        }
-        groups[t.creatorId].templates.push(t);
+      if (!t.creatorId) return;
+      if (!groups[t.creatorId]) {
+        const displayName: string = t.creatorNickname ?? `User ${t.creatorId}`;
+        groups[t.creatorId] = {
+          friend: { id: t.creatorId, nickname: t.creatorNickname ?? undefined, fullName: displayName },
+          templates: [],
+        };
       }
+      groups[t.creatorId].templates.push(t);
     });
     return Object.values(groups);
   }, [friendsTemplatesQuery.data]);

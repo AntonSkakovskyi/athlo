@@ -126,7 +126,7 @@ export default function TemplatesScreen() {
                     t as any,
                     'public',
                     undefined,
-                    () => handleSave(t.id),
+                    () => handleSave(t.id, t),
                   ))}
                 </CollapsibleSection>
               )}
@@ -136,7 +136,7 @@ export default function TemplatesScreen() {
                     t as any,
                     'public',
                     t.creatorNickname,
-                    () => handleSave(t.id),
+                    () => handleSave(t.id, t),
                   ))}
                 </CollapsibleSection>
               )}
@@ -186,7 +186,7 @@ export default function TemplatesScreen() {
                     t,
                     'public',
                     group.friend.nickname,
-                    () => handleSave(t.id),
+                    () => handleSave(t.id, t),
                   ))}
                 </CollapsibleSection>
               ))}

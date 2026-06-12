@@ -18,7 +18,9 @@ export default function WorkoutsScreen() {
     workoutsQuery,
     templatesQuery,
     handleEmptyWorkout,
+    isCreatingWorkout,
     handleStartFromTemplate,
+    isStartingTemplate,
     handleLoadMore,
     insets,
     router,
@@ -36,6 +38,7 @@ export default function WorkoutsScreen() {
           title="Empty Workout"
           description="Start from scratch"
           onPress={handleEmptyWorkout}
+          isLoading={isCreatingWorkout}
         />
         <QuickActionCard
           icon="📋"
@@ -75,6 +78,7 @@ export default function WorkoutsScreen() {
                   variant="my"
                   onPress={() => router.push(`/(app)/(workout)/template/${item.id}`)}
                   onStart={() => handleStartFromTemplate(item.id)}
+                  isStartingWorkout={isStartingTemplate(item.id)}
                 />
               </View>
             ))}
@@ -89,7 +93,7 @@ export default function WorkoutsScreen() {
   return (
     <WorkoutHistoryList
       style={styles.container}
-      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 100 }}
+      contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 100, paddingHorizontal: spacing.lg }}
       ListHeaderComponent={renderHeader()}
       workouts={displayedWorkouts}
       isLoading={workoutsQuery.isLoading}
@@ -115,7 +119,6 @@ function makeStyles(c: ColorPalette) {
     container: {
       flex: 1,
       backgroundColor: c.background,
-      paddingHorizontal: spacing.lg,
     },
     headerContainer: {
       paddingBottom: spacing.sm,

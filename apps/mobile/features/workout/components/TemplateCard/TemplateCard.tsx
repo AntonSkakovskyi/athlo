@@ -17,6 +17,7 @@ interface TemplateCardProps {
   variant: 'my' | 'saved' | 'public';
   onPress?: () => void;
   onStart?: () => void;
+  isStartingWorkout?: boolean;
   onDelete?: () => void;
   onSave?: () => void;
   onUnsave?: () => void;
@@ -33,6 +34,7 @@ export default function TemplateCard({
   variant,
   onPress,
   onStart,
+  isStartingWorkout,
   onDelete,
   onSave,
   onUnsave,
@@ -71,7 +73,7 @@ export default function TemplateCard({
 
       <View style={styles.actions}>
         {onStart && (
-          <Button title="▶ Start" variant="primary" onPress={onStart} style={styles.actionFlex} />
+          <Button title="▶ Start" variant="primary" onPress={onStart} isLoading={isStartingWorkout} style={styles.actionFlex} />
         )}
         {variant === 'my' && onDelete && (
           <Button title="Delete" variant="danger" onPress={onDelete} />

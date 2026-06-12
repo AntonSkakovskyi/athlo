@@ -66,13 +66,18 @@ export function useWorkoutsScreen() {
     }
   }, [workoutsQuery]);
 
+  const isStartingTemplate = (id: number) =>
+    startFromTemplate.isPending && startFromTemplate.variables === String(id);
+
   return {
     displayedWorkouts,
     templateItems,
     workoutsQuery,
     templatesQuery,
     handleEmptyWorkout,
+    isCreatingWorkout: createWorkout.isPending,
     handleStartFromTemplate,
+    isStartingTemplate,
     handleLoadMore,
     insets,
     router,

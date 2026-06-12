@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Text, Pressable, StyleSheet } from 'react-native';
+import { Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { borderRadius } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
@@ -9,15 +9,18 @@ interface QuickActionCardProps {
   title: string;
   description: string;
   onPress: () => void;
+  isLoading?: boolean;
 }
 
-export function QuickActionCard({ icon, title, description, onPress }: QuickActionCardProps) {
+export function QuickActionCard({ icon, title, description, onPress, isLoading }: QuickActionCardProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
-    <Pressable style={styles.card} onPress={onPress}>
-      <Text style={styles.icon}>{icon}</Text>
+    <Pressable style={[styles.card, isLoading && styles.cardDisabled]} onPress={onPress} disabled={isLoading}>
+      {isLoading
+        ? <ActivityIndicator style={styles.icon} color={colors.primary} />
+        : <Text style={styles.icon}>{icon}</Text>}
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.description}>{description}</Text>
     </Pressable>
@@ -33,6 +36,9 @@ function makeStyles(c: ColorPalette) {
       padding: 18,
       borderWidth: 1,
       borderColor: c.border,
+    },
+    cardDisabled: {
+      opacity: 0.6,
     },
     icon: {
       fontSize: 28,
