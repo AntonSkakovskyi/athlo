@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { buildFinalizedExercises, getTrackingType, formatSetValue } from '@/utils/workout';
 import { formatHMS } from '@/utils/time';

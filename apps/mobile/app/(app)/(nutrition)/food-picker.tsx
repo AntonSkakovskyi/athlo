@@ -1,6 +1,6 @@
-import { View, Text, StyleSheet, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
+﻿import { View, Text, StyleSheet, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import type { IFood } from '@athlo/shared';
 import { spacing, fontSize, fontWeight, borderRadius } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';

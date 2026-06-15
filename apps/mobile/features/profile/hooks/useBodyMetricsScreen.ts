@@ -1,5 +1,5 @@
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+﻿import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from '@/hooks/useRouter';
 
 export function useBodyMetricsScreen() {
   const insets = useSafeAreaInsets();

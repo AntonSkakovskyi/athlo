@@ -1,6 +1,7 @@
-import { useMemo, useCallback } from 'react';
+﻿import { useMemo, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { useGetUserProfile } from '@/hooks/api/useUserAPI';
 import { useInfiniteUserWorkouts } from '@/hooks/api/useWorkoutAPI';
 import { useGetUserTemplates } from '@/hooks/api/useTemplateAPI';

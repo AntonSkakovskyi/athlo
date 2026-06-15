@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';

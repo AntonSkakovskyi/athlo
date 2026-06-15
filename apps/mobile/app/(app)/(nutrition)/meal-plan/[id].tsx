@@ -1,6 +1,7 @@
 import { View, StyleSheet, ScrollView, Pressable, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { Button } from '@/components/ui/Button/Button';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';
 import { ScreenHeader } from '@/components/ui/ScreenHeader/ScreenHeader';

@@ -1,7 +1,8 @@
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { formatDurationRange, getTrackingType, hasEmptySets } from '@/utils/workout';
 import { 
   useGetWorkoutById, 

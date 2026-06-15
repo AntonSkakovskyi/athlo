@@ -1,7 +1,7 @@
-import { useCallback, useMemo } from 'react';
+﻿import { useCallback, useMemo } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { WorkoutStatus } from '@athlo/shared';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { useCreateWorkout, useGetMyTemplates, useInfiniteWorkouts, useStartFromTemplate } from '@/hooks/api';

@@ -1,8 +1,8 @@
-import { useCallback } from 'react';
+﻿import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { confirmDestructive } from '@/utils/alerts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { ThemePreference } from '@/constants/colors';

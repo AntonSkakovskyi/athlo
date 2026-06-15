@@ -1,8 +1,8 @@
-import React, { useCallback, useState } from 'react';
+﻿import React, { useCallback, useState } from 'react';
 import { Alert, View, FlatList, StyleSheet } from 'react-native';
 import { spacing } from '@/constants/theme';
 import { confirmDestructive, showErrorAlert } from '@/utils/alerts';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import type { IWorkoutWithRelations } from '@athlo/shared';
 import { Spinner } from '@/components/ui/Spinner/Spinner';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';

@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { spacing } from '@/constants/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { showAlert, showErrorAlert } from '@/utils/alerts';
 import {
   useGetMyTemplates,

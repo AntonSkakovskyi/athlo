@@ -1,6 +1,6 @@
-import { useMemo, useState, useCallback } from 'react';
+﻿import { useMemo, useState, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import type { IAchievement, IUserAchievement } from '@athlo/shared';
 import { AchievementType } from '@athlo/shared';
 import { useGetAchievements, useGetUserAchievements, useGetExerciseRecords } from '@/features/profile/hooks';

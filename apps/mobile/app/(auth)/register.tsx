@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRegister } from '@/features/auth/hooks';
 import { AxiosError } from 'axios';

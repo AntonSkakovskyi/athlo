@@ -1,6 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
+﻿import { useMemo, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
-import { useRouter, useSegments } from 'expo-router';
+import { useSegments } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { fontSize, fontWeight, spacing, borderRadius } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import { serverNow } from '@/utils/serverTime';

@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+﻿import { useState, useMemo, useCallback } from 'react';
 import { Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { getDateString } from '@/utils/date';
 import { confirmDestructive } from '@/utils/alerts';
 import {

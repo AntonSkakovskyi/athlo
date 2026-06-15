@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useRouter } from 'expo-router';
+﻿import { useState, useMemo } from 'react';
+import { useRouter } from '@/hooks/useRouter';
 import { confirmDestructive, showErrorAlert, showAlert } from '@/utils/alerts';
 import { VisibilityType, type IMealPlan } from '@athlo/shared';
 import {

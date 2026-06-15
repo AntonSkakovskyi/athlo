@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import * as ImagePicker from 'expo-image-picker';
 import { Gender, ActivityLevel, FitnessGoal } from '@athlo/shared';
 import { useGetProfile, useUpdateProfile } from '@/hooks/api/useProfileAPI';

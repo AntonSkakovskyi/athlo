@@ -1,7 +1,8 @@
-import { useState, useMemo, useCallback } from 'react';
+﻿import { useState, useMemo, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import type { IExerciseProgressRecord } from '@athlo/shared';
 import { TrackingType } from '@athlo/shared';
 import { useAuth } from '@/contexts/AuthContext';

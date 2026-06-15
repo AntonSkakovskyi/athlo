@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useRouter } from 'expo-router';
+﻿import { useState, useMemo } from 'react';
+import { useRouter } from '@/hooks/useRouter';
 import { useGetNutritionHistory } from '@/features/nutrition/hooks';
 
 export type Scope = '1W' | '1M' | '3M';

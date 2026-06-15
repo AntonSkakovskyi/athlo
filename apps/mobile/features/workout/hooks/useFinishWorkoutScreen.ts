@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react';
 import { confirmDestructive } from '@/utils/alerts';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { useCompleteWorkout, useDeleteWorkout } from '@/hooks/api';
 import { VisibilityType } from '@athlo/shared';

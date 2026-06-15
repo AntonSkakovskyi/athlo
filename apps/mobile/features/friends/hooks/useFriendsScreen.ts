@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { useRouter } from 'expo-router';
+﻿import { useState, useMemo } from 'react';
+import { useRouter } from '@/hooks/useRouter';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   useGetFriends,

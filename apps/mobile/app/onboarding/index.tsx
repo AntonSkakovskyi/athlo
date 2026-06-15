@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { Gender, ActivityLevel, FitnessGoal } from '@athlo/shared';
 import { Typography, NumericInput, SegmentControl, OptionButton, Button, ProgressBar, Card } from '@/components/ui';
 import { DatePicker } from '@/components/ui/DatePicker/DatePicker';

@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+﻿import { ScrollView, StyleSheet, View } from 'react-native';
+import { useRouter } from '@/hooks/useRouter';
 import { spacing } from '@/constants/theme';
 import { ExerciseLogCard } from '@/features/workout/components';
 import { EmptyState } from '@/components/ui/EmptyState/EmptyState';

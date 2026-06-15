@@ -1,7 +1,7 @@
-import { useState, useMemo, useCallback } from 'react';
+﻿import { useState, useMemo, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter } from '@/hooks/useRouter';
 import { spacing } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
