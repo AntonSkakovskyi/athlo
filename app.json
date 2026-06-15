@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "937088b0-bce3-4786-922c-0ab5a1569e06"
+      }
+    },
+    "android": {
+      "package": "athlo.app"
+    }
+  }
+}
