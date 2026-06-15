@@ -11,7 +11,7 @@ import type {
 import { WorkoutStatus } from '@athlo/shared';
 import apiClient from '@/api/api-client';
 import { apiRoutes } from '@/api/api-routes';
-import { workoutKeys, lastPerformanceKeys } from '@/api/queries/query-keys';
+import { workoutKeys, lastPerformanceKeys, statisticsKeys } from '@/api/queries/query-keys';
 
 // ─── Queries ────────────────────────────────────────
 
@@ -116,6 +116,7 @@ export const useCompleteWorkout = () => {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: workoutKeys.byId(variables.id) });
       queryClient.invalidateQueries({ queryKey: workoutKeys.all });
+      queryClient.invalidateQueries({ queryKey: statisticsKeys.summary });
     },
   });
 };

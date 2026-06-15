@@ -109,6 +109,9 @@ export interface FinalizeResult {
  * - Drops exercises with no completed sets or no logExerciseId.
  * - Reports if any completed set has a required field still empty after resolution.
  */
+const toFinite = (v: number | null | undefined): number | undefined =>
+  v != null && Number.isFinite(v) ? v : undefined;
+
 export function buildFinalizedExercises(
   exercises: FinalizableExercise[],
 ): FinalizeResult {
@@ -121,10 +124,10 @@ export function buildFinalizedExercises(
     if (completed.length === 0) continue;
 
     const sets: IFinalizedSet[] = completed.map((s, idx) => {
-      const weight = s.weight ?? s.placeholderWeight ?? undefined;
-      const reps = s.reps ?? s.placeholderReps ?? undefined;
-      const duration = s.duration ?? s.placeholderDuration ?? undefined;
-      const distance = s.distance ?? s.placeholderDistance ?? undefined;
+      const weight = toFinite(s.weight) ?? toFinite(s.placeholderWeight);
+      const reps = toFinite(s.reps) ?? toFinite(s.placeholderReps);
+      const duration = toFinite(s.duration) ?? toFinite(s.placeholderDuration);
+      const distance = toFinite(s.distance) ?? toFinite(s.placeholderDistance);
 
       switch (ex.trackingType) {
         case TrackingType.WEIGHT_AND_REPS:
@@ -144,10 +147,10 @@ export function buildFinalizedExercises(
 
       return {
         order: idx + 1,
-        weight: weight ?? undefined,
-        reps: reps ?? undefined,
-        duration: duration ?? undefined,
-        distance: distance ?? undefined,
+        weight,
+        reps,
+        duration,
+        distance,
       };
     });
 
