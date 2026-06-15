@@ -4,7 +4,7 @@ import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { NavCard } from '@/components/ui/NavCard/NavCard';
-import { BarChartBlock } from '@/components/ui/BarChartBlock/BarChartBlock';
+import { LineChartBlock } from '@/components/ui/LineChartBlock/LineChartBlock';
 import { Avatar } from '@/components/ui/Avatar/Avatar';
 import { SectionHeader } from '@/components/ui/SectionHeader/SectionHeader';
 import { LoadingScreen } from '@/components/ui/LoadingScreen/LoadingScreen';
@@ -84,7 +84,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <BarChartBlock
+        <LineChartBlock
           metricLabel={currentPerfMetric}
           data={aggregatedData}
           period={perfPeriod}

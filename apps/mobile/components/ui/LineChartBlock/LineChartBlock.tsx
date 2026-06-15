@@ -11,6 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { PeriodSelector } from './PeriodSelector/PeriodSelector';
 import { MetricSelector } from './MetricSelector/MetricSelector';
+import { Spinner } from '@/components/ui/Spinner/Spinner';
 
 export interface DataPoint {
   date: string;
@@ -34,6 +35,7 @@ interface LineChartBlockProps {
   goalValue?: number;
   goalLabel?: string;
   goalColor?: string;
+  isLoading?: boolean;
 }
 
 const CHART_HEIGHT = 180;
@@ -69,6 +71,7 @@ export function LineChartBlock({
   goalValue,
   goalLabel,
   goalColor,
+  isLoading,
 }: LineChartBlockProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -213,7 +216,11 @@ export function LineChartBlock({
 
       {/* Chart Section */}
       <View style={styles.chartContainer}>
-        {data.length === 0 ? (
+        {isLoading ? (
+          <View style={styles.emptyContainer}>
+            <Spinner size="small" />
+          </View>
+        ) : data.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>{emptyText}</Text>
           </View>
