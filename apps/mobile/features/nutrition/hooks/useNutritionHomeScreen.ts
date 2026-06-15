@@ -192,9 +192,7 @@ export function useNutritionHomeScreen() {
   );
 
   const handleAddWater = useCallback(
-    (ml: number, consumedAt?: string) => {
-      addWater.mutate({ amountMl: ml, consumedAt });
-    },
+    (ml: number, consumedAt?: string) => addWater.mutateAsync({ amountMl: ml, consumedAt }),
     [addWater],
   );
 

@@ -18,7 +18,7 @@ interface WaterTrackerProps {
   totalWaterMl: number;
   date: string;
   waterGoal?: number;
-  onAddWater: (ml: number, consumedAt?: string) => void;
+  onAddWater: (ml: number, consumedAt?: string) => void | Promise<unknown>;
   onUpdateWater: (id: number, amountMl: number, consumedAt?: string) => void;
   onDeleteWater: (id: number) => void;
   isAddingWater?: boolean;
@@ -27,12 +27,12 @@ interface WaterTrackerProps {
 }
 
 function buildConsumedAt(date: string, hour?: string, minute?: string): string {
-  const base = new Date(date + 'T00:00:00');
   const now = new Date();
   const h = hour !== undefined ? parseInt(hour, 10) : now.getHours();
   const m = minute !== undefined ? parseInt(minute, 10) : now.getMinutes();
-  base.setHours(isNaN(h) || h > 23 ? now.getHours() : h, isNaN(m) || m > 59 ? now.getMinutes() : m, 0, 0);
-  return base.toISOString();
+  const hh = isNaN(h) || h > 23 ? now.getHours() : h;
+  const mm = isNaN(m) || m > 59 ? now.getMinutes() : m;
+  return `${date}T${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}:00`;
 }
 
 export function WaterTracker({
@@ -53,6 +53,7 @@ export function WaterTracker({
   const [showCustom, setShowCustom] = useState(false);
   const [customAmount, setCustomAmount] = useState('');
   const [editingLogId, setEditingLogId] = useState<number | null>(null);
+  const [quickAddingMl, setQuickAddingMl] = useState<number | null>(null);
 
   // Time Picker State
   const [timePickerVisible, setTimePickerVisible] = useState(false);
@@ -113,14 +114,14 @@ export function WaterTracker({
     setShowCustom(true);
   };
 
-  const handleQuickAdd = (ml: number) => {
+  const handleQuickAdd = async (ml: number) => {
     if (!hasGoal) return;
-    setCustomAmount(String(ml));
-    setEditingLogId(null);
-    setTimeModified(false);
-    const now = new Date();
-    setSelectedSeconds(now.getHours() * 3600 + now.getMinutes() * 60);
-    setShowCustom(true);
+    setQuickAddingMl(ml);
+    try {
+      await onAddWater(ml, buildConsumedAt(date));
+    } finally {
+      setQuickAddingMl(null);
+    }
   };
 
   const formatTimeLabel = (seconds: number) => {
@@ -170,6 +171,7 @@ export function WaterTracker({
             showCustom={showCustom}
             onQuickAdd={handleQuickAdd}
             onToggleCustom={() => (showCustom ? resetForm() : setShowCustom(true))}
+            quickAddingMl={quickAddingMl}
           />
 
           {showCustom && (
