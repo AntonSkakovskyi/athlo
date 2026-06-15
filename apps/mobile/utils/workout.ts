@@ -2,6 +2,7 @@ import { TrackingType } from '@athlo/shared';
 import type { IWorkoutWithRelations, IFinalizedExercise, IFinalizedSet } from '@athlo/shared';
 import { ICONS } from '@/utils/icons';
 import { formatSeconds } from '@/utils/time';
+import { serverNow } from '@/utils/serverTime';
 
 interface FormattableSet {
   weight?: number | null;
@@ -204,7 +205,7 @@ export function trackingTypeIcon(trackingTypeId?: number | null): string {
 
 export function formatDurationRange(startedAt: Date | string, endedAt?: Date | string | null): string {
   const start = new Date(startedAt).getTime();
-  const end = endedAt ? new Date(endedAt).getTime() : Date.now();
+  const end = endedAt ? new Date(endedAt).getTime() : serverNow();
   const diff = Math.floor((end - start) / 1000);
   const h = Math.floor(diff / 3600);
   const m = Math.floor((diff % 3600) / 60);

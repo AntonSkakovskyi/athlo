@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { useRouter, useSegments } from 'expo-router';
 import { fontSize, fontWeight, spacing, borderRadius } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
+import { serverNow } from '@/utils/serverTime';
 import type { ColorPalette } from '@/constants/colors';
 import { ICONS } from '@/utils/icons';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
@@ -23,7 +24,7 @@ export function FloatingWorkoutMini() {
     if (!isActive || !workout) return;
     const start = new Date(workout.started_at).getTime();
     const tick = () => {
-      const diff = Date.now() - start;
+      const diff = serverNow() - start;
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);

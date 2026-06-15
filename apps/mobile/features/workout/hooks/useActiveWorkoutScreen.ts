@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { buildFinalizedExercises, getTrackingType, formatSetValue } from '@/utils/workout';
 import { formatHMS } from '@/utils/time';
+import { serverNow } from '@/utils/serverTime';
 import { showErrorAlert } from '@/utils/alerts';
 import apiClient from '@/api/api-client';
 import {
@@ -385,7 +386,7 @@ export function useActiveWorkoutScreen() {
       return;
     }
 
-    const elapsed = Date.now() - new Date(workout.started_at).getTime();
+    const elapsed = serverNow() - new Date(workout.started_at).getTime();
 
     router.push({
       pathname: '/(app)/(workout)/finish-workout',

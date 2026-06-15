@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_URL } from './config';
 import { AuthService } from '@/features/auth/services';
+import { calibrateServerTime } from '@/utils/serverTime';
 
 let onUnauthorized: (() => void) | null = null;
 
@@ -17,7 +18,10 @@ const apiClient = axios.create({
   });
 
 apiClient.interceptors.response.use(
-  response => response,
+  response => {
+    calibrateServerTime(response.headers['date']);
+    return response;
+  },
   async error => {
     if (__DEV__) console.warn('API Error:', error.response?.data || error.message);
     if (error.response?.status === 401) {

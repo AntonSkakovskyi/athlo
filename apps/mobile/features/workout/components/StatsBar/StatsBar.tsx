@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { borderRadius } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
+import { serverNow } from '@/utils/serverTime';
 import { formatHMS } from '@/utils/time';
 
 interface StatsBarProps {
@@ -14,10 +15,10 @@ interface StatsBarProps {
 
 function WorkoutDuration({ startedAt }: { startedAt: string | Date }) {
   const startMs = useRef(new Date(startedAt).getTime());
-  const [elapsed, setElapsed] = useState(() => Date.now() - startMs.current);
+  const [elapsed, setElapsed] = useState(() => serverNow() - startMs.current);
 
   useEffect(() => {
-    const id = setInterval(() => setElapsed(Date.now() - startMs.current), 1000);
+    const id = setInterval(() => setElapsed(serverNow() - startMs.current), 1000);
     return () => clearInterval(id);
   }, []);
 
