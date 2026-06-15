@@ -244,7 +244,7 @@ export class WorkoutService {
     // не залишить тренування без даних
     const saved = await this.dataSource.transaction(async (em) => {
       if (toDelete.length > 0) {
-        await em.remove(toDelete);
+        await em.delete(LogExerciseEntity, { id: In(toDelete.map((le) => le.id)) });
       }
 
       for (const fe of finalized) {
@@ -264,22 +264,20 @@ export class WorkoutService {
         exercisesForAchievements.push(fe.logExerciseId);
       }
 
-      workout.status = WorkoutStatus.COMPLETED;
-      workout.ended_at = new Date();
+      const workoutUpdate: Partial<WorkoutEntity> = {
+        status: WorkoutStatus.COMPLETED,
+        ended_at: new Date(),
+      };
+      if (dto.calories !== undefined) workoutUpdate.calories = dto.calories;
+      if (dto.avgHeartRate !== undefined) workoutUpdate.avgHeartRate = dto.avgHeartRate;
+      if (dto.maxHeartRate !== undefined) workoutUpdate.maxHeartRate = dto.maxHeartRate;
+      if (dto.rpe !== undefined) workoutUpdate.rpe = dto.rpe;
+      if (dto.feelingScore !== undefined) workoutUpdate.feelingScore = dto.feelingScore;
+      if (dto.visibility !== undefined) workoutUpdate.visibilityTypeId = VISIBILITY_TYPE_ID[dto.visibility];
+      if (dto.description !== undefined) workoutUpdate.description = dto.description;
 
-      if (dto.calories !== undefined) workout.calories = dto.calories;
-      if (dto.avgHeartRate !== undefined)
-        workout.avgHeartRate = dto.avgHeartRate;
-      if (dto.maxHeartRate !== undefined)
-        workout.maxHeartRate = dto.maxHeartRate;
-      if (dto.rpe !== undefined) workout.rpe = dto.rpe;
-      if (dto.feelingScore !== undefined)
-        workout.feelingScore = dto.feelingScore;
-      if (dto.visibility !== undefined)
-        workout.visibilityTypeId = VISIBILITY_TYPE_ID[dto.visibility];
-      if (dto.description !== undefined) workout.description = dto.description;
-
-      return em.save(workout);
+      await em.update(WorkoutEntity, { id: workout.id }, workoutUpdate);
+      return em.findOne(WorkoutEntity, { where: { id: workout.id } });
     });
 
     // Досягнення — після коміту: їхній збій не відкотить збережене тренування
