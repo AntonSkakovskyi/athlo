@@ -33,20 +33,20 @@ export function EquipmentFilter({
   const [equipmentSearch, setEquipmentSearch] = useState('');
 
   const filteredMuscles = useMemo(
-    () => muscles.filter((m) => m.name.toLowerCase().includes(muscleSearch.toLowerCase())),
+    () => (muscles ?? []).filter((m) => m.name.toLowerCase().includes(muscleSearch.toLowerCase())),
     [muscles, muscleSearch],
   );
 
   const filteredEquipments = useMemo(
-    () => equipments.filter((e) => e.name.toLowerCase().includes(equipmentSearch.toLowerCase())),
+    () => (equipments ?? []).filter((e) => e.name.toLowerCase().includes(equipmentSearch.toLowerCase())),
     [equipments, equipmentSearch],
   );
 
-  const selectedMuscleName = muscles.find((m) => m.id === selectedMuscleId)?.name ?? 'Muscles';
+  const selectedMuscleName = (muscles ?? []).find((m) => m.id === selectedMuscleId)?.name ?? 'Muscles';
   const selectedEquipmentName =
     selectedEquipmentId === -1
       ? 'No equipment'
-      : (equipments.find((e) => e.id === selectedEquipmentId)?.name ?? 'Equipment');
+      : ((equipments ?? []).find((e) => e.id === selectedEquipmentId)?.name ?? 'Equipment');
 
   return (
     <>
