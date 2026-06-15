@@ -51,7 +51,7 @@ export default function MealPlanDetailScreen() {
     isSaved, handleSave, isSavePending,
     editingDesc, descValue, setDescValue, startEditDesc, handleSaveDesc,
     editingMealItem, setEditingMealItem, isUpdateItemPending,
-    currentVisibility, handleVisibilityChange,
+    currentVisibility, handleVisibilityChange, isVisibilityPending,
     showActivationModal, setShowActivationModal,
   } = useMealPlanDetailScreen(id);
   const { colors } = useTheme();
@@ -143,6 +143,7 @@ export default function MealPlanDetailScreen() {
             value={currentVisibility}
             onChange={handleVisibilityChange}
             label="Visibility"
+            isLoading={isVisibilityPending}
           />
         )}
       </View>

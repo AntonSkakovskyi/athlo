@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { VisibilityType } from '@athlo/shared';
 import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -10,9 +10,10 @@ interface VisibilitySelectorProps {
   value: VisibilityType;
   onChange: (value: VisibilityType) => void;
   label?: string;
+  isLoading?: boolean;
 }
 
-export function VisibilitySelector({ value, onChange, label = 'Visibility' }: VisibilitySelectorProps) {
+export function VisibilitySelector({ value, onChange, label = 'Visibility', isLoading = false }: VisibilitySelectorProps) {
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -25,14 +26,20 @@ export function VisibilitySelector({ value, onChange, label = 'Visibility' }: Vi
           return (
             <Pressable
               key={opt.value}
-              style={[styles.btn, active && styles.btnActive]}
-              onPress={() => onChange(opt.value)}
+              style={[styles.btn, active && styles.btnActive, isLoading && styles.btnDisabled]}
+              onPress={() => !isLoading && onChange(opt.value)}
+              disabled={isLoading}
             >
               <Text style={styles.icon}>{opt.icon}</Text>
               <Text style={[styles.btnLabel, active && styles.btnLabelActive]}>{opt.label}</Text>
             </Pressable>
           );
         })}
+        {isLoading && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="small" color={colors.primary} />
+          </View>
+        )}
       </View>
     </View>
   );
@@ -79,6 +86,17 @@ function makeStyles(c: ColorPalette) {
     btnLabelActive: {
       color: c.primary,
       fontWeight: fontWeight.bold,
+    },
+    btnDisabled: {
+      opacity: 0.5,
+    },
+    loadingOverlay: {
+      position: 'absolute',
+      right: 0,
+      top: 0,
+      bottom: 0,
+      justifyContent: 'center',
+      paddingHorizontal: spacing.sm,
     },
   });
 }

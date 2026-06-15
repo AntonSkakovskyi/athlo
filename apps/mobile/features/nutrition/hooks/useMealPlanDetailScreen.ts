@@ -304,6 +304,7 @@ export function useMealPlanDetailScreen(id: string) {
     isUpdateItemPending: updateItem.isPending,
     currentVisibility,
     handleVisibilityChange,
+    isVisibilityPending: updatePlan.isPending,
     showActivationModal,
     setShowActivationModal,
   };
