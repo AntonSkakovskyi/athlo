@@ -46,6 +46,7 @@ export const WorkoutHistoryList = ({
   const copyWorkout = useCopyWorkout();
   const createTemplateFromWorkout = useCreateTemplateFromWorkout();
   const [savingAsTemplateId, setSavingAsTemplateId] = useState<number | null>(null);
+  const [copyingWorkoutId, setCopyingWorkoutId] = useState<number | null>(null);
 
   const handleSaveAsTemplate = useCallback(
     async (w: IWorkoutWithRelations) => {
@@ -71,12 +72,15 @@ export const WorkoutHistoryList = ({
         Alert.alert('Active Workout', 'You already have an active workout. Finish it first.');
         return;
       }
+      setCopyingWorkoutId(w.id);
       try {
         const newWorkout = await copyWorkout.mutateAsync(String(w.id));
         startWorkout(newWorkout, []);
         router.push('/(app)/(workout)/active-workout');
       } catch {
         showErrorAlert('Failed to copy workout. Please try again.');
+      } finally {
+        setCopyingWorkoutId(null);
       }
     },
     [isActive, copyWorkout, startWorkout, router],
@@ -138,6 +142,7 @@ export const WorkoutHistoryList = ({
             onSaveAsTemplate={() => handleSaveAsTemplate(w)}
             isSavingAsTemplate={savingAsTemplateId === w.id}
             onCopyWorkout={() => handleCopyWorkout(w)}
+            isCopyingWorkout={copyingWorkoutId === w.id}
             onEdit={!readOnly ? () =>
               router.push({
                 pathname: '/(app)/(workout)/workout-summary',

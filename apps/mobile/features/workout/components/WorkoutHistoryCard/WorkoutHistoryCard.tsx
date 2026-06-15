@@ -25,6 +25,7 @@ interface WorkoutHistoryCardProps {
   onSaveAsTemplate?: () => void;
   isSavingAsTemplate?: boolean;
   onCopyWorkout?: () => void;
+  isCopyingWorkout?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -40,6 +41,7 @@ export function WorkoutHistoryCard({
   onSaveAsTemplate,
   isSavingAsTemplate = false,
   onCopyWorkout,
+  isCopyingWorkout = false,
   onEdit,
   onDelete,
 }: WorkoutHistoryCardProps) {
@@ -47,6 +49,7 @@ export function WorkoutHistoryCard({
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [menuVisible, setMenuVisible] = useState(false);
   const wasSavingRef = useRef(false);
+  const wasCopyingRef = useRef(false);
 
   useEffect(() => {
     if (wasSavingRef.current && !isSavingAsTemplate) {
@@ -54,6 +57,13 @@ export function WorkoutHistoryCard({
     }
     wasSavingRef.current = isSavingAsTemplate;
   }, [isSavingAsTemplate]);
+
+  useEffect(() => {
+    if (wasCopyingRef.current && !isCopyingWorkout) {
+      setMenuVisible(false);
+    }
+    wasCopyingRef.current = isCopyingWorkout;
+  }, [isCopyingWorkout]);
 
   const preview = sets.slice(0, 3);
   const hasMore = exerciseCount > 3;
@@ -107,7 +117,7 @@ export function WorkoutHistoryCard({
       {hasMenu && (
         <BottomSheet
           visible={menuVisible}
-          onClose={isSavingAsTemplate ? () => {} : () => setMenuVisible(false)}
+          onClose={isSavingAsTemplate || isCopyingWorkout ? () => {} : () => setMenuVisible(false)}
           scrollable={false}
         >
           <View style={styles.sheetBody}>
@@ -120,7 +130,7 @@ export function WorkoutHistoryCard({
               />
             )}
             {onCopyWorkout && (
-              <MenuItem icon="📄" label="Copy Workout" onPress={() => closeAndRun(onCopyWorkout)} />
+              <MenuItem icon="📄" label="Copy Workout" loading={isCopyingWorkout} onPress={onCopyWorkout} />
             )}
             {onEdit && (
               <MenuItem icon="✏️" label="Edit Workout" onPress={() => closeAndRun(onEdit)} />
