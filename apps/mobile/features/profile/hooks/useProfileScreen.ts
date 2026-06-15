@@ -4,6 +4,7 @@ import { useRouter } from '@/hooks/useRouter';
 import { WorkoutStatus } from '@athlo/shared';
 import { useGetProfile, useStatisticsSummary, useGetFriends } from '@/features/profile/hooks';
 import { useInfiniteWorkouts } from '@/hooks/api';
+import { useGetIncomingRequests } from '@/hooks/api/useFriendAPI';
 
 export function useProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -12,6 +13,7 @@ export function useProfileScreen() {
   const { data: profile, isLoading: profileLoading } = useGetProfile();
   const { data: summary, isLoading: summaryLoading } = useStatisticsSummary();
   const { data: friends, isLoading: friendsLoading } = useGetFriends();
+  const { data: incomingRequests } = useGetIncomingRequests();
   const workoutsQuery = useInfiniteWorkouts(WorkoutStatus.COMPLETED);
 
   const displayedWorkouts = useMemo(
@@ -34,6 +36,7 @@ export function useProfileScreen() {
     summaryLoading,
     friends,
     friendsLoading,
+    incomingRequestsCount: incomingRequests?.length ?? 0,
     workoutsQuery,
     displayedWorkouts,
     handleLoadMore,

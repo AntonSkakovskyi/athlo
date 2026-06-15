@@ -23,6 +23,7 @@ export default function ProfileScreen() {
     summaryLoading,
     friends,
     friendsLoading,
+    incomingRequestsCount,
     workoutsQuery,
     displayedWorkouts,
     handleLoadMore,
@@ -73,11 +74,14 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.statDivider} />
           <Pressable style={styles.statItem} onPress={() => router.push('/(app)/(profile)/friends')}>
-            {friendsLoading ? (
-              <Spinner size="small" style={styles.statSpinner} />
-            ) : (
-              <Text style={styles.statValue}>{friends?.length ?? 0}</Text>
-            )}
+            <View style={styles.statValueWrap}>
+              {friendsLoading ? (
+                <Spinner size="small" style={styles.statSpinner} />
+              ) : (
+                <Text style={styles.statValue}>{friends?.length ?? 0}</Text>
+              )}
+              {incomingRequestsCount > 0 && <View style={styles.requestsBadge} />}
+            </View>
             <Text style={styles.statLabel}>Friends</Text>
           </Pressable>
         </View>
@@ -175,6 +179,16 @@ function makeStyles(c: ColorPalette) {
     fullName: { fontSize: fontSize.md, color: c.textSecondary, marginTop: spacing.xs },
     statsRow: { flexDirection: 'row', alignItems: 'center', marginTop: spacing.xl, gap: spacing['2xl'] },
     statItem: { alignItems: 'center' },
+    statValueWrap: { position: 'relative' },
+    requestsBadge: {
+      position: 'absolute',
+      top: -2,
+      right: -8,
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: c.danger,
+    },
     statValue: { fontSize: fontSize['2xl'], fontWeight: fontWeight.bold, color: c.text },
     statLabel: { fontSize: fontSize.sm, color: c.textMuted, marginTop: spacing.xxs },
     statDivider: { width: 1, height: 32, backgroundColor: c.border },
