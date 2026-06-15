@@ -10,7 +10,7 @@ import { ICONS } from '@/utils/icons';
 import { useActiveWorkout } from '@/contexts/ActiveWorkoutContext';
 import { useDeleteWorkout } from '@/hooks/api';
 
-const HIDDEN_SCREENS = ['active-workout', 'exercise-picker', 'finish-workout', 'workout-summary', 'template'];
+const HIDDEN_SCREENS = ['active-workout', 'exercise-picker', 'finish-workout', 'workout-summary', 'template', 'exercise-detail'];
 
 export function FloatingWorkoutMini() {
   const { colors } = useTheme();

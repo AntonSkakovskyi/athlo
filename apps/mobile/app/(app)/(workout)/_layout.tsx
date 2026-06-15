@@ -17,6 +17,7 @@ export default function WorkoutLayout() {
       <Stack.Screen name="active-workout" />
       <Stack.Screen name="finish-workout" />
       <Stack.Screen name="exercise-picker" />
+      <Stack.Screen name="exercise-detail" />
       <Stack.Screen name="workout-summary" />
     </Stack>
   );

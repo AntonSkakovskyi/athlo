@@ -113,7 +113,7 @@ export default function ExercisePickerScreen() {
           onPress={() => toggleExercise(ex.id)}
           onRightIconPress={() =>
             router.push({
-              pathname: '/(app)/(profile)/exercise-detail',
+              pathname: '/(app)/(workout)/exercise-detail',
               params: {
                 exerciseId: String(ex.id),
                 exerciseName: ex.name,
