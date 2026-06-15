@@ -23,7 +23,7 @@ export default function AchievementsScreen() {
     setSelectedAchievement,
     unlockedMap,
     displayedAchievements,
-    totalCount,
+    lockedAchievements,
     unlockedCount,
     isLoading,
     handleCloseSheet,
@@ -45,12 +45,11 @@ export default function AchievementsScreen() {
         <ScreenHeader
           title="Achievements"
           onBack={() => router.back()}
-          rightAction={<Text style={styles.counter}>{unlockedCount} / {totalCount}</Text>}
         />
 
         <View style={styles.tabSection}>
           <SegmentControl
-            segments={[`Unlocked (${unlockedCount})`, `Locked (${totalCount - unlockedCount})`]}
+            segments={[`Unlocked (${unlockedCount})`, `Locked (${lockedAchievements.length})`]}
             activeIndex={tabIndex}
             onSelect={setTabIndex}
           />
