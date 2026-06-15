@@ -42,7 +42,7 @@ export function useTemplateDetailScreen() {
     if (isSaved) {
       unsaveTemplate.mutate(id);
     } else {
-      saveTemplate.mutate(id, {
+      saveTemplate.mutate({ id, template: template! }, {
         onSuccess: () => {
           showToast({
             title: 'Template Saved!',
@@ -52,7 +52,7 @@ export function useTemplateDetailScreen() {
         },
       });
     }
-  }, [isSaved, id, saveTemplate, unsaveTemplate, showToast]);
+  }, [isSaved, id, template, saveTemplate, unsaveTemplate, showToast]);
 
   const [editName, setEditName] = useState<string | null>(null);
   const [editDesc, setEditDesc] = useState<string | null>(null);
