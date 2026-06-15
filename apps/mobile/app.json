@@ -8,20 +8,15 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#0A0906"
-    },
-    "ios": {
-      "supportsTablet": true
     },
     "android": {
       "package": "com.student.athlo",
       "adaptiveIcon": {
-        "backgroundColor": "#0A0906",
-        "foregroundImage": "./assets/icon.png",
-        "backgroundImage": "./assets/icon.png",
-        "monochromeImage": "./assets/icon.png"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A0906"
       },
       "predictiveBackGestureEnabled": false
     },
