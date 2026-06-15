@@ -5,10 +5,12 @@ import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'ghost-primary' | 'outline';
+type ButtonSize = 'sm' | 'md';
 
 interface ButtonProps extends Omit<PressableProps, 'style'> {
   title: string;
   variant?: ButtonVariant;
+  size?: ButtonSize;
   isLoading?: boolean;
   style?: StyleProp<ViewStyle>;
   icon?: React.ReactNode;
@@ -30,6 +32,7 @@ function makeVariantColors(
 export function Button({
   title,
   variant = 'primary',
+  size = 'md',
   isLoading = false,
   disabled,
   style,
@@ -57,7 +60,7 @@ export function Button({
       ) : (
         <>
           {icon}
-          <Text style={[styles.text, { color: variantColors.text }, icon ? { marginLeft: spacing.xs } : undefined]}>{title}</Text>
+          <Text style={[styles.text, size === 'sm' && styles.textSm, { color: variantColors.text }, icon ? { marginLeft: spacing.xs } : undefined]}>{title}</Text>
         </>
       )}
     </Pressable>
@@ -75,6 +78,9 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: fontWeight.semibold,
     fontSize: fontSize.md,
+  },
+  textSm: {
+    fontSize: fontSize.sm,
   },
   disabled: {
     opacity: 0.5,
