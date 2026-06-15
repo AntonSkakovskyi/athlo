@@ -94,7 +94,7 @@ export default function UserProfileScreen() {
       onLoadMore={handleLoadMore}
       readOnly
       onWorkoutPress={(id) =>
-        router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id) } })
+        router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id), source: 'user', sourceUserId: String(userId) } })
       }
       emptyTitle="No public workouts"
       emptyDescription={isFriend ? "This friend hasn't shared any workouts yet" : "Only public workouts are visible"}

@@ -22,7 +22,25 @@ export function useWorkoutSummaryScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { user } = useAuth();
-  const { workoutId, autoEdit, fromCompletion } = useLocalSearchParams<{ workoutId: string; autoEdit?: string; fromCompletion?: string }>();
+  const {
+    workoutId,
+    autoEdit,
+    fromCompletion,
+    source,
+    sourceUserId,
+    sourceExerciseId,
+    sourceExerciseName,
+    sourceTrackingType,
+  } = useLocalSearchParams<{
+    workoutId: string;
+    autoEdit?: string;
+    fromCompletion?: string;
+    source?: string;
+    sourceUserId?: string;
+    sourceExerciseId?: string;
+    sourceExerciseName?: string;
+    sourceTrackingType?: string;
+  }>();
 
   const { data: workout, isLoading } = useGetWorkoutById(workoutId ?? '');
   const updateWorkout = useUpdateWorkout();
@@ -351,11 +369,31 @@ export function useWorkoutSummaryScreen() {
   const duration = workout ? formatDurationRange(workout.started_at, workout.ended_at) : '—';
   const isOwner = !!workout && !!user && workout.userId === user.id;
 
+  const handleBack = useCallback(() => {
+    if (fromCompletion === '1') {
+      router.replace('/(app)/(workout)');
+    } else if (source === 'profile') {
+      router.push('/(app)/(profile)');
+    } else if (source === 'calendar') {
+      router.push('/(app)/(profile)/calendar');
+    } else if (source === 'user' && sourceUserId) {
+      router.push({ pathname: '/(app)/(profile)/[userId]', params: { userId: sourceUserId } });
+    } else if (source === 'exercise-detail' && sourceExerciseId) {
+      router.push({
+        pathname: '/(app)/(profile)/exercise-detail',
+        params: { exerciseId: sourceExerciseId, exerciseName: sourceExerciseName, trackingType: sourceTrackingType },
+      });
+    } else {
+      router.back();
+    }
+  }, [fromCompletion, source, sourceUserId, sourceExerciseId, sourceExerciseName, sourceTrackingType, router]);
+
   return {
     workout,
     isLoading,
     isOwner,
     fromCompletion: fromCompletion === '1',
+    handleBack,
     exercises,
     completedSets,
     totalVolume,

@@ -22,6 +22,7 @@ export default function WorkoutSummaryScreen() {
     workout,
     isLoading,
     isOwner,
+    handleBack,
     fromCompletion,
     exercises,
     completedSets,
@@ -64,13 +65,6 @@ export default function WorkoutSummaryScreen() {
     setNewAchievement,
   } = useWorkoutSummaryScreen();
 
-  const handleBack = () => {
-    if (fromCompletion) {
-      router.replace('/(app)/(workout)');
-    } else {
-      router.back();
-    }
-  };
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 

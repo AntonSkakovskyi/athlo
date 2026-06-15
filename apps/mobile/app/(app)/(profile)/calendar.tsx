@@ -97,7 +97,7 @@ export default function CalendarScreen() {
               onPress={() =>
                 router.push({
                   pathname: '/(app)/(workout)/workout-summary',
-                  params: { workoutId: String(w.id) },
+                  params: { workoutId: String(w.id), source: 'calendar' },
                 })
               }
             />

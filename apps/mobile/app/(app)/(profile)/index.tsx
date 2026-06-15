@@ -130,7 +130,7 @@ export default function ProfileScreen() {
       isFetchingNextPage={workoutsQuery.isFetchingNextPage}
       onLoadMore={handleLoadMore}
       onWorkoutPress={(id) =>
-        router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id) } })
+        router.push({ pathname: '/(app)/(workout)/workout-summary', params: { workoutId: String(id), source: 'profile' } })
       }
       emptyTitle="No workouts yet"
       emptyDescription="Start your first workout to see history here"
