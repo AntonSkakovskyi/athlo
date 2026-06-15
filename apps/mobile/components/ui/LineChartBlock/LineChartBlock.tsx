@@ -17,6 +17,7 @@ export interface DataPoint {
   date: string;
   value: number;
   label?: string;
+  headerLabel?: string;
 }
 
 interface LineChartBlockProps {
@@ -101,6 +102,16 @@ export function LineChartBlock({
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }, [formatDate, period]);
 
+  const headerFormatDate = useCallback((d: string) => {
+    if (formatDate) return formatDate(d);
+    const date = new Date(d);
+    if (period === '1 Year' || period === 'All Time') {
+      return date.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+    return date.toLocaleDateString(undefined, { day: 'numeric', month: 'long' });
+  }, [formatDate, period]);
+
+
   const { min, max, stepValue, noOfSections } = useMemo(() => {
     if (data.length === 0) return { min: 0, max: 100, stepValue: 50, noOfSections: 2 };
     const values = data.map((d) => d.value);
@@ -143,51 +154,54 @@ export function LineChartBlock({
     ? containerWidth - CONTAINER_PADDING * 2 - Y_AXIS_WIDTH
     : 0;
 
-  const chartData: lineDataItem[] = useMemo(() => {
-    if (data.length === 0) return [];
-
-    const maxLabels = plotWidth > 0 ? Math.max(1, Math.floor(plotWidth / 70)) : 4;
-    const skip = Math.max(1, Math.ceil(data.length / maxLabels));
-
-    return data.map((d, i) => {
-      const isSelected = selectedIndex === i || (selectedIndex === null && i === data.length - 1);
-
-      let shouldShowLabel = false;
-      if (i === 0 || i === data.length - 1) {
-        shouldShowLabel = true;
-      } else if (skip > 1) {
-        shouldShowLabel = (i % skip === 0) && (data.length - 1 - i > skip / 2);
-      } else {
-        shouldShowLabel = true;
-      }
-
-      let ml = -30;
-      let ta: 'left' | 'center' | 'right' = 'center';
-      if (i === 0) { ml = 0; ta = 'left'; }
-      else if (i === data.length - 1) { ml = -60; ta = 'right'; }
-
-      return {
-        value: d.value,
-        label: shouldShowLabel ? (d.label ?? displayFormatDate(d.date)) : '',
-        labelTextStyle: {
-          ...axisTextStyle,
-          width: 60,
-          marginLeft: ml,
-          textAlign: ta,
-        },
-        focusedDataPointColor: resolvedColor,
-        dataPointColor: isSelected ? resolvedColor : resolvedColor + '80',
-        dataPointRadius: isSelected ? 5 : 3,
-        hideDataPoint: !isSelected && data.length > 14,
-      };
-    });
-  }, [data, displayFormatDate, plotWidth, selectedIndex, axisTextStyle, resolvedColor]);
-
   const dataSpacing = useMemo(() => {
     if (data.length <= 1 || plotWidth <= 0) return 50;
     const availableWidth = Math.max(0, plotWidth - 40); // 20px initial, 20px end
     return availableWidth / (data.length - 1);
   }, [data.length, plotWidth]);
+
+  const chartData: lineDataItem[] = useMemo(() => {
+    if (data.length === 0) return [];
+
+    const maxLabels = plotWidth > 0 ? Math.max(1, Math.floor(plotWidth / 70)) : 4;
+    const skip = Math.max(1, Math.ceil(data.length / maxLabels));
+    const labelW = 50;
+    const last = data.length - 1;
+
+    return data.map((d, i) => {
+      let shouldShowLabel = false;
+      if (i === 0 || i === last) {
+        shouldShowLabel = true;
+      } else if (skip > 1) {
+        shouldShowLabel = (i % skip === 0) && (last - i > skip / 2);
+      } else {
+        shouldShowLabel = true;
+      }
+
+      const labelText = shouldShowLabel ? (d.label ?? displayFormatDate(d.date)) : '';
+      if (!labelText) return { value: d.value, label: '' };
+
+      // shift the 50px text so it stays within the chart:
+      // first  → left-align (grows right from data point)
+      // last   → right-align (grows left, right edge at container right)
+      // middle → center under data point
+      const marginLeft = i === 0 ? 0
+        : i === last ? -(labelW - dataSpacing)
+        : -(labelW - dataSpacing) / 2;
+      const textAlign: 'left' | 'center' | 'right' = i === 0 ? 'left' : i === last ? 'right' : 'center';
+
+      return {
+        value: d.value,
+        label: '',
+        labelComponent: () => (
+          <Text style={[axisTextStyle, { width: labelW, marginLeft, textAlign }]} numberOfLines={1}>
+            {labelText}
+          </Text>
+        ),
+      };
+    });
+  }, [data, displayFormatDate, plotWidth, axisTextStyle, dataSpacing]);
+
 
   return (
     <View style={styles.container} onLayout={handleLayout}>
@@ -198,7 +212,7 @@ export function LineChartBlock({
           {activePoint && (
             <View style={styles.valueRow}>
               <Text style={styles.currentValue}>{formatValue(activePoint.value)}</Text>
-              <Text style={styles.currentDate}>{displayFormatDate(activePoint.date)}</Text>
+              <Text style={styles.currentDate}>{activePoint.headerLabel ?? headerFormatDate(activePoint.date)}</Text>
             </View>
           )}
         </View>
@@ -230,6 +244,7 @@ export function LineChartBlock({
           </View>
         ) : plotWidth > 0 ? (
           <LineChart
+            key={metricLabel}
             data={chartData}
             height={CHART_HEIGHT}
             width={plotWidth}
@@ -263,20 +278,29 @@ export function LineChartBlock({
             startOpacity={0.2}
             endOpacity={0.01}
 
-            // Interaction
-            focusEnabled
-            showDataPointOnFocus
-            focusedDataPointRadius={7}
-            focusedDataPointColor={resolvedColor}
-            unFocusOnPressOut={false}
-            onFocus={(_item: lineDataItem, index: number) => {
-              setSelectedIndex(index);
-            }}
-
             // Grid
             rulesType="solid"
             rulesColor={colors.border + '40'}
             hideRules={false}
+
+            // Data points
+            hideDataPoints
+
+            // Pointer / tap-to-select
+            pointerConfig={{
+              radius: 5,
+              pointerColor: resolvedColor,
+              showPointerStrip: true,
+              pointerStripWidth: 1,
+              pointerStripHeight: CHART_HEIGHT,
+              pointerStripColor: colors.border,
+              persistPointer: true,
+              initialPointerIndex: data.length - 1,
+              activatePointersInstantlyOnTouch: true,
+            }}
+            getPointerProps={({ pointerIndex }: { pointerIndex: number }) => {
+              setSelectedIndex(pointerIndex);
+            }}
 
             // Reference / Goal line
             showReferenceLine1={goalValue !== undefined}
