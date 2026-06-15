@@ -1,4 +1,4 @@
-﻿import { useState, useMemo } from 'react';
+﻿import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from '@/hooks/useRouter';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -12,13 +12,16 @@ import {
   useRemoveFriend
 } from '@/hooks/api/useFriendAPI';
 import { useSearchUsers } from '@/hooks/api/useUserAPI';
+import { useToast } from '@/contexts/ToastContext';
 import type { IUser } from '@athlo/shared';
 
 export function useFriendsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [hiddenFromSearch, setHiddenFromSearch] = useState<Set<number>>(new Set());
 
   const { data: friends, isLoading: friendsLoading } = useGetFriends();
   const { data: incomingRequests, isLoading: incomingLoading } = useGetIncomingRequests();
@@ -33,15 +36,41 @@ export function useFriendsScreen() {
   } = useSearchUsers(searchQuery);
 
   const searchResults = useMemo<IUser[]>(
-    () => searchData?.pages.flat() ?? [],
-    [searchData],
+    () => (searchData?.pages.flat() ?? []).filter((u) => !hiddenFromSearch.has(u.id)),
+    [searchData, hiddenFromSearch],
   );
 
-  const sendRequest = useSendFriendRequest();
-  const acceptRequest = useAcceptFriendRequest();
+  const sendRequestMutation = useSendFriendRequest();
+  const acceptRequestMutation = useAcceptFriendRequest();
   const rejectRequest = useRejectFriendRequest();
   const cancelRequest = useCancelFriendRequest();
   const removeFriend = useRemoveFriend();
+
+  const handleSendRequest = useCallback((userId: number) => {
+    sendRequestMutation.mutate(userId, {
+      onSuccess: () => {
+        setHiddenFromSearch((prev) => new Set(prev).add(userId));
+        showToast({
+          title: 'Request sent!',
+          description: 'Switch to Friends tab to see your friends list.',
+          variant: 'info',
+        });
+      },
+    });
+  }, [sendRequestMutation, showToast]);
+
+  const handleAcceptRequest = useCallback((requestId: number) => {
+    acceptRequestMutation.mutate(requestId, {
+      onSuccess: () => {
+        setActiveTab(0);
+        showToast({
+          title: 'Friend added!',
+          description: 'You can now see them in the Friends tab.',
+          variant: 'success',
+        });
+      },
+    });
+  }, [acceptRequestMutation, showToast]);
 
   const handleUserPress = (userId: number) => {
     router.push(`/(app)/(profile)/${userId}`);
@@ -66,8 +95,8 @@ export function useFriendsScreen() {
     hasNextPage,
     isFetchingNextPage,
     handleUserPress,
-    sendRequest,
-    acceptRequest,
+    sendRequest: { ...sendRequestMutation, handleSendRequest },
+    acceptRequest: { ...acceptRequestMutation, handleAcceptRequest },
     rejectRequest,
     cancelRequest,
     removeFriend,
