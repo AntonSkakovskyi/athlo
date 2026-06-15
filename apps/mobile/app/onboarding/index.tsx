@@ -125,9 +125,9 @@ export default function OnboardingScreen() {
               <View style={styles.section}>
                 <Typography variant="label" style={styles.label}>Gender</Typography>
                 <SegmentControl
-                  segments={['Male', 'Female', 'Other']}
-                  activeIndex={gender === Gender.MALE ? 0 : gender === Gender.FEMALE ? 1 : 2}
-                  onSelect={(idx) => setGender(idx === 0 ? Gender.MALE : idx === 1 ? Gender.FEMALE : Gender.OTHER)}
+                  segments={['Male', 'Female']}
+                  activeIndex={gender === Gender.MALE ? 0 : 1}
+                  onSelect={(idx) => setGender(idx === 0 ? Gender.MALE : Gender.FEMALE)}
                 />
               </View>
 

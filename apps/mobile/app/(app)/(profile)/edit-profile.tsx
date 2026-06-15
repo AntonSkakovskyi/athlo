@@ -81,9 +81,9 @@ export default function EditProfileScreen() {
     );
   }
 
-  const genderIdx = gender === Gender.MALE ? 0 : gender === Gender.FEMALE ? 1 : 2;
+  const genderIdx = gender === Gender.MALE ? 0 : 1;
   const handleGenderSelect = (idx: number) => {
-    setGender(idx === 0 ? Gender.MALE : idx === 1 ? Gender.FEMALE : Gender.OTHER);
+    setGender(idx === 0 ? Gender.MALE : Gender.FEMALE);
   };
 
   const { min: minBirthDate, max: maxBirthDate } = getBirthDateBounds();
@@ -138,7 +138,7 @@ export default function EditProfileScreen() {
           <View style={styles.inputGroup}>
             <Typography variant="label" style={styles.fieldLabel}>Gender</Typography>
             <SegmentControl
-              segments={['Male', 'Female', 'Other']}
+              segments={['Male', 'Female']}
               activeIndex={genderIdx}
               onSelect={handleGenderSelect}
             />
