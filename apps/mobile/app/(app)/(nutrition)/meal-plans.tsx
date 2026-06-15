@@ -26,7 +26,7 @@ export default function MealPlansScreen() {
     isLoading, activePlanId, activeTab, setActiveTab, search, setSearch,
     myGroups, publicGroups, friendsGroups,
     showCreate, setShowCreate,
-    name, setName, description, setDescription, totalDays, setTotalDays,
+    name, setName, description, setDescription, totalDays, setTotalDays, totalDaysError,
     visibility, setVisibility,
     handleCreate, handleDelete, handleActivate, handleDeactivate,
     handleSave, handleUnsave, isCreatePending, router,
@@ -207,7 +207,7 @@ export default function MealPlansScreen() {
         <View style={styles.createCard}>
           <Input label="Plan Name" value={name} onChangeText={setName} placeholder="e.g. Cutting Plan" />
           <Input label="Description (optional)" value={description} onChangeText={setDescription} placeholder="Describe your plan" />
-          <Input label="Total Days" value={totalDays} onChangeText={setTotalDays} keyboardType="numeric" placeholder="1" />
+          <Input label="Total Days" value={totalDays} onChangeText={setTotalDays} keyboardType="number-pad" placeholder="1" error={totalDaysError} />
 
           <VisibilitySelector value={visibility} onChange={setVisibility} />
 

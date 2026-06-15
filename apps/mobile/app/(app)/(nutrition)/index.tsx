@@ -116,16 +116,25 @@ export default function NutritionScreen() {
                 {meals.length === 0 ? (
                   <EmptyState title="No meals logged" description="Add your first meal to start tracking" />
                 ) : (
-                  meals.map((meal) => (
-                    <MealCard
-                      key={meal.id}
-                      meal={meal}
-                      onAddItem={handleAddFoodToMeal}
-                      onDelete={handleDeleteMeal}
-                      onEditMeal={handleEditMeal}
-                      onEditItem={(itemId) => handleEditMealItem(meal.id, itemId)}
+                  <>
+                    {meals.map((meal) => (
+                      <MealCard
+                        key={meal.id}
+                        meal={meal}
+                        onAddItem={handleAddFoodToMeal}
+                        onDelete={handleDeleteMeal}
+                        onEditMeal={handleEditMeal}
+                        onEditItem={(itemId) => handleEditMealItem(meal.id, itemId)}
+                      />
+                    ))}
+                    <Button
+                      title="+ Add Meal"
+                      variant="ghost-primary"
+                      onPress={handleAddMeal}
+                      isLoading={isCreateMealPending}
+                      style={styles.addMealInlineBtn}
                     />
-                  ))
+                  </>
                 )}
               </View>
             ) : (
@@ -153,6 +162,7 @@ export default function NutritionScreen() {
           mealTypes={mealTypes}
           planDayMeals={planDayMeals}
           defaultHasTime={true}
+          isLoading={isCreateMealPending}
           onConfirm={(data) => handleConfirmAddMeal(data.mealTypeId, data.items ?? [], data.name, data.consumedAt)}
           onClose={() => setShowAddMealSheet(false)}
         />
@@ -204,5 +214,6 @@ function makeStyles(c: ColorPalette) {
       justifyContent: 'space-between',
     },
     addMealBtn: { marginBottom: spacing.lg },
+    addMealInlineBtn: { marginTop: spacing.xs },
   });
 }

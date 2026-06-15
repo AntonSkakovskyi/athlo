@@ -5,7 +5,7 @@ import { borderRadius, spacing, fontSize, fontWeight } from '@/constants/theme';
 import { useTheme } from '@/contexts/ThemeContext';
 import type { ColorPalette } from '@/constants/colors';
 import { Button } from '@/components/ui/Button/Button';
-import { formatClockTime, formatTimeSuggestion } from '@/utils/time';
+import { formatTimeSuggestion } from '@/utils/time';
 
 export interface MealItemDisplay {
   id: number;
@@ -32,11 +32,6 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
   const { colors } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const mealTime = useMemo(() => {
-    if (meal.timeSuggestion) return formatTimeSuggestion(meal.timeSuggestion);
-    return formatClockTime(meal.consumedAt);
-  }, [meal.timeSuggestion, meal.consumedAt]);
-
   const items = useMemo(() => {
     return [...(meal.items ?? [])].sort((a, b) => a.id - b.id);
   }, [meal.items]);
@@ -54,11 +49,13 @@ export function MealCard({ meal, onAddItem, onDelete, onEditMeal, onEditItem, on
           </View>
           <View>
             <Text style={styles.mealName}>{meal.name ?? 'Meal'}</Text>
-            <Pressable onPress={() => onEditTime?.(meal.id)} disabled={!onEditTime}>
-              <Text style={styles.mealTime}>
-                {meal.timeSuggestion ? formatTimeSuggestion(meal.timeSuggestion) : onEditTime ? '+ Set time' : mealTime}
-              </Text>
-            </Pressable>
+            {(meal.timeSuggestion || onEditTime) && (
+              <Pressable onPress={() => onEditTime?.(meal.id)} disabled={!onEditTime}>
+                <Text style={styles.mealTime}>
+                  {meal.timeSuggestion ? formatTimeSuggestion(meal.timeSuggestion) : '+ Set time'}
+                </Text>
+              </Pressable>
+            )}
           </View>
         </View>
         <View style={styles.headerRight}>

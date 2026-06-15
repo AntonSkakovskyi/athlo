@@ -60,6 +60,7 @@ export function MealFormSheet({
   const [mealName, setMealName] = useState(initialName);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<number>>(new Set());
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [timePickerVisible, setTimePickerVisible] = useState(false);
   const [hasTime, setHasTime] = useState(!!initialDate || !!initialTimeSuggestion || defaultHasTime);
   const [selectedSeconds, setSelectedSeconds] = useState(() => {
@@ -103,7 +104,7 @@ export function MealFormSheet({
   };
 
   const handleConfirm = async () => {
-    if (!selectedTypeId) return;
+    if (!selectedTypeId || isSubmitting) return;
 
     let timeStr: string | undefined;
     let consumedAt: string | undefined;
@@ -133,13 +134,18 @@ export function MealFormSheet({
         foodName: i.food?.name ?? '',
       }));
 
-    await onConfirm({
-      mealTypeId: selectedTypeId,
-      name: mealName.trim() || undefined,
-      consumedAt,
-      timeSuggestion: timeStr,
-      items,
-    });
+    setIsSubmitting(true);
+    try {
+      await onConfirm({
+        mealTypeId: selectedTypeId,
+        name: mealName.trim() || undefined,
+        consumedAt,
+        timeSuggestion: timeStr,
+        items,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const headerRight = (
@@ -163,7 +169,7 @@ export function MealFormSheet({
         variant="primary"
         onPress={handleConfirm}
         disabled={!selectedTypeId}
-        isLoading={isLoading}
+        isLoading={isLoading || isSubmitting}
         style={styles.actionBtn}
       />
     </View>

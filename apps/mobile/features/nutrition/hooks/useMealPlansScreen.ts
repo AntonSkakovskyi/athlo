@@ -47,6 +47,7 @@ export function useMealPlansScreen() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [totalDays, setTotalDays] = useState('1');
+  const [totalDaysError, setTotalDaysError] = useState<string | undefined>();
   const [visibility, setVisibility] = useState<VisibilityType>(VisibilityType.PRIVATE);
   const [showActivationModal, setShowActivationModal] = useState(false);
   const [currentActivatingPlan, setCurrentActivatingPlan] = useState<{ id: number; name: string; totalDays: number } | null>(null);
@@ -107,14 +108,19 @@ export function useMealPlansScreen() {
 
   const handleCreate = () => {
     if (!name.trim()) return;
+
     const parsedDays = parseInt(totalDays, 10);
-    const finalDays = isNaN(parsedDays) || parsedDays < 0 ? 0 : parsedDays;
+    if (!totalDays.trim() || isNaN(parsedDays) || parsedDays < 1) {
+      setTotalDaysError('Must be a whole number of at least 1');
+      return;
+    }
+    setTotalDaysError(undefined);
 
     createPlan.mutate(
       {
         name: name.trim(),
         description: description.trim() || undefined,
-        totalDays: finalDays,
+        totalDays: parsedDays,
         visibilityTypeId: VISIBILITY_ENUM_TO_ID[visibility],
       },
       {
@@ -122,6 +128,7 @@ export function useMealPlansScreen() {
           setName('');
           setDescription('');
           setTotalDays('1');
+          setTotalDaysError(undefined);
           setVisibility(VisibilityType.PRIVATE);
           setShowCreate(false);
           router.push(`/(app)/(nutrition)/meal-plan/${newPlan.id}` as never);
@@ -196,7 +203,8 @@ export function useMealPlansScreen() {
     description,
     setDescription,
     totalDays,
-    setTotalDays,
+    setTotalDays: (v: string) => { setTotalDays(v); setTotalDaysError(undefined); },
+    totalDaysError,
     visibility,
     setVisibility,
     handleCreate,
