@@ -312,9 +312,13 @@ export class AchievementService {
       .innerJoin('le.workout', 'w')
       .where('w.user_id = :userId', { userId })
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .andWhere('ls.is_completed = true')
+      .andWhere('ls.weight IS NOT NULL')
+      .andWhere('ls.reps IS NOT NULL')
       .getRawOne();
 
-    const totalWeight = parseFloat(totalWeightResult?.total ?? '0');
+    const rawWeight = parseFloat(totalWeightResult?.total ?? '0');
+    const totalWeight = Number.isFinite(rawWeight) ? rawWeight : 0;
 
     const totalTimeResult = await this.workoutRepo
       .createQueryBuilder('w')

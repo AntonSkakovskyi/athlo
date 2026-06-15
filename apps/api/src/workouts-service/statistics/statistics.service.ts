@@ -80,7 +80,7 @@ export class StatisticsService {
       .andWhere(dateFilter.clause, dateFilter.params)
       .getRawOne();
 
-    // Total weight lifted (sum of weight*reps)
+    // Total weight lifted (sum of weight*reps for completed WEIGHT_AND_REPS sets)
     const totalWeightResult = await this.logSetRepo
       .createQueryBuilder('ls')
       .select('COALESCE(SUM(ls.weight * ls.reps), 0)', 'total')
@@ -88,6 +88,9 @@ export class StatisticsService {
       .innerJoin('le.workout', 'w')
       .where('w.user_id = :userId', { userId })
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .andWhere('ls.is_completed = true')
+      .andWhere('ls.weight IS NOT NULL')
+      .andWhere('ls.reps IS NOT NULL')
       .andWhere(dateFilter.clause, dateFilter.params)
       .getRawOne();
 
@@ -137,7 +140,7 @@ export class StatisticsService {
     return {
       totalWorkouts: totalWorkoutsResult,
       totalSets: totalSetsResult,
-      totalWeightLifted: parseFloat(totalWeightResult?.total ?? '0'),
+      totalWeightLifted: (() => { const n = parseFloat(totalWeightResult?.total ?? '0'); return Number.isFinite(n) ? n : 0; })(),
       averageDurationMinutes: avgDurationResult?.avgMinutes
         ? parseFloat(parseFloat(avgDurationResult.avgMinutes).toFixed(1))
         : null,
@@ -416,7 +419,7 @@ export class StatisticsService {
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
       .getCount();
 
-    // Total weight lifted
+    // Total weight lifted (only completed individual sets with valid weight × reps)
     const totalWeightResult = await this.logSetRepo
       .createQueryBuilder('ls')
       .select('COALESCE(SUM(ls.weight * ls.reps), 0)', 'total')
@@ -424,6 +427,9 @@ export class StatisticsService {
       .innerJoin('le.workout', 'w')
       .where('w.user_id = :userId', { userId })
       .andWhere('w.status = :status', { status: WorkoutStatus.COMPLETED })
+      .andWhere('ls.is_completed = true')
+      .andWhere('ls.weight IS NOT NULL')
+      .andWhere('ls.reps IS NOT NULL')
       .getRawOne();
 
     // Total duration seconds
@@ -455,7 +461,7 @@ export class StatisticsService {
       totalExercisesPerformed: totalExercisesResult,
       totalUniqueExercises: parseInt(uniqueExercisesResult?.count ?? '0'),
       totalSets,
-      totalWeightLifted: parseFloat(totalWeightResult?.total ?? '0'),
+      totalWeightLifted: (() => { const n = parseFloat(totalWeightResult?.total ?? '0'); return Number.isFinite(n) ? n : 0; })(),
       totalDurationSeconds: parseFloat(
         totalDurationResult?.totalSeconds ?? '0',
       ),

@@ -24,7 +24,7 @@ export class FinalizedSetDto implements IFinalizedSet {
   order!: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   weight?: number;
 
   @IsOptional()
@@ -36,7 +36,7 @@ export class FinalizedSetDto implements IFinalizedSet {
   duration?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   distance?: number;
 }
 

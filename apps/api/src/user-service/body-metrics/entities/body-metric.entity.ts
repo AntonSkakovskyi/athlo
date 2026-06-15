@@ -4,7 +4,6 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  CreateDateColumn,
 } from 'typeorm';
 import type { IBodyMetric } from '@athlo/shared';
 import { UserEntity } from '../../user/entities/user.entity';
@@ -24,7 +23,7 @@ export class BodyMetricEntity implements IBodyMetric {
   @Column({ type: 'decimal', precision: 10, scale: 2 })
   value: number;
 
-  @CreateDateColumn({ name: 'recorded_at', type: 'timestamptz' })
+  @Column({ name: 'recorded_at', type: 'timestamptz', default: () => 'NOW()' })
   recordedAt: Date;
 
   @ManyToOne(() => UserEntity, { onDelete: 'CASCADE' })

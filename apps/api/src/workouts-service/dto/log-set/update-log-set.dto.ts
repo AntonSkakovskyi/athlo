@@ -7,7 +7,7 @@ export class UpdateLogSetDto {
   order?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0)
   weight?: number;
 
@@ -22,7 +22,7 @@ export class UpdateLogSetDto {
   duration?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0)
   distance?: number;
 

@@ -6,7 +6,7 @@ export class CreateLogSetDto {
   order: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0)
   weight?: number;
 
@@ -21,7 +21,7 @@ export class CreateLogSetDto {
   duration?: number;
 
   @IsOptional()
-  @IsNumber()
+  @IsNumber({ allowNaN: false, allowInfinity: false })
   @Min(0)
   distance?: number;
 
